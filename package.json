@@ -1,0 +1,18 @@
+{
+  "name": "padel-livescore",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Universal padel livescore hub — aggregates live/upcoming/final matches from every federation via a normalized adapter layer.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "fetch": "node scripts/fetch-live.js",
+    "serve": "node scripts/serve.js",
+    "dev": "node scripts/fetch-live.js && node scripts/serve.js"
+  },
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
