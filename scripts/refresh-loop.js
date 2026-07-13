@@ -32,7 +32,7 @@ const canDeploy =
 
 async function cycle() {
   const date = new Date().toISOString().slice(0, 10);
-  const matches = await aggregate({ date });
+  const { matches } = await aggregate({ date });
   const counts = matches.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
 
   const outDir = join(root, "public", "data");

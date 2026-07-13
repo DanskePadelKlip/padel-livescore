@@ -17,7 +17,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) || new Date().toISOString().slice(0, 10);
 
 console.log(`\n⚡ Fetching padel matches for ${date}\n`);
-const matches = await aggregate({ date, log: (m) => console.log(m) });
+const { matches, sources } = await aggregate({ date, log: (m) => console.log(m) });
 
 const tally = (key) =>
   matches.reduce((acc, m) => ((acc[m[key]] = (acc[m[key]] || 0) + 1), acc), {});
@@ -87,3 +87,14 @@ if (lists.length) {
   writeFileSync(join(outDir, "rankings.json"), JSON.stringify({ generatedAt: new Date().toISOString(), lists }, null, 2));
   console.log(`✅ Wrote public/data/rankings.json (${lists.length} lists)\n`);
 }
+
+// health snapshot for /api/health (monitoring) — raw facts; the endpoint derives
+// the verdict, incl. a freshness/dead-man's-switch check off generated_at.
+writeFileSync(join(outDir, "health.json"), JSON.stringify({
+  generated_at: new Date().toISOString(),
+  total: matches.length,
+  sources,                       // [{id, ok, count, error?}] per adapter
+  rankings: (lists || []).length,
+  byStatus: tally("status"),
+}, null, 2));
+console.log("✅ Wrote public/data/health.json");
