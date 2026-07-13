@@ -370,7 +370,7 @@ function matchRow(m, changed, showTournament) {
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
           ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${FLAGS[m.federation] || ""} ${m.federation}</span><span class="nm" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
-          ${!showTournament && m.court ? `<div class="crtline">${esc(m.court)}${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
+          ${m.court ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
         </div>
