@@ -244,6 +244,26 @@ const REGION_LABEL = {
   HU: "Hungary", UA: "Ukraine", SI: "Slovenia", XK: "Kosovo", BA: "Bosnia", ME: "Montenegro",
 };
 
+// minutes-of-day start key for ordering upcoming matches chronologically.
+// Uses the estimate (FIP), then an explicit RankedIn time, then the OOP phrase.
+function startMin(m) {
+  let hhmm = m.estStart || (m.startTime ? m.startTime.slice(11, 16) : "");
+  if (!hhmm && m.schedule) {
+    const t = m.schedule.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (t) { let h = +t[1]; const ap = (t[3] || "").toUpperCase(); if (ap === "PM" && h < 12) h += 12; if (ap === "AM" && h === 12) h = 0; hhmm = String(h).padStart(2, "0") + ":" + t[2]; }
+  }
+  if (!hhmm) return Infinity;
+  const [h, mn] = hhmm.split(":").map(Number);
+  return h * 60 + mn;
+}
+const STATUS_ORDER = { live: 0, upcoming: 1, final: 2 };
+function cmpByStart(a, b) {
+  const so = (STATUS_ORDER[a.status] ?? 3) - (STATUS_ORDER[b.status] ?? 3);
+  if (so) return so;
+  if (a.status === "upcoming") return startMin(a) - startMin(b);
+  return 0; // keep feed order within live / final
+}
+
 function renderGroups(matches, changed) {
   // group by tournament, preserve aggregate order
   const groups = new Map();
@@ -253,6 +273,7 @@ function renderGroups(matches, changed) {
     groups.get(key).matches.push(m);
   }
   const arr = [...groups.values()];
+  arr.forEach((g) => g.matches.sort(cmpByStart)); // chronological within each event
 
   // auto-expand only live groups + the first (keeps the DOM light), until the
   // user starts toggling groups themselves.
@@ -349,6 +370,7 @@ function matchRow(m, changed, showTournament) {
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
           ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${FLAGS[m.federation] || ""} ${m.federation}</span><span class="nm" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
+          ${!showTournament && m.court ? `<div class="crtline">${esc(m.court)}${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
         </div>
