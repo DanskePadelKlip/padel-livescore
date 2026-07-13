@@ -38,6 +38,10 @@ const state = {
   player: null,              // loaded profile
   h2h: null,                 // loaded head-to-head
   comparing: false,          // in "pick an opponent" mode
+  // ---- rankings ----
+  rankings: null,            // loaded rankings.json
+  rankFed: null,
+  rankCat: null,
 };
 
 // ---------- data ----------
@@ -88,6 +92,7 @@ function filtered() {
 
 function render(changed = new Set()) {
   renderControls();
+  if (state.mode === "rankings") return renderRankings();
   if (state.mode === "players") return renderPlayers();
   if (state.mode === "archive") return renderArchive();
 
@@ -437,6 +442,52 @@ function apiMatchRow(m) {
   </div></div>`;
 }
 
+// ---------- rankings (national, RankedIn) ----------
+
+async function loadRankings() {
+  app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
+  try {
+    state.rankings = await (await fetch("data/rankings.json?_=" + Date.now())).json();
+  } catch {
+    app.innerHTML = `<div class="empty"><div class="big">🏆</div>Rankings not available.</div>`;
+    return;
+  }
+  render();
+}
+
+function renderRankings() {
+  if (!state.rankings) return;
+  const lists = state.rankings.lists;
+  const feds = [...new Set(lists.map((l) => l.fed))];
+  const cats = [...new Set(lists.map((l) => l.category))];
+  if (!state.rankFed || !feds.includes(state.rankFed)) state.rankFed = feds[0];
+  if (!state.rankCat || !cats.includes(state.rankCat)) state.rankCat = cats[0];
+  const list = lists.find((l) => l.fed === state.rankFed && l.category === state.rankCat);
+  const q = state.query.trim().toLowerCase();
+  const rows = (list?.rows || []).filter((r) => !q || (r.name || "").toLowerCase().includes(q) || (r.club || "").toLowerCase().includes(q));
+
+  let html = `<div class="rank-sel">
+    ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}">${FLAGS[f] || ""} ${f}</button>`).join("")}
+    <span class="rsep"></span>
+    ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
+  </div>`;
+  html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
+    `<span class="count">${(list?.total ?? rows.length).toLocaleString()} ranked · top ${list?.rows?.length || 0}</span></div>`;
+  html += rows.slice(0, 250).map(rankRow).join("");
+  if (!rows.length) html += `<div class="empty">No players match.</div>`;
+  app.innerHTML = html;
+}
+
+function rankRow(r) {
+  const prof = r.id ? " has-profile" : "";
+  return `<div class="rankrow${prof}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+    <span class="rnum">${r.rank}</span>
+    <span class="nm">${esc(r.name)}</span>
+    <span class="rclub">${esc(r.club || "")}</span>
+    <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}</span>
+  </div>`;
+}
+
 function timeago(d) {
   const s = Math.max(0, Math.round((Date.now() - d.getTime()) / 1000));
   if (s < 60) return s + "s ago";
@@ -462,23 +513,30 @@ document.getElementById("chips").addEventListener("click", (e) => {
   render();
 });
 
-// mode switch: Live <-> Results archive
-document.getElementById("modes").addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (!b || b.dataset.mode === state.mode) return;
-  state.mode = b.dataset.mode;
+// mode switch: Live / Results / Players / Rankings
+function activateMode(mode) {
+  state.mode = mode;
   state.fed = "all";
   state.query = "";
   state.player = null; state.h2h = null; state.playerResults = null; state.comparing = false;
-  document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x === b));
-  document.getElementById("tabs").style.display = state.mode === "live" ? "" : "none";
-  document.getElementById("year").hidden = state.mode !== "archive";
-  document.getElementById("chips").style.display = state.mode === "players" ? "none" : "";
+  document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
+  document.getElementById("tabs").style.display = mode === "live" ? "" : "none";
+  document.getElementById("year").hidden = mode !== "archive";
+  document.getElementById("chips").style.display = mode === "live" || mode === "archive" ? "" : "none";
   const qEl = document.getElementById("q");
   qEl.value = "";
-  qEl.placeholder = state.mode === "players" ? "Search a player by name…" : state.mode === "archive" ? "Search tournament…" : "Search player or tournament…";
-  if (state.mode === "archive" && !state.archive) loadArchive();
+  qEl.placeholder =
+    mode === "players" ? "Search a player by name…" :
+    mode === "rankings" ? "Filter this ranking…" :
+    mode === "archive" ? "Search tournament…" : "Search player or tournament…";
+  if (mode === "archive" && !state.archive) loadArchive();
+  else if (mode === "rankings" && !state.rankings) loadRankings();
   else render();
+}
+
+document.getElementById("modes").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (b && b.dataset.mode !== state.mode) activateMode(b.dataset.mode);
 });
 
 document.getElementById("year").addEventListener("change", (e) => {
@@ -500,10 +558,17 @@ document.getElementById("q").addEventListener("input", (e) => {
 });
 
 app.addEventListener("click", (e) => {
-  // players: result click / compare / back
+  // rankings: federation / category selector
+  const rf = e.target.closest("[data-rfed]");
+  if (rf) { state.rankFed = rf.dataset.rfed; render(); return; }
+  const rc = e.target.closest("[data-rcat]");
+  if (rc) { state.rankCat = rc.dataset.rcat; render(); return; }
+
+  // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");
   if (pr) {
     const id = pr.dataset.player;
+    if (state.mode === "rankings") { activateMode("players"); openPlayer(id); return; }
     if (state.comparing && state.player && state.player.player) openH2H(state.player.player.id, id);
     else openPlayer(id);
     return;

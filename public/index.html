@@ -65,9 +65,9 @@
     .theme-btn { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; }
 
     /* ---- controls ---- */
-    .modes { display: flex; gap: 6px; padding-bottom: 9px; }
-    .modes button { flex: 1; background: var(--card); border: 1px solid var(--line); color: var(--muted);
-      padding: 9px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; }
+    .modes { display: flex; gap: 6px; padding-bottom: 9px; flex-wrap: wrap; }
+    .modes button { flex: 1 1 auto; min-width: 84px; background: var(--card); border: 1px solid var(--line); color: var(--muted);
+      padding: 9px 6px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; white-space: nowrap; }
     .modes button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .year { background: var(--card); border: 1px solid var(--line); color: var(--text);
       border-radius: 8px; padding: 7px 10px; font-size: 13px; cursor: pointer; }
@@ -182,6 +182,22 @@
     .h2h-tally .n { font-size: 30px; font-variant-numeric: tabular-nums; font-weight: 800; }
     .h2h-tally .who { font-size: 12px; color: var(--muted); text-align: center; max-width: 120px; }
     .h2h-tally .vs { color: var(--faint); font-weight: 700; }
+    /* ---- rankings ---- */
+    .rank-sel { display: flex; align-items: center; gap: 6px; padding: 4px 0 12px; flex-wrap: wrap; }
+    .rchip { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 8px;
+      padding: 6px 12px; cursor: pointer; font-size: 13px; font-weight: 700; }
+    .rchip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .rsep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+    .rankrow { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+      padding: 9px 13px; border-bottom: 1px solid var(--line); }
+    .rankrow.has-profile { cursor: pointer; }
+    .rankrow.has-profile:hover { background: var(--card-hi); }
+    .rankrow .rnum { text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--muted); }
+    .rankrow .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rankrow .rclub { display: none; }
+    .rankrow .rpts { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+    @media (min-width: 560px) { .rankrow { grid-template-columns: 34px 1fr 1fr auto; }
+      .rankrow .rclub { display: block; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
     .empty { text-align: center; color: var(--muted); padding: 70px 0; }
     .empty .big { font-size: 34px; margin-bottom: 8px; }
     .skel { height: 60px; border-radius: 12px; background: linear-gradient(90deg, var(--card), var(--card-hi), var(--card)); background-size: 200% 100%; animation: sk 1.2s infinite; margin-bottom: 8px; }
@@ -207,6 +223,7 @@
         <button data-mode="live" class="active">🔴 Live</button>
         <button data-mode="archive">📅 Results</button>
         <button data-mode="players">👤 Players</button>
+        <button data-mode="rankings">🏆 Rankings</button>
       </div>
       <div class="tabs" id="tabs">
         <button class="tab active" data-status="all">All</button>

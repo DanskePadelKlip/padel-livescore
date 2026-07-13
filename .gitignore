@@ -1,5 +1,6 @@
 node_modules/
 public/data/matches.json
+public/data/rankings.json
 logs/
 *.log
 .DS_Store
