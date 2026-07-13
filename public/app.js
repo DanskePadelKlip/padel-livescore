@@ -446,12 +446,14 @@ function apiMatchRow(m) {
 
 async function loadRankings() {
   app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
-  try {
-    state.rankings = await (await fetch("data/rankings.json?_=" + Date.now())).json();
-  } catch {
+  const grab = (u) => fetch(u + "?_=" + Date.now()).then((r) => (r.ok ? r.json() : { lists: [] })).catch(() => ({ lists: [] }));
+  const [fip, nat] = await Promise.all([grab("data/rankings-fip.json"), grab("data/rankings.json")]);
+  const lists = [...(fip.lists || []), ...(nat.lists || [])]; // FIP world first, then national
+  if (!lists.length) {
     app.innerHTML = `<div class="empty"><div class="big">🏆</div>Rankings not available.</div>`;
     return;
   }
+  state.rankings = { lists };
   render();
 }
 
