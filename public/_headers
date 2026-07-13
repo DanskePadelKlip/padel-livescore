@@ -1,0 +1,6 @@
+# Always revalidate the app shell so code/UI updates reach returning visitors
+# immediately (cheap 304s via etag). Data files are cache-busted in fetch().
+/index.html
+  Cache-Control: no-cache
+/app.js
+  Cache-Control: no-cache
