@@ -48,7 +48,7 @@ export async function fetchMatches({ date = todayISO(), maxTournaments = 15, max
           continue;
         }
         let n = 0;
-        for (const d of days) for (const m of d.matches) { out.push(normalize(m, ev, msId)); n++; }
+        for (const d of days) { estimateDay(d); for (const m of d.matches) { out.push(normalize(m, ev, msId)); n++; } }
         log(`    ✓ ${ev.title} — day(s) ${days.map((d) => d.day).join(",")}: ${n} matches`);
       } catch (err) {
         log(`    ! ${ev.slug} failed — ${err.message}`);
@@ -96,8 +96,8 @@ async function recentDays(page, msId, maxDay, windowN = 2) {
     const res = await fetch(`${WIDGET}/oopbyday/${msId}/${day}?t=tol`, { headers: FIP_HEADERS });
     if (!res.ok) break;
     await page.setContent(await res.text(), { waitUntil: "domcontentloaded" });
-    const matches = await page.evaluate(parseWidget);
-    if (matches.length) days.push({ day, matches });
+    const parsed = await page.evaluate(parseWidget);
+    if (parsed.matches.length) days.push({ day, now: parsed.now, dayDate: parsed.dayDate, matches: parsed.matches });
     else if (days.length) break; // first empty day after data -> stop
   }
   return days.slice(-windowN);
@@ -105,17 +105,29 @@ async function recentDays(page, msId, maxDay, windowN = 2) {
 
 // ---- widget parsing (runs in the page) -------------------------------------
 
+// The OOP widget groups matches by court (`.oop-court` header + `.oop-court-start`
+// session time), each match table carrying its order-of-play phrase (`.court-name`:
+// "Followed by" / "Not before 3:00 PM"), round, per-set cells, and a bottom
+// `.live-status-summary` with duration + "Completed" for played matches. The page
+// also exposes the venue-local clock and the active day's date — everything the
+// per-court time estimator needs.
 function parseWidget() {
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
+  const now = (clean(document.body.textContent).match(/\d{1,2}\/\d{1,2}\/\d{4},?\s*\d{1,2}:\d{2}:\d{2}\s*(?:AM|PM)?/i) || [])[0] || null;
+  const dayDate = clean(document.querySelector(".play-day-button.active")?.textContent) || null;
   const out = [];
-  for (const table of document.querySelectorAll("table")) {
-    const teamRows = [...table.querySelectorAll("tr")].filter((tr) => tr.querySelector("td.team"));
+  let court = null, courtStart = null;
+  for (const el of document.querySelectorAll(".oop-court, .oop-court-start, table")) {
+    if (el.classList.contains("oop-court")) { court = clean(el.textContent); continue; }
+    if (el.classList.contains("oop-court-start")) { courtStart = clean(el.textContent); continue; }
+    const teamRows = [...el.querySelectorAll("tr")].filter((tr) => tr.querySelector("td.team"));
     if (teamRows.length < 2) continue;
 
-    const header = table.querySelector('[class*="scorebox-header-"]');
-    const statusCls = header ? ([...header.classList].find((c) => c.startsWith("scorebox-header-")) || "") : "";
-    const court = clean(table.querySelector(".court-name")?.textContent);
-    const round = clean(table.querySelector(".round-name")?.textContent);
+    const schedule = clean(el.querySelector(".court-name")?.textContent);
+    const round = clean(el.querySelector(".round-name")?.textContent);
+    const summary = clean(el.querySelector(".live-status-summary")?.textContent);
+    const durText = (summary.match(/(\d{1,2}:\d{2})/) || [])[1] || null;
+    const summaryStatus = /completed/i.test(summary) ? "completed" : durText ? "live" : "";
 
     const teams = teamRows.slice(0, 2).map((tr) => ({
       players: [...tr.querySelectorAll(".double .line-thin")].map((e) => clean(e.textContent)).filter(Boolean),
@@ -126,9 +138,74 @@ function parseWidget() {
       setCells: [...tr.querySelectorAll("td.set")].map((td) => clean(td.textContent)),
     }));
 
-    out.push({ status: statusCls.replace("scorebox-header-", ""), court, round, teams });
+    out.push({ court, courtStart, schedule, round, summaryStatus, durText, teams });
   }
-  return out;
+  return { now, dayDate, matches: out };
+}
+
+// ---- time estimation (Node) ----------------------------------------------
+// Estimate a venue-local start clock for each upcoming match by chaining per
+// court: completed matches consume their ACTUAL duration, a live match is
+// anchored to "now" + its remaining time, upcoming ones chain by an average,
+// floored by any explicit "Not before" phrase. The now-anchor only applies on
+// the day that is actually today (future days are the pure scheduled chain).
+const AVG_MIN = 85, CHANGEOVER = 10, MIN_REMAIN = 12;
+const MON3 = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+const parse12 = (s) => {
+  const m = (s || "").match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!m) return null;
+  let h = +m[1]; const ap = (m[3] || "").toUpperCase();
+  if (ap === "PM" && h < 12) h += 12;
+  if (ap === "AM" && h === 12) h = 0;
+  return h * 60 + +m[2];
+};
+const durToMin = (s) => { const m = (s || "").match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : null; };
+const nowToMin = (s) => {
+  const m = (s || "").match(/(\d{1,2}):(\d{2}):\d{2}\s*(AM|PM)?/i);
+  if (!m) return null;
+  let h = +m[1]; const ap = (m[3] || "").toUpperCase();
+  if (ap === "PM" && h < 12) h += 12;
+  if (ap === "AM" && h === 12) h = 0;
+  return h * 60 + +m[2];
+};
+const fmtMin = (min) => String(Math.floor((min % 1440) / 60)).padStart(2, "0") + ":" + String(min % 60).padStart(2, "0");
+function statusOf(m) {
+  if (m.summaryStatus === "completed" || m.teams[0]?.won || m.teams[1]?.won) return STATUS.FINAL;
+  if (m.summaryStatus === "live") return STATUS.LIVE;
+  const cells = [...(m.teams[0]?.setCells || []), ...(m.teams[1]?.setCells || [])];
+  return cells.some((c) => c && c !== "-" && c !== "") ? STATUS.LIVE : STATUS.UPCOMING;
+}
+function isToday(dayDate, now) {
+  const dm = (dayDate || "").match(/([A-Z]{3})\s+(\d{1,2})/i);
+  const nd = (now || "").match(/(\d{1,2})\/(\d{1,2})\/\d{4}/); // M/D/Y (widget is US-format)
+  return !!(dm && nd && MON3[dm[1].toUpperCase()] === +nd[1] && +dm[2] === +nd[2]);
+}
+function estimateDay(day) {
+  const N = isToday(day.dayDate, day.now) ? nowToMin(day.now) : null;
+  const byCourt = new Map();
+  for (const m of day.matches) {
+    const c = m.court || "?";
+    if (!byCourt.has(c)) byCourt.set(c, []);
+    byCourt.get(c).push(m);
+  }
+  for (const ms of byCourt.values()) {
+    let running = parse12(ms[0].courtStart) ?? parse12(ms[0].schedule) ?? N ?? 540;
+    for (const m of ms) {
+      const st = statusOf(m);
+      if (st === STATUS.FINAL) {
+        running += (durToMin(m.durText) || AVG_MIN) + CHANGEOVER;
+      } else if (st === STATUS.LIVE) {
+        running = (N != null ? N : running) + Math.max(MIN_REMAIN, AVG_MIN - (durToMin(m.durText) || AVG_MIN / 2)) + CHANGEOVER;
+      } else {
+        let est = running;
+        if (N != null) est = Math.max(est, N);
+        const t = parse12(m.schedule);
+        if (t != null && /not before|starting at/i.test(m.schedule)) est = Math.max(est, t);
+        m.estStart = fmtMin(est);
+        running = est + AVG_MIN + CHANGEOVER;
+      }
+    }
+  }
 }
 
 // ---- normalization ---------------------------------------------------------
@@ -142,11 +219,6 @@ function normalize(m, ev, msId) {
     const x = a.setCells[i], y = b.setCells[i];
     if ((x && x !== "-") || (y && y !== "-")) sets.push([x === "-" ? "" : x || "", y === "-" ? "" : y || ""]);
   }
-  const status = mapStatus(m.status, sets, a.won || b.won);
-  // for not-yet-played matches the widget puts an order-of-play phrase where the
-  // court goes ("Starting at 9:00 AM" / "Not before 3:00 PM" / "Followed by").
-  // Keep it as `schedule` (venue-local) — no reliable full datetime is available.
-  const isSchedule = /starting at|followed by|not before|after rest|to follow/i.test(m.court || "");
   return {
     id: gid("fip", `${msId}:${sig(a, b, m.round)}`),
     source: "fip",
@@ -154,24 +226,15 @@ function normalize(m, ev, msId) {
     tournament: { id: msId, name: ev.title, url: ev.link },
     className: null,
     round: m.round || null,
-    court: isSchedule ? null : m.court || null,
-    schedule: isSchedule ? m.court : null,
-    status,
-    startTime: null, // no full datetime in the widget; `schedule` carries the OOP phrase
+    court: m.court || null,           // real court (CENTER COURT / COURT 2 …)
+    schedule: m.schedule || null,     // order-of-play phrase ("Not before 3:00 PM")
+    estStart: statusOf(m) === STATUS.UPCOMING ? m.estStart || null : null, // venue-local "HH:MM"
+    status: statusOf(m),
+    startTime: null, // no full datetime in the widget; schedule/estStart carry timing
     teams: [team(a), team(b)],
     score: { sets, winner: a.won ? 0 : b.won ? 1 : null },
-    raw: { status: m.status },
+    raw: { summaryStatus: m.summaryStatus, dur: m.durText },
   };
-}
-
-// The widget's header class ("...-completed") is an unreliable per-match signal
-// (scheduled matches also carry it), so derive status from the data: a decided
-// winner = final; partial scores with no winner = live; nothing yet = upcoming.
-function mapStatus(widgetStatus, sets, decided) {
-  if (decided) return STATUS.FINAL;
-  if (/live|progress/i.test(widgetStatus)) return STATUS.LIVE;
-  const hasScore = sets.some((s) => (s[0] && s[0] !== "") || (s[1] && s[1] !== ""));
-  return hasScore ? STATUS.LIVE : STATUS.UPCOMING;
 }
 
 const team = (t) => ({

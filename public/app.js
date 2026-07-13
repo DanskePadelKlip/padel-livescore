@@ -312,10 +312,13 @@ function groupHtml(g, changed) {
     </div>`;
 }
 
-// Compact label from a FIP order-of-play phrase: "Starting at 10:00 AM" -> "10:00",
-// "Not before 3:00 PM" -> "~15:00", "Followed by" -> "next". Venue-local time.
-function schedLabel(sched) {
-  if (!sched) return null;
+// Compact time label for an upcoming match. Prefers an explicit RankedIn time,
+// then the FIP order-of-play phrase ("Starting at 10:00 AM" -> "10:00", "Not
+// before 3:00 PM" -> "~15:00"), then our per-court estimate ("≈13:10"), else
+// "next" (followed by). All venue-local.
+function schedLabel(m) {
+  if (m.startTime) return m.startTime.slice(11, 16);
+  const sched = m.schedule || "";
   const t = sched.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
   if (t) {
     let h = +t[1]; const ap = (t[3] || "").toUpperCase();
@@ -324,6 +327,7 @@ function schedLabel(sched) {
     const hhmm = String(h).padStart(2, "0") + ":" + t[2];
     return /not before/i.test(sched) ? "~" + hhmm : hhmm;
   }
+  if (m.estStart) return "≈" + m.estStart;
   return /follow/i.test(sched) ? "next" : null;
 }
 
@@ -336,7 +340,7 @@ function matchRow(m, changed, showTournament) {
       ? `<span class="lampe"></span><span class="badge live">Live</span>`
       : m.status === "final"
       ? `<span class="badge final">Final</span>`
-      : `<span class="badge upcoming">${time || schedLabel(m.schedule) || "Soon"}</span>`;
+      : `<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
     <div class="match ${open ? "open" : ""}" data-match="${esc(m.id)}">
@@ -373,7 +377,8 @@ function detail(m) {
     m.className && `<span>Class <b>${esc(m.className)}</b></span>`,
     m.round && `<span>Round <b>${esc(m.round)}</b></span>`,
     m.court && `<span>Court <b>${esc(m.court)}</b></span>`,
-    m.schedule && `<span>Scheduled <b>${esc(m.schedule)}</b></span>`,
+    m.schedule && `<span>Order of play <b>${esc(m.schedule)}</b></span>`,
+    m.estStart && !/\d/.test(m.schedule || "") && `<span>Est. start <b>≈${esc(m.estStart)}</b></span>`,
     m.startTime && `<span>Start <b>${esc(m.startTime.replace("T", " ").slice(0, 16))}</b></span>`,
   ].filter(Boolean).join("");
   return `
