@@ -738,6 +738,79 @@ function openTournament(kind, key, name, fed) {
   render();
 }
 
+// ---- knockout bracket ------------------------------------------------------
+const isKO = (r) => { const rk = roundRank(r); return rk >= 50 && rk <= 100 && rk !== 85; };
+
+// Reconstruct the single-elim tree from flat matches: a match in round r+1 is fed
+// by the round-r matches its two teams came from (team names are identical across
+// rounds within a tournament). Then lay it out with a DFS from the final.
+function buildBracket(matches) {
+  const ko = matches.filter((m) => isKO(m.round));
+  const byRound = new Map();
+  for (const m of ko) { if (!byRound.has(m.round)) byRound.set(m.round, []); byRound.get(m.round).push(m); }
+  const rounds = [...byRound.entries()].sort((a, b) => roundRank(a[0]) - roundRank(b[0])); // earliest → final
+  if (rounds.length < 2) return null;
+
+  const nodeOf = new Map(), nodes = [];
+  rounds.forEach(([rn, ms], ri) => ms.forEach((m) => { const n = { m, round: ri, roundName: rn, children: [], cy: 0 }; nodeOf.set(m, n); nodes.push(n); }));
+  const tnames = (m) => m.teams.map((t) => (t.name || "").trim()).filter(Boolean);
+  for (let ri = 1; ri < rounds.length; ri++) {
+    const prevByTeam = new Map();
+    for (const pm of rounds[ri - 1][1]) for (const tn of tnames(pm)) prevByTeam.set(tn, pm);
+    for (const m of rounds[ri][1]) {
+      const node = nodeOf.get(m);
+      for (const tn of tnames(m)) { const f = prevByTeam.get(tn); if (f && f !== m) node.children.push(nodeOf.get(f)); }
+      node.children = [...new Set(node.children)];
+    }
+  }
+
+  const SLOT = 58;
+  let slot = 0; const seen = new Set();
+  const place = (n) => {
+    if (seen.has(n)) return n.cy; seen.add(n);
+    if (!n.children.length) { n.cy = slot * SLOT + SLOT / 2; slot++; return n.cy; }
+    const ys = n.children.map(place);
+    n.cy = (Math.min(...ys) + Math.max(...ys)) / 2; return n.cy;
+  };
+  for (const fn of rounds[rounds.length - 1][1].map((m) => nodeOf.get(m))) place(fn);
+  for (const n of nodes) if (!seen.has(n)) { seen.add(n); n.cy = slot * SLOT + SLOT / 2; slot++; }
+  return { rounds: rounds.map((r) => r[0]), nodes, slots: slot, SLOT };
+}
+
+function renderBracket(b) {
+  const COL_W = 202, BOX_W = 178, BOX_H = 46, HEAD = 26, PAD = 8;
+  const W = b.rounds.length * COL_W + PAD;
+  const H = HEAD + b.slots * b.SLOT + PAD;
+  const xOf = (r) => r * COL_W + PAD / 2;
+  const trunc = (s, n = 26) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+  const roundShort = (r) => r.replace(/^(Men|Women)\s+/i, "").replace(/round of /i, "R").replace(/quarterfinals?/i, "QF").replace(/semifinals?/i, "SF").trim();
+
+  let s = "";
+  b.rounds.forEach((rn, i) => { s += `<text class="bk-round" x="${xOf(i) + BOX_W / 2}" y="15" text-anchor="middle">${esc(roundShort(rn))}</text>`; });
+  for (const n of b.nodes) {
+    const nx = xOf(n.round), ncy = HEAD + n.cy;
+    for (const c of n.children) {
+      const cx2 = xOf(c.round) + BOX_W, ccy = HEAD + c.cy, midX = (cx2 + nx) / 2;
+      s += `<path class="bk-line" d="M${cx2} ${ccy} H${midX.toFixed(1)} V${ncy.toFixed(1)} H${nx}"/>`;
+    }
+  }
+  for (const n of b.nodes) {
+    const x = xOf(n.round), y = HEAD + n.cy - BOX_H / 2;
+    const [a, bb] = n.m.teams;
+    const w = n.m.score?.winner;
+    const sets = n.m.score?.sets || [];
+    const sc = (side) => (sets.length ? sets.map((st) => st[side]).join(" ") : "");
+    s += `<g class="bk-box">
+      <rect x="${x}" y="${y}" width="${BOX_W}" height="${BOX_H}" rx="7"/>
+      <text class="bk-t ${w === 0 ? "win" : ""}" x="${x + 9}" y="${y + 18}">${esc(trunc(a.name))}</text>
+      <text class="bk-s ${w === 0 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 18}" text-anchor="end">${esc(sc(0))}</text>
+      <text class="bk-t ${w === 1 ? "win" : ""}" x="${x + 9}" y="${y + 37}">${esc(trunc(bb.name))}</text>
+      <text class="bk-s ${w === 1 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 37}" text-anchor="end">${esc(sc(1))}</text>
+    </g>`;
+  }
+  return `<div class="bk-wrap"><svg class="bk" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${s}</svg></div>`;
+}
+
 function renderTournament() {
   const tv = state.tournament;
   const back = `<button class="pback" data-tback="1">← Back</button>`;
@@ -770,12 +843,20 @@ function renderTournament() {
     if (!rmap.has(round)) rmap.set(round, []);
     rmap.get(round).push(m);
   }
+  const roundList = (entries) => entries
+    .sort((a, b) => roundRank(b[0]) - roundRank(a[0]))
+    .map(([round, ms]) => (round ? `<div class="round-label">${esc(round)}</div>` : "") +
+      `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`)
+    .join("");
+
   for (const [cls, rmap] of cats) {
     if (cls) html += `<div class="section-label region">${esc(cls)}</div>`;
-    const rounds = [...rmap.entries()].sort((a, b) => roundRank(b[0]) - roundRank(a[0]));
-    for (const [round, ms] of rounds) {
-      if (round) html += `<div class="round-label">${esc(round)}</div>`;
-      html += `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
+    const bracket = buildBracket([...rmap.values()].flat());
+    if (bracket) {
+      html += renderBracket(bracket);
+      html += roundList([...rmap.entries()].filter(([r]) => !isKO(r))); // groups/qualifying as list
+    } else {
+      html += roundList([...rmap.entries()]);
     }
   }
   if (players.size) html += `<div class="section-label">Players · ${players.size}</div><div class="tplayers">${[...players].sort().map((p) => `<span class="pchip">${esc(p)}</span>`).join("")}</div>`;
