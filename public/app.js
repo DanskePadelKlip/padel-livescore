@@ -86,6 +86,7 @@ const state = {
   rankings: null,            // loaded rankings.json
   rankFed: null,
   rankCat: null,
+  rankCountryQuery: "",
   // ---- favorites ----
   favs: loadFavs(),
   // ---- tournament hub ----
@@ -679,8 +680,12 @@ function renderRankings() {
   const q = state.query.trim().toLowerCase();
   const rows = (list?.rows || []).filter((r) => !q || (r.name || "").toLowerCase().includes(q) || (r.club || "").toLowerCase().includes(q));
 
-  let html = `<div class="rank-sel">
-    ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}">${FLAGS[f] || ""} ${f}</button>`).join("")}
+  let html = `<div class="rank-country-wrap">
+    <input id="rankcountry" class="rank-country" type="search" placeholder="🔎 Find country…" autocomplete="off" value="${esc(state.rankCountryQuery || "")}" />
+    <span class="rank-nomatch" hidden>No country matches</span>
+  </div>
+  <div class="rank-sel" id="ranksel">
+    ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}" title="${esc(REGION_LABEL[f] || f)}">${FLAGS[f] || ""} ${f}</button>`).join("")}
     <span class="rsep"></span>
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
   </div>`;
@@ -690,6 +695,23 @@ function renderRankings() {
   html += `<div class="ranktable${movement ? " hasmove" : ""}">` + rows.slice(0, 250).map((r) => rankRow(r, movement)).join("") + `</div>`;
   if (!rows.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
+  applyCountryFilter();
+}
+
+// Filter the ranking's federation chips by country name/code. Runs as a direct
+// DOM update (not a full render) so the input keeps focus while typing.
+function applyCountryFilter() {
+  const q = (state.rankCountryQuery || "").trim().toLowerCase();
+  let visible = 0;
+  document.querySelectorAll("#ranksel .rchip[data-rfed]").forEach((el) => {
+    const f = el.dataset.rfed;
+    const hay = (f + " " + (REGION_LABEL[f] || "") + (f === "FIP" ? " world international" : "")).toLowerCase();
+    const hide = !!q && !hay.includes(q);
+    el.classList.toggle("chip-hidden", hide);
+    if (!hide) visible++;
+  });
+  const nm = document.querySelector(".rank-nomatch");
+  if (nm) nm.hidden = visible > 0;
 }
 
 function moveCell(r, movement) {
@@ -746,6 +768,7 @@ function activateMode(mode) {
   state.query = "";
   state.player = null; state.h2h = null; state.playerResults = null; state.comparing = false;
   state.tournament = null;
+  state.rankCountryQuery = "";
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
   document.getElementById("tabs").style.display = mode === "live" ? "" : "none";
   document.getElementById("year").hidden = mode !== "archive";
@@ -771,6 +794,19 @@ document.getElementById("year").addEventListener("change", (e) => {
   state.archiveYear = e.target.value;
   state.archiveCap = 40;
   render();
+});
+
+// rankings country filter — narrows the federation chips without re-rendering
+// #app (so the input keeps focus). Enter jumps to a lone match.
+app.addEventListener("input", (e) => {
+  if (e.target.id !== "rankcountry") return;
+  state.rankCountryQuery = e.target.value;
+  applyCountryFilter();
+});
+app.addEventListener("keydown", (e) => {
+  if (e.target.id !== "rankcountry" || e.key !== "Enter") return;
+  const vis = [...document.querySelectorAll("#ranksel .rchip[data-rfed]:not(.chip-hidden)")];
+  if (vis.length === 1 && vis[0].dataset.rfed !== state.rankFed) { state.rankFed = vis[0].dataset.rfed; render(); }
 });
 
 let qTimer;
