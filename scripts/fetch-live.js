@@ -9,8 +9,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
-import { newlyLive, sendAlerts } from "../src/alerts.js";
-import { sendLivePush } from "../src/push-send.js";
+import { newlyLive, newlySoon, sendAlerts } from "../src/alerts.js";
+import { sendLivePush, sendStartingSoonPush } from "../src/push-send.js";
 import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -32,20 +32,28 @@ mkdirSync(outDir, { recursive: true });
 // Alerts: diff against the currently-published data (previous run) BEFORE we
 // overwrite it. The "newly live" set feeds BOTH the webhook feed and Web Push.
 if (process.env.ALERT_WEBHOOK_URL || process.env.VAPID_PRIVATE_KEY) {
-  let fresh = [];
+  let prev = null;
   try {
-    const prev = await (await fetch("https://padelticker.com/data/matches.json?_=" + Date.now())).json();
-    fresh = newlyLive(prev.matches || [], matches);
-    console.log(`\n🔔 ${fresh.length} match(es) newly live`);
+    prev = await (await fetch("https://padelticker.com/data/matches.json?_=" + Date.now())).json();
   } catch (e) {
-    console.log("\n🔔 alert diff skipped:", e.message);
+    console.log("\n🔔 prev-data fetch skipped:", e.message);
   }
+  const prevMatches = prev?.matches || [];
+  const nextAt = Date.now();
+
+  const fresh = newlyLive(prevMatches, matches);
+  console.log(`\n🔔 ${fresh.length} match(es) newly live`);
   if (process.env.ALERT_WEBHOOK_URL && fresh.length) {
     const n = await sendAlerts(fresh, process.env.ALERT_WEBHOOK_URL);
     console.log(`   webhook: ${n} sent`);
   }
   if (process.env.VAPID_PRIVATE_KEY) {
     await sendLivePush(fresh, { log: console.log });
+    // "starting soon" pre-alert: FIP matches est. to start within 20 min
+    const prevAt = Date.parse(prev?.generatedAt) || nextAt - 15 * 60_000;
+    const soon = newlySoon(prevMatches, prevAt, matches, nextAt, 20 * 60_000);
+    console.log(`   ${soon.length} match(es) newly starting-soon`);
+    await sendStartingSoonPush(soon, { log: console.log });
   }
 }
 

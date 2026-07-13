@@ -202,6 +202,9 @@ function estimateDay(day) {
         const t = parse12(m.schedule);
         if (t != null && /not before|starting at/i.test(m.schedule)) est = Math.max(est, t);
         m.estStart = fmtMin(est);
+        // absolute timestamp (only meaningful today, where venue-now anchors real
+        // time) — powers the "starting soon" pre-alert without any timezone data.
+        if (N != null) m.estStartAt = new Date(Date.now() + (est - N) * 60000).toISOString();
         running = est + AVG_MIN + CHANGEOVER;
       }
     }
@@ -229,6 +232,7 @@ function normalize(m, ev, msId) {
     court: m.court || null,           // real court (CENTER COURT / COURT 2 …)
     schedule: m.schedule || null,     // order-of-play phrase ("Not before 3:00 PM")
     estStart: statusOf(m) === STATUS.UPCOMING ? m.estStart || null : null, // venue-local "HH:MM"
+    estStartAt: statusOf(m) === STATUS.UPCOMING ? m.estStartAt || null : null, // absolute ISO (today only)
     status: statusOf(m),
     startTime: null, // no full datetime in the widget; schedule/estStart carry timing
     teams: [team(a), team(b)],

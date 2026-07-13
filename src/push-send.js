@@ -34,39 +34,53 @@ export function matchInvolves(m, follows) {
   });
 }
 
-function payloadFor(matched) {
-  const line = (m) => m.teams.map((t) => t.name).join(" vs ");
-  const title = matched.length === 1 ? `🔴 Live: ${line(matched[0])}` : `🔴 ${matched.length} of your follows are live`;
+const teamsLine = (m) => m.teams.map((t) => t.name).join(" vs ");
+
+function livePayload(matched) {
+  const title = matched.length === 1 ? `🔴 Live: ${teamsLine(matched[0])}` : `🔴 ${matched.length} of your follows are live`;
   const body = matched.length === 1
     ? [matched[0].tournament?.name, matched[0].round].filter(Boolean).join(" · ")
-    : matched.slice(0, 5).map(line).join("\n");
+    : matched.slice(0, 5).map(teamsLine).join("\n");
   return JSON.stringify({ title, body, url: "https://padelticker.com/" });
 }
 
-export async function sendLivePush(newlyLiveMatches, { log = () => {} } = {}) {
-  if (!process.env.VAPID_PRIVATE_KEY) return;
-  if (!newlyLiveMatches || !newlyLiveMatches.length) return;
+function soonPayload(matched) {
+  const when = (m) => (m.estStart ? "~" + m.estStart : "soon");
+  const title = matched.length === 1 ? `⏱ Starting soon: ${teamsLine(matched[0])}` : `⏱ ${matched.length} of your follows start soon`;
+  const body = matched.length === 1
+    ? [matched[0].tournament?.name, matched[0].court, when(matched[0])].filter(Boolean).join(" · ")
+    : matched.slice(0, 5).map((m) => `${teamsLine(m)} (${when(m)})`).join("\n");
+  return JSON.stringify({ title, body, url: "https://padelticker.com/" });
+}
+
+// Shared fan-out: for each subscription, send one push covering the matches that
+// involve its follows. Prunes dead endpoints (410/404).
+async function fanOut(matches, buildPayload, log, label) {
+  if (!process.env.VAPID_PRIVATE_KEY || !matches || !matches.length) return;
   const subs = readSubs();
-  if (subs === null) { log("   push: could not read subscriptions (D1)"); return; }
-  if (!subs.length) { log("   push: no subscriptions"); return; }
+  if (subs === null) { log(`   ${label}: could not read subscriptions (D1)`); return; }
+  if (!subs.length) return;
 
   webpush.setVapidDetails(SUBJECT, PUBLIC, process.env.VAPID_PRIVATE_KEY);
   let sent = 0, pruned = 0;
   for (const s of subs) {
     let follows;
     try { follows = JSON.parse(s.follows || "{}"); } catch { follows = {}; }
-    const matched = newlyLiveMatches.filter((m) => matchInvolves(m, follows));
+    const matched = matches.filter((m) => matchInvolves(m, follows));
     if (!matched.length) continue;
     try {
-      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payloadFor(matched));
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, buildPayload(matched));
       sent++;
     } catch (e) {
       if (e.statusCode === 404 || e.statusCode === 410) {
         try { d1(`DELETE FROM push_subscriptions WHERE endpoint='${s.endpoint.replace(/'/g, "''")}'`); pruned++; } catch {}
       } else {
-        log(`   push send failed (${e.statusCode || "?"})`);
+        log(`   ${label} send failed (${e.statusCode || "?"})`);
       }
     }
   }
-  log(`🔔 push: ${sent} subscriber(s) notified${pruned ? `, ${pruned} pruned` : ""}`);
+  log(`🔔 ${label}: ${sent} subscriber(s) notified${pruned ? `, ${pruned} pruned` : ""}`);
 }
+
+export const sendLivePush = (matches, { log = () => {} } = {}) => fanOut(matches, livePayload, log, "push(live)");
+export const sendStartingSoonPush = (matches, { log = () => {} } = {}) => fanOut(matches, soonPayload, log, "push(soon)");

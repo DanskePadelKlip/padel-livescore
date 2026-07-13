@@ -11,6 +11,20 @@ export function newlyLive(prev, next) {
   return (next || []).filter((m) => m.status === "live" && !wasLive.has(m.id));
 }
 
+// Upcoming matches (FIP, est-timed) that have newly entered the "starts within
+// leadMs" window since the previous snapshot — so a "starting soon" pre-alert
+// fires once, ~lead minutes before the estimated start. `prevAt`/`nextAt` are the
+// reference times (ms) the two snapshots were generated.
+const withinLead = (iso, at, leadMs) => { const d = new Date(iso).getTime() - at; return d > 0 && d <= leadMs; };
+export function newlySoon(prevMatches, prevAt, nextMatches, nextAt, leadMs) {
+  const wasSoon = new Set(
+    (prevMatches || []).filter((m) => m.status === "upcoming" && m.estStartAt && withinLead(m.estStartAt, prevAt, leadMs)).map((m) => m.id)
+  );
+  return (nextMatches || []).filter(
+    (m) => m.status === "upcoming" && m.estStartAt && withinLead(m.estStartAt, nextAt, leadMs) && !wasSoon.has(m.id)
+  );
+}
+
 function line(m) {
   const teams = m.teams.map((t) => t.name).join("  vs  ");
   const where = [m.tournament?.name, m.round, m.court].filter(Boolean).join(" · ");

@@ -27,6 +27,8 @@ export const gid = (source, nativeId) => `${source}:${nativeId}`;
  *                                    e.g. "Not before 3:00 PM" / "Followed by" (FIP)
  * @property {string|null} [estStart] estimated venue-local start "HH:MM" for upcoming
  *                                    matches with no explicit time (chained per court)
+ * @property {string|null} [estStartAt] absolute ISO timestamp for estStart (today only);
+ *                                      powers the "starting soon" pre-alert
  * @property {Team[]} teams           always length 2 (side A, side B)
  * @property {Score} score
  * @property {Object} [raw]           optional source fields kept for debugging/calibration
