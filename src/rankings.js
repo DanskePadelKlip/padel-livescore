@@ -5,10 +5,16 @@
 
 import { rankedinGet, sleep } from "./http.js";
 
-// federation -> RankedIn national ranking-list id
+// federation -> RankedIn national ranking-list id. All share one global category
+// taxonomy (see CATS) — verified 2026-07-13 via GetOrganisationRankingsAsync, so
+// adding a nation is just one row here (+ a flag in public/app.js FLAGS).
 const LISTS = [
-  { fed: "DK", rankingId: 2032 },
-  { fed: "SE", rankingId: 1917 },
+  { fed: "DK", rankingId: 2032 },  // Dansk Padel Forbund
+  { fed: "SE", rankingId: 1917 },  // Svenska Padelförbundet
+  { fed: "DE", rankingId: 2617 },  // Deutscher Padel Verband
+  { fed: "HR", rankingId: 1967 },  // Hrvatski Padel Savez
+  { fed: "EE", rankingId: 2458 },  // Eesti Padeli Liit
+  { fed: "GE", rankingId: 14332 }, // Georgian National Padel Federation
 ];
 // ageGroup/rankingType/gender for the two main categories (verified 2026-07-13)
 const CATS = [

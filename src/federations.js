@@ -9,9 +9,16 @@
 export const RANKEDIN_FEDERATIONS = [
   { code: "DK", name: "Dansk Padel Forbund",       org: 1420, ranking: 2032 },
   { code: "SE", name: "Svenska Padelförbundet",    org: 1340, ranking: 1917 },
-  { code: "DE", name: "Deutscher Padel Verband",   org: 1883, ranking: null },
+  { code: "DE", name: "Deutscher Padel Verband",   org: 1883, ranking: 2617 },
   { code: "CZ", name: "Czech Padel Federation",    org: 9531, ranking: null },
 ];
+// National RANKINGS also cover federations that don't host events centrally
+// (so they're not in RANKEDIN_FEDERATIONS above). Ranking-list ids, verified
+// 2026-07-13 via GetOrganisationRankingsAsync — wired into src/rankings.js:
+//   HR Hrvatski Padel Savez #1967, EE Eesti Padeli Liit #2458,
+//   GE Georgian National Padel Federation #14332.
+// Empty at the time (fed not maintaining a RankedIn ranking): CZ #14739,
+// AT #4107, CH #4354/#14636, LV #5762.
 
 // IMPORTANT (verified 2026-07-12): GetOrganisationEventsAsync only returns
 // events for federations that host tournaments CENTRALLY under their national
