@@ -1,0 +1,10 @@
+name = "padel-livescore"
+pages_build_output_dir = "public"
+compatibility_date = "2026-07-01"
+
+# Historic results DB (Phase 2: player profiles, search, head-to-head).
+# Bound as env.DB in Pages Functions under functions/.
+[[d1_databases]]
+binding = "DB"
+database_name = "padelticker-history"
+database_id = "e811bb33-b2ea-44a4-82a3-7a368770c293"

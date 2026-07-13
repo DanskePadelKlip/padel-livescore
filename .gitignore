@@ -6,3 +6,6 @@ logs/
 
 # local, machine-specific Claude Code permissions
 .claude/settings.local.json
+
+# D1 load artifacts (regenerable via padel-db/export_d1.py)
+/d1/
