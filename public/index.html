@@ -65,6 +65,12 @@
     .theme-btn { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; }
 
     /* ---- controls ---- */
+    .modes { display: flex; gap: 6px; padding-bottom: 9px; }
+    .modes button { flex: 1; background: var(--card); border: 1px solid var(--line); color: var(--muted);
+      padding: 9px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; }
+    .modes button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .year { background: var(--card); border: 1px solid var(--line); color: var(--text);
+      border-radius: 8px; padding: 7px 10px; font-size: 13px; cursor: pointer; }
     .tabs { display: flex; gap: 6px; padding-bottom: 8px; }
     .tab { flex: 0 0 auto; background: var(--card); color: var(--text); border: 1px solid var(--line);
       padding: 6px 13px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
@@ -113,6 +119,10 @@
     .morebtn { width: 100%; background: var(--card-hi); border: 0; border-top: 1px solid var(--line);
       color: var(--muted); padding: 9px; cursor: pointer; font-size: 12px; font-weight: 600; }
     .morebtn:hover { color: var(--text); background: var(--card); }
+    .arch-class { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .04em; padding: 9px 13px 3px; background: var(--bg-2); border-bottom: 1px solid var(--line); }
+    .match__main.archm { grid-template-columns: 1fr auto; cursor: default; }
+    .match__main.archm:hover { background: transparent; }
     .match { border-bottom: 1px solid var(--line); }
     .match:last-child { border-bottom: 0; }
     .match__main { display: grid; grid-template-columns: 46px 1fr auto; gap: 10px; align-items: center; padding: 9px 13px; cursor: pointer; }
@@ -171,6 +181,10 @@
         <div class="refresh" id="refresh"><span class="dot"></span><span id="refresh-txt">—</span></div>
         <button class="theme-btn" id="theme" title="Toggle theme">◐</button>
       </div>
+      <div class="modes" id="modes">
+        <button data-mode="live" class="active">🔴 Live</button>
+        <button data-mode="archive">📅 Results archive</button>
+      </div>
       <div class="tabs" id="tabs">
         <button class="tab active" data-status="all">All</button>
         <button class="tab" data-status="live">🔴 Live <span class="pill" id="livepill" hidden>0</span></button>
@@ -179,6 +193,7 @@
       </div>
       <div class="row2">
         <div class="chips" id="chips"></div>
+        <select id="year" class="year" hidden></select>
         <div class="search"><input id="q" type="search" placeholder="Search player or tournament…" autocomplete="off" /></div>
       </div>
     </div>

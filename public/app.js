@@ -26,6 +26,13 @@ const state = {
   openMatches: new Set(),    // match ids
   scoreSig: new Map(),       // id -> score signature (for flash)
   firstRender: true,
+  // ---- archive (historic results) ----
+  mode: "live",              // "live" | "archive"
+  archive: null,             // loaded index.json
+  archiveYear: "all",
+  archiveCap: 40,
+  openArchive: new Set(),    // expanded tournament keys
+  archiveData: new Map(),    // key -> loaded tournament {matches}
 };
 
 // ---------- data ----------
@@ -76,6 +83,7 @@ function filtered() {
 
 function render(changed = new Set()) {
   renderControls();
+  if (state.mode === "archive") return renderArchive();
 
   const list = filtered();
   const live = list.filter((m) => m.status === "live");
@@ -236,22 +244,94 @@ function renderControls() {
   pill.hidden = nLive === 0;
   pill.textContent = nLive;
 
-  // federation chips (built once, from data)
+  // federation chips reflect the active dataset (live matches OR archive)
+  const feds =
+    state.mode === "archive" && state.archive
+      ? [...new Set(state.archive.tournaments.map((t) => t.federation))].sort()
+      : [...new Set(state.matches.map((m) => m.federation))].sort();
   const chips = document.getElementById("chips");
-  if (!chips.dataset.built && state.matches.length) {
-    const feds = [...new Set(state.matches.map((m) => m.federation))].sort();
+  const key = state.mode + ":" + feds.join(",");
+  if (feds.length && chips.dataset.key !== key) {
+    chips.dataset.key = key;
     chips.innerHTML =
-      `<span class="chip active" data-fed="all">All</span>` +
-      feds.map((f) => `<span class="chip" data-fed="${f}">${FLAGS[f] || ""} ${f}</span>`).join("");
-    chips.dataset.built = "1";
+      `<span class="chip ${state.fed === "all" ? "active" : ""}" data-fed="all">All</span>` +
+      feds.map((f) => `<span class="chip ${state.fed === f ? "active" : ""}" data-fed="${f}">${FLAGS[f] || ""} ${f}</span>`).join("");
   }
 
   // refresh label
-  if (state.meta) {
-    const upd = new Date(state.meta.generatedAt);
-    document.getElementById("refresh-txt").textContent =
-      `${state.meta.date} · updated ${timeago(upd)}`;
+  if (state.mode === "archive") {
+    document.getElementById("refresh-txt").textContent = state.archive ? `${state.archive.count} tournaments` : "loading…";
+  } else if (state.meta) {
+    document.getElementById("refresh-txt").textContent = `${state.meta.date} · updated ${timeago(new Date(state.meta.generatedAt))}`;
   }
+}
+
+// ---------- archive (historic results) ----------
+
+async function loadArchive() {
+  app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
+  try {
+    state.archive = await (await fetch("data/archive/index.json")).json();
+  } catch {
+    app.innerHTML = `<div class="empty"><div class="big">📅</div>Results archive not available.</div>`;
+    return;
+  }
+  const years = [...new Set(state.archive.tournaments.map((t) => (t.start || "").slice(0, 4)).filter(Boolean))].sort().reverse();
+  document.getElementById("year").innerHTML =
+    `<option value="all">All years</option>` + years.map((y) => `<option value="${y}">${y}</option>`).join("");
+  render();
+}
+
+function renderArchive() {
+  const q = state.query.trim().toLowerCase();
+  const list = state.archive.tournaments.filter((t) => {
+    if (state.fed !== "all" && t.federation !== state.fed) return false;
+    if (state.archiveYear !== "all" && (t.start || "").slice(0, 4) !== state.archiveYear) return false;
+    if (q && !t.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const shown = list.slice(0, state.archiveCap);
+  let html =
+    `<div class="section-label region">📅 ${list.length} tournament${list.length === 1 ? "" : "s"}` +
+    `<span class="count">${state.archive.count} in archive · 2020–2026</span></div>`;
+  html += shown.map(archiveRow).join("");
+  if (list.length > shown.length)
+    html += `<button class="morebtn" data-archmore="1">Show ${list.length - shown.length} more ↓</button>`;
+  if (!list.length) html = `<div class="empty"><div class="big">📅</div>No tournaments match.</div>`;
+  app.innerHTML = html;
+}
+
+function archiveRow(t) {
+  const open = state.openArchive.has(t.key);
+  const loaded = state.archiveData.get(t.key);
+  return `
+    <div class="group ${open ? "open" : ""}" data-arch="${esc(t.key)}">
+      <div class="group__head" data-archtoggle="${esc(t.key)}">
+        <span class="flag">${FLAGS[t.federation] || ""} ${t.federation}</span>
+        <span class="group__title">${esc(t.name)}</span>
+        <span class="group__meta"><span class="count">${esc((t.start || "").slice(0, 10))} · ${t.n}</span><span class="chev">▶</span></span>
+      </div>
+      <div class="group__body">${open ? (loaded ? archiveMatches(loaded) : `<div class="detail" style="display:block">Loading…</div>`) : ""}</div>
+    </div>`;
+}
+
+function archiveMatches(t) {
+  const byClass = new Map();
+  for (const m of t.matches) {
+    const k = m.className || "—";
+    if (!byClass.has(k)) byClass.set(k, []);
+    byClass.get(k).push(m);
+  }
+  return [...byClass.entries()]
+    .map(([cls, ms]) => (cls && cls !== "—" ? `<div class="arch-class">${esc(cls)}</div>` : "") + ms.map(archiveMatchRow).join(""))
+    .join("");
+}
+
+function archiveMatchRow(m) {
+  return `<div class="match"><div class="match__main archm">
+    <div class="teams">${teamLine(m, 0, false)}${teamLine(m, 1, false)}</div>
+    <div class="side">${m.round ? `<span class="sub">${esc(m.round)}</span>` : ""}</div>
+  </div></div>`;
 }
 
 function timeago(d) {
@@ -279,13 +359,60 @@ document.getElementById("chips").addEventListener("click", (e) => {
   render();
 });
 
+// mode switch: Live <-> Results archive
+document.getElementById("modes").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b || b.dataset.mode === state.mode) return;
+  state.mode = b.dataset.mode;
+  state.fed = "all"; // federation sets differ between live and archive
+  document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x === b));
+  document.getElementById("tabs").style.display = state.mode === "live" ? "" : "none";
+  document.getElementById("year").hidden = state.mode !== "archive";
+  document.getElementById("q").value = "";
+  state.query = "";
+  document.getElementById("q").placeholder = state.mode === "archive" ? "Search tournament…" : "Search player or tournament…";
+  if (state.mode === "archive" && !state.archive) loadArchive();
+  else render();
+});
+
+document.getElementById("year").addEventListener("change", (e) => {
+  state.archiveYear = e.target.value;
+  state.archiveCap = 40;
+  render();
+});
+
 let qTimer;
 document.getElementById("q").addEventListener("input", (e) => {
   clearTimeout(qTimer);
-  qTimer = setTimeout(() => { state.query = e.target.value; render(); }, 180);
+  qTimer = setTimeout(() => { state.query = e.target.value; if (state.mode === "archive") state.archiveCap = 40; render(); }, 180);
 });
 
 app.addEventListener("click", (e) => {
+  // archive: expand a tournament (lazy-load its matches)
+  const arch = e.target.closest("[data-archtoggle]");
+  if (arch) {
+    const key = arch.dataset.archtoggle;
+    if (state.openArchive.has(key)) {
+      state.openArchive.delete(key);
+      render();
+    } else {
+      state.openArchive.add(key);
+      if (!state.archiveData.has(key)) {
+        render(); // shows "Loading…"
+        fetch(`data/archive/t/${key}.json`)
+          .then((r) => r.json())
+          .then((d) => { state.archiveData.set(key, d); render(); })
+          .catch(() => {});
+      } else render();
+    }
+    return;
+  }
+  if (e.target.closest("[data-archmore]")) {
+    state.archiveCap += 60;
+    render();
+    return;
+  }
+
   const tog = e.target.closest("[data-toggle]");
   if (tog) {
     state._touched = true;
