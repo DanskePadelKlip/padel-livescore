@@ -40,6 +40,8 @@ jobs:
         env:
           # optional: a Discord/Slack webhook to receive "now live" alerts
           ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+      - name: Cache-bust app.js (index.html is no-cache, .js gets a long browser TTL)
+        run: sed -i "s|app\.js?v=[A-Za-z0-9]*|app.js?v=${GITHUB_SHA::8}|" public/index.html
       - name: Deploy to Cloudflare Pages
         run: npx --yes wrangler@4 pages deploy --branch main --commit-dirty=true
         env:
