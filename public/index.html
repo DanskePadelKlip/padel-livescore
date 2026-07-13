@@ -262,6 +262,16 @@
     .tplayers { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 30px; }
     .pchip { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
 
+    /* ---- install prompt ---- */
+    .installbar { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; padding: 10px 14px;
+      background: var(--card); border: 1px solid var(--accent); border-radius: 12px; font-size: 13.5px; color: var(--text); }
+    .installbar > span { flex: 1 1 auto; }
+    .installbar b { font-weight: 700; }
+    .ib-btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .ib-btn:hover { filter: brightness(1.06); }
+    .ib-x { background: none; border: 0; color: var(--muted); font-size: 15px; cursor: pointer; padding: 4px 6px; line-height: 1; }
+    .ib-x:hover { color: var(--text); }
+
     /* ---- follow star + favorites ---- */
     .starbtn { background: none; border: 0; cursor: pointer; padding: 2px 4px; font-size: 16px; line-height: 1;
       color: var(--faint); opacity: .55; transition: opacity .12s, transform .1s; }
@@ -321,6 +331,7 @@
     </div>
   </header>
 
+  <div class="wrap"><div id="installbar" class="installbar" hidden></div></div>
   <main><div class="wrap" id="app"></div></main>
   <!-- app.js?v=<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though

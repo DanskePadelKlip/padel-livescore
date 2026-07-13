@@ -1158,6 +1158,42 @@ function pollLoop() {
   }, nextPollDelay());
 }
 
+// ---------- install prompt (PWA) ----------
+// Android/desktop: capture the native beforeinstallprompt and offer an Install
+// button. iOS Safari: show the manual "Add to Home Screen" hint (no such event).
+// Auto-hidden when already installed or recently dismissed.
+(function installPrompt() {
+  const bar = document.getElementById("installbar");
+  if (!bar) return;
+  const KEY = "pt-install-dismissed";
+  const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const dismissed = () => { try { return Date.now() - (+localStorage.getItem(KEY) || 0) < 30 * 864e5; } catch { return false; } };
+  let deferred = null;
+
+  const show = (kind) => {
+    if (standalone() || dismissed()) return;
+    bar.innerHTML = kind === "ios"
+      ? `<span>📲 Add <b>PadelTicker</b> to your Home Screen — tap the Share icon, then “Add to Home Screen”.</span><button class="ib-x" data-install="dismiss" aria-label="Dismiss">✕</button>`
+      : `<span>📲 Install <b>PadelTicker</b> for one-tap access${"Notification" in window ? " &amp; live alerts" : ""}.</span><button class="ib-btn" data-install="go">Install</button><button class="ib-x" data-install="dismiss" aria-label="Dismiss">✕</button>`;
+    bar.hidden = false;
+  };
+  const hide = () => { bar.hidden = true; };
+
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferred = e; show("android"); });
+  window.addEventListener("appinstalled", () => { deferred = null; hide(); });
+
+  bar.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-install]");
+    if (!b) return;
+    if (b.dataset.install === "dismiss") { try { localStorage.setItem(KEY, String(Date.now())); } catch {} hide(); return; }
+    if (b.dataset.install === "go" && deferred) { deferred.prompt(); try { await deferred.userChoice; } catch {} deferred = null; hide(); }
+  });
+
+  // iOS Safari has no beforeinstallprompt — show the manual hint.
+  const ua = navigator.userAgent;
+  if (/iphone|ipad|ipod/i.test(ua) && /safari/i.test(ua) && !/crios|fxios|edgios|chrome/i.test(ua) && !standalone()) show("ios");
+})();
+
 updateFavBadge();
 initPush();
 app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
