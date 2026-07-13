@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "Universal padel livescore hub — aggregates live/upcoming/final matches from every federation via a normalized adapter layer.",
+  "description": "PadelTicker — live padel scores from around the world, aggregating live/upcoming/final matches from every federation via a normalized adapter layer.",
   "engines": {
     "node": ">=18"
   },

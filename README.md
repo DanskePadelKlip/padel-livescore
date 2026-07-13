@@ -1,13 +1,12 @@
-# 🎾 Padel Livescore
+# 🎾 PadelTicker
 
-A universal padel **livescore** hub — live / upcoming / final matches from **every**
-federation, aggregated through one normalized adapter layer. Not a pro-tour-only
-site (that space is crowded); the wedge is national-federation + amateur coverage
-across countries, which nobody else does.
+**Live padel scores** from around the world — live / upcoming / final matches from
+**every** federation, aggregated through one normalized adapter layer. Not a
+pro-tour-only site (that space is crowded); the wedge is national-federation +
+amateur coverage across countries, which nobody else does.
 
-> **Status: Phase 0** — proves the pipeline end-to-end with the RankedIn adapter.
-> One adapter already covers Denmark + Sweden + Germany (and any other federation
-> on RankedIn — see `src/federations.js`).
+Live at **https://padel-livescore.pages.dev** (custom domain **padelticker.live** to come).
+Handles: `@padelticker` on Instagram / TikTok / X / YouTube.
 
 ## Architecture
 
