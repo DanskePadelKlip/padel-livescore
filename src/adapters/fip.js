@@ -143,8 +143,9 @@ function normalize(m, ev, msId) {
     if ((x && x !== "-") || (y && y !== "-")) sets.push([x === "-" ? "" : x || "", y === "-" ? "" : y || ""]);
   }
   const status = mapStatus(m.status, sets, a.won || b.won);
-  // for not-yet-played matches the widget puts a schedule phrase where the court
-  // goes ("Starting at 9:00 AM" / "Followed by") — that's not a court.
+  // for not-yet-played matches the widget puts an order-of-play phrase where the
+  // court goes ("Starting at 9:00 AM" / "Not before 3:00 PM" / "Followed by").
+  // Keep it as `schedule` (venue-local) — no reliable full datetime is available.
   const isSchedule = /starting at|followed by|not before|after rest|to follow/i.test(m.court || "");
   return {
     id: gid("fip", `${msId}:${sig(a, b, m.round)}`),
@@ -154,8 +155,9 @@ function normalize(m, ev, msId) {
     className: null,
     round: m.round || null,
     court: isSchedule ? null : m.court || null,
+    schedule: isSchedule ? m.court : null,
     status,
-    startTime: null, // widget gives "Starting at 10:00 AM" text (kept in court), not a full datetime
+    startTime: null, // no full datetime in the widget; `schedule` carries the OOP phrase
     teams: [team(a), team(b)],
     score: { sets, winner: a.won ? 0 : b.won ? 1 : null },
     raw: { status: m.status },
