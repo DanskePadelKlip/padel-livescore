@@ -188,15 +188,32 @@
       padding: 6px 12px; cursor: pointer; font-size: 13px; font-weight: 700; }
     .rchip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
     .rsep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+    .ranktable { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
     .rankrow { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
       padding: 9px 13px; border-bottom: 1px solid var(--line); }
+    .rankrow:last-child { border-bottom: 0; }
+    .ranktable.hasmove .rankrow { grid-template-columns: 30px 34px 1fr auto; }
     .rankrow.has-profile { cursor: pointer; }
     .rankrow.has-profile:hover { background: var(--card-hi); }
     .rankrow .rnum { text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--muted); }
+    /* medal accents for the podium */
+    .rankrow.medal .rnum { color: #1a1205; border-radius: 6px; width: 24px; height: 22px; line-height: 22px; margin: 0 auto; font-weight: 800; }
+    .rankrow.m1 .rnum { background: #e8b923; }
+    .rankrow.m2 .rnum { background: #b9c2cd; }
+    .rankrow.m3 .rnum { background: #cd7f43; color: #fff; }
+    .rankrow .rmove { display: none; text-align: center; }
+    .ranktable.hasmove .rmove { display: block; }
+    .mv { font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .mv.up { color: #2ea56b; }
+    .mv.down { color: #e5484a; }
+    .mv.new { color: var(--up); font-size: 9px; letter-spacing: .02em; }
+    .mv.zero { color: var(--faint); font-weight: 600; }
     .rankrow .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rankrow .rclub { display: none; }
     .rankrow .rpts { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
-    @media (min-width: 560px) { .rankrow { grid-template-columns: 34px 1fr 1fr auto; }
+    @media (min-width: 560px) {
+      .rankrow { grid-template-columns: 34px 1fr 1fr auto; }
+      .ranktable.hasmove .rankrow { grid-template-columns: 30px 34px 1fr 1fr auto; }
       .rankrow .rclub { display: block; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
     .empty { text-align: center; color: var(--muted); padding: 70px 0; }
     .empty .big { font-size: 34px; margin-bottom: 8px; }

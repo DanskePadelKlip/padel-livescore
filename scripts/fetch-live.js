@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { newlyLive, sendAlerts } from "../src/alerts.js";
+import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) || new Date().toISOString().slice(0, 10);
@@ -49,6 +50,24 @@ console.log(`\n✅ Wrote public/data/matches.json`);
 console.log(`\n🏆 Fetching national rankings`);
 const lists = await fetchRankings({ log: (m) => console.log(m) });
 if (lists.length) {
+  // week-over-week movement: diff against a weekly baseline persisted on Pages
+  // (RankedIn only serves the current week, so we build history going forward).
+  try {
+    const weekKey = isoWeekKey();
+    const grab = async (u) => {
+      try { const r = await fetch(u + "?_=" + Date.now()); return r.ok ? await r.json() : null; } catch { return null; }
+    };
+    const [base, prev] = await Promise.all([
+      grab("https://padelticker.com/data/rankings-base.json"),
+      grab("https://padelticker.com/data/rankings.json"),
+    ]);
+    const baseToWrite = applyMovement(lists, base, prev?.lists || [], weekKey);
+    writeFileSync(join(outDir, "rankings-base.json"), JSON.stringify(baseToWrite));
+    const moving = lists.filter((l) => l.movement).length;
+    console.log(`   movement baseline ${baseToWrite.weekOf} — ${moving}/${lists.length} lists tracked`);
+  } catch (e) {
+    console.log("   movement step skipped:", e.message);
+  }
   writeFileSync(join(outDir, "rankings.json"), JSON.stringify({ generatedAt: new Date().toISOString(), lists }, null, 2));
   console.log(`✅ Wrote public/data/rankings.json (${lists.length} lists)\n`);
 }

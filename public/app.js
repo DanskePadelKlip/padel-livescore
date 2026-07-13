@@ -473,17 +473,29 @@ function renderRankings() {
     <span class="rsep"></span>
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
   </div>`;
+  const movement = !!list?.movement;
   html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
-    `<span class="count">${(list?.total ?? rows.length).toLocaleString()} ranked · top ${list?.rows?.length || 0}</span></div>`;
-  html += rows.slice(0, 250).map(rankRow).join("");
+    `<span class="count">${(list?.total ?? rows.length).toLocaleString()} ranked · top ${list?.rows?.length || 0}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
+  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + rows.slice(0, 250).map((r) => rankRow(r, movement)).join("") + `</div>`;
   if (!rows.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
 }
 
-function rankRow(r) {
+function moveCell(r, movement) {
+  if (!movement) return "";                                   // list has no movement data
+  if (r.delta === undefined) return `<span class="mv zero">·</span>`; // untracked row
+  if (r.delta === null) return `<span class="mv new">NEW</span>`;
+  if (r.delta > 0) return `<span class="mv up">▲${r.delta}</span>`;
+  if (r.delta < 0) return `<span class="mv down">▼${-r.delta}</span>`;
+  return `<span class="mv zero">–</span>`;                     // unchanged
+}
+
+function rankRow(r, movement) {
   const prof = r.id ? " has-profile" : "";
-  return `<div class="rankrow${prof}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+  const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
+  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
     <span class="rnum">${r.rank}</span>
+    <span class="rmove">${moveCell(r, movement)}</span>
     <span class="nm">${esc(r.name)}</span>
     <span class="rclub">${esc(r.club || "")}</span>
     <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}</span>
