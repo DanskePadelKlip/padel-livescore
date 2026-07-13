@@ -88,6 +88,8 @@ const state = {
   rankCat: null,
   // ---- favorites ----
   favs: loadFavs(),
+  // ---- tournament hub ----
+  tournament: null,          // { kind:"live"|"arch", key, name, fed, matches }
 };
 
 // ---------- data ----------
@@ -138,6 +140,7 @@ function filtered() {
 
 function render(changed = new Set()) {
   renderControls();
+  if (state.tournament) return renderTournament();
   if (state.mode === "favorites") return renderFavorites();
   if (state.mode === "rankings") return renderRankings();
   if (state.mode === "players") return renderPlayers();
@@ -221,7 +224,7 @@ function groupHtml(g, changed) {
   return `
     <div class="group ${open ? "open" : ""}" data-group="${esc(g.key)}">
       <div class="group__head" data-toggle="${esc(g.key)}">
-        <span class="group__title">${esc(g.t.name)}</span>
+        <span class="group__title tlink" data-tourney="live" data-tkey="${esc(g.key)}" data-tname="${esc(g.t.name)}" data-tfed="${esc(g.fed)}">${esc(g.t.name)}</span>
         <span class="group__meta">
           ${nLive ? `<span class="badge live">${nLive} live</span>` : ""}
           <span class="count">${g.matches.length}</span>
@@ -367,7 +370,7 @@ function archiveRow(t) {
     <div class="group ${open ? "open" : ""}" data-arch="${esc(t.key)}">
       <div class="group__head" data-archtoggle="${esc(t.key)}">
         <span class="flag">${FLAGS[t.federation] || ""} ${t.federation}</span>
-        <span class="group__title">${esc(t.name)}</span>
+        <span class="group__title tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span>
         <span class="group__meta"><span class="count">${esc((t.start || "").slice(0, 10))} · ${t.n}</span><span class="chev">▶</span></span>
       </div>
       <div class="group__body">${open ? (loaded ? archiveMatches(loaded) : `<div class="detail" style="display:block">Loading…</div>`) : ""}</div>
@@ -555,6 +558,99 @@ function favTournRow(k, d) {
   </div>`;
 }
 
+// ---------- tournament hub (the "draw" page for one event) ----------
+
+// order rounds for a draw: business end (Final) first, group/qualifying last.
+function roundRank(r) {
+  const s = (r || "").toLowerCase();
+  // NB: check semi/quarter BEFORE final — "quarterfinals"/"semifinals" both
+  // contain the substring "final". Match a real final only as a whole word.
+  if (/plats|platz|place|3rd|5th/.test(s)) return 85;             // placement matches
+  if (/semi/.test(s)) return 90;
+  if (/quarter|kvart/.test(s)) return 80;
+  if (/\bfinals?\b|\bfinale\b/.test(s)) return 100;
+  if (/round of 16|1\/8|\br16\b|åttendel|ottendel/.test(s)) return 70;
+  if (/round of 32|1\/16|\br32\b/.test(s)) return 60;
+  if (/round of 64|1\/32|\br64\b/.test(s)) return 50;
+  if (/round 1|runde 1|round one/.test(s)) return 40;
+  if (/group|gruppe|grupp|round ?robin|monrad|pool/.test(s)) return 20;
+  if (/q\d|quali|kval/.test(s)) return 15;
+  return 30; // unknown / named regional groups
+}
+
+// when className is empty, a "Men/Women …" round prefix acts as the category
+function splitCategory(m) {
+  let cls = m.className || "";
+  let round = m.round || "";
+  if (!cls) {
+    const g = round.match(/^(Men|Women|Herren|Damen|Herrer?|Damer?|Mixed)\s+/i);
+    if (g) { cls = g[1]; round = round.slice(g[0].length).trim(); }
+  }
+  return { cls, round };
+}
+
+function openTournament(kind, key, name, fed) {
+  state.tournament = { kind, key, name, fed, matches: kind === "live" ? null : "loading" };
+  if (kind === "arch") {
+    if (state.archiveData.has(key)) {
+      state.tournament.matches = state.archiveData.get(key).matches;
+    } else {
+      render(); // shows skeleton
+      fetch(`data/archive/t/${key}.json`)
+        .then((r) => r.json())
+        .then((d) => { state.archiveData.set(key, d); if (state.tournament && state.tournament.key === key) state.tournament.matches = d.matches; render(); })
+        .catch(() => { if (state.tournament) state.tournament.matches = []; render(); });
+      return;
+    }
+  }
+  try { window.scrollTo(0, 0); } catch {}
+  render();
+}
+
+function renderTournament() {
+  const tv = state.tournament;
+  const back = `<button class="pback" data-tback="1">← Back</button>`;
+  let matches = tv.kind === "live" ? state.matches.filter((m) => m.source + ":" + m.tournament.id === tv.key) : tv.matches;
+  if (matches === "loading") { app.innerHTML = back + `<div class="skel"></div><div class="skel"></div>`; return; }
+  matches = matches || [];
+
+  const players = new Set();
+  for (const m of matches) for (const t of m.teams) for (const p of (t.name || "").split("/")) { const n = p.trim(); if (n) players.add(n); }
+  const dates = matches.map((m) => m.startTime || m.date).filter(Boolean).map((s) => s.slice(0, 10)).sort();
+  const dateStr = dates.length ? (dates[0] === dates[dates.length - 1] ? dates[0] : `${dates[0]} – ${dates[dates.length - 1]}`) : "";
+  const nLive = matches.filter((m) => m.status === "live").length;
+  const src = matches.find((m) => m.tournament?.url);
+
+  let html = back + `<div class="thead">
+    <div class="trow1"><span class="flag">${FLAGS[tv.fed] || ""} ${esc(tv.fed || "")}</span>${star("tournaments", tv.key, tv.name, tv.fed)}</div>
+    <h2>${esc(tv.name)}</h2>
+    <div class="tmeta">${matches.length} matches · ${players.size} players${dateStr ? " · " + esc(dateStr) : ""}${nLive ? ` · <span class="badge live">${nLive} live</span>` : ""}</div>
+    ${src ? `<a class="src" href="${esc(src.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[src.source] || src.source)}</a>` : ""}
+  </div>`;
+
+  if (!matches.length) { app.innerHTML = html + `<div class="empty">No matches for this event yet.</div>`; return; }
+
+  // group by category (class) → round, rounds ordered final-first
+  const cats = new Map();
+  for (const m of matches) {
+    const { cls, round } = splitCategory(m);
+    if (!cats.has(cls)) cats.set(cls, new Map());
+    const rmap = cats.get(cls);
+    if (!rmap.has(round)) rmap.set(round, []);
+    rmap.get(round).push(m);
+  }
+  for (const [cls, rmap] of cats) {
+    if (cls) html += `<div class="section-label region">${esc(cls)}</div>`;
+    const rounds = [...rmap.entries()].sort((a, b) => roundRank(b[0]) - roundRank(a[0]));
+    for (const [round, ms] of rounds) {
+      if (round) html += `<div class="round-label">${esc(round)}</div>`;
+      html += `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
+    }
+  }
+  if (players.size) html += `<div class="section-label">Players · ${players.size}</div><div class="tplayers">${[...players].sort().map((p) => `<span class="pchip">${esc(p)}</span>`).join("")}</div>`;
+  app.innerHTML = html;
+}
+
 // ---------- rankings (national, RankedIn) ----------
 
 async function loadRankings() {
@@ -647,6 +743,7 @@ function activateMode(mode) {
   state.fed = "all";
   state.query = "";
   state.player = null; state.h2h = null; state.playerResults = null; state.comparing = false;
+  state.tournament = null;
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
   document.getElementById("tabs").style.display = mode === "live" ? "" : "none";
   document.getElementById("year").hidden = mode !== "archive";
@@ -695,6 +792,15 @@ app.addEventListener("click", (e) => {
     render();
     return;
   }
+
+  // tournament hub: open a tournament's draw page (title click pre-empts toggle)
+  const tourney = e.target.closest("[data-tourney]");
+  if (tourney) {
+    e.stopPropagation();
+    openTournament(tourney.dataset.tourney, tourney.dataset.tkey, tourney.dataset.tname, tourney.dataset.tfed);
+    return;
+  }
+  if (e.target.closest("[data-tback]")) { state.tournament = null; render(); return; }
 
   // rankings: federation / category selector
   const rf = e.target.closest("[data-rfed]");
