@@ -341,7 +341,7 @@ function matchRow(m, changed, showTournament) {
       ? `<span class="lampe"></span><span class="badge live">Live</span>`
       : m.status === "final"
       ? `<span class="badge final">Final</span>`
-      : `${followed ? `<span class="foll">Followed by</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
+      : `${followed ? `<span class="foll">Next up</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
     <div class="match ${open ? "open" : ""}" data-match="${esc(m.id)}">
