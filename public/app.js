@@ -4,7 +4,10 @@
 // tournament groups (keeps the DOM light), tap-to-expand match detail,
 // auto-refresh polling with score-change flashing.
 
-const POLL_MS = 25_000;
+// Adaptive polling: near-real-time while a match is live, lazy when nothing's on.
+const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
+const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
+const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
 const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", FI: "🇫🇮", FR: "🇫🇷" };
 const SOURCE_LABEL = { rankedin: "RankedIn", tournamentsoftware: "tournamentsoftware.com", fip: "padelfip.com" };
 
@@ -295,8 +298,21 @@ themeBtn.addEventListener("click", () => {
 });
 
 // ---------- boot ----------
+// Self-scheduling poll loop whose interval adapts to what's on: fast while a
+// match is live, slow when nothing is happening.
+function nextPollDelay() {
+  if (state.matches.some((m) => m.status === "live")) return POLL_LIVE;
+  if (state.matches.some((m) => m.status === "upcoming")) return POLL_UPCOMING;
+  return POLL_IDLE;
+}
+function pollLoop() {
+  setTimeout(async () => {
+    await load(true);
+    pollLoop();
+  }, nextPollDelay());
+}
+
 app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
-load(false);
-setInterval(() => load(true), POLL_MS);
+load(false).then(pollLoop);
 // keep the "updated Xs ago" label ticking
 setInterval(renderControls, 15_000);
