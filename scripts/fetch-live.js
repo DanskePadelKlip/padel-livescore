@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
-import { newlyLive, newlySoon, sendAlerts } from "../src/alerts.js";
+import { newlyLive, newlySoon, sendAlerts, sendSoonAlerts } from "../src/alerts.js";
 import { sendLivePush, sendStartingSoonPush } from "../src/push-send.js";
 import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
 
@@ -40,19 +40,20 @@ if (process.env.ALERT_WEBHOOK_URL || process.env.VAPID_PRIVATE_KEY) {
   }
   const prevMatches = prev?.matches || [];
   const nextAt = Date.now();
+  const prevAt = Date.parse(prev?.generatedAt) || nextAt - 15 * 60_000;
 
   const fresh = newlyLive(prevMatches, matches);
-  console.log(`\n🔔 ${fresh.length} match(es) newly live`);
-  if (process.env.ALERT_WEBHOOK_URL && fresh.length) {
-    const n = await sendAlerts(fresh, process.env.ALERT_WEBHOOK_URL);
-    console.log(`   webhook: ${n} sent`);
+  // "starting soon": FIP matches est. to start within 20 min (newly entered)
+  const soon = newlySoon(prevMatches, prevAt, matches, nextAt, 20 * 60_000);
+  console.log(`\n🔔 ${fresh.length} newly live · ${soon.length} starting soon`);
+
+  const webhook = process.env.ALERT_WEBHOOK_URL;
+  if (webhook) {
+    if (fresh.length) console.log(`   webhook live: ${await sendAlerts(fresh, webhook)} sent`);
+    if (soon.length) console.log(`   webhook soon: ${await sendSoonAlerts(soon, webhook)} sent`);
   }
   if (process.env.VAPID_PRIVATE_KEY) {
     await sendLivePush(fresh, { log: console.log });
-    // "starting soon" pre-alert: FIP matches est. to start within 20 min
-    const prevAt = Date.parse(prev?.generatedAt) || nextAt - 15 * 60_000;
-    const soon = newlySoon(prevMatches, prevAt, matches, nextAt, 20 * 60_000);
-    console.log(`   ${soon.length} match(es) newly starting-soon`);
     await sendStartingSoonPush(soon, { log: console.log });
   }
 }

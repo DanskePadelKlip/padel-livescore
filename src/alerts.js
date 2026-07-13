@@ -25,27 +25,44 @@ export function newlySoon(prevMatches, prevAt, nextMatches, nextAt, leadMs) {
   );
 }
 
-function line(m) {
-  const teams = m.teams.map((t) => t.name).join("  vs  ");
+const teamsOf = (m) => m.teams.map((t) => t.name).join("  vs  ");
+
+function liveLine(m) {
   const where = [m.tournament?.name, m.round, m.court].filter(Boolean).join(" · ");
-  return `${FLAGS[m.federation] || "🎾"} 🔴 **LIVE** — ${teams}\n${where}`;
+  return `${FLAGS[m.federation] || "🎾"} 🔴 **LIVE** — ${teamsOf(m)}\n${where}`;
+}
+function soonLine(m) {
+  const when = m.estStart ? `~${m.estStart}` : "soon";
+  const where = [m.court, m.round, m.tournament?.name].filter(Boolean).join(" · ");
+  return `${FLAGS[m.federation] || "🎾"} ⏱ **SOON** (${when}) — ${teamsOf(m)}\n${where}`;
 }
 
-export async function sendAlerts(matches, webhookUrl, { max = 8 } = {}) {
-  if (!webhookUrl || !matches.length) return 0;
-  const body =
-    `🎾 **PadelTicker — now live** (${matches.length})\n\n` +
-    matches.slice(0, max).map(line).join("\n\n") +
-    (matches.length > max ? `\n\n…and ${matches.length - max} more` : "") +
-    `\n\nhttps://padelticker.com`;
+async function post(webhookUrl, body) {
   try {
     const res = await fetch(webhookUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ content: body, text: body }), // content=Discord, text=Slack
     });
-    return res.ok ? matches.length : 0;
+    return res.ok;
   } catch {
-    return 0;
+    return false;
   }
+}
+
+function digest(heading, matches, fmt, max) {
+  return `🎾 **PadelTicker — ${heading}** (${matches.length})\n\n` +
+    matches.slice(0, max).map(fmt).join("\n\n") +
+    (matches.length > max ? `\n\n…and ${matches.length - max} more` : "") +
+    `\n\nhttps://padelticker.com`;
+}
+
+export async function sendAlerts(matches, webhookUrl, { max = 8 } = {}) {
+  if (!webhookUrl || !matches.length) return 0;
+  return (await post(webhookUrl, digest("now live", matches, liveLine, max))) ? matches.length : 0;
+}
+
+export async function sendSoonAlerts(matches, webhookUrl, { max = 8 } = {}) {
+  if (!webhookUrl || !matches.length) return 0;
+  return (await post(webhookUrl, digest("starting soon", matches, soonLine, max))) ? matches.length : 0;
 }
