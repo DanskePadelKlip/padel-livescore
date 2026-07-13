@@ -335,12 +335,13 @@ function matchRow(m, changed, showTournament) {
   const open = state.openMatches.has(m.id);
   const isChanged = changed.has(m.id);
   const time = m.startTime ? m.startTime.slice(11, 16) : "";
+  const followed = /follow/i.test(m.schedule || "") && m.estStart; // estimate is "next up"
   const stateCol =
     m.status === "live"
       ? `<span class="lampe"></span><span class="badge live">Live</span>`
       : m.status === "final"
       ? `<span class="badge final">Final</span>`
-      : `<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
+      : `${followed ? `<span class="foll">Followed by</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
     <div class="match ${open ? "open" : ""}" data-match="${esc(m.id)}">
