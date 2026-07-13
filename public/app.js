@@ -32,6 +32,7 @@ function toggleFav(type, id, name, extra) {
   if (bag[id]) delete bag[id]; else bag[id] = { name, extra: extra || "" };
   saveFavs(state.favs);
   updateFavBadge();
+  syncPushFollows(); // keep push subscription's follow set in sync
 }
 function favCount() {
   return Object.keys(state.favs.players).length + Object.keys(state.favs.tournaments).length;
@@ -56,6 +57,72 @@ function star(type, id, name, extra) {
   if (!key) return "";
   const on = isFav(type, key);
   return `<button class="starbtn${on ? " on" : ""}" data-fav-type="${type}" data-fav-id="${esc(key)}" data-fav-name="${esc(name)}" data-fav-extra="${esc(extra || "")}" title="${on ? "Following — tap to remove" : "Follow"}" aria-label="follow">${on ? "★" : "☆"}</button>`;
+}
+
+// ---------- web push (Phase A) ----------
+// The ⭐ follow set is the subscription: we register a service worker, ask for
+// permission, subscribe with the VAPID public key, and POST the subscription +
+// follows to /api/subscribe. Sending happens server-side (see scripts/push-test).
+const VAPID_PUBLIC = "BPQSyr1X8qC5cQcjaPud1Rgu9Dv9fMN81DAo8dJtAd4NHFwR-bCMViuw0z68rGBjFbkuPGFPRblIbsuNx5HlU48";
+let swReg = null;
+
+const pushSupported = () =>
+  "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+
+function urlB64ToUint8Array(b64) {
+  const pad = "=".repeat((4 - (b64.length % 4)) % 4);
+  const base = (b64 + pad).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base);
+  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+async function initPush() {
+  if (!pushSupported()) { state.pushState = "unsupported"; return; }
+  try {
+    swReg = await navigator.serviceWorker.register("/sw.js");
+    const sub = await swReg.pushManager.getSubscription();
+    state.pushState = sub ? "subscribed" : Notification.permission === "denied" ? "denied" : "default";
+  } catch { state.pushState = "unsupported"; }
+  if (state.mode === "favorites") render();
+}
+
+async function enablePush() {
+  if (!swReg) return;
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") { state.pushState = perm === "denied" ? "denied" : "default"; render(); return; }
+  try {
+    const sub = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC),
+    });
+    await fetch("/api/subscribe", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ subscription: sub.toJSON(), follows: state.favs }),
+    });
+    state.pushState = "subscribed";
+  } catch { state.pushState = "default"; }
+  render();
+}
+
+async function disablePush() {
+  if (!swReg) return;
+  try {
+    const sub = await swReg.pushManager.getSubscription();
+    if (sub) {
+      fetch("/api/unsubscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
+      await sub.unsubscribe();
+    }
+  } catch {}
+  state.pushState = "default";
+  render();
+}
+
+// keep the server's copy of the follow set current while subscribed
+function syncPushFollows() {
+  if (state.pushState !== "subscribed" || !swReg) return;
+  swReg.pushManager.getSubscription().then((sub) => {
+    if (sub) fetch("/api/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ subscription: sub.toJSON(), follows: state.favs }) }).catch(() => {});
+  });
 }
 
 const app = document.getElementById("app");
@@ -89,6 +156,7 @@ const state = {
   rankCountryQuery: "",
   // ---- favorites ----
   favs: loadFavs(),
+  pushState: "unknown", // unknown|unsupported|default|denied|subscribed
   // ---- tournament hub ----
   tournament: null,          // { kind:"live"|"arch", key, name, fed, matches }
 };
@@ -512,11 +580,27 @@ function matchInvolvesFav(m, players, followedT) {
   });
 }
 
+function pushBanner() {
+  switch (state.pushState) {
+    case "subscribed":
+      return `<div class="pushbar on"><span>🔔 Push alerts are on for your follows.</span><button class="pushbtn" data-push="off">Turn off</button></div>`;
+    case "denied":
+      return `<div class="pushbar off">🔕 Notifications are blocked — enable them in your browser's site settings, then reload.</div>`;
+    case "unsupported":
+      return `<div class="pushbar off">🔕 Push isn't supported in this browser. <span class="hint">On iPhone: add PadelTicker to your Home Screen, then reopen and try again.</span></div>`;
+    case "default":
+      return `<div class="pushbar"><span>🔔 Get a push when a followed player or tournament goes live.</span><button class="pushbtn" data-push="on">Enable alerts</button></div>`;
+    default:
+      return ""; // "unknown" — service worker still initialising
+  }
+}
+
 function renderFavorites() {
   const P = Object.entries(state.favs.players);
   const T = Object.entries(state.favs.tournaments);
   if (!P.length && !T.length) {
-    app.innerHTML = `<div class="empty"><div class="big">⭐</div>Follow players and tournaments with the ☆ star — they show up here, with their matches surfaced when they're on.</div>`;
+    app.innerHTML = pushBanner() +
+      `<div class="empty"><div class="big">⭐</div>Follow players and tournaments with the ☆ star — they show up here, with their matches surfaced when they're on.</div>`;
     return;
   }
   const followedT = new Set(T.map(([k]) => k));
@@ -524,7 +608,7 @@ function renderFavorites() {
     .filter((m) => m.status !== "final" && matchInvolvesFav(m, P, followedT))
     .sort((a, b) => (a.status === "live" ? -1 : 1) - (b.status === "live" ? -1 : 1));
 
-  let html = "";
+  let html = pushBanner();
   if (onNow.length) {
     const nLive = onNow.filter((m) => m.status === "live").length;
     html += `<div class="section-label ${nLive ? "live" : ""}">${nLive ? '<span class="lampe"></span>' : "⭐ "}Your follows${nLive ? " · on now" : " · coming up"} · ${onNow.length}</div>`;
@@ -840,6 +924,10 @@ app.addEventListener("click", (e) => {
   }
   if (e.target.closest("[data-tback]")) { state.tournament = null; render(); return; }
 
+  // push alerts enable/disable
+  const pb = e.target.closest("[data-push]");
+  if (pb) { pb.dataset.push === "on" ? enablePush() : disablePush(); return; }
+
   // rankings: federation / category selector
   const rf = e.target.closest("[data-rfed]");
   if (rf) { state.rankFed = rf.dataset.rfed; render(); return; }
@@ -946,6 +1034,7 @@ function pollLoop() {
 }
 
 updateFavBadge();
+initPush();
 app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
 load(false).then(pollLoop);
 // keep the "updated Xs ago" label ticking

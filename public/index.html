@@ -241,6 +241,15 @@
     .starbtn:hover { opacity: 1; transform: scale(1.15); }
     .starbtn.on { color: #e8b923; opacity: 1; }
     .phead .starbtn { font-size: 22px; }
+    .pushbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 14px; padding: 11px 14px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-size: 13.5px; color: var(--text); }
+    .pushbar.on { border-color: #e8b923; background: linear-gradient(0deg, var(--card), var(--card)); }
+    .pushbar.off { color: var(--muted); }
+    .pushbar .hint { display: block; color: var(--faint); font-size: 12px; margin-top: 2px; }
+    .pushbar > span { flex: 1 1 200px; }
+    .pushbtn { background: var(--accent); border: 0; color: #fff; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 700; font-size: 13px; white-space: nowrap; }
+    .pushbar.on .pushbtn { background: var(--card-hi); border: 1px solid var(--line); color: var(--muted); }
+    .pushbtn:hover { filter: brightness(1.06); }
     .favcount { background: rgba(255,255,255,.25); border-radius: 999px; font-size: 10px; padding: 1px 6px; font-weight: 800; margin-left: 2px; }
     .modes button:not(.active) .favcount { background: var(--accent); color: #fff; }
     .empty { text-align: center; color: var(--muted); padding: 70px 0; }

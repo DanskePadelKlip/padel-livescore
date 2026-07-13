@@ -1,0 +1,27 @@
+name: Push test
+
+# Manual: send a "Push is working" notification to every stored subscription.
+# Proves the Web Push pipeline end-to-end (Phase A). Requires the VAPID_PRIVATE_KEY
+# secret; reuses CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID for D1 access.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  push-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Send test push
+        run: node scripts/push-test.js
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: mailto:danskepadelklip@gmail.com
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
