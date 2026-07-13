@@ -87,6 +87,11 @@
     .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
       color: var(--muted); margin: 18px 0 9px; display: flex; align-items: center; gap: 8px; }
     .section-label.live { color: var(--live); }
+    .section-label.region { text-transform: none; font-size: 13.5px; color: var(--text); letter-spacing: 0;
+      border-top: 1px solid var(--line); padding-top: 15px; margin-top: 22px; }
+    .section-label.region .rflag { font-size: 15px; }
+    .section-label .count { margin-left: auto; font-weight: 500; color: var(--faint); font-size: 11px;
+      text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
     .section-label .lampe { width: 8px; height: 8px; border-radius: 50%; background: var(--live); animation: blink 1.3s infinite; }
     @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 

@@ -98,6 +98,12 @@ function render(changed = new Set()) {
   app.innerHTML = html;
 }
 
+// Federation → section label (FIP grouped as one "international" section).
+const REGION_LABEL = {
+  FIP: "FIP International", DK: "Denmark", SE: "Sweden", NO: "Norway",
+  DE: "Germany", CZ: "Czechia", FI: "Finland", FR: "France",
+};
+
 function renderGroups(matches, changed) {
   // group by tournament, preserve aggregate order
   const groups = new Map();
@@ -117,32 +123,52 @@ function renderGroups(matches, changed) {
     }
   });
 
-  const CAP = 20;
-  return arr.map((g) => {
-    const open = state.expandedGroups.has(g.key);
-    const nLive = g.matches.filter((m) => m.status === "live").length;
-    const cap = state.groupCap.get(g.key) || CAP;
-    const shown = g.matches.slice(0, cap);
-    const more = g.matches.length - shown.length;
-    return `
-      <div class="group ${open ? "open" : ""}" data-group="${esc(g.key)}">
-        <div class="group__head" data-toggle="${esc(g.key)}">
-          <span class="flag">${FLAGS[g.fed] || ""} ${g.fed}</span>
-          <span class="group__title">${esc(g.t.name)}</span>
-          <span class="group__meta">
-            ${nLive ? `<span class="badge live">${nLive} live</span>` : ""}
-            <span class="count">${g.matches.length}</span>
-            <span class="chev">▶</span>
-          </span>
-        </div>
-        <div class="group__body">${
-          open
-            ? shown.map((m) => matchRow(m, changed, false)).join("") +
-              (more > 0 ? `<button class="morebtn" data-more="${esc(g.key)}">Show ${more} more ↓</button>` : "")
-            : ""
-        }</div>
-      </div>`;
-  }).join("");
+  // bucket tournaments into federation sections; FIP International first, rest A–Z
+  const sections = new Map();
+  for (const g of arr) {
+    if (!sections.has(g.fed)) sections.set(g.fed, []);
+    sections.get(g.fed).push(g);
+  }
+  const ordered = [...sections.entries()].sort((a, b) => {
+    const ka = a[0] === "FIP" ? "" : REGION_LABEL[a[0]] || a[0];
+    const kb = b[0] === "FIP" ? "" : REGION_LABEL[b[0]] || b[0];
+    return ka.localeCompare(kb);
+  });
+
+  return ordered
+    .map(([fed, gs]) => {
+      const n = gs.reduce((s, g) => s + g.matches.length, 0);
+      const header =
+        `<div class="section-label region"><span class="rflag">${FLAGS[fed] || ""}</span>${esc(REGION_LABEL[fed] || fed)}` +
+        `<span class="count">${gs.length} ${gs.length === 1 ? "event" : "events"} · ${n} matches</span></div>`;
+      return header + gs.map((g) => groupHtml(g, changed)).join("");
+    })
+    .join("");
+}
+
+function groupHtml(g, changed) {
+  const open = state.expandedGroups.has(g.key);
+  const nLive = g.matches.filter((m) => m.status === "live").length;
+  const cap = state.groupCap.get(g.key) || 20;
+  const shown = g.matches.slice(0, cap);
+  const more = g.matches.length - shown.length;
+  return `
+    <div class="group ${open ? "open" : ""}" data-group="${esc(g.key)}">
+      <div class="group__head" data-toggle="${esc(g.key)}">
+        <span class="group__title">${esc(g.t.name)}</span>
+        <span class="group__meta">
+          ${nLive ? `<span class="badge live">${nLive} live</span>` : ""}
+          <span class="count">${g.matches.length}</span>
+          <span class="chev">▶</span>
+        </span>
+      </div>
+      <div class="group__body">${
+        open
+          ? shown.map((m) => matchRow(m, changed, false)).join("") +
+            (more > 0 ? `<button class="morebtn" data-more="${esc(g.key)}">Show ${more} more ↓</button>` : "")
+          : ""
+      }</div>
+    </div>`;
 }
 
 function matchRow(m, changed, showTournament) {
