@@ -98,6 +98,30 @@ pin down. Until then `mapStatus()` derives status from the data (played? partial
 score present?) and preserves `raw.state` so we can calibrate the enum the first
 time we catch a live match.
 
+## Deploy
+
+Live at **https://padel-livescore.pages.dev** (Cloudflare Pages, project `padel-livescore`).
+
+- **Frontend**: static `public/` on Cloudflare Pages. The UI polls `data/matches.json`,
+  which is a static file baked into each deployment.
+- **Data refresh**: `.github/workflows/refresh.yml` runs the Playwright fetch on a cron
+  and redeploys `public/` (with a fresh `matches.json`) via `wrangler pages deploy`.
+- **Manual deploy** (uses a Cloudflare `Pages: Edit` token + account id in your env):
+  ```bash
+  node scripts/fetch-live.js
+  npx wrangler pages deploy public --project-name padel-livescore --branch main
+  ```
+
+**Required GitHub secrets** for the workflow (Settings → Secrets and variables → Actions):
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+
+**⚠️ Actions-minutes cost:** the fetch needs a real browser, so each run is ~4 min.
+On a **private** repo GitHub gives ~2000 free min/month — any useful cadence blows past
+that. Options: make the repo **public** (unlimited free minutes; the site + data are
+public anyway and no secrets live in the code), use a **self-hosted runner**, run the
+fetch+deploy from your **own machine on a schedule**, or accept a low cadence / pay for
+minutes.
+
 ## Roadmap
 
 - **P1** — more RankedIn federations. NB: `GetOrganisationEventsAsync` only returns
