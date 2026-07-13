@@ -189,10 +189,11 @@
     .rchip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
     .rsep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
     .ranktable { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
-    .rankrow { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+    .rankrow { display: grid; grid-template-columns: 34px 1fr auto 26px; gap: 10px; align-items: center;
       padding: 9px 13px; border-bottom: 1px solid var(--line); }
     .rankrow:last-child { border-bottom: 0; }
-    .ranktable.hasmove .rankrow { grid-template-columns: 30px 34px 1fr auto; }
+    .rankrow .rstar { display: flex; justify-content: center; }
+    .ranktable.hasmove .rankrow { grid-template-columns: 30px 34px 1fr auto 26px; }
     .rankrow.has-profile { cursor: pointer; }
     .rankrow.has-profile:hover { background: var(--card-hi); }
     .rankrow .rnum { text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--muted); }
@@ -212,9 +213,17 @@
     .rankrow .rclub { display: none; }
     .rankrow .rpts { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
     @media (min-width: 560px) {
-      .rankrow { grid-template-columns: 34px 1fr 1fr auto; }
-      .ranktable.hasmove .rankrow { grid-template-columns: 30px 34px 1fr 1fr auto; }
+      .rankrow { grid-template-columns: 34px 1fr 1fr auto 26px; }
+      .ranktable.hasmove .rankrow { grid-template-columns: 30px 34px 1fr 1fr auto 26px; }
       .rankrow .rclub { display: block; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+    /* ---- follow star + favorites ---- */
+    .starbtn { background: none; border: 0; cursor: pointer; padding: 2px 4px; font-size: 16px; line-height: 1;
+      color: var(--faint); opacity: .55; transition: opacity .12s, transform .1s; }
+    .starbtn:hover { opacity: 1; transform: scale(1.15); }
+    .starbtn.on { color: #e8b923; opacity: 1; }
+    .phead .starbtn { font-size: 22px; }
+    .favcount { background: rgba(255,255,255,.25); border-radius: 999px; font-size: 10px; padding: 1px 6px; font-weight: 800; margin-left: 2px; }
+    .modes button:not(.active) .favcount { background: var(--accent); color: #fff; }
     .empty { text-align: center; color: var(--muted); padding: 70px 0; }
     .empty .big { font-size: 34px; margin-bottom: 8px; }
     .skel { height: 60px; border-radius: 12px; background: linear-gradient(90deg, var(--card), var(--card-hi), var(--card)); background-size: 200% 100%; animation: sk 1.2s infinite; margin-bottom: 8px; }
@@ -238,6 +247,7 @@
       </div>
       <div class="modes" id="modes">
         <button data-mode="live" class="active">🔴 Live</button>
+        <button data-mode="favorites">⭐ Following <span class="favcount" id="favcount" hidden>0</span></button>
         <button data-mode="archive">📅 Results</button>
         <button data-mode="players">👤 Players</button>
         <button data-mode="rankings">🏆 Rankings</button>

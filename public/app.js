@@ -14,6 +14,50 @@ const SOURCE_LABEL = { rankedin: "RankedIn", tournamentsoftware: "tournamentsoft
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+// ---------- favorites (follow players / tournaments; localStorage) ----------
+// Shape: { players: { <id>: {name, extra} }, tournaments: { <key>: {name, extra} } }
+// where extra = country (players) or federation (tournaments). This set is also
+// exactly the future push-notification subscription list.
+const FAV_KEY = "pt-favs";
+function loadFavs() {
+  try {
+    const f = JSON.parse(localStorage.getItem(FAV_KEY)) || {};
+    return { players: f.players || {}, tournaments: f.tournaments || {} };
+  } catch { return { players: {}, tournaments: {} }; }
+}
+function saveFavs(f) { try { localStorage.setItem(FAV_KEY, JSON.stringify(f)); } catch {} }
+function isFav(type, id) { return !!(state.favs[type] && state.favs[type][id]); }
+function toggleFav(type, id, name, extra) {
+  const bag = state.favs[type] || (state.favs[type] = {});
+  if (bag[id]) delete bag[id]; else bag[id] = { name, extra: extra || "" };
+  saveFavs(state.favs);
+  updateFavBadge();
+}
+function favCount() {
+  return Object.keys(state.favs.players).length + Object.keys(state.favs.tournaments).length;
+}
+function updateFavBadge() {
+  const el = document.getElementById("favcount");
+  if (!el) return;
+  const n = favCount();
+  el.hidden = n === 0;
+  el.textContent = n;
+}
+// a follow/unfollow star; data travels in attributes so the click handler can
+// toggle without a lookup. Stops propagation so it doesn't trigger the row.
+// Players without a RankedIn id (most FIP world-ranking rows) fall back to a
+// name key so pros are still followable (no profile link, but push/board work).
+function favKey(id, name) {
+  if (id != null && id !== "") return String(id);
+  return name ? "n:" + name : "";
+}
+function star(type, id, name, extra) {
+  const key = favKey(id, name);
+  if (!key) return "";
+  const on = isFav(type, key);
+  return `<button class="starbtn${on ? " on" : ""}" data-fav-type="${type}" data-fav-id="${esc(key)}" data-fav-name="${esc(name)}" data-fav-extra="${esc(extra || "")}" title="${on ? "Following — tap to remove" : "Follow"}" aria-label="follow">${on ? "★" : "☆"}</button>`;
+}
+
 const app = document.getElementById("app");
 const state = {
   matches: [],
@@ -42,6 +86,8 @@ const state = {
   rankings: null,            // loaded rankings.json
   rankFed: null,
   rankCat: null,
+  // ---- favorites ----
+  favs: loadFavs(),
 };
 
 // ---------- data ----------
@@ -92,6 +138,7 @@ function filtered() {
 
 function render(changed = new Set()) {
   renderControls();
+  if (state.mode === "favorites") return renderFavorites();
   if (state.mode === "rankings") return renderRankings();
   if (state.mode === "players") return renderPlayers();
   if (state.mode === "archive") return renderArchive();
@@ -178,6 +225,7 @@ function groupHtml(g, changed) {
         <span class="group__meta">
           ${nLive ? `<span class="badge live">${nLive} live</span>` : ""}
           <span class="count">${g.matches.length}</span>
+          ${star("tournaments", g.key, g.t.name, g.fed)}
           <span class="chev">▶</span>
         </span>
       </div>
@@ -386,6 +434,7 @@ function playerResultRow(p) {
     <span class="flag">${esc((p.country || "").toUpperCase())}</span>
     <span class="nm">${esc(p.name)}</span>
     <span class="meta">${p.matches} matches</span>
+    ${star("players", p.id, p.name, p.country || "")}
   </div>`;
 }
 
@@ -397,6 +446,7 @@ function renderProfile() {
     <div class="phead">
       <span class="flag">${esc((player.country || "").toUpperCase())}</span>
       <h2>${esc(player.name)}</h2>
+      ${star("players", player.id, player.name, player.country || "")}
       <div class="pstats">
         <div class="pstat"><b>${summary.total}</b><span>matches</span></div>
         <div class="pstat"><b>${summary.wins}-${summary.losses}</b><span>W-L</span></div>
@@ -440,6 +490,69 @@ function apiMatchRow(m) {
     <div class="teams">${line(0)}${line(1)}</div>
     <div class="side"><span class="score-str">${esc(m.score || "")}</span><span class="sub">${esc(sub)}</span></div>
   </div></div>`;
+}
+
+// ---------- favorites (the "My PadelTicker" board) ----------
+
+const surnameOf = (n) => (n || "").trim().split(/\s+/).pop().toLowerCase();
+
+// best-effort: does a live match involve a followed player? names differ in
+// format across sources ("A. Coello" vs "Arturo Coello"), so match on surname.
+function matchInvolvesFav(m, players, followedT) {
+  if (followedT.has(m.source + ":" + m.tournament.id)) return true;
+  return players.some(([, d]) => {
+    const s = surnameOf(d.name);
+    return s.length >= 3 && m.teams.some((t) => (t.name || "").toLowerCase().includes(s));
+  });
+}
+
+function renderFavorites() {
+  const P = Object.entries(state.favs.players);
+  const T = Object.entries(state.favs.tournaments);
+  if (!P.length && !T.length) {
+    app.innerHTML = `<div class="empty"><div class="big">⭐</div>Follow players and tournaments with the ☆ star — they show up here, with their matches surfaced when they're on.</div>`;
+    return;
+  }
+  const followedT = new Set(T.map(([k]) => k));
+  const onNow = state.matches
+    .filter((m) => m.status !== "final" && matchInvolvesFav(m, P, followedT))
+    .sort((a, b) => (a.status === "live" ? -1 : 1) - (b.status === "live" ? -1 : 1));
+
+  let html = "";
+  if (onNow.length) {
+    const nLive = onNow.filter((m) => m.status === "live").length;
+    html += `<div class="section-label ${nLive ? "live" : ""}">${nLive ? '<span class="lampe"></span>' : "⭐ "}Your follows${nLive ? " · on now" : " · coming up"} · ${onNow.length}</div>`;
+    html += `<div class="group open"><div class="group__body">${onNow.slice(0, 40).map((m) => matchRow(m, new Set(), true)).join("")}</div></div>`;
+  }
+  if (P.length) {
+    html += `<div class="section-label">⭐ Players · ${P.length}</div>`;
+    html += P.map(([id, d]) => favPlayerRow(id, d)).join("");
+  }
+  if (T.length) {
+    html += `<div class="section-label">⭐ Tournaments · ${T.length}</div>`;
+    html += T.map(([k, d]) => favTournRow(k, d)).join("");
+  }
+  app.innerHTML = html;
+}
+
+function favPlayerRow(id, d) {
+  const linked = !id.startsWith("n:"); // name-keyed pros have no profile
+  return `<div class="presult${linked ? " has-profile" : ""}"${linked ? ` data-player="${esc(id)}"` : ""}>
+    <span class="flag">${esc((d.extra || "").toUpperCase())}</span>
+    <span class="nm">${esc(d.name)}</span>
+    ${linked ? "" : `<span class="meta">pro</span>`}
+    <button class="starbtn on" data-fav-type="players" data-fav-id="${esc(id)}" data-fav-name="${esc(d.name)}" data-fav-extra="${esc(d.extra || "")}" title="Following — tap to remove">★</button>
+  </div>`;
+}
+
+function favTournRow(k, d) {
+  const n = state.matches.filter((m) => m.source + ":" + m.tournament.id === k).length;
+  return `<div class="presult">
+    <span class="flag">${FLAGS[d.extra] || ""} ${esc(d.extra || "")}</span>
+    <span class="nm">${esc(d.name)}</span>
+    <span class="meta">${n ? n + " live/upcoming" : "—"}</span>
+    ${star("tournaments", k, d.name, d.extra)}
+  </div>`;
 }
 
 // ---------- rankings (national, RankedIn) ----------
@@ -499,6 +612,7 @@ function rankRow(r, movement) {
     <span class="nm">${esc(r.name)}</span>
     <span class="rclub">${esc(r.club || "")}</span>
     <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}</span>
+    <span class="rstar">${star("players", r.id, r.name, r.country || "")}</span>
   </div>`;
 }
 
@@ -539,6 +653,7 @@ function activateMode(mode) {
   document.getElementById("chips").style.display = mode === "live" || mode === "archive" ? "" : "none";
   const qEl = document.getElementById("q");
   qEl.value = "";
+  qEl.closest(".search").style.display = mode === "favorites" ? "none" : "";
   qEl.placeholder =
     mode === "players" ? "Search a player by name…" :
     mode === "rankings" ? "Filter this ranking…" :
@@ -572,6 +687,15 @@ document.getElementById("q").addEventListener("input", (e) => {
 });
 
 app.addEventListener("click", (e) => {
+  // follow/unfollow star — handle first so it doesn't trigger the row/group
+  const fav = e.target.closest("[data-fav-type]");
+  if (fav) {
+    e.stopPropagation();
+    toggleFav(fav.dataset.favType, fav.dataset.favId, fav.dataset.favName, fav.dataset.favExtra);
+    render();
+    return;
+  }
+
   // rankings: federation / category selector
   const rf = e.target.closest("[data-rfed]");
   if (rf) { state.rankFed = rf.dataset.rfed; render(); return; }
@@ -677,6 +801,7 @@ function pollLoop() {
   }, nextPollDelay());
 }
 
+updateFavBadge();
 app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
 load(false).then(pollLoop);
 // keep the "updated Xs ago" label ticking
