@@ -28,6 +28,11 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
+// Minimal fetch handler (network pass-through) — its presence lets the app be
+// installable as a PWA. No offline caching on purpose: the app is live data and
+// we already control asset freshness via versioned app.js.
+self.addEventListener("fetch", () => {});
+
 // take over immediately so updates apply without a manual reload
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));

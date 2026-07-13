@@ -2,10 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>PadelTicker — live padel scores</title>
   <meta name="description" content="PadelTicker — live padel scores from around the world: Premier Padel, FIP, and national tours, all in one live feed." />
   <link rel="canonical" href="https://padelticker.com/" />
+  <!-- installable PWA (enables iOS Home-Screen install + Web Push on iOS 16.4+) -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0e1014" />
+  <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+  <link rel="apple-touch-icon" href="/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PadelTicker" />
   <style>
     :root {
       --bg: #0e1014; --bg-2: #14171d; --card: #191d25; --card-hi: #1f2530;
@@ -54,7 +63,10 @@
       position: sticky; top: 0; z-index: 20; background: var(--bg);
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(8px);
+      padding-top: env(safe-area-inset-top, 0px); /* clear the iOS status bar when installed */
     }
+    .wrap { padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right)); }
     .topbar { display: flex; align-items: center; gap: 12px; padding: 12px 0 10px; }
     .brand { font-size: 18px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 7px; }
     .brand small { font-weight: 600; color: var(--faint); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
