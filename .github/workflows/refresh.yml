@@ -37,6 +37,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Fetch matches
         run: node scripts/fetch-live.js
+        env:
+          # optional: a Discord/Slack webhook to receive "now live" alerts
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
       - name: Deploy to Cloudflare Pages
         run: npx --yes wrangler@4 pages deploy --branch main --commit-dirty=true
         env:
