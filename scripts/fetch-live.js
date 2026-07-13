@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { newlyLive, sendAlerts } from "../src/alerts.js";
+import { sendLivePush } from "../src/push-send.js";
 import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,16 +30,22 @@ const outDir = join(root, "public", "data");
 mkdirSync(outDir, { recursive: true });
 
 // Alerts: diff against the currently-published data (previous run) BEFORE we
-// overwrite it, and ping the webhook for matches that just went live.
-const webhook = process.env.ALERT_WEBHOOK_URL;
-if (webhook) {
+// overwrite it. The "newly live" set feeds BOTH the webhook feed and Web Push.
+if (process.env.ALERT_WEBHOOK_URL || process.env.VAPID_PRIVATE_KEY) {
+  let fresh = [];
   try {
     const prev = await (await fetch("https://padelticker.com/data/matches.json?_=" + Date.now())).json();
-    const fresh = newlyLive(prev.matches || [], matches);
-    const n = await sendAlerts(fresh, webhook);
-    console.log(n ? `\n🔔 alerted ${n} newly-live match(es)` : `\n🔔 no new live matches to alert`);
+    fresh = newlyLive(prev.matches || [], matches);
+    console.log(`\n🔔 ${fresh.length} match(es) newly live`);
   } catch (e) {
-    console.log("\n🔔 alert step skipped:", e.message);
+    console.log("\n🔔 alert diff skipped:", e.message);
+  }
+  if (process.env.ALERT_WEBHOOK_URL && fresh.length) {
+    const n = await sendAlerts(fresh, process.env.ALERT_WEBHOOK_URL);
+    console.log(`   webhook: ${n} sent`);
+  }
+  if (process.env.VAPID_PRIVATE_KEY) {
+    await sendLivePush(fresh, { log: console.log });
   }
 }
 

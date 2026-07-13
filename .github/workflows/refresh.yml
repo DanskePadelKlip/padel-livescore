@@ -40,6 +40,11 @@ jobs:
         env:
           # optional: a Discord/Slack webhook to receive "now live" alerts
           ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+          # Web Push fan-out to followers (reads subscriptions from D1)
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: mailto:danskepadelklip@gmail.com
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Cache-bust app.js (index.html is no-cache, .js gets a long browser TTL)
         run: sed -i "s|app\.js?v=[A-Za-z0-9]*|app.js?v=${GITHUB_SHA::8}|" public/index.html
       - name: Deploy to Cloudflare Pages
