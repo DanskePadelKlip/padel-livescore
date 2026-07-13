@@ -15,6 +15,12 @@ const LISTS = [
   { fed: "HR", rankingId: 1967 },  // Hrvatski Padel Savez
   { fed: "EE", rankingId: 2458 },  // Eesti Padeli Liit
   { fed: "GE", rankingId: 14332 }, // Georgian National Padel Federation
+  { fed: "HU", rankingId: 2375 },  // MAPASZ — Magyar Padel Szövetség
+  { fed: "UA", rankingId: 12010 }, // Padel Federation Ukraine (season race)
+  { fed: "SI", rankingId: 11248 }, // Padel Zveza Slovenije
+  { fed: "XK", rankingId: 11117 }, // Padel Kosova
+  { fed: "BA", rankingId: 15514 }, // Padel liga Bosne i Hercegovine
+  { fed: "ME", rankingId: 11004 }, // Padel Federation Montenegro (PFMNE)
 ];
 // ageGroup/rankingType/gender for the two main categories (verified 2026-07-13)
 const CATS = [
