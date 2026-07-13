@@ -33,6 +33,11 @@ const state = {
   archiveCap: 40,
   openArchive: new Set(),    // expanded tournament keys
   archiveData: new Map(),    // key -> loaded tournament {matches}
+  // ---- players (profiles / search / h2h) ----
+  playerResults: null,       // search results
+  player: null,              // loaded profile
+  h2h: null,                 // loaded head-to-head
+  comparing: false,          // in "pick an opponent" mode
 };
 
 // ---------- data ----------
@@ -83,6 +88,7 @@ function filtered() {
 
 function render(changed = new Set()) {
   renderControls();
+  if (state.mode === "players") return renderPlayers();
   if (state.mode === "archive") return renderArchive();
 
   const list = filtered();
@@ -334,6 +340,103 @@ function archiveMatchRow(m) {
   </div></div>`;
 }
 
+// ---------- players (profiles / search / head-to-head) ----------
+
+async function searchPlayers(q) {
+  if ((q || "").trim().length < 2) { state.playerResults = null; render(); return; }
+  try {
+    const d = await (await fetch("/api/search?q=" + encodeURIComponent(q.trim()))).json();
+    state.playerResults = d.players || [];
+  } catch { state.playerResults = []; }
+  render();
+}
+
+async function openPlayer(id) {
+  state.h2h = null; state.comparing = false; state.player = "loading";
+  render();
+  try { state.player = await (await fetch("/api/player/" + encodeURIComponent(id))).json(); } catch { state.player = null; }
+  render();
+}
+
+async function openH2H(aId, bId) {
+  state.comparing = false; state.h2h = "loading"; render();
+  try { state.h2h = await (await fetch(`/api/h2h?a=${encodeURIComponent(aId)}&b=${encodeURIComponent(bId)}`)).json(); } catch { state.h2h = null; }
+  render();
+}
+
+function renderPlayers() {
+  if (state.h2h) return renderH2H();
+  if (state.player) return renderProfile();
+  let html;
+  if (state.playerResults == null)
+    html = `<div class="empty"><div class="big">👤</div>Search a player to see their profile, results &amp; head-to-head.</div>`;
+  else if (!state.playerResults.length)
+    html = `<div class="empty"><div class="big">👤</div>No players found. (Profiles cover players with a RankedIn id — Nordic scene + linked pros.)</div>`;
+  else html = state.playerResults.map(playerResultRow).join("");
+  app.innerHTML = html;
+}
+
+function playerResultRow(p) {
+  return `<div class="presult" data-player="${esc(p.id)}">
+    <span class="flag">${esc((p.country || "").toUpperCase())}</span>
+    <span class="nm">${esc(p.name)}</span>
+    <span class="meta">${p.matches} matches</span>
+  </div>`;
+}
+
+function renderProfile() {
+  if (state.player === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
+  const { player, summary, matches } = state.player;
+  const pct = summary.total ? Math.round((summary.wins / summary.total) * 100) : 0;
+  let html = `<button class="pback" data-pback="1">← Search</button>
+    <div class="phead">
+      <span class="flag">${esc((player.country || "").toUpperCase())}</span>
+      <h2>${esc(player.name)}</h2>
+      <div class="pstats">
+        <div class="pstat"><b>${summary.total}</b><span>matches</span></div>
+        <div class="pstat"><b>${summary.wins}-${summary.losses}</b><span>W-L</span></div>
+        <div class="pstat"><b>${pct}%</b><span>win rate</span></div>
+      </div>
+    </div>
+    <button class="pcompare ${state.comparing ? "on" : ""}" data-compare="1">⚔️ ${state.comparing ? "Now search an opponent above…" : "Head-to-head vs…"}</button>`;
+  if (state.comparing && state.playerResults && state.playerResults.length)
+    html += `<div class="section-label">Tap an opponent</div>` +
+      state.playerResults.filter((p) => p.id !== player.id).map(playerResultRow).join("");
+  const years = summary.byYear.map((y) => `${y.yr}: ${y.won}/${y.played}`).join("   ·   ");
+  if (years) html += `<div class="section-label">By year</div><div class="detail" style="display:block">${esc(years)}</div>`;
+  html += `<div class="section-label">Recent matches (${matches.length})</div>` + matches.map((m) => apiMatchRow(m)).join("");
+  app.innerHTML = html;
+}
+
+function renderH2H() {
+  if (state.h2h === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
+  const { a, b, asOpponents, asPartners } = state.h2h;
+  let html = `<button class="pback" data-pback="1">← Back</button>
+    <div class="phead"><h2>${esc(a.name)} <span style="color:var(--faint)">vs</span> ${esc(b.name)}</h2></div>
+    <div class="section-label">As opponents · ${asOpponents.list.length} meeting${asOpponents.list.length === 1 ? "" : "s"}</div>
+    <div class="h2h-tally">
+      <div><div class="n">${asOpponents.aWins}</div><div class="who">${esc(a.name)}</div></div>
+      <span class="vs">–</span>
+      <div><div class="n">${asOpponents.bWins}</div><div class="who">${esc(b.name)}</div></div>
+    </div>`;
+  html += asOpponents.list.slice(0, 30).map((m) => apiMatchRow(m)).join("");
+  if (asPartners.list.length) {
+    html += `<div class="section-label">As partners · ${asPartners.list.length} match${asPartners.list.length === 1 ? "" : "es"} (${asPartners.wins}W)</div>`;
+    html += asPartners.list.slice(0, 20).map((m) => apiMatchRow(m)).join("");
+  }
+  app.innerHTML = html;
+}
+
+function apiMatchRow(m) {
+  const t = m.teams;
+  const line = (s) => `<div class="team ${t[s].won ? "win" : ""}"><span class="nm">${esc(t[s].name)}</span></div>`;
+  const sub = [m.date, m.tournament, m.round].filter(Boolean).join(" · ");
+  return `<div class="match"><div class="match__main archm">
+    <div class="teams">${line(0)}${line(1)}</div>
+    <div class="side"><span class="score-str">${esc(m.score || "")}</span><span class="sub">${esc(sub)}</span></div>
+  </div></div>`;
+}
+
 function timeago(d) {
   const s = Math.max(0, Math.round((Date.now() - d.getTime()) / 1000));
   if (s < 60) return s + "s ago";
@@ -364,13 +467,16 @@ document.getElementById("modes").addEventListener("click", (e) => {
   const b = e.target.closest("button");
   if (!b || b.dataset.mode === state.mode) return;
   state.mode = b.dataset.mode;
-  state.fed = "all"; // federation sets differ between live and archive
+  state.fed = "all";
+  state.query = "";
+  state.player = null; state.h2h = null; state.playerResults = null; state.comparing = false;
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x === b));
   document.getElementById("tabs").style.display = state.mode === "live" ? "" : "none";
   document.getElementById("year").hidden = state.mode !== "archive";
-  document.getElementById("q").value = "";
-  state.query = "";
-  document.getElementById("q").placeholder = state.mode === "archive" ? "Search tournament…" : "Search player or tournament…";
+  document.getElementById("chips").style.display = state.mode === "players" ? "none" : "";
+  const qEl = document.getElementById("q");
+  qEl.value = "";
+  qEl.placeholder = state.mode === "players" ? "Search a player by name…" : state.mode === "archive" ? "Search tournament…" : "Search player or tournament…";
   if (state.mode === "archive" && !state.archive) loadArchive();
   else render();
 });
@@ -384,10 +490,37 @@ document.getElementById("year").addEventListener("change", (e) => {
 let qTimer;
 document.getElementById("q").addEventListener("input", (e) => {
   clearTimeout(qTimer);
-  qTimer = setTimeout(() => { state.query = e.target.value; if (state.mode === "archive") state.archiveCap = 40; render(); }, 180);
+  const v = e.target.value;
+  qTimer = setTimeout(() => {
+    if (state.mode === "players") return searchPlayers(v);
+    state.query = v;
+    if (state.mode === "archive") state.archiveCap = 40;
+    render();
+  }, 200);
 });
 
 app.addEventListener("click", (e) => {
+  // players: result click / compare / back
+  const pr = e.target.closest("[data-player]");
+  if (pr) {
+    const id = pr.dataset.player;
+    if (state.comparing && state.player && state.player.player) openH2H(state.player.player.id, id);
+    else openPlayer(id);
+    return;
+  }
+  if (e.target.closest("[data-pback]")) {
+    if (state.h2h) state.h2h = null;
+    else state.player = null;
+    render();
+    return;
+  }
+  if (e.target.closest("[data-compare]")) {
+    state.comparing = !state.comparing;
+    if (state.comparing) document.getElementById("q").focus();
+    render();
+    return;
+  }
+
   // archive: expand a tournament (lazy-load its matches)
   const arch = e.target.closest("[data-archtoggle]");
   if (arch) {
