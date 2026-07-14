@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <!-- Resolve all relative URLs (script, data fetches) against root so deep-links
+       like /player/<id> or /tournament/<src>/<id> don't request /player/app.js etc. -->
+  <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>PadelTicker — live padel scores</title>
   <meta name="description" content="PadelTicker — live padel scores from around the world: Premier Padel, FIP, and national tours, all in one live feed." />
@@ -363,6 +366,6 @@
   <!-- app.js?v=<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="app.js?v=dev"></script>
+  <script src="/app.js?v=dev"></script>
 </body>
 </html>
