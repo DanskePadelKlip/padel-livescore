@@ -147,6 +147,7 @@ const state = {
   // ---- players (profiles / search / h2h) ----
   playerResults: null,       // search results
   player: null,              // loaded profile
+  playerId: null,            // id of the open/loading profile (for the URL)
   h2h: null,                 // loaded head-to-head
   comparing: false,          // in "pick an opponent" mode
   // ---- rankings ----
@@ -540,10 +541,12 @@ async function searchPlayers(q) {
 }
 
 async function openPlayer(id) {
-  state.h2h = null; state.comparing = false; state.player = "loading";
+  state.h2h = null; state.comparing = false; state.player = "loading"; state.playerId = id;
   render();
+  syncUrl(); // /player/<id>
   try { state.player = await (await fetch("/api/player/" + encodeURIComponent(id))).json(); } catch { state.player = null; }
   render();
+  setTitle(); // now we have the player name
 }
 
 async function openH2H(aId, bId) {
@@ -739,6 +742,7 @@ function splitCategory(m) {
 
 function openTournament(kind, key, name, fed) {
   state.tournament = { kind, key, name, fed, matches: kind === "live" ? null : "loading" };
+  syncUrl(); // /tournament/<source>/<id>
   if (kind === "arch") {
     if (state.archiveData.has(key)) {
       state.tournament.matches = state.archiveData.get(key).matches;
@@ -992,7 +996,7 @@ function activateMode(mode) {
   state.mode = mode;
   state.fed = "all";
   state.query = "";
-  state.player = null; state.h2h = null; state.playerResults = null; state.comparing = false;
+  state.player = null; state.playerId = null; state.h2h = null; state.playerResults = null; state.comparing = false;
   state.tournament = null;
   state.rankCountryQuery = "";
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
@@ -1009,6 +1013,7 @@ function activateMode(mode) {
   if (mode === "archive" && !state.archive) loadArchive();
   else if (mode === "rankings" && !state.rankings) loadRankings();
   else render();
+  syncUrl();
 }
 
 document.getElementById("modes").addEventListener("click", (e) => {
@@ -1064,7 +1069,7 @@ app.addEventListener("click", (e) => {
     openTournament(tourney.dataset.tourney, tourney.dataset.tkey, tourney.dataset.tname, tourney.dataset.tfed);
     return;
   }
-  if (e.target.closest("[data-tback]")) { state.tournament = null; render(); return; }
+  if (e.target.closest("[data-tback]")) { state.tournament = null; render(); syncUrl(); return; }
 
   // push alerts enable/disable
   const pb = e.target.closest("[data-push]");
@@ -1072,9 +1077,9 @@ app.addEventListener("click", (e) => {
 
   // rankings: federation / category selector
   const rf = e.target.closest("[data-rfed]");
-  if (rf) { state.rankFed = rf.dataset.rfed; render(); return; }
+  if (rf) { state.rankFed = rf.dataset.rfed; render(); syncUrl(false); return; }
   const rc = e.target.closest("[data-rcat]");
-  if (rc) { state.rankCat = rc.dataset.rcat; render(); return; }
+  if (rc) { state.rankCat = rc.dataset.rcat; render(); syncUrl(false); return; }
 
   // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");
@@ -1087,8 +1092,9 @@ app.addEventListener("click", (e) => {
   }
   if (e.target.closest("[data-pback]")) {
     if (state.h2h) state.h2h = null;
-    else state.player = null;
+    else { state.player = null; state.playerId = null; }
     render();
+    syncUrl();
     return;
   }
   if (e.target.closest("[data-compare]")) {
@@ -1211,9 +1217,78 @@ function pollLoop() {
   if (/iphone|ipad|ipod/i.test(ua) && /safari/i.test(ua) && !/crios|fxios|edgios|chrome/i.test(ua) && !standalone()) show("ios");
 })();
 
+// ---------- routing (SEO-friendly, deep-linkable URLs) ----------
+// Views get real URLs so they're shareable, back-button-able and crawlable, and
+// the document title updates per view. Server-side per-entity meta (for social
+// scrapers that don't run JS) is layered on via Pages Functions.
+let _routing = false; // suppress URL writes while applying a route from the URL
+const tournamentUrlKey = (key) => { const i = key.indexOf(":"); return i < 0 ? key : key.slice(0, i) + "/" + key.slice(i + 1); };
+
+function currentPath() {
+  if (state.tournament) return "/tournament/" + tournamentUrlKey(state.tournament.key);
+  if (state.mode === "players") return state.playerId ? "/player/" + encodeURIComponent(state.playerId) : "/players";
+  if (state.mode === "rankings") return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}` : "/rankings";
+  if (state.mode === "favorites") return "/following";
+  if (state.mode === "archive") return "/results";
+  return "/";
+}
+
+function setTitle() {
+  const P = state.player && state.player !== "loading" ? state.player.player : null;
+  let t = "PadelTicker — live padel scores";
+  if (state.tournament) t = `${state.tournament.name} — draw, results & schedule · PadelTicker`;
+  else if (P) t = `${P.name} — padel results, ranking & head-to-head · PadelTicker`;
+  else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
+  else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
+  else if (state.mode === "players") t = "Padel players — profiles, results & head-to-head · PadelTicker";
+  else if (state.mode === "favorites") t = "Following — your padel players & tournaments · PadelTicker";
+  document.title = t;
+}
+
+function syncUrl(push = true) {
+  setTitle();
+  if (_routing) return;
+  const path = currentPath();
+  if (location.pathname + location.search === path) return;
+  try { history[push ? "pushState" : "replaceState"]({}, "", path); } catch {}
+}
+
+function openTournamentRoute(key) {
+  const m = state.matches.find((x) => x.source + ":" + x.tournament.id === key);
+  if (m) return openTournament("live", key, m.tournament.name, m.federation);
+  const at = state.archive?.tournaments?.find((t) => t.key === key);
+  if (at) return openTournament("arch", key, at.name, at.federation);
+  openTournament("arch", key, key, ""); // name/fed fill in once the archive file loads
+}
+
+function applyRoute() {
+  _routing = true;
+  try {
+    const seg = decodeURIComponent(location.pathname).split("/").filter(Boolean);
+    const q = new URLSearchParams(location.search);
+    if (seg[0] === "player" && seg[1]) { activateMode("players"); openPlayer(seg[1]); }
+    else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1] + ":" + seg.slice(2).join("/")); }
+    else if (seg[0] === "rankings") {
+      activateMode("rankings");
+      if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
+    }
+    else if (seg[0] === "results") activateMode("archive");
+    else if (seg[0] === "players") {
+      activateMode("players");
+      const qq = q.get("q");
+      if (qq) { const el = document.getElementById("q"); el.value = qq; state.query = qq; searchPlayers(qq); }
+    }
+    else if (seg[0] === "following") activateMode("favorites");
+    else activateMode("live");
+  } finally { _routing = false; }
+  setTitle();
+}
+
+window.addEventListener("popstate", applyRoute);
+
 updateFavBadge();
 initPush();
 app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
-load(false).then(pollLoop);
+load(false).then(() => { applyRoute(); pollLoop(); });
 // keep the "updated Xs ago" label ticking
 setInterval(renderControls, 15_000);
