@@ -334,7 +334,7 @@ function groupHtml(g, changed) {
   return `
     <div class="group ${open ? "open" : ""}" data-group="${esc(g.key)}">
       <div class="group__head" data-toggle="${esc(g.key)}">
-        <span class="group__title tlink" data-tourney="live" data-tkey="${esc(g.key)}" data-tname="${esc(g.t.name)}" data-tfed="${esc(g.fed)}">${esc(g.t.name)}</span>
+        <span class="group__title"><span class="tlink" data-tourney="live" data-tkey="${esc(g.key)}" data-tname="${esc(g.t.name)}" data-tfed="${esc(g.fed)}">${esc(g.t.name)}</span></span>
         <span class="group__meta">
           ${nLive ? `<span class="badge live">${nLive} live</span>` : ""}
           <span class="count">${g.matches.length}</span>
@@ -512,7 +512,7 @@ function archiveRow(t) {
     <div class="group ${open ? "open" : ""}" data-arch="${esc(t.key)}">
       <div class="group__head" data-archtoggle="${esc(t.key)}">
         <span class="flag">${FLAGS[t.federation] || ""} ${t.federation}</span>
-        <span class="group__title tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span>
+        <span class="group__title"><span class="tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span></span>
         <span class="group__meta"><span class="count">${esc((t.start || "").slice(0, 10))} · ${t.n}</span><span class="chev">▶</span></span>
       </div>
       <div class="group__body">${open ? (loaded ? archiveMatches(loaded) : `<div class="detail" style="display:block">Loading…</div>`) : ""}</div>
