@@ -15,6 +15,33 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PadelTicker" />
+  <!-- Open Graph / Twitter (per-entity pages override these via Pages Functions) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PadelTicker" />
+  <meta property="og:title" content="PadelTicker — live padel scores" />
+  <meta property="og:description" content="Live padel scores, rankings and draws from around the world: Premier Padel, FIP and national tours, all in one feed." />
+  <meta property="og:url" content="https://padelticker.com/" />
+  <meta property="og:image" content="https://padelticker.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PadelTicker — live padel scores" />
+  <meta name="twitter:description" content="Live padel scores, rankings and draws — Premier Padel, FIP and national tours." />
+  <meta name="twitter:image" content="https://padelticker.com/og-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PadelTicker",
+    "url": "https://padelticker.com/",
+    "description": "Live padel scores, rankings and draws from around the world.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": { "@type": "EntryPoint", "urlTemplate": "https://padelticker.com/players?q={search_term_string}" },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <style>
     :root {
       --bg: #0e1014; --bg-2: #14171d; --card: #191d25; --card-hi: #1f2530;
