@@ -750,6 +750,7 @@ function splitCategory(m) {
 }
 
 function openTournament(kind, key, name, fed) {
+  state.tView = "draw"; // each tournament opens on the draw; user can switch to By day
   state.tournament = { kind, key, name, fed, matches: kind === "live" ? null : "loading" };
   syncUrl(); // /tournament/<source>/<id>
   if (kind === "arch") {
@@ -921,35 +922,68 @@ function renderTournament() {
     ${src ? `<a class="src" href="${esc(src.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[src.source] || src.source)}</a>` : ""}
   </div>`;
 
+  // Offer a "By day" schedule when the matches carry a play-day (FIP events).
+  const hasDays = matches.some((m) => m.day && m.day.n != null);
+  const view = hasDays ? (state.tView || "draw") : "draw";
+  if (hasDays) {
+    html += `<div class="tviews">
+      <button class="tvbtn ${view === "draw" ? "on" : ""}" data-tview="draw">Draw</button>
+      <button class="tvbtn ${view === "day" ? "on" : ""}" data-tview="day">By day</button>
+    </div>`;
+  }
+
   if (!matches.length) { app.innerHTML = html + `<div class="empty">No matches for this event yet.</div>`; return; }
 
-  // group by category (class) → round, rounds ordered final-first
-  const cats = new Map();
-  for (const m of matches) {
-    const { cls, round } = splitCategory(m);
-    if (!cats.has(cls)) cats.set(cls, new Map());
-    const rmap = cats.get(cls);
-    if (!rmap.has(round)) rmap.set(round, []);
-    rmap.get(round).push(m);
-  }
-  const roundList = (entries) => entries
-    .sort((a, b) => roundRank(b[0]) - roundRank(a[0]))
-    .map(([round, ms]) => (round ? `<div class="round-label">${esc(round)}</div>` : "") +
-      `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`)
-    .join("");
+  if (view === "day") {
+    html += renderByDay(matches, tv);
+  } else {
+    // group by category (class) → round, rounds ordered final-first
+    const cats = new Map();
+    for (const m of matches) {
+      const { cls, round } = splitCategory(m);
+      if (!cats.has(cls)) cats.set(cls, new Map());
+      const rmap = cats.get(cls);
+      if (!rmap.has(round)) rmap.set(round, []);
+      rmap.get(round).push(m);
+    }
+    const roundList = (entries) => entries
+      .sort((a, b) => roundRank(b[0]) - roundRank(a[0]))
+      .map(([round, ms]) => (round ? `<div class="round-label">${esc(round)}</div>` : "") +
+        `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`)
+      .join("");
 
-  for (const [cls, rmap] of cats) {
-    if (cls) html += `<div class="section-label region">${esc(cls)}</div>`;
-    const bracket = buildBracket([...rmap.values()].flat());
-    if (bracket) {
-      html += renderBracket(bracket);
-      html += roundList([...rmap.entries()].filter(([r]) => !isKO(r))); // groups/qualifying as list
-    } else {
-      html += roundList([...rmap.entries()]);
+    for (const [cls, rmap] of cats) {
+      if (cls) html += `<div class="section-label region">${esc(cls)}</div>`;
+      const bracket = buildBracket([...rmap.values()].flat());
+      if (bracket) {
+        html += renderBracket(bracket);
+        html += roundList([...rmap.entries()].filter(([r]) => !isKO(r))); // groups/qualifying as list
+      } else {
+        html += roundList([...rmap.entries()]);
+      }
     }
   }
   if (players.size) html += `<div class="section-label">Players · ${players.size}</div><div class="tplayers">${[...players].sort().map((p) => `<span class="pchip">${esc(p)}</span>`).join("")}</div>`;
   app.innerHTML = html;
+}
+
+// Schedule view: matches grouped by tournament play-day, chronological within a day.
+function renderByDay(matches, tv) {
+  const byDay = new Map();
+  for (const m of matches) {
+    const k = m.day && m.day.n != null ? m.day.n : Infinity;
+    if (!byDay.has(k)) byDay.set(k, { label: m.day && m.day.label, matches: [] });
+    byDay.get(k).matches.push(m);
+  }
+  let out = "";
+  for (const k of [...byDay.keys()].sort((a, b) => a - b)) {
+    const g = byDay.get(k);
+    const head = k === Infinity ? "Date TBC" : `Day ${k}${g.label ? " · " + esc(g.label) : ""}`;
+    g.matches.sort(cmpByStart);
+    out += `<div class="section-label region">${head}<span class="count">${g.matches.length} match${g.matches.length === 1 ? "" : "es"}</span></div>` +
+      `<div class="group open"><div class="group__body">${g.matches.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
+  }
+  return out;
 }
 
 // ---------- rankings (national, RankedIn) ----------
@@ -1138,6 +1172,8 @@ app.addEventListener("click", (e) => {
     return;
   }
   if (e.target.closest("[data-tback]")) { state.tournament = null; render(); syncUrl(); return; }
+  const tvw = e.target.closest("[data-tview]");
+  if (tvw) { state.tView = tvw.dataset.tview; render(); return; }
 
   // push alerts enable/disable
   const pb = e.target.closest("[data-push]");

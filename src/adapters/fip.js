@@ -42,13 +42,13 @@ export async function fetchMatches({ date = todayISO(), maxTournaments = 15, max
           log(`    ! ${ev.slug}: no idEvent on event page`);
           continue;
         }
-        const days = await recentDays(page, msId, maxDay);
+        const days = await recentDays(page, msId, maxDay, maxDay); // all played+scheduled days (for per-day view)
         if (!days.length) {
           log(`    · ${ev.slug} (${msId}): no widget matches yet`);
           continue;
         }
         let n = 0;
-        for (const d of days) { estimateDay(d); for (const m of d.matches) { out.push(normalize(m, ev, msId)); n++; } }
+        for (const d of days) { estimateDay(d); for (const m of d.matches) { out.push(normalize(m, ev, msId, { n: d.day, label: d.dayDate })); n++; } }
         log(`    ✓ ${ev.title} — day(s) ${days.map((d) => d.day).join(",")}: ${n} matches`);
       } catch (err) {
         log(`    ! ${ev.slug} failed — ${err.message}`);
@@ -213,7 +213,7 @@ function estimateDay(day) {
 
 // ---- normalization ---------------------------------------------------------
 
-function normalize(m, ev, msId) {
+function normalize(m, ev, msId, day) {
   const [a, b] = m.teams;
   // pair the two teams' game cells into per-set [teamA, teamB], dropping "-" (unplayed)
   const nSets = Math.max(a.setCells.length, b.setCells.length);
@@ -229,6 +229,7 @@ function normalize(m, ev, msId) {
     tournament: { id: msId, name: ev.title, url: ev.link },
     className: null,
     round: m.round || null,
+    day: day || null,                 // { n, label } tournament play-day, for per-day grouping
     court: m.court || null,           // real court (CENTER COURT / COURT 2 …)
     schedule: m.schedule || null,     // order-of-play phrase ("Not before 3:00 PM")
     estStart: statusOf(m) === STATUS.UPCOMING ? m.estStart || null : null, // venue-local "HH:MM"
