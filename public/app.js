@@ -264,6 +264,22 @@ function cmpByStart(a, b) {
   return 0; // keep feed order within live / final
 }
 
+// Prestige tier from a tournament name (Premier Padel + FIP ladder). National
+// events have no tier keyword → 0, so they rank by size within their section.
+function tournamentTier(name) {
+  const s = (name || "").toLowerCase();
+  if (/\bmajor\b|\bfinals?\b/.test(s)) return 100;   // Premier Padel Major / Finals
+  if (/\bp1\b/.test(s)) return 90;                    // Premier Padel P1
+  if (/\bp2\b/.test(s)) return 80;                    // Premier Padel P2
+  if (/\bgold\b/.test(s)) return 70;                  // FIP Gold
+  if (/\bsilver\b/.test(s)) return 60;                // FIP Silver
+  if (/\bbronze\b/.test(s)) return 50;                // FIP Bronze
+  if (/promis/.test(s)) return 30;                    // FIP Promises (youth)
+  return 0;
+}
+// Bigger first: tier dominates, match count breaks ties (and orders nationals).
+const tournamentRank = (g) => tournamentTier(g.t.name) * 1000 + g.matches.length;
+
 function renderGroups(matches, changed) {
   // group by tournament, preserve aggregate order
   const groups = new Map();
@@ -298,6 +314,7 @@ function renderGroups(matches, changed) {
 
   return ordered
     .map(([fed, gs]) => {
+      gs.sort((a, b) => tournamentRank(b) - tournamentRank(a)); // biggest / most prestigious first
       const n = gs.reduce((s, g) => s + g.matches.length, 0);
       const header =
         `<div class="section-label region"><span class="rflag">${FLAGS[fed] || ""}</span>${esc(REGION_LABEL[fed] || fed)}` +
