@@ -397,12 +397,21 @@ function matchRow(m, changed, showTournament) {
     </div>`;
 }
 
+// FIP encodes a tie-break set by appending the tie-break points to the 6-games
+// side (e.g. "66" = 6 games, tie-break 6 → 7–6⁽⁶⁾). Split games from tie-break.
+function setParts(v) {
+  const m = /^([67])(\d+)$/.exec(String(v == null ? "" : v));
+  return m ? { g: m[1], tb: m[2] } : { g: String(v == null ? "" : v), tb: null };
+}
+const setCellHtml = (v) => { const { g, tb } = setParts(v); return tb ? `${esc(g)}<sup class="tb">${esc(tb)}</sup>` : esc(g); };
+const setCellText = (v) => { const { g, tb } = setParts(v); return tb ? `${g}(${tb})` : g; }; // plain text (SVG bracket)
+
 function teamLine(m, side, isChanged) {
   const t = m.teams[side];
   const win = m.score.winner === side;
   const sets = m.score.sets || [];
   const cells = sets.length
-    ? `<div class="sets">${sets.map((s) => `<${win ? "b" : "span"} class="${isChanged ? "flash" : ""}">${esc(s[side])}</${win ? "b" : "span"}>`).join("")}</div>`
+    ? `<div class="sets">${sets.map((s) => `<${win ? "b" : "span"} class="${isChanged ? "flash" : ""}">${setCellHtml(s[side])}</${win ? "b" : "span"}>`).join("")}</div>`
     : side === 0
     ? `<span class="vs">vs</span>`
     : "";
@@ -412,7 +421,7 @@ function teamLine(m, side, isChanged) {
 function detail(m) {
   const sets = m.score.sets || [];
   const setGrid = sets.length
-    ? `<div class="grid">${sets.map((s, i) => `<div class="setcol"><div class="lbl">Set ${i + 1}</div><div class="val">${esc(s[0])}–${esc(s[1])}</div></div>`).join("")}</div>`
+    ? `<div class="grid">${sets.map((s, i) => `<div class="setcol"><div class="lbl">Set ${i + 1}</div><div class="val">${setCellHtml(s[0])}–${setCellHtml(s[1])}</div></div>`).join("")}</div>`
     : `<div style="margin:6px 0 10px;color:var(--faint)">No score yet.</div>`;
   const kv = [
     m.className && `<span>Class <b>${esc(m.className)}</b></span>`,
@@ -828,7 +837,7 @@ function renderBracket(b) {
     const [a, bb] = n.m.teams;
     const w = n.m.score?.winner;
     const sets = n.m.score?.sets || [];
-    const sc = (side) => (sets.length ? sets.map((st) => st[side]).join(" ") : "");
+    const sc = (side) => (sets.length ? sets.map((st) => setCellText(st[side])).join(" ") : "");
     s += `<g class="bk-box">
       <rect x="${x}" y="${y}" width="${BOX_W}" height="${BOX_H}" rx="7"/>
       <text class="bk-t ${w === 0 ? "win" : ""}" x="${x + 9}" y="${y + 18}">${esc(trunc(a.name))}</text>

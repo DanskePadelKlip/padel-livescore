@@ -191,6 +191,8 @@
     .sets b, .sets span { min-width: 11px; text-align: center; color: var(--muted); font-weight: 500; }
     .team.win .sets b, .team.win .sets span { color: var(--win); font-weight: 700; }
     .sets .flash { animation: flashcell 1.6s ease-out; border-radius: 4px; }
+    /* tie-break points shown as a small superscript, e.g. 6⁶ = 6 games, TB 6 */
+    .tb { font-size: .62em; font-weight: 600; vertical-align: super; opacity: .75; margin-left: 1px; line-height: 0; }
     @keyframes flashcell { 0% { background: var(--flash); } 100% { background: transparent; } }
     .vs { color: var(--faint); font-size: 12px; margin-left: auto; }
 
