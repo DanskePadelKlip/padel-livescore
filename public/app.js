@@ -379,7 +379,7 @@ function matchRow(m, changed, showTournament) {
     m.status === "live"
       ? `<span class="lampe"></span><span class="badge live">Live</span>`
       : m.status === "final"
-      ? `<span class="badge final">Final</span>`
+      ? `<span class="badge final">Ended</span>`
       : `${followed ? `<span class="foll">Next up</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
@@ -832,20 +832,29 @@ function renderBracket(b) {
       s += `<path class="bk-line" d="M${cx2} ${ccy} H${midX.toFixed(1)} V${ncy.toFixed(1)} H${nx}"/>`;
     }
   }
-  for (const n of b.nodes) {
+  const uid = "bk" + (renderBracket._n = (renderBracket._n || 0) + 1) + "_"; // unique clip ids per bracket
+  const CHAR = 6.1; // ≈ width of one 11px glyph
+  b.nodes.forEach((n, ni) => {
     const x = xOf(n.round), y = HEAD + n.cy - BOX_H / 2;
     const [a, bb] = n.m.teams;
     const w = n.m.score?.winner;
     const sets = n.m.score?.sets || [];
-    const sc = (side) => (sets.length ? sets.map((st) => setCellText(st[side])).join(" ") : "");
+    // Games only in the bracket — keeps it compact; tie-break points show in the match list.
+    const sc = (side) => (sets.length ? sets.map((st) => setParts(st[side]).g).join(" ") : "");
+    const s0 = sc(0), s1 = sc(1);
+    const scoreW = Math.max(s0.length, s1.length) * 7 + 4;      // px reserved for the score
+    const nameRight = x + BOX_W - 7 - scoreW;                   // names must stop before the score
+    const nameChars = Math.max(4, Math.floor((nameRight - (x + 9)) / CHAR));
+    const clip = uid + ni;
+    s += `<clipPath id="${clip}"><rect x="${x + 9}" y="${y}" width="${Math.max(8, nameRight - (x + 9))}" height="${BOX_H}"/></clipPath>`;
     s += `<g class="bk-box">
       <rect x="${x}" y="${y}" width="${BOX_W}" height="${BOX_H}" rx="7"/>
-      <text class="bk-t ${w === 0 ? "win" : ""}" x="${x + 9}" y="${y + 18}">${esc(trunc(a.name))}</text>
-      <text class="bk-s ${w === 0 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 18}" text-anchor="end">${esc(sc(0))}</text>
-      <text class="bk-t ${w === 1 ? "win" : ""}" x="${x + 9}" y="${y + 37}">${esc(trunc(bb.name))}</text>
-      <text class="bk-s ${w === 1 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 37}" text-anchor="end">${esc(sc(1))}</text>
+      <text class="bk-t ${w === 0 ? "win" : ""}" x="${x + 9}" y="${y + 18}" clip-path="url(#${clip})">${esc(trunc(a.name, nameChars))}</text>
+      <text class="bk-s ${w === 0 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 18}" text-anchor="end">${esc(s0)}</text>
+      <text class="bk-t ${w === 1 ? "win" : ""}" x="${x + 9}" y="${y + 37}" clip-path="url(#${clip})">${esc(trunc(bb.name, nameChars))}</text>
+      <text class="bk-s ${w === 1 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 37}" text-anchor="end">${esc(s1)}</text>
     </g>`;
-  }
+  });
   return `<div class="bk-wrap"><svg class="bk" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${s}</svg></div>`;
 }
 
