@@ -923,8 +923,8 @@ function renderTournament() {
     ${src ? `<a class="src" href="${esc(src.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[src.source] || src.source)}</a>` : ""}
   </div>`;
 
-  // Offer a "By day" schedule when the matches carry a play-day (FIP events).
-  const hasDays = matches.some((m) => m.day && m.day.n != null);
+  // Offer a "By day" schedule when the matches carry a play-day (FIP) or a date (RankedIn).
+  const hasDays = matches.some((m) => matchDay(m));
   const view = hasDays ? (state.tView || "draw") : "draw";
   if (hasDays) {
     html += `<div class="tviews">
@@ -968,18 +968,35 @@ function renderTournament() {
   app.innerHTML = html;
 }
 
-// Schedule view: matches grouped by tournament play-day, chronological within a day.
+// A match's play-day: FIP carries {n,label} from the widget; RankedIn (and any
+// dated source) carries a real startTime, from which we derive the calendar day.
+const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function dateLabel(iso) {
+  const [y, mo, d] = iso.split("-").map(Number);
+  return `${WD[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()]} ${d} ${MO[mo - 1]}`;
+}
+function matchDay(m) {
+  if (m.day && m.day.n != null) return { key: "d" + m.day.n, sort: m.day.n, n: m.day.n, label: m.day.label };
+  if (m.startTime && /^\d{4}-\d{2}-\d{2}/.test(m.startTime)) { const iso = m.startTime.slice(0, 10); return { key: iso, sort: iso, n: null, label: dateLabel(iso) }; }
+  return null;
+}
+
+// Schedule view: matches grouped by play-day, chronological within a day.
 function renderByDay(matches, tv) {
   const byDay = new Map();
   for (const m of matches) {
-    const k = m.day && m.day.n != null ? m.day.n : Infinity;
-    if (!byDay.has(k)) byDay.set(k, { label: m.day && m.day.label, matches: [] });
-    byDay.get(k).matches.push(m);
+    const d = matchDay(m);
+    const key = d ? d.key : "__tbc";
+    if (!byDay.has(key)) byDay.set(key, { sort: d ? d.sort : Infinity, n: d ? d.n : null, label: d ? d.label : null, matches: [] });
+    byDay.get(key).matches.push(m);
   }
-  let out = "";
-  for (const k of [...byDay.keys()].sort((a, b) => a - b)) {
-    const g = byDay.get(k);
-    const head = k === Infinity ? "Date TBC" : `Day ${k}${g.label ? " · " + esc(g.label) : ""}`;
+  const groups = [...byDay.values()].sort((a, b) =>
+    a.sort === b.sort ? 0 : a.sort === Infinity ? 1 : b.sort === Infinity ? -1 : a.sort < b.sort ? -1 : 1);
+  let out = "", i = 0;
+  for (const g of groups) {
+    i++;
+    const head = g.sort === Infinity ? "Date TBC" : `Day ${g.n != null ? g.n : i}${g.label ? " · " + esc(g.label) : ""}`;
     g.matches.sort(cmpByStart);
     out += `<div class="section-label region">${head}<span class="count">${g.matches.length} match${g.matches.length === 1 ? "" : "es"}</span></div>` +
       `<div class="group open"><div class="group__body">${g.matches.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
@@ -1034,13 +1051,17 @@ function renderEvents() {
       <span class="flag">${FLAGS[c.fed] || ""} ${esc(c.fed)}</span>
       <div class="ev-main">
         <div class="ev-name">${esc(c.name)}</div>
-        <div class="ev-meta"><span class="ev-tag ${c.format === "League" ? "league" : ""}">${c.format}</span> · ${c.matches.length} matches · ${c.players.size} players</div>
+        <div class="ev-meta">${c.matches.length} matches · ${c.players.size} players</div>
       </div>
       ${pill(c)}
     </div>`;
-  app.innerHTML =
-    `<div class="section-label">${list.length} competition${list.length === 1 ? "" : "s"}<span class="count">${list.filter((c) => c.live).length} live now</span></div>` +
-    list.map(card).join("");
+  let html = "";
+  for (const [label, items] of [["Tournaments", list.filter((c) => c.format === "Tournament")], ["Leagues", list.filter((c) => c.format === "League")]]) {
+    if (!items.length) continue;
+    const nLive = items.filter((c) => c.live).length;
+    html += `<div class="section-label">${label}<span class="count">${items.length}${nLive ? ` · ${nLive} live` : ""}</span></div>` + items.map(card).join("");
+  }
+  app.innerHTML = html;
 }
 
 // ---------- rankings (national, RankedIn) ----------
