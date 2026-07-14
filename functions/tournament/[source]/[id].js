@@ -47,5 +47,6 @@ export async function onRequestGet({ request, params }) {
     ...(end ? { endDate: end } : {}),
   };
 
-  return withMeta(base, { title, description, canonical, ogType: "website", jsonld });
+  const image = `${SITE}/og/tournament/${encodeURIComponent(source)}/${encodeURIComponent(id)}`;
+  return withMeta(base, { title, description, canonical, ogType: "website", image, jsonld });
 }

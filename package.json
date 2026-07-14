@@ -13,6 +13,7 @@
     "dev": "node scripts/fetch-live.js && node scripts/serve.js"
   },
   "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
     "playwright": "^1.61.1",
     "web-push": "^3.6.7"
   }

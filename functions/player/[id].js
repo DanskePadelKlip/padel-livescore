@@ -40,5 +40,6 @@ export async function onRequestGet({ request, params }) {
     ...(cc ? { nationality: cc } : {}),
   };
 
-  return withMeta(base, { title, description, canonical, ogType: "profile", jsonld });
+  const image = `${SITE}/og/player/${encodeURIComponent(id)}`;
+  return withMeta(base, { title, description, canonical, ogType: "profile", image, jsonld });
 }
