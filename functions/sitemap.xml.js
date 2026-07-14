@@ -32,6 +32,7 @@ export async function onRequestGet({ request }) {
 
   // 1) Core pages.
   add("/", { changefreq: "hourly", priority: "1.0", lastmod: today });
+  add("/events", { changefreq: "hourly", priority: "0.8", lastmod: today });
   add("/rankings", { changefreq: "daily", priority: "0.8", lastmod: today });
   add("/results", { changefreq: "daily", priority: "0.7", lastmod: today });
   add("/players", { changefreq: "weekly", priority: "0.6" });

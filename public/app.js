@@ -211,6 +211,7 @@ function filtered() {
 function render(changed = new Set()) {
   renderControls();
   if (state.tournament) return renderTournament();
+  if (state.mode === "events") return renderEvents();
   if (state.mode === "favorites") return renderFavorites();
   if (state.mode === "rankings") return renderRankings();
   if (state.mode === "players") return renderPlayers();
@@ -986,6 +987,62 @@ function renderByDay(matches, tv) {
   return out;
 }
 
+// ---------- competitions overview ----------
+
+// Tournament (knockout draw) vs League (round-robin / team). KO rounds are the
+// strongest signal; otherwise fall back to name keywords.
+function competitionFormat(name, matches) {
+  if (matches.some((m) => isKO(m.round))) return "Tournament";
+  if (/\bliga\b|league|extraliga|interclub|\bdivision\b|holdturnering|pool play|\bserie[an]?\b/i.test(name || "")) return "League";
+  return "Tournament";
+}
+
+// Browse every current competition (tournament or league) from the live feed.
+function renderEvents() {
+  const comps = new Map();
+  for (const m of state.matches) {
+    if (state.fed !== "all" && m.federation !== state.fed) continue;
+    const key = m.source + ":" + m.tournament.id;
+    if (!comps.has(key)) comps.set(key, { key, name: m.tournament.name, source: m.source, fed: m.federation, matches: [], players: new Set() });
+    const c = comps.get(key);
+    c.matches.push(m);
+    for (const t of m.teams) for (const p of (t.name || "").split("/")) { const n = p.trim(); if (n) c.players.add(n); }
+  }
+  const q = state.query.trim().toLowerCase();
+  const list = [...comps.values()].filter((c) => !q || c.name.toLowerCase().includes(q));
+  for (const c of list) {
+    c.live = c.matches.filter((m) => m.status === "live").length;
+    c.upcoming = c.matches.filter((m) => m.status === "upcoming").length;
+    c.format = competitionFormat(c.name, c.matches);
+  }
+  list.sort((a, b) =>
+    (b.live > 0) - (a.live > 0) ||
+    tournamentTier(b.name) - tournamentTier(a.name) ||
+    b.matches.length - a.matches.length ||
+    a.name.localeCompare(b.name));
+
+  if (!list.length) {
+    app.innerHTML = `<div class="empty"><div class="big">🎾</div>No competitions match.</div>`;
+    return;
+  }
+
+  const pill = (c) =>
+    c.live ? `<span class="ev-pill live"><span class="lampe"></span>${c.live} live</span>`
+    : c.upcoming ? `<span class="ev-pill up">${c.upcoming} upcoming</span>`
+    : `<span class="ev-pill done">Completed</span>`;
+  const card = (c) => `<div class="ev" data-tourney="live" data-tkey="${esc(c.key)}" data-tname="${esc(c.name)}" data-tfed="${esc(c.fed)}">
+      <span class="flag">${FLAGS[c.fed] || ""} ${esc(c.fed)}</span>
+      <div class="ev-main">
+        <div class="ev-name">${esc(c.name)}</div>
+        <div class="ev-meta"><span class="ev-tag ${c.format === "League" ? "league" : ""}">${c.format}</span> · ${c.matches.length} matches · ${c.players.size} players</div>
+      </div>
+      ${pill(c)}
+    </div>`;
+  app.innerHTML =
+    `<div class="section-label">${list.length} competition${list.length === 1 ? "" : "s"}<span class="count">${list.filter((c) => c.live).length} live now</span></div>` +
+    list.map(card).join("");
+}
+
 // ---------- rankings (national, RankedIn) ----------
 
 async function loadRankings() {
@@ -1104,13 +1161,14 @@ function activateMode(mode) {
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
   document.getElementById("tabs").style.display = mode === "live" ? "" : "none";
   document.getElementById("year").hidden = mode !== "archive";
-  document.getElementById("chips").style.display = mode === "live" || mode === "archive" ? "" : "none";
+  document.getElementById("chips").style.display = mode === "live" || mode === "archive" || mode === "events" ? "" : "none";
   const qEl = document.getElementById("q");
   qEl.value = "";
   qEl.closest(".search").style.display = mode === "favorites" ? "none" : "";
   qEl.placeholder =
     mode === "players" ? "Search a player by name…" :
     mode === "rankings" ? "Filter this ranking…" :
+    mode === "events" ? "Search competitions…" :
     mode === "archive" ? "Search tournament…" : "Search player or tournament…";
   if (mode === "archive" && !state.archive) loadArchive();
   else if (mode === "rankings" && !state.rankings) loadRankings();
@@ -1341,6 +1399,7 @@ function currentPath() {
   if (state.mode === "rankings") return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}` : "/rankings";
   if (state.mode === "favorites") return "/following";
   if (state.mode === "archive") return "/results";
+  if (state.mode === "events") return "/events";
   return "/";
 }
 
@@ -1353,6 +1412,7 @@ function setTitle() {
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "players") t = "Padel players — profiles, results & head-to-head · PadelTicker";
   else if (state.mode === "favorites") t = "Following — your padel players & tournaments · PadelTicker";
+  else if (state.mode === "events") t = "Padel tournaments & leagues — live competitions · PadelTicker";
   document.title = t;
 }
 
@@ -1386,6 +1446,7 @@ function applyRoute() {
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
     }
     else if (seg[0] === "results") activateMode("archive");
+    else if (seg[0] === "events") activateMode("events");
     else if (seg[0] === "players") {
       activateMode("players");
       const qq = q.get("q");
