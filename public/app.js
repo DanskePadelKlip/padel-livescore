@@ -797,9 +797,30 @@ function buildBracket(matches) {
     for (const pm of rounds[ri - 1][1]) for (const tn of tnames(pm)) prevByTeam.set(tn, pm);
     for (const m of rounds[ri][1]) {
       const node = nodeOf.get(m);
-      for (const tn of tnames(m)) { const f = prevByTeam.get(tn); if (f && f !== m) node.children.push(nodeOf.get(f)); }
+      for (const tn of tnames(m)) {
+        const f = prevByTeam.get(tn);
+        if (f && f !== m) node.children.push(nodeOf.get(f));
+        else {
+          // This team didn't play the previous round — a seed on a bye. Add a
+          // placeholder feeder so the match still has two children and the
+          // layout centres into a proper pyramid (standard bracket convention).
+          const bye = { m: null, round: ri - 1, roundName: rounds[ri - 1][0], children: [], cy: 0, bye: true, teamName: tn };
+          nodes.push(bye);
+          node.children.push(bye);
+        }
+      }
       node.children = [...new Set(node.children)];
     }
+  }
+
+  // Live/partial draws: a match whose winner's next match isn't in the feed yet
+  // would dangle with no line out. Give it a "TBD" placeholder parent so it still
+  // connects forward into the bracket instead of floating.
+  const pointed = new Set();
+  for (const n of nodes) for (const c of n.children) pointed.add(c);
+  const lastRi = rounds.length - 1;
+  for (const n of nodes.filter((n) => n.m && n.round < lastRi && !pointed.has(n))) {
+    nodes.push({ m: null, round: n.round + 1, roundName: rounds[n.round + 1][0], children: [n], cy: 0, tbd: true });
   }
 
   const SLOT = 58;
@@ -810,7 +831,9 @@ function buildBracket(matches) {
     const ys = n.children.map(place);
     n.cy = (Math.min(...ys) + Math.max(...ys)) / 2; return n.cy;
   };
-  for (const fn of rounds[rounds.length - 1][1].map((m) => nodeOf.get(m))) place(fn);
+  const hasParent = new Set();
+  for (const n of nodes) for (const c of n.children) hasParent.add(c);
+  for (const r of nodes.filter((n) => !hasParent.has(n))) place(r); // every root: real finals + TBD stubs
   for (const n of nodes) if (!seen.has(n)) { seen.add(n); n.cy = slot * SLOT + SLOT / 2; slot++; }
   return { rounds: rounds.map((r) => r[0]), nodes, slots: slot, SLOT };
 }
@@ -836,6 +859,25 @@ function renderBracket(b) {
   const CHAR = 6.1; // ≈ width of one 11px glyph
   b.nodes.forEach((n, ni) => {
     const x = xOf(n.round), y = HEAD + n.cy - BOX_H / 2;
+    if (n.tbd) {
+      // Winner of a completed match advances here; opponent not decided yet.
+      s += `<g class="bk-box bk-bye">
+        <rect x="${x}" y="${y}" width="${BOX_W}" height="${BOX_H}" rx="7"/>
+        <text class="bk-bye-tag" x="${x + 12}" y="${y + BOX_H / 2 + 4}">TBD · winner advances</text>
+      </g>`;
+      return;
+    }
+    if (n.bye) {
+      // A seed entering on a bye — a quiet dashed placeholder feeding the next match.
+      const clipB = uid + "b" + ni, nameRight = x + BOX_W - 7 - 30;
+      s += `<clipPath id="${clipB}"><rect x="${x + 9}" y="${y}" width="${Math.max(8, nameRight - (x + 9))}" height="${BOX_H}"/></clipPath>`;
+      s += `<g class="bk-box bk-bye">
+        <rect x="${x}" y="${y}" width="${BOX_W}" height="${BOX_H}" rx="7"/>
+        <text class="bk-t" x="${x + 9}" y="${y + BOX_H / 2 + 4}" clip-path="url(#${clipB})">${esc(trunc(n.teamName, 24))}</text>
+        <text class="bk-bye-tag" x="${x + BOX_W - 7}" y="${y + BOX_H / 2 + 4}" text-anchor="end">BYE</text>
+      </g>`;
+      return;
+    }
     const [a, bb] = n.m.teams;
     const w = n.m.score?.winner;
     const sets = n.m.score?.sets || [];
