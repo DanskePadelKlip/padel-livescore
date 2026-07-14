@@ -750,7 +750,15 @@ function openTournament(kind, key, name, fed) {
       render(); // shows skeleton
       fetch(`data/archive/t/${key}.json`)
         .then((r) => r.json())
-        .then((d) => { state.archiveData.set(key, d); if (state.tournament && state.tournament.key === key) state.tournament.matches = d.matches; render(); })
+        .then((d) => {
+          state.archiveData.set(key, d);
+          if (state.tournament && state.tournament.key === key) {
+            state.tournament.matches = d.matches;
+            if (d.name) state.tournament.name = d.name;       // backfill for deep-links opened without the index
+            if (d.federation) state.tournament.fed = d.federation;
+          }
+          render(); setTitle();
+        })
         .catch(() => { if (state.tournament) state.tournament.matches = []; render(); });
       return;
     }
@@ -1222,7 +1230,14 @@ function pollLoop() {
 // the document title updates per view. Server-side per-entity meta (for social
 // scrapers that don't run JS) is layered on via Pages Functions.
 let _routing = false; // suppress URL writes while applying a route from the URL
-const tournamentUrlKey = (key) => { const i = key.indexOf(":"); return i < 0 ? key : key.slice(0, i) + "/" + key.slice(i + 1); };
+// key → URL path. Live keys are "source:id", archive keys are "source-id";
+// split on whichever separates the source so both become "source/id".
+const tournamentUrlKey = (key) => {
+  const ci = key.indexOf(":");
+  if (ci >= 0) return key.slice(0, ci) + "/" + key.slice(ci + 1);
+  const di = key.indexOf("-");
+  return di < 0 ? key : key.slice(0, di) + "/" + key.slice(di + 1);
+};
 
 function currentPath() {
   if (state.tournament) return "/tournament/" + tournamentUrlKey(state.tournament.key);
@@ -1253,12 +1268,14 @@ function syncUrl(push = true) {
   try { history[push ? "pushState" : "replaceState"]({}, "", path); } catch {}
 }
 
-function openTournamentRoute(key) {
-  const m = state.matches.find((x) => x.source + ":" + x.tournament.id === key);
-  if (m) return openTournament("live", key, m.tournament.name, m.federation);
-  const at = state.archive?.tournaments?.find((t) => t.key === key);
-  if (at) return openTournament("arch", key, at.name, at.federation);
-  openTournament("arch", key, key, ""); // name/fed fill in once the archive file loads
+function openTournamentRoute(source, id) {
+  const liveKey = source + ":" + id;
+  const m = state.matches.find((x) => x.source + ":" + x.tournament.id === liveKey);
+  if (m) return openTournament("live", liveKey, m.tournament.name, m.federation);
+  const archKey = source + "-" + id;
+  const at = state.archive?.tournaments?.find((t) => t.key === archKey);
+  if (at) return openTournament("arch", archKey, at.name, at.federation);
+  openTournament("arch", archKey, archKey, ""); // name/fed backfilled once the archive file loads
 }
 
 function applyRoute() {
@@ -1267,7 +1284,7 @@ function applyRoute() {
     const seg = decodeURIComponent(location.pathname).split("/").filter(Boolean);
     const q = new URLSearchParams(location.search);
     if (seg[0] === "player" && seg[1]) { activateMode("players"); openPlayer(seg[1]); }
-    else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1] + ":" + seg.slice(2).join("/")); }
+    else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1], seg.slice(2).join("/")); }
     else if (seg[0] === "rankings") {
       activateMode("rankings");
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
