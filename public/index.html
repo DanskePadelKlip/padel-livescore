@@ -234,6 +234,13 @@
     .toppartner:hover { background: var(--card-hi); }
     .tp-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
     .tp-meta { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; margin-left: auto; }
+    /* ranking cards on the profile */
+    .rankcards { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .rankcard { display: flex; align-items: center; gap: 12px; padding: 10px 13px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+    .rc-fed { font-weight: 600; font-size: 13.5px; flex: 1 1 auto; }
+    .rc-rank { font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; }
+    .rc-pts { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+    .rc-move { min-width: 42px; text-align: right; }
     .pcompare { background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 8px;
       padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 13px; margin: 4px 0 6px; }
     .pcompare.on { background: var(--accent); border-color: var(--accent); color: #fff; }

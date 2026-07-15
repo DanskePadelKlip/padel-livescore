@@ -564,6 +564,8 @@ async function openPlayer(id) {
   state.h2h = null; state.comparing = false; state.player = "loading"; state.playerId = id;
   render();
   syncUrl(); // /player/<id>
+  ensureRankings(); // so the profile can show the player's ranking
+
   try { state.player = await (await fetch("/api/player/" + encodeURIComponent(id))).json(); } catch { state.player = null; }
   render();
   setTitle(); // now we have the player name
@@ -596,6 +598,30 @@ function playerResultRow(p) {
   </div>`;
 }
 
+// Lazy-load the ranking lists (shared with the Rankings tab) so a profile can
+// show the player's ranking, without the skeleton flash loadRankings() causes.
+let _ranksLoading = false;
+async function ensureRankings() {
+  if (state.rankings || _ranksLoading) return;
+  _ranksLoading = true;
+  const grab = (u) => fetch(u + "?_=" + Date.now()).then((r) => (r.ok ? r.json() : { lists: [] })).catch(() => ({ lists: [] }));
+  const [fip, nat] = await Promise.all([grab("data/rankings-fip.json"), grab("data/rankings.json")]);
+  state.rankings = { lists: [...(fip.lists || []), ...(nat.lists || [])] };
+  _ranksLoading = false;
+  if (state.mode === "players" && state.player && state.player !== "loading") render();
+}
+
+// Every ranking list this player appears in, best rank first.
+function playerRankings(id) {
+  if (!state.rankings || !id) return [];
+  const out = [];
+  for (const l of state.rankings.lists) {
+    const row = (l.rows || []).find((r) => r.id === id);
+    if (row) out.push({ fed: l.fed, movement: !!l.movement, ...row });
+  }
+  return out.sort((a, b) => a.rank - b.rank);
+}
+
 function renderProfile() {
   if (state.player === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
   const { player, summary, matches } = state.player;
@@ -621,6 +647,15 @@ function renderProfile() {
   const tp = state.player.topPartner;
   if (tp)
     html += `<div class="toppartner" data-player="${esc(tp.id)}"><span class="tp-lbl">Top partner</span><b>${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span></div>`;
+  const ranks = playerRankings(player.id);
+  if (ranks.length)
+    html += `<div class="section-label">Ranking</div><div class="rankcards">` +
+      ranks.map((r) => `<div class="rankcard">
+        <span class="rc-fed">${FLAGS[r.fed] || ""} ${r.fed === "FIP" ? "FIP world" : (REGION_LABEL[r.fed] || r.fed)}</span>
+        <span class="rc-rank">#${r.rank}</span>
+        <span class="rc-pts">${r.points != null ? Math.round(r.points).toLocaleString() : ""} pts</span>
+        <span class="rc-move">${moveCell(r, r.movement)}</span>
+      </div>`).join("") + `</div>`;
   html += `<button class="pcompare ${state.comparing ? "on" : ""}" data-compare="1">⚔️ ${state.comparing ? "Now search an opponent above…" : "Head-to-head vs…"}</button>`;
   if (state.comparing && state.playerResults && state.playerResults.length)
     html += `<div class="section-label">Tap an opponent</div>` +
