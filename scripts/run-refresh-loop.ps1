@@ -7,6 +7,12 @@
 $ErrorActionPreference = "Continue"
 # make node/npx resolvable even under a reduced scheduled-task PATH
 $env:PATH = "C:\Program Files\nodejs;$env:PATH"
+# single-instance guard: if a refresh-loop daemon is already running (re-logon,
+# a manual start, the Startup launcher firing twice), bail so we never run two
+# daemons deploying on top of each other.
+$running = Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue |
+  Where-Object { $_.CommandLine -like '*refresh-loop.js*' }
+if ($running) { Write-Host "refresh-loop already running (PID $($running.ProcessId -join ','))"; return }
 # Machine-agnostic: derive the repo root from THIS script's location (scripts/ ->
 # repo root) so the launcher works on whichever box is the always-on host, not a
 # hardcoded user profile. Was pinned to C:\Users\Kimkr (old desktop); the always-on
