@@ -12,7 +12,7 @@
 //
 // Set REFRESH_DEPLOY=0 to force local-only even when the token is present.
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
@@ -32,7 +32,7 @@ const canDeploy =
 
 async function cycle() {
   const date = new Date().toISOString().slice(0, 10);
-  const { matches } = await aggregate({ date });
+  const { matches, sources } = await aggregate({ date });
   const counts = matches.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
 
   const outDir = join(root, "public", "data");
@@ -40,6 +40,26 @@ async function cycle() {
   writeFileSync(
     join(outDir, "matches.json"),
     JSON.stringify({ generatedAt: new Date().toISOString(), date, count: matches.length, matches }, null, 2)
+  );
+
+  // health snapshot for /api/health — the loop, not just fetch-live.js, must write
+  // this or generated_at goes stale and the dead-man's-switch reports "down" even
+  // while the site is being refreshed. Rankings aren't refreshed here, so carry the
+  // last count forward from the deployed file (rankings is a warn-only check).
+  let rankings = 0;
+  try {
+    const rf = join(outDir, "rankings.json");
+    if (existsSync(rf)) rankings = (JSON.parse(readFileSync(rf, "utf8")).lists || []).length;
+  } catch {}
+  writeFileSync(
+    join(outDir, "health.json"),
+    JSON.stringify({
+      generated_at: new Date().toISOString(),
+      total: matches.length,
+      sources,                       // [{id, ok, count, error?}] per adapter
+      rankings,
+      byStatus: counts,
+    }, null, 2)
   );
 
   if (canDeploy) {

@@ -19,7 +19,10 @@ export async function onRequestGet({ request }) {
 
   let h = null;
   try {
-    const r = await fetch(origin + "/data/health.json?_=" + Date.now(), { cf: { cacheTtl: 0 } });
+    // Bound this self-subrequest: if /data/health.json can't be served the fetch
+    // stalls and the Function never responds, so the monitor sees a raw timeout
+    // instead of the intended fast overall:"down". A 3s abort drops into catch {}.
+    const r = await fetch(origin + "/data/health.json?_=" + Date.now(), { cf: { cacheTtl: 0 }, signal: AbortSignal.timeout(3000) });
     if (r.ok) h = await r.json();
   } catch {}
 
