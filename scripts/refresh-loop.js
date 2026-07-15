@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 import { aggregate } from "../src/aggregate.js";
+import { fetchRankings } from "../src/rankings.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -42,15 +43,32 @@ async function cycle() {
     JSON.stringify({ generatedAt: new Date().toISOString(), date, count: matches.length, matches }, null, 2)
   );
 
+  // Rankings change ~weekly and RankedIn is heavier than the match feed, so refresh
+  // them at most every 6h (or when missing/empty) instead of every cycle. Without
+  // this the daemon left rankings.json empty and /api/health stuck on a warn.
+  const rf = join(outDir, "rankings.json");
+  let rankings = 0;
+  let rankingsFresh = false;
+  try {
+    if (existsSync(rf)) {
+      const rj = JSON.parse(readFileSync(rf, "utf8"));
+      rankings = (rj.lists || []).length;
+      rankingsFresh = rankings > 0 && (Date.now() - Date.parse(rj.generatedAt || 0)) < 6 * 3600 * 1000;
+    }
+  } catch {}
+  if (!rankingsFresh) {
+    try {
+      const lists = await fetchRankings({ log: () => {} });
+      if (lists.length) {
+        writeFileSync(rf, JSON.stringify({ generatedAt: new Date().toISOString(), lists }, null, 2));
+        rankings = lists.length;
+      }
+    } catch (e) { console.error("  rankings refresh failed:", e.message); }
+  }
+
   // health snapshot for /api/health — the loop, not just fetch-live.js, must write
   // this or generated_at goes stale and the dead-man's-switch reports "down" even
-  // while the site is being refreshed. Rankings aren't refreshed here, so carry the
-  // last count forward from the deployed file (rankings is a warn-only check).
-  let rankings = 0;
-  try {
-    const rf = join(outDir, "rankings.json");
-    if (existsSync(rf)) rankings = (JSON.parse(readFileSync(rf, "utf8")).lists || []).length;
-  } catch {}
+  // while the site is being refreshed.
   writeFileSync(
     join(outDir, "health.json"),
     JSON.stringify({

@@ -7,8 +7,13 @@
 $ErrorActionPreference = "Continue"
 # make node/npx resolvable even under a reduced scheduled-task PATH
 $env:PATH = "C:\Program Files\nodejs;$env:PATH"
+# Machine-agnostic: derive the repo root from THIS script's location (scripts/ ->
+# repo root) so the launcher works on whichever box is the always-on host, not a
+# hardcoded user profile. Was pinned to C:\Users\Kimkr (old desktop); the always-on
+# role now lives on the laptop.
+$root = Split-Path -Parent $PSScriptRoot
 # loads $env:CLOUDFLARE_API_TOKEN + $env:CLOUDFLARE_ACCOUNT_ID (Pages token)
-. "C:\Users\Kimkr\AI Projects\danskepadelklip-site\deploy.config.ps1"
-Set-Location "C:\Users\Kimkr\AI Projects\padel-livescore"
+. (Join-Path $root "..\danskepadelklip-site\deploy.config.ps1")
+Set-Location $root
 New-Item -ItemType Directory -Force -Path "logs" | Out-Null
 & "C:\Program Files\nodejs\node.exe" scripts/refresh-loop.js *>> "logs\refresh-loop.log"
