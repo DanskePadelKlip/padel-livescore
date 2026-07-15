@@ -218,10 +218,22 @@
     .pback { background: none; border: 0; color: var(--accent); cursor: pointer; font-weight: 600; font-size: 13px; padding: 10px 0 4px; }
     .phead { display: flex; align-items: center; gap: 12px; padding: 4px 0 12px; flex-wrap: wrap; }
     .phead h2 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
-    .pstats { display: flex; gap: 16px; margin-left: auto; }
+    .pstats { display: flex; gap: 16px 18px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
     .pstat { text-align: center; }
     .pstat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+    .pstat.hi b { color: var(--accent); }
     .pstat span { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; }
+    /* form strip + top partner */
+    .form-row { display: flex; align-items: center; gap: 5px; margin: 2px 0 12px; flex-wrap: wrap; }
+    .form-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-right: 3px; }
+    .fchip { width: 20px; height: 20px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; }
+    .fchip.w { background: #2f9e5e; }
+    .fchip.l { background: #b64a4a; }
+    .streak { font-size: 11.5px; color: var(--muted); margin-left: 6px; }
+    .toppartner { display: flex; align-items: center; gap: 8px; padding: 9px 12px; margin-bottom: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 13.5px; flex-wrap: wrap; }
+    .toppartner:hover { background: var(--card-hi); }
+    .tp-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .tp-meta { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; margin-left: auto; }
     .pcompare { background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 8px;
       padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 13px; margin: 4px 0 6px; }
     .pcompare.on { background: var(--accent); border-color: var(--accent); color: #fff; }

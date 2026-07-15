@@ -419,12 +419,22 @@ function teamLine(m, side, isChanged) {
   return `<div class="team ${win ? "win" : ""}"><span class="nm">${esc(t.name)}</span>${cells}</div>`;
 }
 
+// "00:38" -> "38 min", "01:15" -> "1h 15m"
+function fmtDur(d) {
+  const m = /^(\d+):(\d+)/.exec(String(d || ""));
+  if (!m) return null;
+  const h = +m[1], min = +m[2];
+  return h ? `${h}h ${min}m` : min ? `${min} min` : null;
+}
+
 function detail(m) {
   const sets = m.score.sets || [];
   const setGrid = sets.length
     ? `<div class="grid">${sets.map((s, i) => `<div class="setcol"><div class="lbl">Set ${i + 1}</div><div class="val">${setCellHtml(s[0])}–${setCellHtml(s[1])}</div></div>`).join("")}</div>`
     : `<div style="margin:6px 0 10px;color:var(--faint)">No score yet.</div>`;
+  const dur = fmtDur(m.raw && m.raw.dur);
   const kv = [
+    dur && `<span>Duration <b>${esc(dur)}</b></span>`,
     m.className && `<span>Class <b>${esc(m.className)}</b></span>`,
     m.round && `<span>Round <b>${esc(m.round)}</b></span>`,
     m.court && `<span>Court <b>${esc(m.court)}</b></span>`,
@@ -599,9 +609,19 @@ function renderProfile() {
         <div class="pstat"><b>${summary.total}</b><span>matches</span></div>
         <div class="pstat"><b>${summary.wins}-${summary.losses}</b><span>W-L</span></div>
         <div class="pstat"><b>${pct}%</b><span>win rate</span></div>
+        ${summary.titles ? `<div class="pstat hi"><b>${summary.titles}</b><span>title${summary.titles === 1 ? "" : "s"}</span></div>` : ""}
+        ${summary.finals ? `<div class="pstat"><b>${summary.finals}</b><span>finals</span></div>` : ""}
+        ${summary.sets && summary.sets.pct != null ? `<div class="pstat"><b>${summary.sets.pct}%</b><span>sets won</span></div>` : ""}
+        ${summary.games && summary.games.pct != null ? `<div class="pstat"><b>${summary.games.pct}%</b><span>games won</span></div>` : ""}
       </div>
-    </div>
-    <button class="pcompare ${state.comparing ? "on" : ""}" data-compare="1">⚔️ ${state.comparing ? "Now search an opponent above…" : "Head-to-head vs…"}</button>`;
+    </div>`;
+  const form = summary.form || [];
+  if (form.length)
+    html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${summary.streak > 1 ? `<span class="streak">${summary.streak} ${summary.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
+  const tp = state.player.topPartner;
+  if (tp)
+    html += `<div class="toppartner" data-player="${esc(tp.id)}"><span class="tp-lbl">Top partner</span><b>${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span></div>`;
+  html += `<button class="pcompare ${state.comparing ? "on" : ""}" data-compare="1">⚔️ ${state.comparing ? "Now search an opponent above…" : "Head-to-head vs…"}</button>`;
   if (state.comparing && state.playerResults && state.playerResults.length)
     html += `<div class="section-label">Tap an opponent</div>` +
       state.playerResults.filter((p) => p.id !== player.id).map(playerResultRow).join("");
