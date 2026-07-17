@@ -12,6 +12,20 @@
   <!-- installable PWA (enables iOS Home-Screen install + Web Push on iOS 16.4+) -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0e1014" />
+  <script>
+    // Match browser chrome (and avoid a theme FOUC) to the effective theme:
+    // a manual override in localStorage if set, otherwise the system preference.
+    // Runs before first paint. app.js keeps this in sync on toggle / system change.
+    (function () {
+      try {
+        var t = localStorage.getItem('pls-theme');
+        if (t) document.documentElement.dataset.theme = t;
+        var dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.content = dark ? '#0e1014' : '#f4f6fa';
+      } catch (e) {}
+    })();
+  </script>
   <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
   <link rel="apple-touch-icon" href="/icon-180.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -405,6 +419,48 @@
 
   <div class="wrap"><div id="installbar" class="installbar" hidden></div></div>
   <main><div class="wrap" id="app"></div></main>
+
+  <!-- Server-rendered link hub. Lives outside #app (the SPA only rewrites #app),
+       so it persists as real crawlable <a> links into the deep content on every
+       page — the app navigates via pushState, which crawlers don't follow. -->
+  <footer class="sitenav">
+    <div class="wrap sitenav__inner">
+      <nav class="sitenav__col">
+        <b>Live</b>
+        <a href="/">Live scores</a>
+        <a href="/events">Tournaments &amp; events</a>
+        <a href="/results">Results archive</a>
+      </nav>
+      <nav class="sitenav__col">
+        <b>World ranking</b>
+        <a href="/rankings/FIP/men">FIP men</a>
+        <a href="/rankings/FIP/women">FIP women</a>
+        <a href="/players">Players</a>
+      </nav>
+      <nav class="sitenav__col">
+        <b>National rankings</b>
+        <a href="/rankings/DK/men">Denmark</a>
+        <a href="/rankings/SE/men">Sweden</a>
+        <a href="/rankings/DE/men">Germany</a>
+        <a href="/rankings/HR/men">Croatia</a>
+        <a href="/rankings/HU/men">Hungary</a>
+        <a href="/rankings/EE/men">Estonia</a>
+        <a href="/rankings/GE/men">Georgia</a>
+        <a href="/rankings/UA/men">Ukraine</a>
+        <a href="/rankings/SI/men">Slovenia</a>
+      </nav>
+      <p class="sitenav__note">PadelTicker — live padel scores, rankings and draws from Premier Padel, FIP and national tours.</p>
+    </div>
+    <style>
+      .sitenav { border-top: 1px solid rgba(255,255,255,.08); margin-top: 2rem; padding: 1.6rem 0 3rem; font-size: .9rem; }
+      .sitenav__inner { display: flex; flex-wrap: wrap; gap: 1.4rem 2.4rem; }
+      .sitenav__col { display: flex; flex-direction: column; gap: .3rem; }
+      .sitenav__col b { color: #9aa4b2; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .2rem; }
+      .sitenav__col a { color: #c7cfda; text-decoration: none; }
+      .sitenav__col a:hover { color: #fff; text-decoration: underline; }
+      .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
+    </style>
+  </footer>
   <!-- app.js?v=<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->

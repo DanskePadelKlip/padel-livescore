@@ -1394,7 +1394,14 @@ app.addEventListener("click", (e) => {
 
 // theme toggle (persists)
 const themeBtn = document.getElementById("theme");
-const applyTheme = (t) => { if (t) document.documentElement.dataset.theme = t; };
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+// Keep the browser chrome (theme-color) matched to whatever theme is actually showing.
+const syncThemeColor = () => {
+  const eff = document.documentElement.dataset.theme
+    || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  if (themeMeta) themeMeta.content = eff === "light" ? "#f4f6fa" : "#0e1014";
+};
+const applyTheme = (t) => { if (t) document.documentElement.dataset.theme = t; syncThemeColor(); };
 applyTheme(localStorage.getItem("pls-theme"));
 themeBtn.addEventListener("click", () => {
   const cur = document.documentElement.dataset.theme;
@@ -1402,6 +1409,10 @@ themeBtn.addEventListener("click", () => {
   const next = isDark ? "light" : "dark";
   applyTheme(next);
   localStorage.setItem("pls-theme", next);
+});
+// With no manual override, follow system light/dark changes for the chrome too.
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (!document.documentElement.dataset.theme) syncThemeColor();
 });
 
 // ---------- boot ----------
