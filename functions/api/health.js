@@ -5,6 +5,12 @@
 // dead-man's switch. Shape ({overall, checks:[{status:"PASS"|"FAIL"}]}) matches
 // what control-tower/build_status.ps1 Ping() expects.
 const FRESH_MIN = 60; // refresh runs every 15 min; >60 (GH-cron jitter margin) = stale
+// A source (FIP, tournamentsoftware, rankedin) failing longer than this is a real
+// outage, not a transient scrape blip — escalate it from "warn" to "down" so the
+// Control Tower alerts. A single dark cycle stays "warn". Was masked entirely
+// before: a browser source dying on a Playwright bump sat at "warn" indefinitely
+// while RankedIn alone kept the site "up" at ~1/4 coverage (2026-07-19).
+const SOURCE_STALE_HOURS = 3;
 
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d, null, 2), {
@@ -34,13 +40,20 @@ export async function onRequestGet({ request }) {
   const ageMin = (Date.now() - Date.parse(h.generated_at)) / 60000;
   add("fresh", "Data freshness", ageMin <= FRESH_MIN, `last update ${ageMin.toFixed(0)} min ago`);   // critical
   add("volume", "Match volume", (h.total || 0) > 0, `${h.total || 0} matches`);                       // critical
-  for (const s of h.sources || []) {                                                                  // per-adapter (warn)
-    add(`src:${s.id}`, `Source: ${s.id}`, s.ok !== false, s.ok === false ? (s.error || "adapter error") : `${s.count} matches`);
+  let sourceOutage = false;                                                                           // a source dark past the threshold -> down
+  for (const s of h.sources || []) {                                                                  // per-adapter (warn, or down if persistent)
+    const failing = s.ok === false;
+    let detail = failing ? (s.error || "adapter error") : `${s.count} matches`;
+    if (failing && s.lastOkAt) {
+      const staleH = (Date.now() - Date.parse(s.lastOkAt)) / 3_600_000;
+      if (staleH > SOURCE_STALE_HOURS) { sourceOutage = true; detail = `no data for ${staleH.toFixed(1)}h — ${s.error || "adapter down"}`; }
+    }
+    add(`src:${s.id}`, `Source: ${s.id}`, !failing, detail);
   }
   add("rankings", "Rankings", (h.rankings || 0) > 0, `${h.rankings || 0} lists`);                     // warn
 
   const fails = checks.filter((c) => c.status === "FAIL");
-  const down = fails.some((c) => c.name === "fresh" || c.name === "volume");
-  const overall = fails.length === 0 ? "ok" : down ? "down" : "warn";
+  const critical = fails.some((c) => c.name === "fresh" || c.name === "volume") || sourceOutage;
+  const overall = fails.length === 0 ? "ok" : critical ? "down" : "warn";
   return json({ overall, generated_at: h.generated_at, age_min: Math.round(ageMin), checks });
 }

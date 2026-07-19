@@ -9,6 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
+import { attachSourceHistory } from "../src/health-history.js";
 import { newlyLive, newlySoon, sendAlerts, sendSoonAlerts } from "../src/alerts.js";
 import { sendLivePush, sendStartingSoonPush } from "../src/push-send.js";
 import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
@@ -89,11 +90,18 @@ if (lists.length) {
 }
 
 // health snapshot for /api/health (monitoring) — raw facts; the endpoint derives
-// the verdict, incl. a freshness/dead-man's-switch check off generated_at.
+// the verdict, incl. a freshness/dead-man's-switch check off generated_at. Tag each
+// source with lastOkAt so a persistent outage escalates to "down" (must match
+// refresh-loop.js). On CI the working copy is a fresh checkout with no local
+// snapshot, so seed the history from the live site. See src/health-history.js.
+const sourcesWithHistory = await attachSourceHistory(sources, {
+  outDir,
+  liveUrl: "https://padelticker.com/data/health.json",
+});
 writeFileSync(join(outDir, "health.json"), JSON.stringify({
   generated_at: new Date().toISOString(),
   total: matches.length,
-  sources,                       // [{id, ok, count, error?}] per adapter
+  sources: sourcesWithHistory,   // [{id, ok, count, error?, lastOkAt}] per adapter
   rankings: (lists || []).length,
   byStatus: tally("status"),
 }, null, 2));

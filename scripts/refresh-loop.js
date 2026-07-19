@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
+import { attachSourceHistory } from "../src/health-history.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -66,6 +67,12 @@ async function cycle() {
     } catch (e) { console.error("  rankings refresh failed:", e.message); }
   }
 
+  // Tag each source with its last-success time (transient blip -> warn vs
+  // persistent outage -> down at /api/health). Local snapshot persists between
+  // cycles here, so no live fetch is needed. Must match fetch-live.js (the GH path)
+  // or one producer clobbers lastOkAt on the shared endpoint. See health-history.js.
+  const sourcesWithHistory = await attachSourceHistory(sources, { outDir });
+
   // health snapshot for /api/health — the loop, not just fetch-live.js, must write
   // this or generated_at goes stale and the dead-man's-switch reports "down" even
   // while the site is being refreshed.
@@ -74,7 +81,7 @@ async function cycle() {
     JSON.stringify({
       generated_at: new Date().toISOString(),
       total: matches.length,
-      sources,                       // [{id, ok, count, error?}] per adapter
+      sources: sourcesWithHistory,   // [{id, ok, count, error?, lastOkAt}] per adapter
       rankings,
       byStatus: counts,
     }, null, 2)
