@@ -1,7 +1,13 @@
-// tournamentsoftware.com adapter (Norway = ntf instance). This platform is a
-// real live-scoring tournament system (unlike Padelution, which only publishes
-// standings). Data is AJAX-rendered behind a cookiewall, so we drive it through
-// the shared Playwright layer.
+// tournamentsoftware.com adapter (Norway = ntf, GB = LTA instance). This platform
+// is a real live-scoring tournament system (unlike Padelution, which only
+// publishes standings). Data is AJAX-rendered behind a cookiewall, so we drive it
+// through the shared Playwright layer.
+//
+// Multiple national instances share IDENTICAL DOM markup; they differ only in the
+// LANGUAGE of dates (Norwegian vs English month names) and the cookiewall button.
+// Each instance carries a `locale` and everything language-specific is keyed off
+// LOCALES below — adding another country's instance means adding a row (+ a locale
+// if it's a new language), not a new adapter.
 //
 // Flow per instance:
 //   1. clear the cookiewall once
@@ -16,6 +22,27 @@ import { STATUS, gid } from "../schema.js";
 
 export const id = "tournamentsoftware";
 
+// Month-name -> number, per language. Keys include full + common abbreviations so
+// both "12 July 2026" and "12 Jul 2026" (and the Norwegian equivalents) parse.
+const LOCALES = {
+  no: {
+    months: {
+      januar: 1, februar: 2, mars: 3, april: 4, mai: 5, juni: 6, juli: 7,
+      august: 8, september: 9, oktober: 10, november: 11, desember: 12,
+      jan: 1, feb: 2, mar: 3, apr: 4, jun: 6, jul: 7, aug: 8, sep: 9,
+      sept: 9, okt: 10, nov: 11, des: 12,
+    },
+  },
+  en: {
+    months: {
+      january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7,
+      august: 8, september: 9, october: 10, november: 11, december: 12,
+      jan: 1, feb: 2, mar: 3, apr: 4, jun: 6, jul: 7, aug: 8, sep: 9,
+      sept: 9, oct: 10, nov: 11, dec: 12,
+    },
+  },
+};
+
 export async function fetchMatches({
   date = todayISO(),
   instances = TOURNAMENTSOFTWARE_INSTANCES,
@@ -26,15 +53,18 @@ export async function fetchMatches({
   // NB: browser is closed centrally by aggregate() (shared with the fip adapter).
   await withPage(async (page) => {
     for (const inst of instances) {
+      const months = (LOCALES[inst.locale] || LOCALES.en).months;
       await clearCookiewall(page, inst.base);
-      const tournaments = await discoverTournaments(page, inst.base);
+      const tournaments = await discoverTournaments(page, inst.base, months);
       const active = tournaments.filter((t) => coversDay(t, date)).slice(0, maxTournaments);
       log(`  ${inst.code}: ${active.length}/${tournaments.length} padel tournaments active on ${date}`);
 
       for (const t of active) {
         try {
-          const fallbackYear = (t.start || "").slice(6, 10) || String(new Date().getFullYear());
-          const raw = await scrapeMatches(page, inst.base, t.guid, fallbackYear);
+          // t.start is already ISO (yyyy-mm-dd); its year seeds match dates when a
+          // day heading omits the year.
+          const fallbackYear = (t.start || "").slice(0, 4) || String(new Date().getFullYear());
+          const raw = await scrapeMatches(page, inst.base, t.guid, fallbackYear, months);
           for (const m of dedupe(raw)) out.push(normalize(m, t, inst));
         } catch (err) {
           log(`    ! tournament ${t.guid} (${t.name}) failed — ${err.message}`);
@@ -49,7 +79,10 @@ export async function fetchMatches({
 
 async function clearCookiewall(page, base) {
   await page.goto(base + "/", { waitUntil: "domcontentloaded" });
-  for (const label of ["Godta alle", "Godta", "Aksepter", "Accept all", "Accept", "OK"]) {
+  // LTA uses a OneTrust banner whose accept button has a stable id — try it first.
+  const ot = page.locator("#onetrust-accept-btn-handler").first();
+  if (await ot.count()) await ot.click().catch(() => {});
+  for (const label of ["Godta alle", "Godta", "Aksepter", "Accept all", "Allow all", "I Accept", "Accept", "OK"]) {
     const b = page.getByRole("button", { name: label, exact: false }).first();
     if (await b.count()) {
       await b.click().catch(() => {});
@@ -59,10 +92,11 @@ async function clearCookiewall(page, base) {
   await page.waitForTimeout(800);
 }
 
-async function discoverTournaments(page, base) {
+async function discoverTournaments(page, base, months) {
   await page.goto(base + "/find/tournament?q=padel", { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);
-  return page.evaluate(() => {
+  // Extract guid/title/rawtext in the page; parse dates in Node (locale-aware).
+  const cards = await page.evaluate(() => {
     const links = [...document.querySelectorAll('a[href*="/sport/tournament?id="]')];
     const seen = new Set();
     const out = [];
@@ -74,43 +108,66 @@ async function discoverTournaments(page, base) {
       seen.add(guid);
       const card = a.closest("li,article,.media,div");
       const text = (card?.innerText || a.innerText || "").replace(/\s+/g, " ").trim();
-      const dates = text.match(/(\d{2}\.\d{2}\.\d{4}).*?(\d{2}\.\d{2}\.\d{4})/);
-      // the title link wraps the whole card; the title is its first line
       const title = (card?.querySelector(".media__title")?.innerText || a.innerText || "")
         .trim()
         .replace(/([^\d\s])(\d{4})$/, "$1 $2"); // un-glue trailing year: "...Liga2026" -> "...Liga 2026"
-      out.push({
-        guid,
-        name: title || text.slice(0, 60),
-        start: dates?.[1] || null, // dd.mm.yyyy
-        end: dates?.[2] || dates?.[1] || null,
-      });
+      out.push({ guid, title, text });
     }
     return out;
   });
+  return cards.map((c) => {
+    const dates = parseDateRange(c.text, months); // [startISO, endISO] | []
+    return {
+      guid: c.guid,
+      name: c.title || c.text.slice(0, 60),
+      start: dates[0] || null, // yyyy-mm-dd
+      end: dates[1] || dates[0] || null,
+    };
+  });
 }
 
-async function scrapeMatches(page, base, guid, fallbackYear) {
+// Parse the first two date tokens from a card's text into ISO, regardless of
+// format: numeric dd.mm.yyyy / dd/mm/yyyy (NO uses dots, LTA uses slashes) or a
+// month-name form ("12 July 2026"). Returns [] if none found.
+function parseDateRange(text, months) {
+  const iso = [];
+  const numeric = /\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b/g; // dd.mm.yyyy | dd/mm/yyyy
+  let m;
+  while ((m = numeric.exec(text)) && iso.length < 2) {
+    iso.push(`${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`);
+  }
+  if (iso.length) return iso;
+  const monthAlt = Object.keys(months).sort((a, b) => b.length - a.length).join("|");
+  const named = new RegExp(`\\b(\\d{1,2})\\s+(${monthAlt})\\.?\\s+(\\d{4})\\b`, "gi");
+  while ((m = named.exec(text)) && iso.length < 2) {
+    const mm = months[m[2].toLowerCase()];
+    if (mm) iso.push(`${m[3]}-${String(mm).padStart(2, "0")}-${m[1].padStart(2, "0")}`);
+  }
+  return iso;
+}
+
+async function scrapeMatches(page, base, guid, fallbackYear, months) {
   await page.goto(`${base}/tournament/${guid}/Matches`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
-  return page.evaluate((fallbackYear) => {
-    const MONTHS = { januar: 1, februar: 2, mars: 3, april: 4, mai: 5, juni: 6, juli: 7, august: 8, september: 9, oktober: 10, november: 11, desember: 12 };
-    const parseNorDate = (txt) => {
-      const m = (txt || "").match(/(\d{1,2})\.?\s+([a-zæøå]+)(?:\s+(\d{4}))?/i);
-      if (!m || !MONTHS[m[2].toLowerCase()]) return null;
-      const year = m[3] || fallbackYear;
-      if (!year) return null;
-      return `${year}-${String(MONTHS[m[2].toLowerCase()]).padStart(2, "0")}-${String(+m[1]).padStart(2, "0")}`;
-    };
+  return page.evaluate(({ MONTHS, fallbackYear }) => {
     // The Matches page shows one day; .match-group__header holds only the
-    // time-of-day. The selected day appears in the heading in dotted form WITH a
-    // year ("21. juni 2026"); the day-navigator items omit the year, so matching
-    // "<n>. <month> <yyyy>" uniquely picks the heading.
+    // time-of-day. The selected day appears in the heading WITH a year ("21. juni
+    // 2026" on NO, "21 June 2026" on GB); the day-navigator items omit the year,
+    // so matching "<n> <month> <yyyy>" uniquely picks the heading. The year is
+    // optional (fall back to the tournament's year) and LTA may instead render a
+    // numeric heading (dd/mm/yyyy), which we try last.
+    const monthAlt = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join("|");
     let pageDate = null;
     const dm = document.body.innerText.match(
-      /(\d{1,2})\.\s+(januar|februar|mars|april|mai|juni|juli|august|september|oktober|november|desember)\s+(\d{4})/i
+      new RegExp(`(\\d{1,2})\\.?\\s+(${monthAlt})\\.?(?:\\s+(\\d{4}))?`, "i")
     );
-    if (dm) pageDate = `${dm[3]}-${String(MONTHS[dm[2].toLowerCase()]).padStart(2, "0")}-${String(+dm[1]).padStart(2, "0")}`;
+    if (dm && MONTHS[dm[2].toLowerCase()]) {
+      const year = dm[3] || fallbackYear;
+      pageDate = `${year}-${String(MONTHS[dm[2].toLowerCase()]).padStart(2, "0")}-${String(+dm[1]).padStart(2, "0")}`;
+    } else {
+      const nm = document.body.innerText.match(/\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b/);
+      if (nm) pageDate = `${nm[3]}-${nm[2].padStart(2, "0")}-${nm[1].padStart(2, "0")}`;
+    }
     const rows = [];
     for (const group of document.querySelectorAll(".match-group")) {
       const groupTime = ((group.querySelector(".match-group__header")?.innerText || "").match(/\d{1,2}:\d{2}/) || [])[0] || null;
@@ -126,32 +183,46 @@ async function scrapeMatches(page, base, guid, fallbackYear) {
           const cells = [...ul.querySelectorAll(".points__cell")].map((c) => c.textContent.trim());
           return [cells[0] ?? "", cells[1] ?? ""];
         }).filter((s) => s[0] !== "" || s[1] !== "");
+        // A real match has exactly two teams. The grid view (vs the list view)
+        // renders a whole match-group as ONE flattened item — many teams + all
+        // their points concatenated — which would otherwise surface as a bogus
+        // >3-set line. Skip those; the list view carries each match cleanly.
+        if (teams.length !== 2) continue;
         rows.push({ date: pageDate, header, time, teams, sets });
       }
     }
     return rows;
-  }, fallbackYear);
+  }, { MONTHS: months, fallbackYear });
 }
 
 // ---- shaping ---------------------------------------------------------------
 
-// Grid view + list view both render .match-group__item, so identical matches
-// appear twice. Dedupe on a content signature.
+// Grid view + list view both render .match-group__item, so every match appears
+// (at least) twice. Collapse to one row per match, keeping the most complete
+// REAL score. We key on header+teams only (NOT sets/time): the two views can
+// disagree on the score because the LTA grid view sometimes over-captures
+// .points cells from neighbouring matches, yielding impossible >3-set lines
+// (padel is best-of-3, championship tie-break shown as a 3rd set). Ranking
+// prefers the variant with the most sets that is still ≤3, so the clean
+// list-view score wins over the over-captured grid one.
+//   Trade-off: a genuine rematch of the same pairing in the same round would
+//   collapse to one row — but knockout/round-robin formats never rematch the
+//   same pair under the same header, so this doesn't happen in practice.
 function dedupe(rows) {
-  const seen = new Set();
-  return rows.filter((r) => {
-    // NB: exclude time — grid view carries it, list view doesn't, but it's the
-    // same match. Sets distinguish genuine rematches of the same pairing.
-    const sig = JSON.stringify([r.header, r.teams.map((t) => t.players), r.sets]);
-    if (seen.has(sig)) return false;
-    seen.add(sig);
-    return true;
-  });
+  const key = (r) => JSON.stringify([r.header, r.teams.map((t) => t.players)]);
+  const rank = (r) => (r.sets.length <= 3 ? r.sets.length : -r.sets.length);
+  const best = new Map();
+  for (const r of rows) {
+    const k = key(r);
+    const cur = best.get(k);
+    if (!cur || rank(r) > rank(cur)) best.set(k, r);
+  }
+  return [...best.values()];
 }
 
 function normalize(m, t, inst) {
   const [a, b] = m.teams.length === 2 ? m.teams : [m.teams[0] || { players: [] }, m.teams[1] || { players: [] }];
-  const round = (m.header.match(/\b(Round|Runde|Final(?:e)?|Semi\w*|Kvart\w*)\b.*$/i) || [])[0] || null;
+  const round = (m.header.match(/\b(Round|Runde|Final(?:e)?|Semi\w*|Quarter\w*|Kvart\w*)\b.*$/i) || [])[0] || null;
   const className = round ? m.header.replace(round, "").trim() : m.header;
   const hasScore = m.sets.length > 0;
   const decided = a.won || b.won;
@@ -165,19 +236,20 @@ function normalize(m, t, inst) {
     court: null,
     status: decided ? STATUS.FINAL : hasScore ? STATUS.LIVE : STATUS.UPCOMING,
     startTime: m.date ? `${m.date}T${m.time || "00:00"}:00` : null,
-    teams: [team(a), team(b)],
+    teams: [team(a, inst.code), team(b, inst.code)],
     score: { sets: m.sets, winner: a.won ? 0 : b.won ? 1 : null },
     raw: { header: m.header, time: m.time },
   };
 }
 
-const team = (t) => ({
+const team = (t, country) => ({
   name: (t.players || []).map(cleanPlayer).join(" / ") || "TBD",
-  players: (t.players || []).map((p) => ({ name: cleanPlayer(p), country: "NO" })),
+  players: (t.players || []).map((p) => ({ name: cleanPlayer(p), country })),
 });
 
-// strip the "(C)" captain marker for display
-const cleanPlayer = (p) => p.replace(/\s*\(C\)\s*$/, "").trim();
+// strip display noise: the "(C)" captain marker (NO) and trailing seeding/entry
+// tags the LTA appends to names, e.g. "Kace Bartley [1, DA]" -> "Kace Bartley".
+const cleanPlayer = (p) => p.replace(/\s*\[[^\]]*\]\s*$/, "").replace(/\s*\(C\)\s*$/, "").trim();
 
 const sig = (a, b, m) =>
   [a.players?.join("+"), b.players?.join("+"), m.header, JSON.stringify(m.sets)].join("|").replace(/\s+/g, "");

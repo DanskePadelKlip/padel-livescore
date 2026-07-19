@@ -26,7 +26,7 @@ Adding a country = one new adapter (or, for RankedIn federations, one new row).
 | Headless-browser layer (Playwright) | `src/browser.js` |
 | Federation / instance registry | `src/federations.js` |
 | **RankedIn adapter** (JSON) — DK/SE/DE/CZ | `src/adapters/rankedin.js` |
-| **tournamentsoftware adapter** (browser) — NO | `src/adapters/tournamentsoftware.js` |
+| **tournamentsoftware adapter** (browser) — NO / GB (LTA) | `src/adapters/tournamentsoftware.js` |
 | **FIP adapter** (widget HTML) — Premier/FIP tour | `src/adapters/fip.js` |
 | Aggregate + sort + dedupe | `src/aggregate.js` |
 | Fetch job (→ matches.json) | `scripts/fetch-live.js` |
@@ -46,9 +46,12 @@ A dependency-free vanilla livescore front-end (`public/`):
 ### Three classes of source
 - **JSON APIs** (RankedIn) — clean fetch-and-parse, fast, robust. DK/SE/DE/CZ.
 - **JS-only web apps** (tournamentsoftware) — no API; rendered via `src/browser.js`
-  (Playwright). Norway's `ntf.tournamentsoftware.com` sits behind a cookiewall
-  (auto-cleared) and AJAX-loads matches; a proper live-scoring system with per-set
-  scores. Slower + more fragile than JSON, but real data.
+  (Playwright). Norway's `ntf.tournamentsoftware.com` and GB/LTA's
+  `competitions.lta.org.uk` (LTA Padel British/National Tour incl. Rocks Lane)
+  sit behind a cookiewall (auto-cleared) and AJAX-load matches; a proper
+  live-scoring system with per-set scores. One adapter, many national instances —
+  they share DOM markup and differ only in date language (`locale` per instance).
+  Slower + more fragile than JSON, but real data.
 - **Server-rendered widget HTML** (FIP/Premier) — padelfip.com embeds a
   `matchscorerlive.com` widget. Discover in-play tournaments via padelfip's
   WordPress REST (`?orderby=modified`), read each event page for its `idEvent`

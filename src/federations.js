@@ -32,9 +32,14 @@ export const RANKEDIN_FEDERATIONS = [
 
 // tournamentsoftware.com instances (JS/AJAX + cookiewall, scraped via Playwright).
 // NORWAY runs padel here (norsktennis.no links to ntf). Verified 2026-07-12:
-// real match data with per-set scores + live scoring. `base` is the instance host.
+// real match data with per-set scores + live scoring. GB/LTA runs the SAME
+// platform, white-labelled at competitions.lta.org.uk (was lta.tournamentsoftware.com)
+// — covers the LTA Padel British/National Tour incl. Rocks Lane Grade 1.
+// `base` is the instance host; `locale` selects the month-name language used to
+// parse dates (the DOM markup is shared platform HTML, only the language differs).
 export const TOURNAMENTSOFTWARE_INSTANCES = [
-  { code: "NO", name: "Norges Tennis- og Padelforbund", base: "https://ntf.tournamentsoftware.com" },
+  { code: "NO", name: "Norges Tennis- og Padelforbund", base: "https://ntf.tournamentsoftware.com", locale: "no" },
+  { code: "GB", name: "LTA (Lawn Tennis Association)",   base: "https://competitions.lta.org.uk",   locale: "en" },
 ];
 
 // NOT viable as livescore sources (verified 2026-07-12):
