@@ -9,6 +9,27 @@ const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
 const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
 const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
 const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
+
+// Player nationality → flag. Data uses two schemes: 2-letter federation codes
+// (national rankings/matches: "dk") and 3-letter IOC/FIP codes (FIP world: "ESP").
+// Map the 3-letter ones to ISO alpha-2, then build the flag from regional-indicator
+// letters. Unknown codes render no flag (better than a wrong one).
+const IOC2 = { ESP:"ES", ARG:"AR", BRA:"BR", UAE:"AE", ITA:"IT", PAR:"PY", POR:"PT", CHI:"CL", CHL:"CL", BEL:"BE", FRA:"FR", NED:"NL", NLD:"NL", SWE:"SE", MEX:"MX", GER:"DE", DEU:"DE", GBR:"GB", ENG:"GB", EGY:"EG", CHN:"CN", USA:"US", URU:"UY", DEN:"DK", TUN:"TN", JPN:"JP", HUN:"HU", GRE:"GR", INA:"ID", IDN:"ID", VEN:"VE", NOR:"NO", FIN:"FI", POL:"PL", AUT:"AT", SUI:"CH", CHE:"CH", CZE:"CZ", SVK:"SK", CRO:"HR", HRV:"HR", SRB:"RS", ROU:"RO", RUS:"RU", UKR:"UA", TUR:"TR", ISR:"IL", IND:"IN", AUS:"AU", CAN:"CA", COL:"CO", PER:"PE", ECU:"EC", BOL:"BO", QAT:"QA", KSA:"SA", SAU:"SA", KUW:"KW", BHR:"BH", MAR:"MA", RSA:"ZA", ZAF:"ZA", GEO:"GE", EST:"EE", LAT:"LV", LTU:"LT", SLO:"SI", SVN:"SI", KOS:"XK", BIH:"BA", MNE:"ME", LUX:"LU", IRL:"IE", ISL:"IS", PHI:"PH", PHL:"PH", THA:"TH", SGP:"SG", MAS:"MY", HKG:"HK", TPE:"TW", KOR:"KR", NZL:"NZ", CRC:"CR", GUA:"GT", DOM:"DO", PUR:"PR", PAN:"PA", PRY:"PY", CHN2:"CN" };
+const iso2ToFlag = (cc) => cc.toUpperCase().replace(/./g, (c) => String.fromCodePoint(0x1f1e6 - 65 + c.charCodeAt(0)));
+function countryFlag(code) {
+  if (!code) return "";
+  const c = String(code).trim().toUpperCase();
+  if (/^[A-Z]{2}$/.test(c)) return iso2ToFlag(c);
+  if (/^[A-Z]{3}$/.test(c)) { const iso = IOC2[c]; return iso ? iso2ToFlag(iso) : ""; }
+  return "";
+}
+// Team display with a flag before each player: "🇪🇸 A. Coello / 🇦🇷 M. Tapia".
+function teamNameWithFlags(t) {
+  if (t.players && t.players.length) {
+    return t.players.map((p) => { const f = countryFlag(p.country); return (f ? f + " " : "") + esc(p.name); }).join(" / ");
+  }
+  return esc(t.name);
+}
 const SOURCE_LABEL = { rankedin: "RankedIn", tournamentsoftware: "tournamentsoftware.com", fip: "padelfip.com" };
 
 const esc = (s) =>
@@ -155,6 +176,7 @@ const state = {
   rankings: null,            // loaded rankings.json
   rankFed: null,
   rankCat: null,
+  rankSort: "rank",          // "rank" | "nat" — sort a ranking by rank or grouped by nationality
   rankCountryQuery: "",
   // ---- favorites ----
   favs: loadFavs(),
@@ -461,7 +483,7 @@ function teamLine(m, side, isChanged) {
     : side === 0
     ? `<span class="vs">vs</span>`
     : "";
-  return `<div class="team ${win ? "win" : ""}"><span class="nm">${esc(t.name)}</span>${cells}</div>`;
+  return `<div class="team ${win ? "win" : ""}"><span class="nm">${teamNameWithFlags(t)}</span>${cells}</div>`;
 }
 
 // "00:38" -> "38 min", "01:15" -> "1h 15m"
@@ -1266,9 +1288,26 @@ function renderRankings() {
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
   </div>`;
   const movement = !!list?.movement;
+  // Sort-by-nationality is only meaningful on a multi-country list (i.e. FIP world).
+  const multiCountry = new Set((list?.rows || []).map((r) => r.country).filter(Boolean)).size > 1;
+  if (multiCountry) {
+    html += `<div class="rank-sort" id="ranksort">
+      <button class="rchip ${state.rankSort !== "nat" ? "on" : ""}" data-rsort="rank">By rank</button>
+      <button class="rchip ${state.rankSort === "nat" ? "on" : ""}" data-rsort="nat">By nationality</button>
+    </div>`;
+  }
+  const byNat = multiCountry && state.rankSort === "nat";
+  const display = byNat
+    ? [...rows].sort((a, b) => (a.country || "ZZZ").localeCompare(b.country || "ZZZ") || (a.rank - b.rank))
+    : rows;
   html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
     `<span class="count">${(list?.total ?? rows.length).toLocaleString()} ranked · top ${list?.rows?.length || 0}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
-  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + rows.slice(0, 250).map((r) => rankRow(r, movement)).join("") + `</div>`;
+  let body = "", lastC = null;
+  for (const r of display.slice(0, 250)) {
+    if (byNat && r.country !== lastC) { lastC = r.country; body += `<div class="rank-group">${countryFlag(r.country)} ${esc((r.country || "—").toUpperCase())}</div>`; }
+    body += rankRow(r, movement);
+  }
+  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + body + `</div>`;
   if (!rows.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
   applyCountryFilter();
@@ -1302,10 +1341,11 @@ function moveCell(r, movement) {
 function rankRow(r, movement) {
   const prof = r.id ? " has-profile" : "";
   const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
+  const flag = countryFlag(r.country);
   return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
     <span class="rnum">${r.rank}</span>
     <span class="rmove">${moveCell(r, movement)}</span>
-    <span class="nm">${esc(r.name)}</span>
+    <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
     <span class="rclub">${esc(r.club || "")}</span>
     <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}</span>
     <span class="rstar">${star("players", r.id, r.name, r.country || "")}</span>
@@ -1437,6 +1477,8 @@ app.addEventListener("click", (e) => {
   if (rf) { state.rankFed = rf.dataset.rfed; render(); syncUrl(false); return; }
   const rc = e.target.closest("[data-rcat]");
   if (rc) { state.rankCat = rc.dataset.rcat; render(); syncUrl(false); return; }
+  const rs = e.target.closest("[data-rsort]");
+  if (rs) { state.rankSort = rs.dataset.rsort; render(); return; }
 
   // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");
