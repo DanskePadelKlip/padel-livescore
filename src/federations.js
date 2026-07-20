@@ -64,6 +64,16 @@ export const TOURNAMENTSOFTWARE_INSTANCES = [
 export const NON_RANKEDIN = [
   { code: "FI", name: "Suomen Padelliitto", platform: "padelution", reason: "standings-only, no match/live data" },
   { code: "FR", name: "FFT / Ten'Up", platform: "tenup", reason: "registration+rankings only, no public match scores; pro events covered via FIP" },
+  // ES verified NOT viable 2026-07-20: padelfederacion.es is classic ASP. Reverse-
+  // engineered the full path — list (irCamp id) -> Torneos_Previo.asp (POST idtorneo)
+  // -> per-format page (Camp_Parejas_*, Campeonato.asp) -> genero GET -> "Cuadro
+  // Final". The cuadros are bracket GRAPHICS/PDFs: ZERO per-match scores in the HTML
+  // across both a team (Cto España Veteranos) and an individual (TyC Premium) format.
+  // Same shape as FR: public championships + rankings, no public/scrapeable match
+  // scores, no live scoring. Spanish PRO is covered via fip; the rich regional circuit
+  // is only aggregated by elpadel.pro (Next.js + Clerk auth, a competitor — avoid:
+  // violates own-your-lookups + ToS). So Spain beyond the pro tour is not addressable.
+  { code: "ES", name: "FEP (Federación Española de Pádel)", platform: "padelfederacion.es", reason: "cuadros are bracket graphics/PDFs, no scrapeable match scores; pro via FIP; regional only on competitor aggregator elpadel.pro" },
 ];
 
 // BLOCKED-BUT-VIABLE (not a dead end like the above): A1 Padel — the separate
