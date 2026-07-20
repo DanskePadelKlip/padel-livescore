@@ -16,6 +16,7 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
@@ -88,6 +89,7 @@ async function cycle() {
   );
 
   if (canDeploy) {
+    stampAppVersion(root); // content-hash cache-bust: app.js?v=<hash> before every deploy
     try {
       execSync(
         "npx --yes wrangler@4 pages deploy public --project-name padel-livescore --branch main --commit-dirty=true",
@@ -104,6 +106,26 @@ async function cycle() {
       `→ next in ${Math.round(delay / 60000)}m${counts.live ? "  🔴 LIVE" : ""}`
   );
   return delay;
+}
+
+// Rewrite public/index.html's `app.js?v=…` to a short hash of public/app.js so the
+// cache-bust token is DERIVED from content, not hand-bumped. A given ?v=<hash> URL
+// therefore always maps to exactly that app.js — even a deploy of a mid-edit tree is
+// self-consistent, so the CDN/browser can never pin a version string to stale JS
+// (the bug that kept forcing manual version bumps). The GH Actions path does the
+// equivalent with the commit SHA; this is its daemon counterpart. Left in place (not
+// restored): the value is always valid for the current app.js, and both deploy paths
+// re-stamp anyway, so a committed hash is harmless.
+function stampAppVersion(root) {
+  try {
+    const idx = join(root, "public", "index.html");
+    const hash = createHash("sha1").update(readFileSync(join(root, "public", "app.js"))).digest("hex").slice(0, 8);
+    const html = readFileSync(idx, "utf8");
+    const stamped = html.replace(/app\.js\?v=[\w.-]+/g, `app.js?v=${hash}`);
+    if (stamped !== html) writeFileSync(idx, stamped);
+  } catch (e) {
+    console.error("  version stamp failed:", e.message);
+  }
 }
 
 console.log(`refresh-loop starting — deploy ${canDeploy ? "ON" : "OFF (local only)"}`);
