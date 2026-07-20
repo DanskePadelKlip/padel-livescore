@@ -23,6 +23,11 @@ function countryFlag(code) {
   if (/^[A-Z]{3}$/.test(c)) { const iso = IOC2[c]; return iso ? iso2ToFlag(iso) : ""; }
   return "";
 }
+// Flag for a federation/country code: the special map first (FIP -> 🌍), else derive
+// from the 2-letter code. Lets country-level discovery surface ANY nation (RO, ZA,
+// MD, …) with a flag, without hardcoding every one in FLAGS.
+const fedFlag = (c) => FLAGS[c] || countryFlag(c) || "";
+
 // Team display with a flag before each player: "🇪🇸 A. Coello / 🇦🇷 M. Tapia".
 function teamNameWithFlags(t) {
   if (t.players && t.players.length) {
@@ -314,6 +319,11 @@ const REGION_LABEL = {
   DE: "Germany", CZ: "Czechia", GB: "Great Britain", AU: "Australia", FI: "Finland", FR: "France",
   HR: "Croatia", EE: "Estonia", GE: "Georgia",
   HU: "Hungary", UA: "Ukraine", SI: "Slovenia", XK: "Kosovo", BA: "Bosnia", ME: "Montenegro",
+  // countries surfaced by RankedIn's global padel calendar (country-level discovery)
+  RO: "Romania", MD: "Moldova", ZA: "South Africa", AT: "Austria", CH: "Switzerland",
+  PL: "Poland", LT: "Lithuania", LV: "Latvia", SK: "Slovakia", RS: "Serbia", BG: "Bulgaria",
+  GR: "Greece", PT: "Portugal", NL: "Netherlands", BE: "Belgium", IE: "Ireland", IT: "Italy",
+  ES: "Spain", TH: "Thailand", TR: "Türkiye", CY: "Cyprus", MT: "Malta", LU: "Luxembourg",
 };
 
 // minutes-of-day start key for ordering upcoming matches chronologically.
@@ -389,7 +399,7 @@ function renderGroups(matches, changed) {
       gs.sort((a, b) => tournamentRank(b) - tournamentRank(a)); // biggest / most prestigious first
       const n = gs.reduce((s, g) => s + g.matches.length, 0);
       const header =
-        `<div class="section-label region"><span class="rflag">${FLAGS[fed] || ""}</span>${esc(REGION_LABEL[fed] || fed)}` +
+        `<div class="section-label region"><span class="rflag">${fedFlag(fed)}</span>${esc(REGION_LABEL[fed] || fed)}` +
         `<span class="count">${gs.length} ${gs.length === 1 ? "event" : "events"} · ${n} matches</span></div>`;
       return header + gs.map((g) => groupHtml(g, changed)).join("");
     })
@@ -458,7 +468,7 @@ function matchRow(m, changed, showTournament) {
       <div class="match__main" data-open="${esc(m.id)}">
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
-          ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${FLAGS[m.federation] || ""} ${m.federation}</span><span class="nm" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
+          ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${fedFlag(m.federation)} ${m.federation}</span><span class="nm" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
           ${m.court ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
@@ -540,7 +550,7 @@ function renderControls() {
     chips.dataset.key = key;
     chips.innerHTML =
       `<span class="chip ${state.fed === "all" ? "active" : ""}" data-fed="all">All</span>` +
-      feds.map((f) => `<span class="chip ${state.fed === f ? "active" : ""}" data-fed="${f}">${FLAGS[f] || ""} ${f}</span>`).join("");
+      feds.map((f) => `<span class="chip ${state.fed === f ? "active" : ""}" data-fed="${f}">${fedFlag(f)} ${f}</span>`).join("");
   }
 
   renderDayStrip();

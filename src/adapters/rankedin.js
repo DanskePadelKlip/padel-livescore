@@ -52,6 +52,29 @@ export async function fetchMatches({
       await sleep(150); // be polite to the API
     }
   }
+
+  // Country-level discovery via RankedIn's GLOBAL padel calendar. The org loop above
+  // only sees events hosted under a federation's own org (DK/SE/DE/CZ); most nations'
+  // clubs host under separate orgs, so those matches are invisible to org discovery.
+  // One calendar query (sport=5 = padel) returns padel events across ALL countries in
+  // a window; we fetch each one's matches and tag the federation by the event's own
+  // country. Overlap with org-covered countries is skipped; any residual dupes dedupe
+  // by match id in aggregate. This is what unlocks HR/EE/GE/HU/UA/SI/RO/ZA/MD/… .
+  try {
+    const calEvents = await discoverCalendarEvents(date);
+    log(`  calendar: ${calEvents.length} padel events in non-org countries around ${date}`);
+    for (const ev of calEvents) {
+      try {
+        const matches = await fetchTournamentMatches(ev.eventId);
+        for (const m of matches) out.push(normalize(m, ev, { code: ev.country }));
+      } catch (err) {
+        log(`    ! calendar tournament ${ev.eventId} (${ev.eventName}) failed — ${err.message}`);
+      }
+      await sleep(120);
+    }
+  } catch (err) {
+    log(`  calendar discovery failed — ${err.message}`);
+  }
   return out;
 }
 
@@ -62,6 +85,32 @@ async function discoverEvents(fed, take) {
     `organization/GetOrganisationEventsAsync?organisationId=${fed.org}&language=en&skip=0&take=${take}`
   );
   return data?.payload ?? [];
+}
+
+// Padel = RankedIn sportId 5 (verified 2026-07-20). Window around the target day so
+// the day strip gets recent finals + current + near-upcoming; bounded by CAL_MAX so
+// a busy week can't explode the match-fetch count.
+const PADEL_SPORT = 5, CAL_BACK = 3, CAL_FWD = 3, CAL_MAX = 40;
+const ORG_COUNTRIES = new Set(RANKEDIN_FEDERATIONS.map((f) => f.code.toLowerCase()));
+const shiftISO = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+
+async function discoverCalendarEvents(date) {
+  const lo = shiftISO(date, -CAL_BACK), hi = shiftISO(date, CAL_FWD);
+  const data = await rankedinGet(
+    `calendar/GetEventsAsync?from=0&take=100&country=0&sport=${PADEL_SPORT}&eventType=0&eventState=0` +
+    `&startDate=${lo}&endDate=${hi}&calendarAgeGroups=0&calendarDateFilter=2&calendarOrganization=0`
+  );
+  return Object.values(data || {})
+    .filter((e) => e && e.EventId && e.CountryShort && !ORG_COUNTRIES.has(e.CountryShort))
+    .slice(0, CAL_MAX)
+    .map((e) => ({
+      eventId: e.EventId,
+      eventName: e.EventName,
+      eventUrl: e.EventUrl,
+      startDate: e.StartDate,
+      endDate: e.EndDate || e.StartDate,
+      country: e.CountryShort.toUpperCase(),
+    }));
 }
 
 async function fetchTournamentMatches(eventId) {
