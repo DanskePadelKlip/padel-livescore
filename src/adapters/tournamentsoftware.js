@@ -64,7 +64,7 @@ export async function fetchMatches({
           // t.start is already ISO (yyyy-mm-dd); its year seeds match dates when a
           // day heading omits the year.
           const fallbackYear = (t.start || "").slice(0, 4) || String(new Date().getFullYear());
-          const raw = await scrapeMatches(page, inst.base, t.guid, fallbackYear, months);
+          const raw = await scrapeMatches(page, inst.base, t.guid, fallbackYear, months, date);
           for (const m of dedupe(raw)) out.push(normalize(m, t, inst));
         } catch (err) {
           log(`    ! tournament ${t.guid} (${t.name}) failed — ${err.message}`);
@@ -146,27 +146,65 @@ function parseDateRange(text, months) {
   return iso;
 }
 
-async function scrapeMatches(page, base, guid, fallbackYear, months) {
+// How many days around the target date to scrape per tournament, and a hard cap.
+// The Matches page shows ONE day and defaults to "today" — which for an in-progress
+// event is frequently NOT a play day, so the old single-page scrape saw an empty
+// grid and the tournament yielded nothing (this is why GB/LTA looked dead: its
+// events' matches live on their real play days, reachable only via the day nav).
+const DAY_BACK = 2, DAY_FWD = 6, MAX_DAYS = 10;
+
+const shiftDay = (iso, n) => {
+  const d = new Date(iso + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+
+async function scrapeMatches(page, base, guid, fallbackYear, months, date) {
   await page.goto(`${base}/tournament/${guid}/Matches`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(1200);
-  return page.evaluate(({ MONTHS, fallbackYear }) => {
-    // The Matches page shows one day; .match-group__header holds only the
-    // time-of-day. The selected day appears in the heading WITH a year ("21. juni
-    // 2026" on NO, "21 June 2026" on GB); the day-navigator items omit the year,
-    // so matching "<n> <month> <yyyy>" uniquely picks the heading. The year is
-    // optional (fall back to the tournament's year) and LTA may instead render a
-    // numeric heading (dd/mm/yyyy), which we try last.
+  await page.waitForTimeout(1000);
+  // Each day tab is a real URL: /tournament/{guid}/matches/YYYYMMDD (data-value).
+  const navDays = await page.evaluate(() =>
+    [...document.querySelectorAll(".js-date-selection-tab[data-value]")]
+      .map((a) => a.getAttribute("data-value"))
+      .filter((v) => /^\d{8}$/.test(v))
+  );
+  // No navigator = a single-day event; the default page IS that day.
+  if (!navDays.length) return extractDay(page, months, fallbackYear, null);
+  // Scrape only real play days within a tight window around the target date,
+  // bounded so a long league doesn't explode the scrape.
+  const lo = shiftDay(date, -DAY_BACK), hi = shiftDay(date, DAY_FWD);
+  const want = [...new Set(navDays)]
+    .map((v) => `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}`)
+    .filter((iso) => iso >= lo && iso <= hi)
+    .sort()
+    .slice(0, MAX_DAYS);
+  const all = [];
+  for (const iso of want) {
+    await page.goto(`${base}/tournament/${guid}/matches/${iso.replace(/-/g, "")}`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    all.push(...(await extractDay(page, months, fallbackYear, iso)));
+  }
+  return all;
+}
+
+// Extract match rows from whatever day the Matches page is currently showing.
+// `forceDate` (ISO) is the known day when we navigated to a dated URL; otherwise
+// the day is read from the page heading (year optional -> tournament fallback).
+function extractDay(page, months, fallbackYear, forceDate) {
+  return page.evaluate(({ MONTHS, fallbackYear, forceDate }) => {
     const monthAlt = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join("|");
-    let pageDate = null;
-    const dm = document.body.innerText.match(
-      new RegExp(`(\\d{1,2})\\.?\\s+(${monthAlt})\\.?(?:\\s+(\\d{4}))?`, "i")
-    );
-    if (dm && MONTHS[dm[2].toLowerCase()]) {
-      const year = dm[3] || fallbackYear;
-      pageDate = `${year}-${String(MONTHS[dm[2].toLowerCase()]).padStart(2, "0")}-${String(+dm[1]).padStart(2, "0")}`;
-    } else {
-      const nm = document.body.innerText.match(/\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b/);
-      if (nm) pageDate = `${nm[3]}-${nm[2].padStart(2, "0")}-${nm[1].padStart(2, "0")}`;
+    let pageDate = forceDate || null;
+    if (!pageDate) {
+      const dm = document.body.innerText.match(
+        new RegExp(`(\\d{1,2})\\.?\\s+(${monthAlt})\\.?(?:\\s+(\\d{4}))?`, "i")
+      );
+      if (dm && MONTHS[dm[2].toLowerCase()]) {
+        const year = dm[3] || fallbackYear;
+        pageDate = `${year}-${String(MONTHS[dm[2].toLowerCase()]).padStart(2, "0")}-${String(+dm[1]).padStart(2, "0")}`;
+      } else {
+        const nm = document.body.innerText.match(/\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b/);
+        if (nm) pageDate = `${nm[3]}-${nm[2].padStart(2, "0")}-${nm[1].padStart(2, "0")}`;
+      }
     }
     const rows = [];
     for (const group of document.querySelectorAll(".match-group")) {
@@ -192,7 +230,7 @@ async function scrapeMatches(page, base, guid, fallbackYear, months) {
       }
     }
     return rows;
-  }, { MONTHS: months, fallbackYear });
+  }, { MONTHS: months, fallbackYear, forceDate });
 }
 
 // ---- shaping ---------------------------------------------------------------
