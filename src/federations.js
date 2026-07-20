@@ -74,6 +74,16 @@ export const NON_RANKEDIN = [
   // is only aggregated by elpadel.pro (Next.js + Clerk auth, a competitor — avoid:
   // violates own-your-lookups + ToS). So Spain beyond the pro tour is not addressable.
   { code: "ES", name: "FEP (Federación Española de Pádel)", platform: "padelfederacion.es", reason: "cuadros are bracket graphics/PDFs, no scrapeable match scores; pro via FIP; regional only on competitor aggregator elpadel.pro" },
+  // IT verified NOT viable 2026-07-20: FITP (fitp.it) is better-built than FEP —
+  // Azure Functions JSON APIs (tornei/puc/list for DISCOVERY works; competizione/
+  // dettaglio; ordine-di-gioco/list) — BUT the match data is PDFs: ordine-di-gioco
+  // and tabelloni return PDF filenames (oraridigioco_YYYYMMDD.pdf), no structured
+  // scores. The one "Live Score / Risultati in diretta" feed (content/livescore/list)
+  // is a CURATED editorial list of ~4 big events, tennis-heavy, ZERO padel. So no
+  // systematic scrapeable padel match scores. Same pattern as ES/FR: EU national
+  // federations publish tournaments + schedules (PDF), never per-match live data.
+  // Italian PRO padel (BNL Italy Major etc.) is covered via fip.
+  { code: "IT", name: "FITP (Federazione Italiana Tennis e Padel)", platform: "fitp.it", reason: "tabelloni/order-of-play are PDFs, no scrapeable match scores; live-score feed is editorial + tennis-only; pro via FIP" },
 ];
 
 // A1 Padel — DROPPED 2026-07-20. Was flagged blocked-but-viable (Latin-America pro
