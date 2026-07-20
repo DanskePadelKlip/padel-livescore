@@ -1493,7 +1493,7 @@ function rankRow(r, movement) {
     <span class="rmove">${moveCell(r, movement)}</span>
     <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
     <span class="rclub">${esc(r.club || "")}</span>
-    <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}</span>
+    <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}${r.defending ? `<span class="rdef" title="points being defended (at risk) in the next ~8 weeks">def ${Math.round(r.defending).toLocaleString()}</span>` : ""}</span>
     <span class="rstar">${star("players", r.id, r.name, r.country || "")}</span>
   </div>`;
 }
