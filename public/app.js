@@ -172,6 +172,8 @@ const state = {
   playerId: null,            // id of the open/loading profile (for the URL)
   h2h: null,                 // loaded head-to-head
   comparing: false,          // in "pick an opponent" mode
+  // ---- upcoming (curated pro calendar) ----
+  calendar: null,            // loaded calendar.json
   // ---- rankings ----
   rankings: null,            // loaded rankings.json
   rankFed: null,
@@ -271,6 +273,7 @@ function filtered() {
 function render(changed = new Set()) {
   renderControls();
   if (state.tournament) return renderTournament();
+  if (state.mode === "upcoming") return renderUpcoming();
   if (state.mode === "events") return renderEvents();
   if (state.mode === "favorites") return renderFavorites();
   if (state.mode === "rankings") return renderRankings();
@@ -612,6 +615,53 @@ function renderDayStrip() {
   // bring today (or the selected day) into view without yanking the whole page
   const focus = strip.querySelector(`.dchip[data-day="${state.day !== "all" ? state.day : todayStr}"]`);
   if (focus) focus.scrollIntoView({ block: "nearest", inline: "center" });
+}
+
+// ---------- upcoming (curated pro calendar) ----------
+
+async function loadCalendar() {
+  try {
+    const res = await fetch("data/calendar.json?_=" + Date.now(), { cache: "no-store" });
+    state.calendar = res.ok ? await res.json() : { events: [] };
+  } catch { state.calendar = { events: [] }; }
+  if (state.mode === "upcoming") render();
+}
+
+const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const monthLabel = (iso) => { const [y, m] = iso.split("-"); return `${MONTHS_LONG[+m - 1]} ${y}`; };
+const daysUntil = (iso) => Math.round((new Date(iso + "T00:00:00Z") - new Date(todayYmd() + "T00:00:00Z")) / 86400000);
+function fmtRange(s, e) {
+  const mon = (m) => MONTHS_LONG[+m - 1].slice(0, 3);
+  const [, sm, sd] = s.split("-"), [, em, ed] = (e || s).split("-");
+  return sm === em ? `${+sd}–${+ed} ${mon(sm)}` : `${+sd} ${mon(sm)} – ${+ed} ${mon(em)}`;
+}
+
+function renderUpcoming() {
+  if (!state.calendar) { app.innerHTML = `<div class="empty">Loading…</div>`; return; }
+  const today = todayYmd();
+  const evs = (state.calendar.events || [])
+    .filter((e) => (e.end || e.start) >= today)   // hide finished events
+    .sort((a, b) => a.start.localeCompare(b.start));
+  if (!evs.length) { app.innerHTML = `<div class="empty"><div class="big">🗓️</div>No upcoming events listed.</div>`; return; }
+
+  let html = "", lastMonth = "";
+  for (const e of evs) {
+    const month = monthLabel(e.start);
+    if (month !== lastMonth) { lastMonth = month; html += `<div class="section-label">${esc(month)}</div>`; }
+    const live = e.start <= today && (e.end || e.start) >= today;
+    const d = daysUntil(e.start);
+    const when = live ? "On now" : d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
+    const cat = (e.category || "").toLowerCase();
+    html += `<div class="upc${live ? " on" : ""}">
+      <div class="upc-date"><b>${fmtRange(e.start, e.end)}</b><span class="upc-when">${when}</span></div>
+      <div class="upc-main"><div class="upc-name">${countryFlag(e.country)} ${esc(e.name)}</div>
+        <div class="upc-meta">${esc(e.city)}${e.tour ? " · " + esc(e.tour) : ""}</div></div>
+      <span class="upc-cat cat-${esc(cat)}">${esc(e.category || "")}</span>
+    </div>`;
+  }
+  const upd = state.calendar.generatedAt ? ` · updated ${state.calendar.generatedAt}` : "";
+  html += `<div class="upc-foot">Curated pro-tour calendar${upd}. Dates/venues can change.</div>`;
+  app.innerHTML = html;
 }
 
 // ---------- archive (historic results) ----------
@@ -1398,7 +1448,7 @@ function activateMode(mode) {
   document.getElementById("chips").style.display = mode === "live" || mode === "archive" || mode === "events" ? "" : "none";
   const qEl = document.getElementById("q");
   qEl.value = "";
-  qEl.closest(".search").style.display = mode === "favorites" ? "none" : "";
+  qEl.closest(".search").style.display = mode === "favorites" || mode === "upcoming" ? "none" : "";
   qEl.placeholder =
     mode === "players" ? "Search a player by name…" :
     mode === "rankings" ? "Filter this ranking…" :
@@ -1406,6 +1456,7 @@ function activateMode(mode) {
     mode === "archive" ? "Search tournament…" : "Search player or tournament…";
   if (mode === "archive" && !state.archive) loadArchive();
   else if (mode === "rankings" && !state.rankings) loadRankings();
+  else if (mode === "upcoming" && !state.calendar) loadCalendar();
   else render();
   syncUrl();
 }
@@ -1651,6 +1702,7 @@ function currentPath() {
   if (state.mode === "favorites") return "/following";
   if (state.mode === "archive") return "/results";
   if (state.mode === "events") return "/events";
+  if (state.mode === "upcoming") return "/upcoming";
   return "/";
 }
 
@@ -1664,6 +1716,7 @@ function setTitle() {
   else if (state.mode === "players") t = "Padel players — profiles, results & head-to-head · PadelTicker";
   else if (state.mode === "favorites") t = "Following — your padel players & tournaments · PadelTicker";
   else if (state.mode === "events") t = "Padel tournaments & leagues — live competitions · PadelTicker";
+  else if (state.mode === "upcoming") t = "Upcoming padel tournaments — Premier Padel calendar · PadelTicker";
   document.title = t;
 }
 
@@ -1697,6 +1750,7 @@ function applyRoute() {
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
     }
     else if (seg[0] === "results") activateMode("archive");
+    else if (seg[0] === "upcoming") activateMode("upcoming");
     else if (seg[0] === "events") activateMode("events");
     else if (seg[0] === "players") {
       activateMode("players");

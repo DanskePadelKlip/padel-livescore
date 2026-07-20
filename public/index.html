@@ -342,6 +342,22 @@
     .tvbtn { background: transparent; border: 0; color: var(--muted); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 700; }
     .tvbtn.on { background: var(--accent); color: #fff; }
     /* competitions overview cards */
+    /* upcoming pro calendar */
+    .upc { display: flex; align-items: center; gap: 12px; padding: 11px 13px; margin-bottom: 7px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+    .upc.on { border-color: var(--live); box-shadow: inset 3px 0 0 var(--live); }
+    .upc-date { flex: 0 0 74px; display: flex; flex-direction: column; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .upc-date b { font-size: 13px; }
+    .upc-when { font-size: 10.5px; color: var(--faint); margin-top: 1px; }
+    .upc.on .upc-when { color: var(--live); font-weight: 700; }
+    .upc-main { flex: 1 1 auto; min-width: 0; }
+    .upc-name { font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .upc-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .upc-cat { flex: 0 0 auto; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; padding: 3px 8px; border-radius: 6px; color: #fff; }
+    .upc-cat.cat-major { background: #e5484a; }
+    .upc-cat.cat-finals { background: #8b5cf6; }
+    .upc-cat.cat-p1 { background: #4d9bff; }
+    .upc-cat.cat-p2 { background: #3a4457; color: var(--muted); }
+    .upc-foot { font-size: 11.5px; color: var(--faint); margin-top: 12px; text-align: center; }
     .ev { display: flex; align-items: center; gap: 11px; padding: 12px 13px; margin-bottom: 7px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
     .ev:hover { background: var(--card-hi); border-color: var(--line-hi); }
     .ev-main { flex: 1 1 auto; min-width: 0; }
@@ -422,6 +438,7 @@
       </div>
       <div class="modes" id="modes">
         <button data-mode="live" class="active">🔴 Live</button>
+        <button data-mode="upcoming">🗓️ Upcoming</button>
         <button data-mode="events">🎾 Events</button>
         <button data-mode="favorites">⭐ Following <span class="favcount" id="favcount" hidden>0</span></button>
         <button data-mode="archive">📅 Results</button>
@@ -487,9 +504,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=2b244c1a<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=7431fb8e"></script>
+  <script src="/app.js?v=2b244c1a"></script>
 </body>
 </html>
