@@ -134,6 +134,25 @@
     .tab .pill { background: var(--live); color: #fff; border-radius: 999px; font-size: 10px; padding: 1px 6px; font-weight: 700; }
     .tab.active .pill { background: rgba(255,255,255,.25); }
 
+    /* horizontal day strip (browse matches by calendar day) */
+    .daystrip { display: flex; gap: 6px; padding-bottom: 8px; overflow-x: auto; scrollbar-width: none;
+      -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+    .daystrip::-webkit-scrollbar { display: none; }
+    .dchip { flex: 0 0 auto; scroll-snap-align: start; background: var(--card); color: var(--text);
+      border: 1px solid var(--line); border-radius: 12px; padding: 5px 11px 6px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; line-height: 1.15;
+      border-bottom: 2px solid var(--line); min-width: 46px; }
+    .dchip .dw { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+    .dchip .dd { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .dchip .dnum { margin-top: 2px; font-size: 9.5px; font-weight: 800; color: var(--faint);
+      font-variant-numeric: tabular-nums; }
+    .dchip.today { border-bottom-color: var(--accent); }
+    .dchip.today .dw { color: var(--accent); }
+    .dchip.empty { opacity: .45; }
+    .dchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .dchip.active .dw, .dchip.active .dd, .dchip.active .dnum { color: #fff; }
+    .dchip.active.today { border-bottom-color: #fff; }
+
     .row2 { display: flex; gap: 8px; padding-bottom: 10px; align-items: center; flex-wrap: wrap; }
     .chips { display: flex; gap: 6px; flex-wrap: wrap; }
     .chip { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 8px;
@@ -409,6 +428,7 @@
         <button class="tab" data-status="upcoming">Upcoming</button>
         <button class="tab" data-status="final">Ended</button>
       </div>
+      <div class="daystrip" id="daystrip"></div>
       <div class="row2">
         <div class="chips" id="chips"></div>
         <select id="year" class="year" hidden></select>

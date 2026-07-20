@@ -131,6 +131,7 @@ const state = {
   meta: null,
   status: "all",
   fed: "all",
+  day: "all",                // "all" | "YYYY-MM-DD" — day-strip filter (live feed)
   query: "",
   expandedGroups: new Set(), // tournament ids
   groupCap: new Map(),       // tournament id -> max rows rendered
@@ -191,6 +192,40 @@ async function load(isPoll) {
   }
 }
 
+// ---------- dates (day strip) ----------
+
+// Local YYYY-MM-DD for a Date (calendar day, not UTC — matches how event times read).
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const MON3 = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
+const WD3 = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+// Normalize a match to its calendar day (YYYY-MM-DD), or null. Two source shapes:
+// RankedIn/tournamentsoftware carry an ISO `startTime`; FIP carries a `day.label`
+// like "JUL 16 THU" (no year) — infer the year by matching its weekday, so the
+// same label resolves correctly across a year boundary. Memoized on the match.
+function matchDate(m) {
+  if (m._date !== undefined) return m._date;
+  let out = null;
+  if (m.startTime && /^\d{4}-\d{2}-\d{2}/.test(m.startTime)) {
+    out = m.startTime.slice(0, 10);
+  } else if (m.day && m.day.label) {
+    const mm = m.day.label.toUpperCase().match(/([A-Z]{3})\s+(\d{1,2})(?:\s+([A-Z]{3}))?/);
+    if (mm && MON3[mm[1]] != null) {
+      const mo = MON3[mm[1]], day = +mm[2], wd = mm[3];
+      const now = new Date();
+      let best = null;
+      for (const y of [now.getFullYear(), now.getFullYear() - 1, now.getFullYear() + 1]) {
+        const dt = new Date(y, mo, day);
+        if (wd && WD3[dt.getDay()] !== wd) continue;               // weekday must match the label
+        if (!best || Math.abs(dt - now) < Math.abs(best - now)) best = dt;
+      }
+      out = ymd(best || new Date(now.getFullYear(), mo, day));
+    }
+  }
+  m._date = out;
+  return out;
+}
+
 // ---------- filtering ----------
 
 function filtered() {
@@ -198,6 +233,7 @@ function filtered() {
   return state.matches.filter((m) => {
     if (state.status !== "all" && m.status !== state.status) return false;
     if (state.fed !== "all" && m.federation !== state.fed) return false;
+    if (state.day !== "all" && matchDate(m) !== state.day) return false;
     if (q) {
       const hay = (m.tournament.name + " " + m.teams.map((t) => t.name).join(" ") + " " + (m.className || "")).toLowerCase();
       if (!hay.includes(q)) return false;
@@ -473,12 +509,78 @@ function renderControls() {
       feds.map((f) => `<span class="chip ${state.fed === f ? "active" : ""}" data-fed="${f}">${FLAGS[f] || ""} ${f}</span>`).join("");
   }
 
+  renderDayStrip();
+
   // refresh label
   if (state.mode === "archive") {
     document.getElementById("refresh-txt").textContent = state.archive ? `${state.archive.count} tournaments` : "loading…";
   } else if (state.meta) {
     document.getElementById("refresh-txt").textContent = `${state.meta.date} · updated ${timeago(new Date(state.meta.generatedAt))}`;
   }
+}
+
+// Horizontal day strip: browse the live feed by calendar day. Counts respect the
+// active status/fed/search filters (so a day's number = what selecting it shows),
+// but NOT the day filter itself. Contiguous window of a recent-lookback .. furthest
+// upcoming day, clamped and always including today; empty days are shown dimmed so
+// the row reads like a calendar. Additive — "All" stays the default so the feed is
+// never silently narrowed to a near-empty single day.
+const DAY_LOOKBACK = 9, DAY_LOOKAHEAD = 21;
+function renderDayStrip() {
+  const strip = document.getElementById("daystrip");
+  if (!strip) return;
+  if (state.mode !== "live") { strip.style.display = "none"; return; }
+  strip.style.display = "";
+
+  const q = state.query.trim().toLowerCase();
+  const counts = {};
+  for (const m of state.matches) {
+    if (state.status !== "all" && m.status !== state.status) continue;
+    if (state.fed !== "all" && m.federation !== state.fed) continue;
+    if (q) {
+      const hay = (m.tournament.name + " " + m.teams.map((t) => t.name).join(" ") + " " + (m.className || "")).toLowerCase();
+      if (!hay.includes(q)) continue;
+    }
+    const d = matchDate(m);
+    if (d) counts[d] = (counts[d] || 0) + 1;
+  }
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayStr = ymd(today);
+  const dayMs = 86400000;
+  const dated = Object.keys(counts);
+  const clampLo = ymd(new Date(today - DAY_LOOKBACK * dayMs));
+  const clampHi = ymd(new Date(today - 0 + DAY_LOOKAHEAD * dayMs));
+  let lo = todayStr, hi = todayStr;
+  for (const d of dated) {
+    if (d >= clampLo && d < lo) lo = d;
+    if (d <= clampHi && d > hi) hi = d;
+  }
+
+  const days = [];
+  for (let t = new Date(lo + "T00:00:00"); ymd(t) <= hi; t = new Date(t - 0 + dayMs)) {
+    const ds = ymd(t);
+    days.push({ ds, wd: WD3[t.getDay()], dd: `${String(t.getDate()).padStart(2, "0")}.${String(t.getMonth() + 1).padStart(2, "0")}`, n: counts[ds] || 0 });
+  }
+
+  const sig = state.status + "|" + state.fed + "|" + q + "|" + days.map((d) => d.ds + ":" + d.n).join(",") + "|sel=" + state.day;
+  if (strip.dataset.sig === sig) return;   // no content change -> keep DOM & scroll position
+  strip.dataset.sig = sig;
+
+  const chip = (cls, day, wd, dd, num) =>
+    `<button class="dchip ${cls}" data-day="${day}"><span class="dw">${wd}</span><span class="dd">${dd}</span>` +
+    (num != null ? `<span class="dnum">${num}</span>` : "") + `</button>`;
+
+  let html = chip(state.day === "all" ? "active" : "", "all", "All", "days", null);
+  for (const d of days) {
+    const cls = [d.ds === todayStr ? "today" : "", d.n === 0 ? "empty" : "", state.day === d.ds ? "active" : ""].filter(Boolean).join(" ");
+    html += chip(cls, d.ds, d.ds === todayStr ? "Today" : d.wd, d.dd, d.n);
+  }
+  strip.innerHTML = html;
+
+  // bring today (or the selected day) into view without yanking the whole page
+  const focus = strip.querySelector(`.dchip[data-day="${state.day !== "all" ? state.day : todayStr}"]`);
+  if (focus) focus.scrollIntoView({ block: "nearest", inline: "center" });
 }
 
 // ---------- archive (historic results) ----------
@@ -1226,10 +1328,18 @@ document.getElementById("chips").addEventListener("click", (e) => {
   render();
 });
 
+document.getElementById("daystrip").addEventListener("click", (e) => {
+  const b = e.target.closest(".dchip");
+  if (!b) return;
+  state.day = b.dataset.day;
+  render();
+});
+
 // mode switch: Live / Results / Players / Rankings
 function activateMode(mode) {
   state.mode = mode;
   state.fed = "all";
+  state.day = "all";
   state.query = "";
   state.player = null; state.playerId = null; state.h2h = null; state.playerResults = null; state.comparing = false;
   state.tournament = null;
