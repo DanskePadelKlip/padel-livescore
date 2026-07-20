@@ -644,21 +644,27 @@ function renderUpcoming() {
     .sort((a, b) => a.start.localeCompare(b.start));
   if (!evs.length) { app.innerHTML = `<div class="empty"><div class="big">🗓️</div>No upcoming events listed.</div>`; return; }
 
-  let html = "", lastMonth = "";
+  const td = today.split("-");
+  const todayLabel = `${+td[2]} ${MONTHS_LONG[+td[1] - 1].slice(0, 3)}`;
+  let html = `<div class="tl">`, lastMonth = "", nowShown = false;
   for (const e of evs) {
     const month = monthLabel(e.start);
-    if (month !== lastMonth) { lastMonth = month; html += `<div class="section-label">${esc(month)}</div>`; }
+    if (month !== lastMonth) { lastMonth = month; html += `<div class="tl-month">${esc(month)}</div>`; }
     const live = e.start <= today && (e.end || e.start) >= today;
+    if (!nowShown && e.start > today) { nowShown = true; html += `<div class="tl-now"><span></span>Today · ${todayLabel}</div>`; }
     const d = daysUntil(e.start);
     const when = live ? "On now" : d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
     const cat = (e.category || "").toLowerCase();
-    html += `<div class="upc${live ? " on" : ""}">
-      <div class="upc-date"><b>${fmtRange(e.start, e.end)}</b><span class="upc-when">${when}</span></div>
-      <div class="upc-main"><div class="upc-name">${countryFlag(e.country)} ${esc(e.name)}</div>
-        <div class="upc-meta">${esc(e.city)}${e.tour ? " · " + esc(e.tour) : ""}</div></div>
-      <span class="upc-cat cat-${esc(cat)}">${esc(e.category || "")}</span>
+    html += `<div class="tl-item${live ? " on" : ""}">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <div class="tl-when"><b>${fmtRange(e.start, e.end)}</b><span class="upc-cat cat-${esc(cat)}">${esc(e.category || "")}</span><span class="tl-ago">${when}</span></div>
+        <div class="upc-name">${countryFlag(e.country)} ${esc(e.name)}</div>
+        <div class="upc-meta">${esc(e.city)}${e.tour ? " · " + esc(e.tour) : ""}</div>
+      </div>
     </div>`;
   }
+  html += `</div>`;
   const upd = state.calendar.generatedAt ? ` · updated ${state.calendar.generatedAt}` : "";
   html += `<div class="upc-foot">Curated pro-tour calendar${upd}. Dates/venues can change.</div>`;
   app.innerHTML = html;
