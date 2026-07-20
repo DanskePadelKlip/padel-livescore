@@ -673,12 +673,18 @@ function renderUpcoming() {
   if (!state.calendar) { app.innerHTML = `<div class="empty">Loading…</div>`; return; }
   const today = todayYmd();
   const daysAgo = (n) => { const d = new Date(today + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
-  // merge the curated future calendar with live/recent FIP events; a live entry
-  // wins over a curated one of the same name (it carries real status).
-  const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  // merge the curated calendar with live/recent FIP events. Normalise names with
+  // accent-folding ("Málaga" == "MALAGA") so a Premier event present in both dedups.
+  // Curated wins on metadata (flag, city); we only adopt the live status flag.
+  // Live-only events (FIP Bronze/Silver, not on the Premier calendar) are added.
+  const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
   const merged = new Map();
-  for (const e of state.calendar.events || []) merged.set(norm(e.name), e);
-  for (const e of liveFipEvents()) merged.set(norm(e.name), e);
+  for (const e of state.calendar.events || []) merged.set(norm(e.name), { ...e });
+  for (const e of liveFipEvents()) {
+    const k = norm(e.name), ex = merged.get(k);
+    if (ex) ex.live = ex.live || e.live;
+    else merged.set(k, e);
+  }
   const evs = [...merged.values()]
     .filter((e) => (e.end || e.start) >= daysAgo(3))   // recent + current + upcoming
     .sort((a, b) => a.start.localeCompare(b.start));
