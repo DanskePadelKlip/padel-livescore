@@ -20,6 +20,7 @@ import { createHash } from "node:crypto";
 import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
+import { refreshCalendar } from "../src/calendar-refresh.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -33,8 +34,25 @@ const canDeploy =
   process.env.REFRESH_DEPLOY !== "0" &&
   !!(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID);
 
+// Weekly self-refresh of the curated pro calendar (public/data/calendar.json) from
+// Wikipedia. Runs on the first cycle after start, then ~weekly; guarded inside
+// refreshCalendar so a bad parse never overwrites the last good file. Keeps the
+// Upcoming timeline current without manual upkeep.
+let lastCalRefresh = 0;
+async function maybeRefreshCalendar(date) {
+  if (Date.now() - lastCalRefresh < 7 * 24 * 3600 * 1000) return;
+  lastCalRefresh = Date.now();
+  try {
+    const n = await refreshCalendar(root, { date });
+    console.log(`  calendar refreshed: ${n} Premier Padel events`);
+  } catch (e) {
+    console.error("  calendar refresh skipped:", e.message);
+  }
+}
+
 async function cycle() {
   const date = new Date().toISOString().slice(0, 10);
+  await maybeRefreshCalendar(date);
   const { matches, sources } = await aggregate({ date });
   const counts = matches.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
 

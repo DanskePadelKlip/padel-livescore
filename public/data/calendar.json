@@ -1,17 +1,222 @@
 {
   "generatedAt": "2026-07-20",
-  "note": "Curated forward calendar of the Premier Padel pro tour. Source: premierpadel.com / padelfip.com / Wikipedia. Refresh periodically (dates/venues can change).",
+  "source": "Wikipedia Premier_Padel_2026 (auto-refreshed weekly)",
   "events": [
-    { "start": "2026-07-27", "end": "2026-08-02", "name": "Pretoria P2",     "city": "Pretoria",  "country": "ZA", "tour": "Premier Padel", "category": "P2" },
-    { "start": "2026-08-03", "end": "2026-08-09", "name": "London P1",       "city": "London",    "country": "GB", "tour": "Premier Padel", "category": "P1" },
-    { "start": "2026-08-31", "end": "2026-09-06", "name": "Madrid P1",       "city": "Madrid",    "country": "ES", "tour": "Premier Padel", "category": "P1" },
-    { "start": "2026-09-07", "end": "2026-09-13", "name": "Paris Major",     "city": "Paris",     "country": "FR", "tour": "Premier Padel", "category": "Major" },
-    { "start": "2026-09-28", "end": "2026-10-04", "name": "Rotterdam P2",    "city": "Rotterdam", "country": "NL", "tour": "Premier Padel", "category": "P2" },
-    { "start": "2026-10-05", "end": "2026-10-11", "name": "Germany P2",      "city": "Düsseldorf","country": "DE", "tour": "Premier Padel", "category": "P2" },
-    { "start": "2026-10-12", "end": "2026-10-18", "name": "Milano P1",       "city": "Milan",     "country": "IT", "tour": "Premier Padel", "category": "P1" },
-    { "start": "2026-10-26", "end": "2026-10-31", "name": "Kuwait P1",       "city": "Kuwait",    "country": "KW", "tour": "Premier Padel", "category": "P1" },
-    { "start": "2026-11-09", "end": "2026-11-15", "name": "Dubai P1",        "city": "Dubai",     "country": "AE", "tour": "Premier Padel", "category": "P1" },
-    { "start": "2026-11-23", "end": "2026-11-29", "name": "Mexico Major",    "city": "Acapulco",  "country": "MX", "tour": "Premier Padel", "category": "Major" },
-    { "start": "2026-12-07", "end": "2026-12-13", "name": "Barcelona Finals","city": "Barcelona", "country": "ES", "tour": "Premier Padel", "category": "Finals" }
+    {
+      "start": "2026-02-07",
+      "end": "2026-02-14",
+      "name": "Riyadh Season P1",
+      "city": "Riyadh",
+      "country": "SA",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-03-01",
+      "end": "2026-03-08",
+      "name": "Gijón P2",
+      "city": "Gijón",
+      "country": "ES",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-03-15",
+      "end": "2026-03-22",
+      "name": "Cancún P2",
+      "city": "Cancún",
+      "country": "MX",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-03-22",
+      "end": "2026-03-29",
+      "name": "Miami P1",
+      "city": "Miami",
+      "country": "US",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-04-13",
+      "end": "2026-04-18",
+      "name": "NewGiza P2",
+      "city": "Giza",
+      "country": "EG",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-04-20",
+      "end": "2026-04-26",
+      "name": "Brussels P2",
+      "city": "Brussels",
+      "country": "BE",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-05-04",
+      "end": "2026-05-10",
+      "name": "Asunción P2",
+      "city": "Asunción",
+      "country": "PY",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-05-11",
+      "end": "2026-05-17",
+      "name": "Buenos Aires P1",
+      "city": "Buenos Aires",
+      "country": "AR",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-06-01",
+      "end": "2026-06-07",
+      "name": "Italy Major",
+      "city": "Rome",
+      "country": "IT",
+      "tour": "Premier Padel",
+      "category": "Major"
+    },
+    {
+      "start": "2026-06-08",
+      "end": "2026-06-14",
+      "name": "Valencia P1",
+      "city": "Valencia",
+      "country": "ES",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-06-22",
+      "end": "2026-06-28",
+      "name": "Valladolid P2",
+      "city": "Valladolid",
+      "country": "ES",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-06-29",
+      "end": "2026-07-05",
+      "name": "Bordeaux P2",
+      "city": "Bordeaux",
+      "country": "FR",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-07-13",
+      "end": "2026-07-19",
+      "name": "Málaga P1",
+      "city": "Málaga",
+      "country": "ES",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-07-27",
+      "end": "2026-08-02",
+      "name": "Pretoria P2",
+      "city": "Pretoria",
+      "country": "ZA",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-08-03",
+      "end": "2026-08-09",
+      "name": "London P1",
+      "city": "London",
+      "country": "GB",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-08-31",
+      "end": "2026-09-06",
+      "name": "Madrid P1",
+      "city": "Madrid",
+      "country": "ES",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-09-07",
+      "end": "2026-09-13",
+      "name": "Paris Major",
+      "city": "París",
+      "country": "FR",
+      "tour": "Premier Padel",
+      "category": "Major"
+    },
+    {
+      "start": "2026-09-28",
+      "end": "2026-10-04",
+      "name": "Rotterdam P2",
+      "city": "Rotterdam",
+      "country": "NL",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-10-05",
+      "end": "2026-10-11",
+      "name": "Germany P2",
+      "city": "N/A",
+      "country": "DE",
+      "tour": "Premier Padel",
+      "category": "P2"
+    },
+    {
+      "start": "2026-10-12",
+      "end": "2026-10-18",
+      "name": "Milano P1",
+      "city": "Milan",
+      "country": "IT",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-10-26",
+      "end": "2026-10-31",
+      "name": "Kuwait P1",
+      "city": "Kuwait",
+      "country": "KW",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-11-09",
+      "end": "2026-11-15",
+      "name": "Dubai P1",
+      "city": "Dubai",
+      "country": "AE",
+      "tour": "Premier Padel",
+      "category": "P1"
+    },
+    {
+      "start": "2026-11-23",
+      "end": "2026-11-29",
+      "name": "Mexico Major",
+      "city": "Acapulco",
+      "country": "MX",
+      "tour": "Premier Padel",
+      "category": "Major"
+    },
+    {
+      "start": "2026-12-07",
+      "end": "2026-12-13",
+      "name": "Barcelona Finals",
+      "city": "Barcelona",
+      "country": "ES",
+      "tour": "Premier Padel",
+      "category": "Finals"
+    }
   ]
 }
