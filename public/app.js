@@ -196,6 +196,8 @@ async function load(isPoll) {
 
 // Local YYYY-MM-DD for a Date (calendar day, not UTC — matches how event times read).
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayYmd = () => ymd(new Date());
+state.day = todayYmd();   // default the live feed to today's matches (user can tap "All" or another day)
 const MON3 = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
 const WD3 = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -269,7 +271,14 @@ function render(changed = new Set()) {
   }
 
   if (!list.length) {
-    html = `<div class="empty"><div class="big">🎾</div>No ${state.status === "all" ? "" : state.status + " "}matches${state.query ? " for “" + esc(state.query) + "”" : ""}.</div>`;
+    let msg = `No ${state.status === "all" ? "" : state.status + " "}matches${state.query ? " for “" + esc(state.query) + "”" : ""}`;
+    let hint = "";
+    if (state.day !== "all" && !state.query) {
+      const [, mo, d] = state.day.split("-");
+      msg = `No matches ${state.day === todayYmd() ? "today" : "on " + d + "." + mo}`;
+      hint = `<div class="empty-hint">Tap <b>All days</b> or pick a day with matches above.</div>`;
+    }
+    html = `<div class="empty"><div class="big">🎾</div>${msg}.${hint}</div>`;
   }
   app.innerHTML = html;
 }
@@ -1339,7 +1348,7 @@ document.getElementById("daystrip").addEventListener("click", (e) => {
 function activateMode(mode) {
   state.mode = mode;
   state.fed = "all";
-  state.day = "all";
+  state.day = mode === "live" ? todayYmd() : "all";   // live feed defaults to today; other modes span all
   state.query = "";
   state.player = null; state.playerId = null; state.h2h = null; state.playerResults = null; state.comparing = false;
   state.tournament = null;

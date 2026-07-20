@@ -395,6 +395,8 @@
     .modes button:not(.active) .favcount { background: var(--accent); color: #fff; }
     .empty { text-align: center; color: var(--muted); padding: 70px 0; }
     .empty .big { font-size: 34px; margin-bottom: 8px; }
+    .empty-hint { margin-top: 10px; font-size: 13px; color: var(--faint); }
+    .empty-hint b { color: var(--muted); }
     .skel { height: 60px; border-radius: 12px; background: linear-gradient(90deg, var(--card), var(--card-hi), var(--card)); background-size: 200% 100%; animation: sk 1.2s infinite; margin-bottom: 8px; }
     @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
@@ -484,6 +486,6 @@
   <!-- app.js?v=<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=daystrip3"></script>
+  <script src="/app.js?v=daystrip4"></script>
 </body>
 </html>
