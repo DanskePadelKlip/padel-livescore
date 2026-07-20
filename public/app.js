@@ -176,7 +176,7 @@ const state = {
   rankings: null,            // loaded rankings.json
   rankFed: null,
   rankCat: null,
-  rankSort: "rank",          // "rank" | "nat" — sort a ranking by rank or grouped by nationality
+  rankNat: "",               // "" = all; else a country code to filter a ranking to that nationality
   rankCountryQuery: "",
   // ---- favorites ----
   favs: loadFavs(),
@@ -1288,27 +1288,26 @@ function renderRankings() {
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
   </div>`;
   const movement = !!list?.movement;
-  // Sort-by-nationality is only meaningful on a multi-country list (i.e. FIP world).
-  const multiCountry = new Set((list?.rows || []).map((r) => r.country).filter(Boolean)).size > 1;
+  // Nationality filter — only meaningful on a multi-country list (i.e. FIP world).
+  const natCounts = {};
+  for (const r of list?.rows || []) if (r.country) natCounts[r.country] = (natCounts[r.country] || 0) + 1;
+  const nats = Object.keys(natCounts).sort();
+  const multiCountry = nats.length > 1;
+  if (!multiCountry || (state.rankNat && !natCounts[state.rankNat])) state.rankNat = ""; // clear stale selection on list switch
   if (multiCountry) {
-    html += `<div class="rank-sort" id="ranksort">
-      <button class="rchip ${state.rankSort !== "nat" ? "on" : ""}" data-rsort="rank">By rank</button>
-      <button class="rchip ${state.rankSort === "nat" ? "on" : ""}" data-rsort="nat">By nationality</button>
+    html += `<div class="rank-natf">
+      <span class="rank-natf__lbl">Nationality</span>
+      <select id="ranknat" class="year">
+        <option value="">All nationalities (${nats.length})</option>
+        ${nats.map((c) => `<option value="${esc(c)}"${state.rankNat === c ? " selected" : ""}>${countryFlag(c)} ${esc(c.toUpperCase())} · ${natCounts[c]}</option>`).join("")}
+      </select>
     </div>`;
   }
-  const byNat = multiCountry && state.rankSort === "nat";
-  const display = byNat
-    ? [...rows].sort((a, b) => (a.country || "ZZZ").localeCompare(b.country || "ZZZ") || (a.rank - b.rank))
-    : rows;
+  const shown = state.rankNat ? rows.filter((r) => r.country === state.rankNat) : rows;
   html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
-    `<span class="count">${(list?.total ?? rows.length).toLocaleString()} ranked · top ${list?.rows?.length || 0}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
-  let body = "", lastC = null;
-  for (const r of display.slice(0, 250)) {
-    if (byNat && r.country !== lastC) { lastC = r.country; body += `<div class="rank-group">${countryFlag(r.country)} ${esc((r.country || "—").toUpperCase())}</div>`; }
-    body += rankRow(r, movement);
-  }
-  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + body + `</div>`;
-  if (!rows.length) html += `<div class="empty">No players match.</div>`;
+    `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ranked${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
+  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + shown.slice(0, 250).map((r) => rankRow(r, movement)).join("") + `</div>`;
+  if (!shown.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
   applyCountryFilter();
 }
@@ -1429,6 +1428,12 @@ app.addEventListener("input", (e) => {
   state.rankCountryQuery = e.target.value;
   applyCountryFilter();
 });
+// nationality filter dropdown (rankings) — narrows a ranking to one nationality
+app.addEventListener("change", (e) => {
+  if (e.target.id !== "ranknat") return;
+  state.rankNat = e.target.value;
+  render();
+});
 app.addEventListener("keydown", (e) => {
   if (e.target.id !== "rankcountry" || e.key !== "Enter") return;
   const vis = [...document.querySelectorAll("#ranksel .rchip[data-rfed]:not(.chip-hidden)")];
@@ -1477,8 +1482,6 @@ app.addEventListener("click", (e) => {
   if (rf) { state.rankFed = rf.dataset.rfed; render(); syncUrl(false); return; }
   const rc = e.target.closest("[data-rcat]");
   if (rc) { state.rankCat = rc.dataset.rcat; render(); syncUrl(false); return; }
-  const rs = e.target.closest("[data-rsort]");
-  if (rs) { state.rankSort = rs.dataset.rsort; render(); return; }
 
   // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");
