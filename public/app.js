@@ -1383,6 +1383,33 @@ async function loadRankings() {
   render();
 }
 
+// "Race to #1" — the top-5 story for a FIP list: points, gap to the leader, and
+// points each is defending (about to expire) in the next ~8 weeks. Reuses the
+// `defending` field the FIP export computes from padel.db.
+function racePanel(rows, cat) {
+  const top = (rows || []).slice(0, 5);
+  if (top.length < 2 || !("defending" in top[0])) return "";
+  const leader = top[0].points;
+  const fmt = (n) => Math.round(n || 0).toLocaleString();
+  const body = top.map((r) => {
+    const gap = leader - r.points;
+    const def = r.defending || 0;
+    return `<div class="race-row${r.id ? " has-profile" : ""}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+      <span class="race-rk${r.rank <= 3 ? " m" + r.rank : ""}">${r.rank}</span>
+      <span class="race-nm">${countryFlag(r.country)} ${esc(r.name)}</span>
+      <span class="race-pt">${fmt(r.points)}</span>
+      <span class="race-gp">${gap === 0 ? "level" : "−" + fmt(gap)}</span>
+      <span class="race-df${def >= 2000 ? " hot" : ""}" title="points being defended (at risk of expiring) in the next ~8 weeks">def ${fmt(def)}</span>
+    </div>`;
+  }).join("");
+  return `<div class="race">
+    <div class="race-hd">🏁 Race to #1 · ${cat === "women" ? "Women" : "Men"}</div>
+    <div class="race-cols"><span></span><span></span><span>pts</span><span>gap</span><span>defending</span></div>
+    ${body}
+    <div class="race-ft">FIP points expire 52 weeks after they're won · <b>def</b> = points at risk of dropping in the next ~8 weeks.</div>
+  </div>`;
+}
+
 function renderRankings() {
   if (!state.rankings) return;
   const lists = state.rankings.lists;
@@ -1420,6 +1447,7 @@ function renderRankings() {
     </div>`;
   }
   const shown = state.rankNat ? rows.filter((r) => r.country === state.rankNat) : rows;
+  if (multiCountry && !state.rankNat && !q) html += racePanel(list?.rows, state.rankCat);
   html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
     `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ranked${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
   // Full list caps at 250 rendered rows (keeps the DOM light on a 1000-deep list);
