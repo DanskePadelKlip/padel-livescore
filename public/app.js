@@ -573,8 +573,8 @@ function renderDayStrip() {
 
   let html = chip(state.day === "all" ? "active" : "", "all", "All", "days", null);
   for (const d of days) {
-    const cls = [d.ds === todayStr ? "today" : "", d.n === 0 ? "empty" : "", state.day === d.ds ? "active" : ""].filter(Boolean).join(" ");
-    html += chip(cls, d.ds, d.ds === todayStr ? "Today" : d.wd, d.dd, d.n);
+    const cls = [d.ds === todayStr ? "today" : "", d.n === 0 ? "off" : "", state.day === d.ds ? "active" : ""].filter(Boolean).join(" ");
+    html += chip(cls, d.ds, d.ds === todayStr ? "Today" : d.wd, d.dd, d.n || null);
   }
   strip.innerHTML = html;
 

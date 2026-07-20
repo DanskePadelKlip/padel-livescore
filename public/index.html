@@ -138,17 +138,17 @@
     .daystrip { display: flex; gap: 6px; padding-bottom: 8px; overflow-x: auto; scrollbar-width: none;
       -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
     .daystrip::-webkit-scrollbar { display: none; }
-    .dchip { flex: 0 0 auto; scroll-snap-align: start; background: var(--card); color: var(--text);
-      border: 1px solid var(--line); border-radius: 12px; padding: 5px 11px 6px; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; line-height: 1.15;
-      border-bottom: 2px solid var(--line); min-width: 46px; }
-    .dchip .dw { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
-    .dchip .dd { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .dchip .dnum { margin-top: 2px; font-size: 9.5px; font-weight: 800; color: var(--faint);
+    .dchip { position: relative; flex: 0 0 auto; scroll-snap-align: start; background: var(--card); color: var(--text);
+      border: 1px solid var(--line); border-radius: 10px; padding: 4px 11px 5px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; line-height: 1.1;
+      border-bottom: 2px solid var(--line); min-width: 44px; }
+    .dchip .dw { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+    .dchip .dd { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .dchip .dnum { position: absolute; top: 1px; right: 4px; font-size: 8px; font-weight: 800; color: var(--faint);
       font-variant-numeric: tabular-nums; }
     .dchip.today { border-bottom-color: var(--accent); }
     .dchip.today .dw { color: var(--accent); }
-    .dchip.empty { opacity: .45; }
+    .dchip.off { opacity: .45; }
     .dchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .dchip.active .dw, .dchip.active .dd, .dchip.active .dnum { color: #fff; }
     .dchip.active.today { border-bottom-color: #fff; }
@@ -484,6 +484,6 @@
   <!-- app.js?v=<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=dev"></script>
+  <script src="/app.js?v=daystrip2"></script>
 </body>
 </html>
