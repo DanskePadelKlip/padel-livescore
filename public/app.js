@@ -636,11 +636,51 @@ function fmtRange(s, e) {
   return sm === em ? `${+sd}–${+ed} ${mon(sm)}` : `${+sd} ${mon(sm)} – ${+ed} ${mon(em)}`;
 }
 
+// FIP/pro category from a tournament name (for the badge on the timeline).
+function fipCategory(name) {
+  const n = (name || "").toUpperCase();
+  if (/\bMAJOR\b/.test(n)) return "Major";
+  if (/FINALS?\b/.test(n)) return "Finals";
+  if (/\bP1\b/.test(n)) return "P1";
+  if (/\bP2\b/.test(n)) return "P2";
+  if (/GOLD/.test(n)) return "Gold";
+  if (/SILVER/.test(n)) return "Silver";
+  if (/BRONZE/.test(n)) return "Bronze";
+  if (/PROMISE/.test(n)) return "Promises";
+  return "FIP";
+}
+
+// Current + recent FIP/pro tournaments derived from the live match feed (each with
+// a date range from its matches) — folded into the timeline so it shows what's on
+// now, not only the curated future calendar.
+function liveFipEvents() {
+  const byT = new Map();
+  for (const m of state.matches || []) {
+    if (m.source !== "fip") continue;
+    const name = m.tournament && m.tournament.name;
+    const d = matchDate(m);
+    if (!name || !d) continue;
+    let e = byT.get(name);
+    if (!e) { e = { name, start: d, end: d, live: false, tour: "FIP" }; byT.set(name, e); }
+    if (d < e.start) e.start = d;
+    if (d > e.end) e.end = d;
+    if (m.status === "live") e.live = true;
+  }
+  return [...byT.values()].map((e) => ({ ...e, category: fipCategory(e.name) }));
+}
+
 function renderUpcoming() {
   if (!state.calendar) { app.innerHTML = `<div class="empty">Loading…</div>`; return; }
   const today = todayYmd();
-  const evs = (state.calendar.events || [])
-    .filter((e) => (e.end || e.start) >= today)   // hide finished events
+  const daysAgo = (n) => { const d = new Date(today + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
+  // merge the curated future calendar with live/recent FIP events; a live entry
+  // wins over a curated one of the same name (it carries real status).
+  const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const merged = new Map();
+  for (const e of state.calendar.events || []) merged.set(norm(e.name), e);
+  for (const e of liveFipEvents()) merged.set(norm(e.name), e);
+  const evs = [...merged.values()]
+    .filter((e) => (e.end || e.start) >= daysAgo(3))   // recent + current + upcoming
     .sort((a, b) => a.start.localeCompare(b.start));
   if (!evs.length) { app.innerHTML = `<div class="empty"><div class="big">🗓️</div>No upcoming events listed.</div>`; return; }
 
@@ -648,19 +688,23 @@ function renderUpcoming() {
   const todayLabel = `${+td[2]} ${MONTHS_LONG[+td[1] - 1].slice(0, 3)}`;
   let html = `<div class="tl">`, lastMonth = "", nowShown = false;
   for (const e of evs) {
+    const end = e.end || e.start;
+    const live = e.live || (e.start <= today && end >= today);
+    const ended = !live && end < today;
+    // "Today" marker sits between finished events and the current/upcoming ones.
+    if (!nowShown && end >= today) { nowShown = true; html += `<div class="tl-now"><span></span>Today · ${todayLabel}</div>`; }
     const month = monthLabel(e.start);
     if (month !== lastMonth) { lastMonth = month; html += `<div class="tl-month">${esc(month)}</div>`; }
-    const live = e.start <= today && (e.end || e.start) >= today;
-    if (!nowShown && e.start > today) { nowShown = true; html += `<div class="tl-now"><span></span>Today · ${todayLabel}</div>`; }
     const d = daysUntil(e.start);
-    const when = live ? "On now" : d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
+    const when = live ? "On now" : ended ? "Finished" : d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
     const cat = (e.category || "").toLowerCase();
-    html += `<div class="tl-item${live ? " on" : ""}">
+    const meta = [e.city, e.tour].filter(Boolean).map(esc).join(" · ");
+    html += `<div class="tl-item${live ? " on" : ""}${ended ? " done" : ""}">
       <div class="tl-dot"></div>
       <div class="tl-card">
         <div class="tl-when"><b>${fmtRange(e.start, e.end)}</b><span class="upc-cat cat-${esc(cat)}">${esc(e.category || "")}</span><span class="tl-ago">${when}</span></div>
         <div class="upc-name">${countryFlag(e.country)} ${esc(e.name)}</div>
-        <div class="upc-meta">${esc(e.city)}${e.tour ? " · " + esc(e.tour) : ""}</div>
+        ${meta ? `<div class="upc-meta">${meta}</div>` : ""}
       </div>
     </div>`;
   }
@@ -1362,7 +1406,10 @@ function renderRankings() {
   const shown = state.rankNat ? rows.filter((r) => r.country === state.rankNat) : rows;
   html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
     `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ranked${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
-  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + shown.slice(0, 250).map((r) => rankRow(r, movement)).join("") + `</div>`;
+  // Full list caps at 250 rendered rows (keeps the DOM light on a 1000-deep list);
+  // a nationality filter renders all matches so every player of that country shows.
+  const cap = state.rankNat || q ? 1000 : 250;
+  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + shown.slice(0, cap).map((r) => rankRow(r, movement)).join("") + `</div>`;
   if (!shown.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
   applyCountryFilter();

@@ -355,8 +355,10 @@
     .tl-dot { position: absolute; left: -25px; top: 15px; width: 10px; height: 10px; border-radius: 50%;
       background: var(--card); border: 2px solid var(--line-hi); }
     .tl-item.on .tl-dot { background: var(--live); border-color: var(--live); box-shadow: 0 0 0 3px var(--live-bg); }
+    .tl-item.done .tl-dot { background: var(--bg-2); border-color: var(--line); }
     .tl-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
     .tl-item.on .tl-card { border-color: var(--live); }
+    .tl-item.done .tl-card { opacity: .6; }
     .tl-when { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
     .tl-when b { font-size: 13px; }
     .tl-ago { font-size: 11px; color: var(--faint); margin-left: auto; }
@@ -368,6 +370,11 @@
     .upc-cat.cat-finals { background: #8b5cf6; }
     .upc-cat.cat-p1 { background: #4d9bff; }
     .upc-cat.cat-p2 { background: #3a4457; color: var(--muted); }
+    .upc-cat.cat-gold { background: #e8b923; color: #1a1205; }
+    .upc-cat.cat-silver { background: #b9c2cd; color: #131720; }
+    .upc-cat.cat-bronze { background: #cd7f43; }
+    .upc-cat.cat-promises { background: #2f9e5e; }
+    .upc-cat.cat-fip { background: var(--card-hi); color: var(--muted); border: 1px solid var(--line); }
     .upc-foot { font-size: 11.5px; color: var(--faint); margin-top: 14px; text-align: center; }
     .ev { display: flex; align-items: center; gap: 11px; padding: 12px 13px; margin-bottom: 7px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
     .ev:hover { background: var(--card-hi); border-color: var(--line-hi); }
@@ -515,9 +522,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=f0f32e40<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=20a2750e<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=f0f32e40"></script>
+  <script src="/app.js?v=20a2750e"></script>
 </body>
 </html>
