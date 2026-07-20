@@ -151,11 +151,13 @@ function parseDateRange(text, months) {
 // event is frequently NOT a play day, so the old single-page scrape saw an empty
 // grid and the tournament yielded nothing (this is why GB/LTA looked dead: its
 // events' matches live on their real play days, reachable only via the day nav).
-const DAY_BACK = 2, DAY_FWD = 6, MAX_DAYS = 10;
+const DAY_BACK = 4, DAY_FWD = 4, MAX_DAYS = 10;
 
+// Shift an ISO date by n days, tz-safe: anchor at noon UTC and move UTC date parts
+// so the result never drifts across a day boundary on machines offset from UTC.
 const shiftDay = (iso, n) => {
-  const d = new Date(iso + "T00:00:00");
-  d.setDate(d.getDate() + n);
+  const d = new Date(iso + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 };
 
