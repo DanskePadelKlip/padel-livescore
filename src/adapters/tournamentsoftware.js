@@ -56,8 +56,9 @@ export async function fetchMatches({
       const months = (LOCALES[inst.locale] || LOCALES.en).months;
       await clearCookiewall(page, inst.base);
       const tournaments = await discoverTournaments(page, inst.base, months);
-      const active = tournaments.filter((t) => coversDay(t, date)).slice(0, maxTournaments);
-      log(`  ${inst.code}: ${active.length}/${tournaments.length} padel tournaments active on ${date}`);
+      const winLo = shiftDay(date, -DAY_BACK), winHi = shiftDay(date, DAY_FWD);
+      const active = tournaments.filter((t) => overlapsWindow(t, winLo, winHi)).slice(0, maxTournaments);
+      log(`  ${inst.code}: ${active.length}/${tournaments.length} padel tournaments in ${winLo}..${winHi}`);
 
       for (const t of active) {
         try {
@@ -294,12 +295,15 @@ const cleanPlayer = (p) => p.replace(/\s*\[[^\]]*\]\s*$/, "").replace(/\s*\(C\)\
 const sig = (a, b, m) =>
   [a.players?.join("+"), b.players?.join("+"), m.header, JSON.stringify(m.sets)].join("|").replace(/\s+/g, "");
 
-function coversDay(t, day) {
-  const toISO = (d) => (d ? d.split(".").reverse().join("-") : null); // dd.mm.yyyy -> yyyy-mm-dd
-  const s = toISO(t.start);
-  const e = toISO(t.end) || s;
+// Select a tournament if its date range overlaps the scrape window [lo, hi]
+// (recent finals + in-progress + imminent), so the day strip shows the last few
+// days and the next few — not only events live on the literal target day. A
+// weekend event that finished yesterday still surfaces its results. Dates are ISO
+// (yyyy-mm-dd), so lexical comparison is chronological.
+function overlapsWindow(t, lo, hi) {
+  const s = t.start, e = t.end || t.start;
   if (!s) return false;
-  return s <= day && day <= e;
+  return s <= hi && e >= lo;
 }
 
 function todayISO() {

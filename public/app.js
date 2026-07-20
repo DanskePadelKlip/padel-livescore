@@ -8,7 +8,7 @@
 const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
 const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
 const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
-const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
+const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
 const SOURCE_LABEL = { rankedin: "RankedIn", tournamentsoftware: "tournamentsoftware.com", fip: "padelfip.com" };
 
 const esc = (s) =>
@@ -286,7 +286,7 @@ function render(changed = new Set()) {
 // Federation → section label (FIP grouped as one "international" section).
 const REGION_LABEL = {
   FIP: "FIP International", DK: "Denmark", SE: "Sweden", NO: "Norway",
-  DE: "Germany", CZ: "Czechia", FI: "Finland", FR: "France",
+  DE: "Germany", CZ: "Czechia", GB: "Great Britain", AU: "Australia", FI: "Finland", FR: "France",
   HR: "Croatia", EE: "Estonia", GE: "Georgia",
   HU: "Hungary", UA: "Ukraine", SI: "Slovenia", XK: "Kosovo", BA: "Bosnia", ME: "Montenegro",
 };

@@ -40,6 +40,13 @@ export const RANKEDIN_FEDERATIONS = [
 export const TOURNAMENTSOFTWARE_INSTANCES = [
   { code: "NO", name: "Norges Tennis- og Padelforbund", base: "https://ntf.tournamentsoftware.com", locale: "no" },
   { code: "GB", name: "LTA (Lawn Tennis Association)",   base: "https://competitions.lta.org.uk",   locale: "en" },
+  // Padel Australia — dedicated padel instance. Verified 2026-07-20: its Club Padel
+  // Tour + Masters Series publish full scored matches (188 in one weekend event).
+  // Tennis Ireland (ti.tournamentsoftware.com) was checked and REJECTED the same
+  // day: its padel is club championships / summer leagues with no match grid — the
+  // same empty-grid signature as LTA's non-tour club events. Only instances with a
+  // real competitive TOUR yield match data; club/box-league bodies don't.
+  { code: "AU", name: "Padel Australia",                 base: "https://pa.tournamentsoftware.com",  locale: "en" },
 ];
 
 // NOT viable as livescore sources (verified 2026-07-12):
