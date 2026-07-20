@@ -76,14 +76,9 @@ export const NON_RANKEDIN = [
   { code: "ES", name: "FEP (Federación Española de Pádel)", platform: "padelfederacion.es", reason: "cuadros are bracket graphics/PDFs, no scrapeable match scores; pro via FIP; regional only on competitor aggregator elpadel.pro" },
 ];
 
-// BLOCKED-BUT-VIABLE (not a dead end like the above): A1 Padel — the separate
-// Latin-America pro tour (a1padelglobal.com), NOT on padelfip. It DOES publish
-// live scores (scoreboard.aspx) + results, so it's worth an adapter. But
-// (verified 2026-07-13) the site is ASP.NET with all tournament/results data
-// delivered client-side — server HTML is empty, no REST/AJAX/websocket visible
-// while idle, and the live scoreboard shows a "próxima" placeholder when nothing
-// is live. There's no A1 event in play mid-July, so there's no data sample to
-// parse. TODO: reverse-engineer the scoreboard's live feed (likely a websocket/
-// SignalR) DURING an actual A1 match, then build a browser adapter. Next A1
-// events ~late July 2026.
-export const PLANNED_A1 = { code: "A1", name: "A1 Padel", site: "https://www.a1padelglobal.com" };
+// A1 Padel — DROPPED 2026-07-20. Was flagged blocked-but-viable (Latin-America pro
+// tour with a live scoreboard worth an adapter), but A1 has been SUSPENDED —
+// outcompeted by Premier Padel's consolidation of pro padel. Evidence: no "Torneos
+// 2026" tab on a1padelglobal.com (only past years + an empty "Próximos Torneos"),
+// dead scoreboard, no 2026 schedule anywhere. Not worth any build time. Pro padel is
+// covered by fip (Premier + FIP). Do NOT re-investigate unless A1 visibly relaunches.
