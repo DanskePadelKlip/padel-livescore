@@ -101,7 +101,7 @@ async function discoverCalendarEvents(date) {
     `&startDate=${lo}&endDate=${hi}&calendarAgeGroups=0&calendarDateFilter=2&calendarOrganization=0`
   );
   return Object.values(data || {})
-    .filter((e) => e && e.EventId && e.CountryShort && !ORG_COUNTRIES.has(e.CountryShort))
+    .filter((e) => e && e.EventId && e.CountryShort && !ORG_COUNTRIES.has(e.CountryShort.toLowerCase()))
     .slice(0, CAL_MAX)
     .map((e) => ({
       eventId: e.EventId,
