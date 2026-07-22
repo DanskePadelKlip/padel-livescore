@@ -109,9 +109,15 @@ async function cycle() {
   if (canDeploy) {
     stampAppVersion(root); // content-hash cache-bust: app.js?v=<hash> before every deploy
     try {
+      // Bounded on purpose: execSync has no default timeout, so a wrangler that
+      // hangs (network stall, auth prompt) blocks this loop forever with no error
+      // line — the loop stops producing health.json and /api/health's dead-man's
+      // switch reports the site down while nothing looks broken. A timed-out deploy
+      // throws, gets logged below, and the next cycle simply deploys again; a
+      // repeated static deploy is idempotent.
       execSync(
         "npx --yes wrangler@4 pages deploy public --project-name padel-livescore --branch main --commit-dirty=true",
-        { cwd: root, stdio: "inherit" }
+        { cwd: root, stdio: "inherit", timeout: 4 * 60_000 }
       );
     } catch (e) {
       console.error("  deploy failed:", e.message);
