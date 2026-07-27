@@ -8,7 +8,7 @@
 const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
 const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
 const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
-const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
+const FLAGS = { FIP: "🌍", WPT: "🏆", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
 
 // Player nationality → flag. Data uses two schemes: 2-letter federation codes
 // (national rankings/matches: "dk") and 3-letter IOC/FIP codes (FIP world: "ESP").
@@ -171,6 +171,7 @@ const state = {
   archiveCap: 40,
   openArchive: new Set(),    // expanded tournament keys
   archiveData: new Map(),    // key -> loaded tournament {matches}
+  wptIndex: new Map(),       // wpt key -> archive list row (World Padel Tour, own file)
   // ---- players (profiles / search / h2h) ----
   playerResults: null,       // search results
   player: null,              // loaded profile
@@ -315,7 +316,7 @@ function render(changed = new Set()) {
 
 // Federation → section label (FIP grouped as one "international" section).
 const REGION_LABEL = {
-  FIP: "FIP International", DK: "Denmark", SE: "Sweden", NO: "Norway",
+  FIP: "FIP International", WPT: "World Padel Tour", DK: "Denmark", SE: "Sweden", NO: "Norway",
   DE: "Germany", CZ: "Czechia", GB: "Great Britain", AU: "Australia", FI: "Finland", FR: "France",
   HR: "Croatia", EE: "Estonia", GE: "Georgia",
   HU: "Hungary", UA: "Ukraine", SI: "Slovenia", XK: "Kosovo", BA: "Bosnia", ME: "Montenegro",
@@ -732,14 +733,61 @@ function renderUpcoming() {
 
 // ---------- archive (historic results) ----------
 
+// WPT (World Padel Tour) is a finals-only historic dataset in its own file
+// (data/archive/wpt.json), kept separate from index.json so the padel-db export
+// pipeline can't clobber it. Turn each season-tournament into the archive's
+// match shape: one row per FINAL (Men/Women), winners as the winning side.
+function wptMatches(t) {
+  const mk = (names) => ({ name: (names || []).join(" / ") || "TBD", players: (names || []).map((n) => ({ name: n, country: null })) });
+  const out = [];
+  for (const g of ["Men", "Women"]) {
+    const f = t.finals && t.finals[g];
+    if (!f) continue;
+    out.push({
+      className: g, round: "Final",
+      teams: [mk(f.winners), mk(f.runnersUp)],
+      score: { sets: (f.sets || []).map((s) => [s[0], s[1]]), winner: 0 },
+    });
+  }
+  return out;
+}
+
+// Load wpt.json once and seed archiveData (finals) + _wptIndex (list rows) for
+// every WPT tournament. Shared by the archive list and the tournament hub so a
+// cold deep-link to /tournament/wpt/… works without a matching t/ file.
+let _wptLoaded = false;
+async function ensureWpt() {
+  if (_wptLoaded) return;
+  _wptLoaded = true;
+  try {
+    const wpt = await fetch("data/archive/wpt.json").then((r) => (r.ok ? r.json() : null));
+    if (wpt && Array.isArray(wpt.tournaments)) {
+      for (const t of wpt.tournaments) {
+        const matches = wptMatches(t);
+        if (!matches.length) continue;
+        const row = { key: t.key, name: t.name, federation: "WPT", start: t.start, end: t.start, n: matches.length };
+        state.archiveData.set(t.key, { matches, name: t.name, federation: "WPT" });
+        state.wptIndex.set(t.key, row);
+      }
+    }
+  } catch { _wptLoaded = false; } // allow a retry on transient failure
+}
+
 async function loadArchive() {
   app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
+  let index;
   try {
-    state.archive = await (await fetch("data/archive/index.json")).json();
+    [index] = await Promise.all([
+      fetch("data/archive/index.json").then((r) => r.json()),
+      ensureWpt(),
+    ]);
   } catch {
     app.innerHTML = `<div class="empty"><div class="big">📅</div>Results archive not available.</div>`;
     return;
   }
+  // fold the preloaded WPT rows into the browseable list
+  for (const row of state.wptIndex.values()) index.tournaments.push(row);
+  state.archive = index;
   const years = [...new Set(state.archive.tournaments.map((t) => (t.start || "").slice(0, 4)).filter(Boolean))].sort().reverse();
   document.getElementById("year").innerHTML =
     `<option value="all">All years</option>` + years.map((y) => `<option value="${y}">${y}</option>`).join("");
@@ -755,9 +803,12 @@ function renderArchive() {
     return true;
   });
   const shown = list.slice(0, state.archiveCap);
+  const all = state.archive.tournaments;
+  const yrs = all.map((t) => +(t.start || "").slice(0, 4)).filter(Boolean);
+  const span = yrs.length ? `${Math.min(...yrs)}–${Math.max(...yrs)}` : "";
   let html =
     `<div class="section-label region">📅 ${list.length} tournament${list.length === 1 ? "" : "s"}` +
-    `<span class="count">${state.archive.count} in archive · 2020–2026</span></div>`;
+    `<span class="count">${all.length} in archive · ${span}</span></div>`;
   html += shown.map(archiveRow).join("");
   if (list.length > shown.length)
     html += `<button class="morebtn" data-archmore="1">Show ${list.length - shown.length} more ↓</button>`;
@@ -1059,6 +1110,21 @@ function openTournament(kind, key, name, fed) {
   state.tournament = { kind, key, name, fed, matches: kind === "live" ? null : "loading" };
   syncUrl(); // /tournament/<source>/<id>
   if (kind === "arch") {
+    // WPT lives in its own file, not t/<key>.json — ensure it's loaded, then serve
+    // from archiveData (covers cold deep-links to /tournament/wpt/…).
+    if (key.startsWith("wpt-") && !state.archiveData.has(key)) {
+      render(); // skeleton
+      ensureWpt().then(() => {
+        const d = state.archiveData.get(key) || { matches: [] };
+        if (state.tournament && state.tournament.key === key) {
+          state.tournament.matches = d.matches;
+          if (d.name) state.tournament.name = d.name;
+          state.tournament.fed = "WPT";
+        }
+        render(); setTitle();
+      });
+      return;
+    }
     if (state.archiveData.has(key)) {
       state.tournament.matches = state.archiveData.get(key).matches;
     } else {
