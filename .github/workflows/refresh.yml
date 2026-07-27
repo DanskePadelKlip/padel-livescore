@@ -1,9 +1,8 @@
 name: Refresh livescore
 
-# Runs the Playwright-based fetch, then redeploys public/ (with the fresh
-# matches.json) to Cloudflare Pages. This is the "browser-capable" runner —
-# the fetch needs a real browser (Norway/tournamentsoftware + FIP parsing),
-# so it can't run in a plain Cloudflare Worker.
+# Runs the fetch, then redeploys public/ (with the fresh matches.json) to
+# Cloudflare Pages. Every source is now plain fetch + linkedom (no browser), so
+# this just needs Node — no Playwright/Chromium install.
 #
 # Requires two repo secrets (Settings > Secrets and variables > Actions):
 #   CLOUDFLARE_API_TOKEN   — a Cloudflare "Pages: Edit" token
@@ -33,8 +32,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
       - name: Fetch matches
         run: node scripts/fetch-live.js
         env:

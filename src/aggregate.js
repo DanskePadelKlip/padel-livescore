@@ -5,15 +5,14 @@
 import * as rankedin from "./adapters/rankedin.js";
 import * as tournamentsoftware from "./adapters/tournamentsoftware.js";
 import * as fip from "./adapters/fip.js";
-import { closeBrowser } from "./browser.js";
 import { assertMatch, STATUS } from "./schema.js";
 
-// Register adapters with a min refresh interval. RankedIn (JSON) is cheap and can
-// carry live national scores every cycle; the browser-scraped sources are slow, so
-// they refresh less often and their last result is reused in between — otherwise
-// the multi-minute tournamentsoftware scrape would stall the ~1-min live loop.
-// fip is the pro tour (has genuinely live matches) so it stays fairly fresh;
-// tournamentsoftware is mostly completed results + schedules, so it can lag.
+// Register adapters with a min refresh interval. All three are now plain fetch +
+// linkedom (no browser). RankedIn (a single JSON call) is cheapest and refreshes
+// every cycle to carry live national scores; fip is the pro tour (genuinely live
+// matches) so it stays fairly fresh; tournamentsoftware is many small fetches and
+// mostly completed results + schedules, so it refreshes less often and its last
+// result is reused in between.
 const ADAPTERS = [
   { mod: rankedin, minMs: 0 },                     // DK/SE/DE/CZ — every cycle
   { mod: fip, minMs: 2 * 60_000 },                 // FIP/Premier pro tour — ~2 min
@@ -33,32 +32,28 @@ export async function aggregate(opts = {}) {
   const sources = [];
   const log = opts.log || (() => {});
   const force = opts.force === true; // ignore throttle (one-shot runs like fetch-live.js)
-  try {
-    for (const { mod, minMs } of ADAPTERS) {
-      const id = mod.id || "?";
-      const prev = cache.get(id);
-      const due = force || !prev || Date.now() - prev.at >= minMs;
-      if (due) {
-        try {
-          const matches = await mod.fetchMatches(opts);
-          for (const m of matches) assertMatch(m); // validate before caching
-          cache.set(id, { at: Date.now(), matches, ok: true, error: null });
-        } catch (err) {
-          // Keep last-good matches (if any) so a transient scrape failure doesn't
-          // wipe the source from the site; mark it failed for health. `at` advances
-          // so a slow source retries on its normal interval, not every cycle.
-          cache.set(id, { at: Date.now(), matches: prev?.matches || [], ok: false, error: String(err?.message || err).slice(0, 200) });
-          log(`  ! adapter ${id} failed — ${err?.message || err}`);
-        }
+  // All adapters are now plain fetch + linkedom (no shared browser to tear down).
+  for (const { mod, minMs } of ADAPTERS) {
+    const id = mod.id || "?";
+    const prev = cache.get(id);
+    const due = force || !prev || Date.now() - prev.at >= minMs;
+    if (due) {
+      try {
+        const matches = await mod.fetchMatches(opts);
+        for (const m of matches) assertMatch(m); // validate before caching
+        cache.set(id, { at: Date.now(), matches, ok: true, error: null });
+      } catch (err) {
+        // Keep last-good matches (if any) so a transient scrape failure doesn't
+        // wipe the source from the site; mark it failed for health. `at` advances
+        // so a slow source retries on its normal interval, not every cycle.
+        cache.set(id, { at: Date.now(), matches: prev?.matches || [], ok: false, error: String(err?.message || err).slice(0, 200) });
+        log(`  ! adapter ${id} failed — ${err?.message || err}`);
       }
-      const c = cache.get(id);
-      let n = 0;
-      for (const m of c.matches) { byId.set(m.id, m); n++; } // last write wins on dupe id
-      sources.push({ id, ok: c.ok, count: n, ...(c.ok ? {} : { error: c.error }) });
     }
-  } finally {
-    // browser adapters (tournamentsoftware, fip) share one browser — close once.
-    await closeBrowser();
+    const c = cache.get(id);
+    let n = 0;
+    for (const m of c.matches) { byId.set(m.id, m); n++; } // last write wins on dupe id
+    sources.push({ id, ok: c.ok, count: n, ...(c.ok ? {} : { error: c.error }) });
   }
   // Sort: live first, then upcoming, then final; within a status, by start time.
   const matches = [...byId.values()].sort((a, b) => {

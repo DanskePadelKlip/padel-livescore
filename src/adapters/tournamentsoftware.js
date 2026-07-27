@@ -1,26 +1,30 @@
-// tournamentsoftware.com adapter (Norway = ntf, GB = LTA instance). This platform
-// is a real live-scoring tournament system (unlike Padelution, which only
-// publishes standings). Data is AJAX-rendered behind a cookiewall, so we drive it
-// through the shared Playwright layer.
+// tournamentsoftware.com adapter (Norway = ntf, GB = LTA, AU = Padel Australia).
+// This platform is a real live-scoring tournament system (unlike Padelution, which
+// only publishes standings).
+//
+// De-browsered 2026-07-27: the pages are SERVER-RENDERED behind a cookiewall that
+// is just a cookie (no JS). So instead of driving Playwright we keep a small cookie
+// jar over `fetch` and parse the HTML with linkedom — same as the FIP adapter. This
+// removed the project's last Playwright dependency. Flow per instance:
+//   1. GET / (obtain ASP.NET session) then POST /cookiewall/Save (accept) — once
+//   2. POST /find/tournament/DoSearch (the search page's own AJAX endpoint, date-
+//      windowed) -> padel tournaments (guid, name, dates)
+//   3. keep tournaments overlapping the target window
+//   4. GET /tournament/{guid}/Matches (+ /matches/YYYYMMDD per play day) -> rows
+//   5. dedup grid+list duplicates -> normalize -> NormalizedMatch
 //
 // Multiple national instances share IDENTICAL DOM markup; they differ only in the
-// LANGUAGE of dates (Norwegian vs English month names) and the cookiewall button.
-// Each instance carries a `locale` and everything language-specific is keyed off
-// LOCALES below — adding another country's instance means adding a row (+ a locale
-// if it's a new language), not a new adapter.
-//
-// Flow per instance:
-//   1. clear the cookiewall once
-//   2. /find/tournament?q=padel        -> padel tournaments (guid, name, dates)
-//   3. keep tournaments active on the target day
-//   4. /tournament/{guid}/Matches      -> match rows (dedup grid+list duplicates)
-//   5. normalize -> NormalizedMatch
+// LANGUAGE of dates (Norwegian vs English month names). Each instance carries a
+// `locale`; everything language-specific is keyed off LOCALES below.
 
-import { withPage } from "../browser.js";
+import { parseHTML } from "linkedom";
 import { TOURNAMENTSOFTWARE_INSTANCES } from "../federations.js";
 import { STATUS, gid } from "../schema.js";
 
 export const id = "tournamentsoftware";
+
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36";
 
 // Month-name -> number, per language. Keys include full + common abbreviations so
 // both "12 July 2026" and "12 Jul 2026" (and the Norwegian equivalents) parse.
@@ -43,19 +47,65 @@ const LOCALES = {
   },
 };
 
+const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
+
+// ---- cookie jar over fetch -------------------------------------------------
+// Node's fetch doesn't persist cookies, so keep a tiny jar: absorb Set-Cookie on
+// every response, send the accumulated cookies on every request. Enough for this
+// platform (ASP.NET session + the cookiewall-acceptance cookie).
+function makeJar() {
+  const store = new Map();
+  return {
+    header: () => [...store].map(([k, v]) => `${k}=${v}`).join("; "),
+    absorb: (res) => {
+      for (const c of res.headers.getSetCookie?.() || []) {
+        const m = c.match(/^([^=]+)=([^;]*)/);
+        if (m) store.set(m[1], m[2]);
+      }
+    },
+  };
+}
+
+async function req(url, jar, { method = "GET", body, headers = {} } = {}) {
+  const h = { "User-Agent": UA, "Referer": new URL(url).origin + "/", "Accept-Language": "en", ...headers };
+  if (jar.header()) h.Cookie = jar.header();
+  if (body != null) h["Content-Type"] = "application/x-www-form-urlencoded";
+  const res = await fetch(url, { method, body, headers: h, redirect: "manual", signal: AbortSignal.timeout(20000) });
+  jar.absorb(res);
+  return res;
+}
+
+// Prime a session and accept the cookiewall (a form POST that sets an acceptance
+// cookie). After this the jar unlocks the server-rendered pages for the instance.
+async function acceptCookiewall(jar, base) {
+  await req(`${base}/`, jar);
+  await req(`${base}/cookiewall/Save`, jar, {
+    method: "POST",
+    body: "ReturnUrl=%2F&SettingsOpen=False&CookiePurposes=1&CookiePurposes=2&CookiePurposes=16",
+  });
+}
+
+// Date window to ask DoSearch for. Keep the BACK edge tight (≈ the scrape window):
+// DoSearch returns results sorted by start-date ASCENDING and only ~20 per page, so a
+// wide back-window lets long-running club leagues (which start months ago but overlap)
+// crowd the current week's events off page 1. A tight back edge drops already-finished
+// events; FWD can be generous (future events sort last, so they never bury current
+// ones). No cap needed on the browser side anymore — fetch+parse is cheap.
+const DISCOVER_BACK = 4, DISCOVER_FWD = 30; // BACK mirrors DAY_BACK (declared below)
+
 export async function fetchMatches({
   date = todayISO(),
   instances = TOURNAMENTSOFTWARE_INSTANCES,
-  maxTournaments = 12,
+  maxTournaments = 30,
   log = () => {},
 } = {}) {
   const out = [];
-  // NB: browser is closed centrally by aggregate() (shared with the fip adapter).
-  await withPage(async (page) => {
-    for (const inst of instances) {
-      const months = (LOCALES[inst.locale] || LOCALES.en).months;
-      await clearCookiewall(page, inst.base);
-      const tournaments = await discoverTournaments(page, inst.base, months);
+  for (const inst of instances) {
+    const months = (LOCALES[inst.locale] || LOCALES.en).months;
+    try {
+      const jar = makeJar();
+      await acceptCookiewall(jar, inst.base);
+      const tournaments = await discoverTournaments(jar, inst.base, months, date);
       const winLo = shiftDay(date, -DAY_BACK), winHi = shiftDay(date, DAY_FWD);
       const active = tournaments.filter((t) => overlapsWindow(t, winLo, winHi)).slice(0, maxTournaments);
       log(`  ${inst.code}: ${active.length}/${tournaments.length} padel tournaments in ${winLo}..${winHi}`);
@@ -65,57 +115,50 @@ export async function fetchMatches({
           // t.start is already ISO (yyyy-mm-dd); its year seeds match dates when a
           // day heading omits the year.
           const fallbackYear = (t.start || "").slice(0, 4) || String(new Date().getFullYear());
-          const raw = await scrapeMatches(page, inst.base, t.guid, fallbackYear, months, date);
+          const raw = await scrapeMatches(jar, inst.base, t.guid, fallbackYear, months, date);
           for (const m of dedupe(raw)) out.push(normalize(m, t, inst));
         } catch (err) {
           log(`    ! tournament ${t.guid} (${t.name}) failed — ${err.message}`);
         }
       }
+    } catch (err) {
+      log(`  ${inst.code}: instance failed — ${err.message}`);
     }
-  });
+  }
   return out;
 }
 
-// ---- browser steps ---------------------------------------------------------
+// ---- discovery -------------------------------------------------------------
 
-async function clearCookiewall(page, base) {
-  await page.goto(base + "/", { waitUntil: "domcontentloaded" });
-  // LTA uses a OneTrust banner whose accept button has a stable id — try it first.
-  const ot = page.locator("#onetrust-accept-btn-handler").first();
-  if (await ot.count()) await ot.click().catch(() => {});
-  for (const label of ["Godta alle", "Godta", "Aksepter", "Accept all", "Allow all", "I Accept", "Accept", "OK"]) {
-    const b = page.getByRole("button", { name: label, exact: false }).first();
-    if (await b.count()) {
-      await b.click().catch(() => {});
-      break;
-    }
-  }
-  await page.waitForTimeout(800);
-}
-
-async function discoverTournaments(page, base, months) {
-  await page.goto(base + "/find/tournament?q=padel", { waitUntil: "networkidle" });
-  await page.waitForTimeout(1500);
-  // Extract guid/title/rawtext in the page; parse dates in Node (locale-aware).
-  const cards = await page.evaluate(() => {
-    const links = [...document.querySelectorAll('a[href*="/sport/tournament?id="]')];
-    const seen = new Set();
-    const out = [];
-    for (const a of links) {
-      const m = a.getAttribute("href").match(/id=([A-Fa-f0-9-]{8,})/);
-      if (!m) continue;
-      const guid = m[1].toLowerCase();
-      if (seen.has(guid)) continue;
-      seen.add(guid);
-      const card = a.closest("li,article,.media,div");
-      const text = (card?.innerText || a.innerText || "").replace(/\s+/g, " ").trim();
-      const title = (card?.querySelector(".media__title")?.innerText || a.innerText || "")
-        .trim()
-        .replace(/([^\d\s])(\d{4})$/, "$1 $2"); // un-glue trailing year: "...Liga2026" -> "...Liga 2026"
-      out.push({ guid, title, text });
-    }
-    return out;
+async function discoverTournaments(jar, base, months, date) {
+  // The search page (/find/tournament?q=padel) is a shell; results come from its
+  // own AJAX endpoint. Post the same model the form does, with a date window.
+  const start = shiftDay(date, -DISCOVER_BACK), end = shiftDay(date, DISCOVER_FWD);
+  const body =
+    "TournamentFilter.Q=padel&Page=1&TournamentFilter.DateFilterType=1" +
+    `&TournamentFilter.StartDate=${start}T00%3A00&TournamentFilter.EndDate=${end}T00%3A00` +
+    "&TournamentFilter.LocationFilterType=0&TournamentExtendedFilter.SportID=0";
+  const res = await req(`${base}/find/tournament/DoSearch`, jar, {
+    method: "POST", body, headers: { "X-Requested-With": "XMLHttpRequest" },
   });
+  if (!res.ok) return [];
+  const { document } = parseHTML(await res.text());
+
+  const links = [...document.querySelectorAll('a[href*="/sport/tournament?id="]')];
+  const seen = new Set();
+  const cards = [];
+  for (const a of links) {
+    const m = a.getAttribute("href").match(/id=([A-Fa-f0-9-]{8,})/);
+    if (!m) continue;
+    const guid = m[1].toLowerCase();
+    if (seen.has(guid)) continue;
+    seen.add(guid);
+    const card = a.closest("li,article,.media,div");
+    const text = clean(card?.textContent || a.textContent);
+    const title = clean(card?.querySelector(".media__title")?.textContent || a.textContent)
+      .replace(/([^\d\s])(\d{4})$/, "$1 $2"); // un-glue trailing year: "...Liga2026" -> "...Liga 2026"
+    cards.push({ guid, title, text });
+  }
   return cards.map((c) => {
     const dates = parseDateRange(c.text, months); // [startISO, endISO] | []
     return {
@@ -149,9 +192,9 @@ function parseDateRange(text, months) {
 
 // How many days around the target date to scrape per tournament, and a hard cap.
 // The Matches page shows ONE day and defaults to "today" — which for an in-progress
-// event is frequently NOT a play day, so the old single-page scrape saw an empty
-// grid and the tournament yielded nothing (this is why GB/LTA looked dead: its
-// events' matches live on their real play days, reachable only via the day nav).
+// event is frequently NOT a play day, so a single-page scrape sees an empty grid
+// and the tournament yields nothing (this is why GB/LTA looked dead: its events'
+// matches live on their real play days, reachable only via the day nav).
 const DAY_BACK = 4, DAY_FWD = 7, MAX_DAYS = 12;
 
 // Shift an ISO date by n days, tz-safe: anchor at noon UTC and move UTC date parts
@@ -162,17 +205,16 @@ const shiftDay = (iso, n) => {
   return d.toISOString().slice(0, 10);
 };
 
-async function scrapeMatches(page, base, guid, fallbackYear, months, date) {
-  await page.goto(`${base}/tournament/${guid}/Matches`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(1000);
+async function scrapeMatches(jar, base, guid, fallbackYear, months, date) {
+  const first = await req(`${base}/tournament/${guid}/Matches`, jar);
+  if (!first.ok) return [];
+  const doc = parseHTML(await first.text()).document;
   // Each day tab is a real URL: /tournament/{guid}/matches/YYYYMMDD (data-value).
-  const navDays = await page.evaluate(() =>
-    [...document.querySelectorAll(".js-date-selection-tab[data-value]")]
-      .map((a) => a.getAttribute("data-value"))
-      .filter((v) => /^\d{8}$/.test(v))
-  );
+  const navDays = [...doc.querySelectorAll(".js-date-selection-tab[data-value]")]
+    .map((a) => a.getAttribute("data-value"))
+    .filter((v) => /^\d{8}$/.test(v));
   // No navigator = a single-day event; the default page IS that day.
-  if (!navDays.length) return extractDay(page, months, fallbackYear, null);
+  if (!navDays.length) return extractDay(doc, months, fallbackYear, null);
   // Scrape only real play days within a tight window around the target date,
   // bounded so a long league doesn't explode the scrape.
   const lo = shiftDay(date, -DAY_BACK), hi = shiftDay(date, DAY_FWD);
@@ -183,57 +225,54 @@ async function scrapeMatches(page, base, guid, fallbackYear, months, date) {
     .slice(0, MAX_DAYS);
   const all = [];
   for (const iso of want) {
-    await page.goto(`${base}/tournament/${guid}/matches/${iso.replace(/-/g, "")}`, { waitUntil: "networkidle" });
-    await page.waitForTimeout(600);
-    all.push(...(await extractDay(page, months, fallbackYear, iso)));
+    const r = await req(`${base}/tournament/${guid}/matches/${iso.replace(/-/g, "")}`, jar);
+    if (!r.ok) continue;
+    all.push(...extractDay(parseHTML(await r.text()).document, months, fallbackYear, iso));
   }
   return all;
 }
 
-// Extract match rows from whatever day the Matches page is currently showing.
-// `forceDate` (ISO) is the known day when we navigated to a dated URL; otherwise
-// the day is read from the page heading (year optional -> tournament fallback).
-function extractDay(page, months, fallbackYear, forceDate) {
-  return page.evaluate(({ MONTHS, fallbackYear, forceDate }) => {
-    const monthAlt = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join("|");
-    let pageDate = forceDate || null;
-    if (!pageDate) {
-      const dm = document.body.innerText.match(
-        new RegExp(`(\\d{1,2})\\.?\\s+(${monthAlt})\\.?(?:\\s+(\\d{4}))?`, "i")
-      );
-      if (dm && MONTHS[dm[2].toLowerCase()]) {
-        const year = dm[3] || fallbackYear;
-        pageDate = `${year}-${String(MONTHS[dm[2].toLowerCase()]).padStart(2, "0")}-${String(+dm[1]).padStart(2, "0")}`;
-      } else {
-        const nm = document.body.innerText.match(/\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b/);
-        if (nm) pageDate = `${nm[3]}-${nm[2].padStart(2, "0")}-${nm[1].padStart(2, "0")}`;
-      }
+// Extract match rows from a Matches-page document (one day). `forceDate` (ISO) is
+// the known day when we fetched a dated URL; otherwise the day is read from the
+// page heading (year optional -> tournament fallback).
+function extractDay(document, months, fallbackYear, forceDate) {
+  const monthAlt = Object.keys(months).sort((a, b) => b.length - a.length).join("|");
+  let pageDate = forceDate || null;
+  const bodyText = clean(document.body?.textContent || "");
+  if (!pageDate) {
+    const dm = bodyText.match(new RegExp(`(\\d{1,2})\\.?\\s+(${monthAlt})\\.?(?:\\s+(\\d{4}))?`, "i"));
+    if (dm && months[dm[2].toLowerCase()]) {
+      const year = dm[3] || fallbackYear;
+      pageDate = `${year}-${String(months[dm[2].toLowerCase()]).padStart(2, "0")}-${String(+dm[1]).padStart(2, "0")}`;
+    } else {
+      const nm = bodyText.match(/\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b/);
+      if (nm) pageDate = `${nm[3]}-${nm[2].padStart(2, "0")}-${nm[1].padStart(2, "0")}`;
     }
-    const rows = [];
-    for (const group of document.querySelectorAll(".match-group")) {
-      const groupTime = ((group.querySelector(".match-group__header")?.innerText || "").match(/\d{1,2}:\d{2}/) || [])[0] || null;
-      for (const item of group.querySelectorAll(".match-group__item")) {
-        const header = item.querySelector(".match__header-title")?.innerText.replace(/\s+/g, " ").trim() || "";
-        const time = groupTime || (item.innerText.match(/\b(\d{1,2}:\d{2})\b/) || [])[1] || null;
-        const teams = [...item.querySelectorAll(".match__row")].map((r) => ({
-          players: [...r.querySelectorAll(".match__row-title-value-content")].map((p) => p.innerText.trim()).filter(Boolean),
-          won: r.classList.contains("has-won"),
-        }));
-        // sets: each ul.points is a set; li[0]=teamA games, li[1]=teamB games
-        const sets = [...item.querySelectorAll(".match__result .points")].map((ul) => {
-          const cells = [...ul.querySelectorAll(".points__cell")].map((c) => c.textContent.trim());
-          return [cells[0] ?? "", cells[1] ?? ""];
-        }).filter((s) => s[0] !== "" || s[1] !== "");
-        // A real match has exactly two teams. The grid view (vs the list view)
-        // renders a whole match-group as ONE flattened item — many teams + all
-        // their points concatenated — which would otherwise surface as a bogus
-        // >3-set line. Skip those; the list view carries each match cleanly.
-        if (teams.length !== 2) continue;
-        rows.push({ date: pageDate, header, time, teams, sets });
-      }
+  }
+  const rows = [];
+  for (const group of document.querySelectorAll(".match-group")) {
+    const groupTime = (clean(group.querySelector(".match-group__header")?.textContent || "").match(/\d{1,2}:\d{2}/) || [])[0] || null;
+    for (const item of group.querySelectorAll(".match-group__item")) {
+      const header = clean(item.querySelector(".match__header-title")?.textContent || "");
+      const time = groupTime || (clean(item.textContent).match(/\b(\d{1,2}:\d{2})\b/) || [])[1] || null;
+      const teams = [...item.querySelectorAll(".match__row")].map((r) => ({
+        players: [...r.querySelectorAll(".match__row-title-value-content")].map((p) => clean(p.textContent)).filter(Boolean),
+        won: r.classList.contains("has-won"),
+      }));
+      // sets: each ul.points is a set; li[0]=teamA games, li[1]=teamB games
+      const sets = [...item.querySelectorAll(".match__result .points")].map((ul) => {
+        const cells = [...ul.querySelectorAll(".points__cell")].map((c) => clean(c.textContent));
+        return [cells[0] ?? "", cells[1] ?? ""];
+      }).filter((s) => s[0] !== "" || s[1] !== "");
+      // A real match has exactly two teams. The grid view (vs the list view) renders
+      // a whole match-group as ONE flattened item — many teams + all their points
+      // concatenated — which would otherwise surface as a bogus >3-set line. Skip
+      // those; the list view carries each match cleanly.
+      if (teams.length !== 2) continue;
+      rows.push({ date: pageDate, header, time, teams, sets });
     }
-    return rows;
-  }, { MONTHS: months, fallbackYear, forceDate });
+  }
+  return rows;
 }
 
 // ---- shaping ---------------------------------------------------------------

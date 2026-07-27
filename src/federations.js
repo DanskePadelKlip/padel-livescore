@@ -30,7 +30,8 @@ export const RANKEDIN_FEDERATIONS = [
 // To cover those we need a COUNTRY-LEVEL event-discovery endpoint (TODO) rather
 // than another federation row.
 
-// tournamentsoftware.com instances (JS/AJAX + cookiewall, scraped via Playwright).
+// tournamentsoftware.com instances (cookiewall + server-rendered HTML, fetched
+// with a cookie jar and parsed via linkedom — no browser; see the adapter).
 // NORWAY runs padel here (norsktennis.no links to ntf). Verified 2026-07-12:
 // real match data with per-set scores + live scoring. GB/LTA runs the SAME
 // platform, white-labelled at competitions.lta.org.uk (was lta.tournamentsoftware.com)
