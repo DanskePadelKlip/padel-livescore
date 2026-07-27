@@ -912,7 +912,7 @@ function renderPlayers() {
   if (state.playerResults == null)
     html = `<div class="empty"><div class="big">👤</div>Search a player to see their profile, results &amp; head-to-head.</div>`;
   else if (!state.playerResults.length)
-    html = `<div class="empty"><div class="big">👤</div>No players found. (Profiles cover players with a RankedIn id — Nordic scene + linked pros.)</div>`;
+    html = `<div class="empty"><div class="big">👤</div>${state.query ? `No profile yet for <b>${esc(state.query)}</b>.` : "No players found."}<div style="margin-top:8px;color:var(--faint);font-size:13px;line-height:1.5">Player profiles currently cover the Nordic (RankedIn) scene and linked pros. Many international / pro-tour players aren't in the profile database yet.</div></div>`;
   else html = state.playerResults.map(playerResultRow).join("");
   app.innerHTML = html;
 }
