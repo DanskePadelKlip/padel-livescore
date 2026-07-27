@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20",
+  "generatedAt": "2026-07-26",
   "source": "Wikipedia Premier_Padel_2026 (auto-refreshed weekly)",
   "events": [
     {
@@ -122,11 +122,11 @@
     {
       "start": "2026-07-27",
       "end": "2026-08-02",
-      "name": "Pretoria P2",
+      "name": "Pretoria P1",
       "city": "Pretoria",
       "country": "ZA",
       "tour": "Premier Padel",
-      "category": "P2"
+      "category": "P1"
     },
     {
       "start": "2026-08-03",
@@ -185,11 +185,11 @@
     {
       "start": "2026-10-26",
       "end": "2026-10-31",
-      "name": "Kuwait P1",
+      "name": "Kuwait Major",
       "city": "Kuwait",
       "country": "KW",
       "tour": "Premier Padel",
-      "category": "P1"
+      "category": "Major"
     },
     {
       "start": "2026-11-09",
