@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",
+    "linkedom": "^0.18.13",
     "playwright": "^1.61.1",
     "web-push": "^3.6.7"
   }

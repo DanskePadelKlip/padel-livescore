@@ -4,11 +4,14 @@
 //   1. discover in-play tournaments via padelfip WordPress REST (recent `modified`)
 //   2. read each event page for its `idEvent` -> matchscorer id `FIP-{year}-{idEvent}`
 //   3. fetch the current day's Order-of-Play widget (completed + live + upcoming)
-//   4. parse the widget HTML (via the shared browser's setContent) -> normalize
+//   4. parse the widget HTML (in-process, via linkedom) -> normalize
 //
-// The widget 403s without a browser UA + `Referer: padelfip.com`.
+// The widget is server-rendered HTML, so no headless browser is needed — a plain
+// fetch + linkedom DOM parse gets everything. This keeps FIP off Playwright (lean,
+// resilient, runs unattended) and cheap enough that we no longer cap how many
+// tournaments we pull. The widget 403s without a browser UA + `Referer: padelfip.com`.
 
-import { withPage } from "../browser.js";
+import { parseHTML } from "linkedom";
 import { STATUS, gid } from "../schema.js";
 
 export const id = "fip";
@@ -22,39 +25,37 @@ const FIP_HEADERS = {
 const WIDGET = "https://widget.matchscorerlive.com/screen";
 const WP = "https://www.padelfip.com/wp-json/wp/v2";
 
-export async function fetchMatches({ date = todayISO(), maxTournaments = 15, maxDay = 9, log = () => {} } = {}) {
+export async function fetchMatches({ date = todayISO(), maxTournaments = Infinity, maxDay = 9, log = () => {} } = {}) {
   const events = await discoverActiveEvents(date, log);
-  const active = events.slice(0, maxTournaments);
+  // No browser: the widget is server-rendered HTML we fetch + parse in-process, so
+  // every discovered tournament is cheap. `maxTournaments` defaults to no limit (a
+  // caller can still bound it). This is why Premier Padel P1 events — which on busy
+  // days sort past the old 15-tournament cap behind dozens of Bronze/Silver events
+  // touched the same day — are no longer silently dropped.
+  const active = Number.isFinite(maxTournaments) ? events.slice(0, maxTournaments) : events;
   log(`  FIP: ${active.length} pro-tour tournament(s) in play around ${date}`);
   if (!active.length) return [];
 
   const out = [];
-  await withPage(async (page) => {
-    // don't waste time loading widget images/css when we only read the DOM
-    await page.route("**/*", (r) =>
-      ["image", "stylesheet", "font", "media"].includes(r.request().resourceType()) ? r.abort() : r.continue()
-    );
-
-    for (const ev of active) {
-      try {
-        const msId = await matchscorerId(ev);
-        if (!msId) {
-          log(`    ! ${ev.slug}: no idEvent on event page`);
-          continue;
-        }
-        const days = await recentDays(page, msId, maxDay, maxDay); // all played+scheduled days (for per-day view)
-        if (!days.length) {
-          log(`    · ${ev.slug} (${msId}): no widget matches yet`);
-          continue;
-        }
-        let n = 0;
-        for (const d of days) { estimateDay(d); for (const m of d.matches) { out.push(normalize(m, ev, msId, { n: d.day, label: d.dayDate })); n++; } }
-        log(`    ✓ ${ev.title} — day(s) ${days.map((d) => d.day).join(",")}: ${n} matches`);
-      } catch (err) {
-        log(`    ! ${ev.slug} failed — ${err.message}`);
+  for (const ev of active) {
+    try {
+      const msId = await matchscorerId(ev);
+      if (!msId) {
+        log(`    ! ${ev.slug}: no idEvent on event page`);
+        continue;
       }
+      const days = await recentDays(msId, maxDay, maxDay); // all played+scheduled days (for per-day view)
+      if (!days.length) {
+        log(`    · ${ev.slug} (${msId}): no widget matches yet`);
+        continue;
+      }
+      let n = 0;
+      for (const d of days) { estimateDay(d); for (const m of d.matches) { out.push(normalize(m, ev, msId, { n: d.day, label: d.dayDate })); n++; } }
+      log(`    ✓ ${ev.title} — day(s) ${days.map((d) => d.day).join(",")}: ${n} matches`);
+    } catch (err) {
+      log(`    ! ${ev.slug} failed — ${err.message}`);
     }
-  });
+  }
   return out;
 }
 
@@ -90,28 +91,29 @@ async function matchscorerId(ev) {
 
 // Scan day-by-day; return the last `windowN` non-empty days (≈ today's results +
 // the next day's order-of-play), which is the useful "around now" window.
-async function recentDays(page, msId, maxDay, windowN = 2) {
+async function recentDays(msId, maxDay, windowN = 2) {
   const days = [];
   for (let day = 1; day <= maxDay; day++) {
     const res = await fetch(`${WIDGET}/oopbyday/${msId}/${day}?t=tol`, { headers: FIP_HEADERS });
     if (!res.ok) break;
-    await page.setContent(await res.text(), { waitUntil: "domcontentloaded" });
-    const parsed = await page.evaluate(parseWidget);
+    const { document } = parseHTML(await res.text());
+    const parsed = parseWidget(document);
     if (parsed.matches.length) days.push({ day, now: parsed.now, dayDate: parsed.dayDate, matches: parsed.matches });
     else if (days.length) break; // first empty day after data -> stop
   }
   return days.slice(-windowN);
 }
 
-// ---- widget parsing (runs in the page) -------------------------------------
+// ---- widget parsing (pure DOM parse over the fetched widget HTML) -----------
 
 // The OOP widget groups matches by court (`.oop-court` header + `.oop-court-start`
 // session time), each match table carrying its order-of-play phrase (`.court-name`:
 // "Followed by" / "Not before 3:00 PM"), round, per-set cells, and a bottom
 // `.live-status-summary` with duration + "Completed" for played matches. The page
 // also exposes the venue-local clock and the active day's date — everything the
-// per-court time estimator needs.
-function parseWidget() {
+// per-court time estimator needs. `document` is a linkedom DOM built from the
+// fetched widget HTML (same standard DOM API the browser gave us before).
+function parseWidget(document) {
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
   const now = (clean(document.body.textContent).match(/\d{1,2}\/\d{1,2}\/\d{4},?\s*\d{1,2}:\d{2}:\d{2}\s*(?:AM|PM)?/i) || [])[0] || null;
   const dayDate = clean(document.querySelector(".play-day-button.active")?.textContent) || null;
