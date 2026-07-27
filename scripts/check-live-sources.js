@@ -1,34 +1,19 @@
-// Liveness probe for the two "blocked-until-live" pro tours: A1 Padel and the
-// Pro Padel League. Both publish per-match scores only DURING a live event, so
-// their adapters can't be built or verified while idle (verified 2026-07-13):
-//   - A1 Padel   — a1padelglobal.com scoreboard shows a "scoreProxima" (coming
-//                  soon) placeholder when nothing is live; the live feed only
-//                  activates during a match.
+// Liveness probe for the "blocked-until-live" pro tour we still care about:
+// the Pro Padel League. It publishes per-match scores only DURING a live event,
+// so its adapter can't be built or verified while idle (verified 2026-07-13):
 //   - Pro Padel League — data is in a PUBLIC, no-auth Firestore (clean JSON!),
 //                  but the match/live collections are empty between events;
 //                  only standings/teams/players persist.
-// When either goes live, that's the ~30-min window to capture the feed and
-// finish the adapter. Run this on a schedule; it exits 10 if something is live.
+// When it goes live, that's the ~30-min window to capture the feed and finish
+// the adapter. Run this on a schedule; it exits 10 if something is live.
+//
+// A1 Padel was dropped 2026-07-20: the circuit cancelled its 2025 calendar and
+// has shown no sign of life since (promised-but-undelivered 2026 relaunch). Its
+// scoreboard was idle on every run we ever made. Not worth probing or building
+// for until there's real evidence the tour is running events again.
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36";
-const A1_SCOREBOARD = "https://www.a1padelglobal.com/scoreboard.aspx";
 const PPL_FS = "https://firestore.googleapis.com/v1/projects/pro-padel-league/databases/(default)/documents";
-
-async function checkA1() {
-  try {
-    const html = await (await fetch(A1_SCOREBOARD, { headers: { "User-Agent": UA } })).text();
-    const idle = /scoreProxima/i.test(html); // "coming soon" placeholder = no live match
-    return {
-      source: "A1 Padel",
-      live: !idle,
-      detail: idle
-        ? "idle (scoreProxima placeholder present)"
-        : "placeholder gone — likely LIVE. Open scoreboard.aspx in the browser, capture the live feed (websocket/SignalR), then build a browser adapter.",
-    };
-  } catch (e) {
-    return { source: "A1 Padel", live: null, detail: "check failed: " + e.message };
-  }
-}
 
 async function checkPPL() {
   const cols = ["matches", "liveMatches", "results"];
@@ -54,7 +39,7 @@ async function checkPPL() {
   }
 }
 
-const results = await Promise.all([checkA1(), checkPPL()]);
+const results = await Promise.all([checkPPL()]);
 console.log(`\n🎾 Live-source check — ${new Date().toISOString()}\n`);
 let anyLive = false;
 for (const r of results) {
