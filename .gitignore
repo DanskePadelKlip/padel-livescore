@@ -1,6 +1,11 @@
 node_modules/
+# regenerable RankedIn organiser lookups (src/rankedin-club.js)
+.cache/
+# local wrangler build cache
+.wrangler/
 public/data/matches.json
 public/data/rankings.json
+public/data/health.json
 logs/
 *.log
 .DS_Store
