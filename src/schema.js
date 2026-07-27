@@ -17,7 +17,14 @@ export const gid = (source, nativeId) => `${source}:${nativeId}`;
  * @property {string} id          gid(source, nativeId) — globally unique
  * @property {string} source      adapter id, e.g. "rankedin"
  * @property {string} federation  country/federation code, e.g. "DK"
- * @property {{id:number|string,name:string,url:string}} tournament
+ * @property {{id:number|string,name:string,url:string,venue?:string,address?:string,organizer?:string,organizerUrl?:string,ranking?:string,start?:string,end?:string}} tournament
+ *           All fields after `url` are optional and supplied only by RankedIn; they feed the
+ *           tournament page's Event structured data — venue/address as `location`,
+ *           organizer+organizerUrl as `organizer`. The two organizer fields always travel as a
+ *           pair (a name without a URL is an incomplete `organizer` that Google rejects).
+ *           `ranking` is the ranking an event counts toward ("Liga", "No ranking") — despite
+ *           coming from a RankedIn field called `OrganisationName`, it is NOT an organiser and
+ *           must never be published as one. Other adapters omit all of these.
  * @property {string|null} className  category text, e.g. "Herrer"
  * @property {string|null} round      draw/group/round text
  * @property {string|null} court

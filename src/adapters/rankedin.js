@@ -12,6 +12,7 @@
 
 import { rankedinGet, sleep } from "../http.js";
 import { RANKEDIN_FEDERATIONS } from "../federations.js";
+import { fetchClub } from "../rankedin-club.js";
 import { STATUS, gid } from "../schema.js";
 
 export const id = "rankedin";
@@ -44,8 +45,9 @@ export async function fetchMatches({
 
     for (const ev of active) {
       try {
+        const hostClub = await fetchClub(ev.eventId); // cached; null when no club is connected
         const matches = await fetchTournamentMatches(ev.eventId);
-        for (const m of matches) out.push(normalize(m, ev, fed));
+        for (const m of matches) out.push(normalize(m, ev, fed, hostClub));
       } catch (err) {
         log(`    ! tournament ${ev.eventId} (${ev.eventName}) failed — ${err.message}`);
       }
@@ -65,8 +67,9 @@ export async function fetchMatches({
     log(`  calendar: ${calEvents.length} padel events in non-org countries around ${date}`);
     for (const ev of calEvents) {
       try {
+        const hostClub = await fetchClub(ev.eventId); // cached; null when no club is connected
         const matches = await fetchTournamentMatches(ev.eventId);
-        for (const m of matches) out.push(normalize(m, ev, { code: ev.country }));
+        for (const m of matches) out.push(normalize(m, ev, { code: ev.country }, hostClub));
       } catch (err) {
         log(`    ! calendar tournament ${ev.eventId} (${ev.eventName}) failed — ${err.message}`);
       }
@@ -110,6 +113,13 @@ async function discoverCalendarEvents(date) {
       startDate: e.StartDate,
       endDate: e.EndDate || e.StartDate,
       country: e.CountryShort.toUpperCase(),
+      address: e.Address || null,          // full postal string (calendar feed carries it)
+      // NOT an organiser, despite the name: RankedIn's calendar `OrganisationName` is the
+      // ranking an event counts toward — the only live values are "Liga", "No ranking",
+      // "SAPA ranking". It was wired into Event `organizer` until 2026-07-27 and Google
+      // flagged the result. The real organiser comes from rankedin-club.js. Do not rename
+      // this back.
+      ranking: e.OrganisationName || null,
     }));
 }
 
@@ -130,7 +140,19 @@ function coversDay(ev, day) {
 
 // ---- normalization ---------------------------------------------------------
 
-function normalize(m, ev, fed) {
+// `hostClub` is the ORGANISER ({name,url} or null) from rankedin-club.js — not to be
+// confused with `ev.club`, which is the per-org feed's bare venue name.
+function normalize(m, ev, fed, hostClub = null) {
+  // Venue/address for Event structured data. Two discovery paths carry it differently:
+  // the global calendar feed has a full postal `address`; the per-org feed has `club` +
+  // `city` instead. Fold both into one optional shape on the tournament.
+  //
+  // The organiser comes from neither feed — it needs a per-tournament lookup. Its name and
+  // URL are written as a pair or not at all, because a name without a URL is exactly the
+  // incomplete `organizer` Google rejected.
+  const venue = ev.club || null;
+  const address = ev.address || ev.city || null;
+  const ranking = ev.ranking || null;
   return {
     id: gid("rankedin", m.Id),
     source: "rankedin",
@@ -139,6 +161,12 @@ function normalize(m, ev, fed) {
       id: ev.eventId,
       name: ev.eventName,
       url: "https://www.rankedin.com" + (ev.eventUrl || ""),
+      ...(venue ? { venue } : {}),
+      ...(address ? { address } : {}),
+      ...(hostClub ? { organizer: hostClub.name, organizerUrl: hostClub.url } : {}),
+      ...(ranking ? { ranking } : {}),
+      ...(ev.startDate ? { start: String(ev.startDate).slice(0, 10) } : {}),
+      ...(ev.endDate ? { end: String(ev.endDate).slice(0, 10) } : {}),
     },
     className: m.TournamentClassName || null,
     round: m.Draw || null,
