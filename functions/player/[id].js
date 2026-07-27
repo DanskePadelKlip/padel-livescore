@@ -31,14 +31,26 @@ export async function onRequestGet({ request, params }) {
     `Full padel match history, results and head-to-head on PadelTicker.`;
   const canonical = `${SITE}/player/${encodeURIComponent(id)}`;
 
-  const jsonld = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: p.name,
-    url: canonical,
-    jobTitle: "Padel player",
-    ...(cc ? { nationality: cc } : {}),
-  };
+  const jsonld = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: p.name,
+      url: canonical,
+      jobTitle: "Padel player",
+      knowsAbout: "Padel",
+      ...(cc ? { nationality: cc } : {}),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "PadelTicker", item: SITE + "/" },
+        { "@type": "ListItem", position: 2, name: "Players", item: SITE + "/players" },
+        { "@type": "ListItem", position: 3, name: p.name, item: canonical },
+      ],
+    },
+  ];
 
   const image = `${SITE}/og/player/${encodeURIComponent(id)}`;
   return withMeta(base, { title, description, canonical, ogType: "profile", image, jsonld });

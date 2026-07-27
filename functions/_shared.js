@@ -35,9 +35,12 @@ export function withMeta(shellRes, m) {
       .on('meta[property="og:image"]', content(m.image))
       .on('meta[name="twitter:image"]', content(m.image));
   }
-  if (m.jsonld) {
+  // m.jsonld may be a single graph or an array of graphs (e.g. an entity plus a
+  // BreadcrumbList / ItemList). Each is appended as its own <script>.
+  const graphs = Array.isArray(m.jsonld) ? m.jsonld : (m.jsonld ? [m.jsonld] : []);
+  for (const g of graphs) {
     // Escape "<" so a name containing markup can't break out of the script tag.
-    const j = JSON.stringify(m.jsonld).replace(/</g, "\\u003c");
+    const j = JSON.stringify(g).replace(/</g, "\\u003c");
     rw = rw.on("head", { element(e) { e.append(`<script type="application/ld+json">${j}</script>`, { html: true }); } });
   }
   const res = rw.transform(shellRes);
