@@ -31,7 +31,13 @@ const fedFlag = (c) => FLAGS[c] || countryFlag(c) || "";
 // Team display with a flag before each player: "🇪🇸 A. Coello / 🇦🇷 M. Tapia".
 function teamNameWithFlags(t) {
   if (t.players && t.players.length) {
-    return t.players.map((p) => { const f = countryFlag(p.country); return (f ? f + " " : "") + esc(p.name); }).join(" / ");
+    return t.players.map((p) => {
+      const f = countryFlag(p.country);
+      const nm = p.name && p.name !== "TBD"
+        ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(p.name)}</span>`
+        : esc(p.name);
+      return (f ? f + " " : "") + nm;
+    }).join(" / ");
   }
   return esc(t.name);
 }
@@ -858,6 +864,28 @@ async function searchPlayers(q) {
     state.playerResults = d.players || [];
   } catch { state.playerResults = []; }
   render();
+}
+
+// Click a player's name in any match row → jump to their profile. Match data carries
+// no player id, so resolve the name via search: open the profile directly on a unique
+// exact match, otherwise show the search results for disambiguation. Names not in the
+// DB (e.g. some 2010s WPT-only players) just yield an empty list — no error.
+async function openPlayerByName(name) {
+  const q = (name || "").trim();
+  if (!q) return;
+  activateMode("players");
+  const el = document.getElementById("q");
+  if (el) el.value = q;
+  state.query = q;
+  render(); // shows the search box populated while the lookup runs
+  try {
+    const players = (await (await fetch("/api/search?q=" + encodeURIComponent(q))).json()).players || [];
+    const exact = players.filter((p) => (p.name || "").toLowerCase() === q.toLowerCase());
+    if (exact.length === 1) return openPlayer(exact[0].id);
+    if (players.length === 1) return openPlayer(players[0].id);
+    state.playerResults = players;
+    render();
+  } catch { state.playerResults = []; render(); }
 }
 
 async function openPlayer(id) {
@@ -1761,6 +1789,10 @@ app.addEventListener("click", (e) => {
     render();
     return;
   }
+  // player name → profile (checked before data-open so clicking a name in a match
+  // row doesn't also toggle the row's detail).
+  const pn = e.target.closest("[data-pname]");
+  if (pn) { openPlayerByName(pn.dataset.pname); return; }
   const om = e.target.closest("[data-open]");
   if (om) {
     const id = om.dataset.open;

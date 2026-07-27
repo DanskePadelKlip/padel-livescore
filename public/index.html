@@ -220,6 +220,9 @@
     .team .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
     .team.win .nm { font-weight: 700; color: var(--win); }
     .team.win .srv { color: var(--live); }
+    /* clickable player names (match rows) -> profile lookup */
+    .pn { cursor: pointer; }
+    .pn:hover { text-decoration: underline; text-underline-offset: 2px; }
     .sets { margin-left: auto; display: flex; gap: 7px; font-variant-numeric: tabular-nums; }
     .sets b, .sets span { min-width: 11px; text-align: center; color: var(--muted); font-weight: 500; }
     .team.win .sets b, .team.win .sets span { color: var(--win); font-weight: 700; }
@@ -540,9 +543,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=828d729a<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=65e58247<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=828d729a"></script>
+  <script src="/app.js?v=65e58247"></script>
 </body>
 </html>
