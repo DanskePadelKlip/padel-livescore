@@ -567,11 +567,21 @@ function renderControls() {
       `<span class="chip ${state.fed === "all" ? "active" : ""}" data-fed="all">All</span>` +
       feds.map((f) => `<span class="chip ${state.fed === f ? "active" : ""}" data-fed="${f}">${fedFlag(f)} ${f}</span>`).join("");
     if (showTour) {
-      const tcount = (v) => state.archive.tournaments.filter((t) => t.federation === "FIP" && (v === "all" || tourOf(t) === v)).length;
+      // Sub-level: the international bucket splits into the pro-tour ERAS (chronological
+      // circuits) — Premier/FIP (modern) → WPT → PPT — each shown with the years it was
+      // active. Only eras with data appear.
+      const fipT = state.archive.tournaments.filter((t) => t.federation === "FIP");
+      const tcount = (v) => (v === "all" ? fipT : fipT.filter((t) => tourOf(t) === v)).length;
+      const yrRange = (v) => {
+        const ys = (v === "all" ? fipT : fipT.filter((t) => tourOf(t) === v)).map((t) => +archYear(t)).filter(Boolean);
+        if (!ys.length) return "";
+        const lo = Math.min(...ys), hi = Math.max(...ys);
+        return `<span class="cyr">’${String(lo).slice(2)}${lo !== hi ? "–’" + String(hi).slice(2) : ""}</span>`;
+      };
+      const tours = [["all", "All tours"], ["FIP", "FIP / Premier"], ["WPT", "WPT"], ["PPT", "PPT"]]
+        .filter(([v]) => v === "all" || tcount(v) > 0);
       h += `<span class="chipsep"></span>` +
-        [["all", "All tours"], ["FIP", "FIP / Premier"], ["WPT", "WPT"]]
-          .map(([v, label]) => `<span class="chip sub ${state.archiveTour === v ? "active" : ""}" data-tour="${v}">${label}<span class="cn">${tcount(v)}</span></span>`)
-          .join("");
+        tours.map(([v, label]) => `<span class="chip sub ${state.archiveTour === v ? "active" : ""}" data-tour="${v}">${label}${v === "all" ? "" : yrRange(v)}<span class="cn">${tcount(v)}</span></span>`).join("");
     }
     chips.innerHTML = h;
   }
@@ -811,10 +821,11 @@ async function ensureWpt() {
       for (const t of wpt.tournaments) {
         const matches = wptMatches(t);
         if (!matches.length) continue;
-        // WPT sits under the FIP (international pro) bucket rather than being its own
-        // federation; `tour` distinguishes the two circuits within it.
-        const row = { key: t.key, name: t.name, federation: "FIP", tour: "WPT", start: t.start, end: t.start, n: matches.length };
-        state.archiveData.set(t.key, { matches, name: t.name, federation: "FIP", tour: "WPT" });
+        // Historic pro-tour circuits (WPT, PPT) sit under the FIP (international) bucket
+        // rather than being their own federation; `tour` distinguishes the eras within it.
+        const tour = t.tour || "WPT";
+        const row = { key: t.key, name: t.name, federation: "FIP", tour, start: t.start, end: t.start, n: matches.length };
+        state.archiveData.set(t.key, { matches, name: t.name, federation: "FIP", tour });
         state.wptIndex.set(t.key, row);
       }
     }
@@ -927,7 +938,7 @@ function renderArchive() {
     yearView ? state.archiveYear : null,
     state.archiveMonth !== "all" ? MONTHS3[+state.archiveMonth] : null,
     state.fed !== "all" ? (state.fed === "FIP" ? "FIP international" : REGION_LABEL[state.fed] || state.fed) : null,
-    state.archiveTour !== "all" ? (state.archiveTour === "WPT" ? "World Padel Tour" : "FIP / Premier") : null,
+    state.archiveTour !== "all" ? ({ WPT: "World Padel Tour", PPT: "Padel Pro Tour" }[state.archiveTour] || "FIP / Premier") : null,
   ].filter(Boolean).join(" · ");
   let html =
     `<div class="section-label region">📅 ${list.length} tournament${list.length === 1 ? "" : "s"}` +
@@ -961,7 +972,7 @@ function archiveRow(t) {
     <div class="group ${open ? "open" : ""}" data-arch="${esc(t.key)}">
       <div class="group__head" data-archtoggle="${esc(t.key)}">
         <span class="flag">${FLAGS[t.federation] || ""} ${t.federation}</span>
-        <span class="group__title">${t.tour === "WPT" ? `<span class="tourtag">WPT</span>` : ""}<span class="tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span></span>
+        <span class="group__title">${t.tour && t.tour !== "FIP" ? `<span class="tourtag ${t.tour === "PPT" ? "ppt" : ""}">${esc(t.tour)}</span>` : ""}<span class="tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span></span>
         <span class="group__meta"><span class="count">${esc((t.start || "").slice(0, 10))} · ${t.n}</span><span class="chev">▶</span></span>
       </div>
       <div class="group__body">${open ? (loaded ? archiveMatches(loaded) : `<div class="detail" style="display:block">Loading…</div>`) : ""}</div>
@@ -1480,7 +1491,7 @@ function renderTournament() {
   const src = matches.find((m) => m.tournament?.url);
 
   let html = back + `<div class="thead">
-    <div class="trow1"><span class="flag">${FLAGS[tv.fed] || ""} ${esc(tv.fed || "")}</span>${tv.tour === "WPT" ? `<span class="tourtag">WPT</span>` : ""}${star("tournaments", tv.key, tv.name, tv.fed)}</div>
+    <div class="trow1"><span class="flag">${FLAGS[tv.fed] || ""} ${esc(tv.fed || "")}</span>${tv.tour && tv.tour !== "FIP" ? `<span class="tourtag ${tv.tour === "PPT" ? "ppt" : ""}">${esc(tv.tour)}</span>` : ""}${star("tournaments", tv.key, tv.name, tv.fed)}</div>
     <h2>${esc(tv.name)}</h2>
     <div class="tmeta">${matches.length} matches · ${players.size} players${dateStr ? " · " + esc(dateStr) : ""}${nLive ? ` · <span class="badge live">${nLive} live</span>` : ""}</div>
     ${src ? `<a class="src" href="${esc(src.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[src.source] || src.source)}</a>` : ""}

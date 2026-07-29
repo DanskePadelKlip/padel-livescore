@@ -164,10 +164,14 @@
     .chip.sub { font-weight: 600; }
     .chip .cn { font-size: 10px; color: var(--faint); margin-left: 5px; font-variant-numeric: tabular-nums; }
     .chip.active .cn { color: rgba(255,255,255,.85); }
-    /* World Padel Tour marker (WPT sits inside the FIP bucket) */
+    /* pro-tour era markers (WPT / PPT sit inside the FIP bucket) */
     .tourtag { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .04em;
       padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: 1px;
       background: var(--up-bg); color: var(--up); }
+    .tourtag.ppt { background: rgba(180,120,255,.14); color: #b478ff; }
+    /* active-years label inside a tour sub-chip */
+    .chip .cyr { font-size: 9px; font-weight: 700; color: var(--faint); margin-left: 5px; letter-spacing: .02em; }
+    .chip.active .cyr { color: rgba(255,255,255,.8); }
     /* WPT end-of-season standings (collapsible) */
     .standings { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 2px 0 12px; }
     .standings > summary { cursor: pointer; padding: 11px 14px; font-weight: 700; font-size: 13px; list-style: none; }
