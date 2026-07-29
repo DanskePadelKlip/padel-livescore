@@ -179,6 +179,7 @@ const state = {
   openArchive: new Set(),    // expanded tournament keys
   archiveData: new Map(),    // key -> loaded tournament {matches}
   wptIndex: new Map(),       // wpt key -> archive list row (World Padel Tour, own file)
+  wptRankings: {},           // year -> { Men:[…], Women:[…] } end-of-season standings
   // ---- players (profiles / search / h2h) ----
   playerResults: null,       // search results
   player: null,              // loaded profile
@@ -810,6 +811,8 @@ async function ensureWpt() {
         state.wptIndex.set(t.key, row);
       }
     }
+    // end-of-season standings, keyed year -> { Men, Women } (see renderArchive)
+    for (const r of wpt?.rankings || []) (state.wptRankings[r.year] ||= {})[r.gender] = r.rows;
   } catch { _wptLoaded = false; } // allow a retry on transient failure
 }
 
@@ -850,6 +853,30 @@ function archiveFiltered(skip = "") {
   });
 }
 
+// End-of-season WPT standings for one year, as two compact top-10 tables (men /
+// women). Consecutive rows sharing a rank are the two players of a ranked PAIR —
+// grouped so a pair reads as one line. Data from wpt.json's `rankings`.
+function wptStandings(year) {
+  const r = state.wptRankings[year];
+  if (!r || (!r.Men && !r.Women)) return "";
+  const table = (rows, title) => {
+    if (!rows || !rows.length) return "";
+    const byRank = new Map();
+    for (const x of rows) { const k = x.rank; if (!byRank.has(k)) byRank.set(k, { rank: k, points: x.points, names: [] }); byRank.get(k).names.push(x.name); }
+    const top = [...byRank.values()].sort((a, b) => a.rank - b.rank).slice(0, 10);
+    return `<div class="standtab"><div class="standtab__h">${title}</div>` +
+      top.map((e) => `<div class="standrow"><span class="sr-rank">${e.rank}</span>` +
+        `<span class="sr-name">${e.names.map(esc).join(" / ")}</span>` +
+        `<span class="sr-pts">${e.points != null ? e.points.toLocaleString() : ""}</span></div>`).join("") +
+      `</div>`;
+  };
+  const men = table(r.Men, "Men"), women = table(r.Women, "Women");
+  if (!men && !women) return "";
+  return `<details class="standings"><summary>🏆 ${esc(year)} end-of-season ranking</summary>` +
+    `<div class="standgrid">${men}${women}</div>` +
+    `<div class="standnote">Season-end WPT ranking (top 10). Players sharing a rank were a ranked pair.</div></details>`;
+}
+
 function renderArchive() {
   const list = archiveFiltered();
   const shown = list.slice(0, state.archiveCap);
@@ -864,6 +891,8 @@ function renderArchive() {
   let html =
     `<div class="section-label region">📅 ${list.length} tournament${list.length === 1 ? "" : "s"}` +
     `<span class="count">${scope || `${all.length} in archive · ${span}`}</span></div>`;
+  // WPT end-of-season standings, shown when a single WPT season is in view
+  if (state.archiveTour === "WPT" && state.archiveYear !== "all") html += wptStandings(state.archiveYear);
   html += shown.map(archiveRow).join("");
   if (list.length > shown.length)
     html += `<button class="morebtn" data-archmore="1">Show ${list.length - shown.length} more ↓</button>`;

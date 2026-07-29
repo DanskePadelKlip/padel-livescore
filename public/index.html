@@ -168,6 +168,22 @@
     .tourtag { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .04em;
       padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: 1px;
       background: var(--up-bg); color: var(--up); }
+    /* WPT end-of-season standings (collapsible) */
+    .standings { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 2px 0 12px; }
+    .standings > summary { cursor: pointer; padding: 11px 14px; font-weight: 700; font-size: 13px; list-style: none; }
+    .standings > summary::-webkit-details-marker { display: none; }
+    .standings > summary::before { content: "▸"; color: var(--faint); margin-right: 8px; font-size: 11px; }
+    .standings[open] > summary::before { content: "▾"; }
+    .standgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; padding: 0 14px 4px; }
+    @media (max-width: 560px) { .standgrid { grid-template-columns: 1fr; } }
+    .standtab__h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+      color: var(--muted); padding: 6px 0 4px; border-bottom: 1px solid var(--line); }
+    .standrow { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; font-size: 13px; border-bottom: 1px solid var(--line); }
+    .standrow:last-child { border-bottom: 0; }
+    .sr-rank { min-width: 18px; color: var(--faint); font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+    .sr-name { flex: 1; min-width: 0; }
+    .sr-pts { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+    .standnote { padding: 4px 14px 12px; font-size: 11px; color: var(--faint); }
 
     .row2 { display: flex; gap: 8px; padding-bottom: 10px; align-items: center; flex-wrap: wrap; }
     .chips { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -573,9 +589,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=1b6a7488<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=d37bf89d<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=1b6a7488"></script>
+  <script src="/app.js?v=d37bf89d"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-27T13:05:48.408Z",
-  "source": "Wikipedia — {year} World Padel Tour season articles (finals only)",
-  "count": 233,
+  "generatedAt": "2026-07-29T11:48:13.497Z",
+  "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
+  "count": 231,
   "tournaments": [
     {
       "key": "wpt-2023-barcelona-master-final",
@@ -29,6 +29,26 @@
             [
               "6",
               "4"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Bea González Delfi Brea"
+          ],
+          "runnersUp": [
+            "Aranza Osoro Jessica Castelló",
+            "Jessica Castelló"
+          ],
+          "score": "6–4 / 6–1",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "1"
             ]
           ]
         }
@@ -1017,7 +1037,7 @@
             "Alejandro Galán",
             "Juan Lebrón"
           ],
-          "score": "6–4 / 6–7 / 7–5[A]",
+          "score": "6–4 / 6–7 / 7–5",
           "sets": [
             [
               "6",
@@ -1051,6 +1071,62 @@
             [
               "1",
               "0"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2023-la-rioja-open-1000",
+      "name": "La Rioja Open 1000",
+      "year": 2023,
+      "city": "La Rioja",
+      "country": "Argentina",
+      "start": "2023-03-06",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Agustín Tapia",
+            "Arturo Coello"
+          ],
+          "runnersUp": [
+            "Leo Augsburger",
+            "Tino Libaak"
+          ],
+          "score": "6–1 / 6–0",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Alejandra Salazar",
+            "Gemma Triay"
+          ],
+          "runnersUp": [
+            "Bea González",
+            "Marta Ortega"
+          ],
+          "score": "6–7 / 6–4 / 6–1",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "1"
             ]
           ]
         }
@@ -1103,62 +1179,6 @@
             [
               "6",
               "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2023-2023-la-rioja-open-1000",
-      "name": "2023 La Rioja Open 1000",
-      "year": 2023,
-      "city": null,
-      "country": null,
-      "start": "2023-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Agustín Tapia",
-            "Arturo Coello"
-          ],
-          "runnersUp": [
-            "Leo Augsburger",
-            "Tino Libaak"
-          ],
-          "score": "6–1 / 6–0",
-          "sets": [
-            [
-              "6",
-              "1"
-            ],
-            [
-              "6",
-              "0"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Alejandra Salazar",
-            "Gemma Triay"
-          ],
-          "runnersUp": [
-            "Bea González",
-            "Marta Ortega"
-          ],
-          "score": "6–7 / 6–4 / 6–1",
-          "sets": [
-            [
-              "6",
-              "7"
-            ],
-            [
-              "6",
-              "4"
-            ],
-            [
-              "6",
-              "1"
             ]
           ]
         }
@@ -1272,36 +1292,6 @@
       }
     },
     {
-      "key": "wpt-2023-barcelona",
-      "name": "Barcelona",
-      "year": 2023,
-      "city": null,
-      "country": null,
-      "start": "2023-01-01",
-      "finals": {
-        "Women": {
-          "winners": [
-            "Bea González Delfi Brea"
-          ],
-          "runnersUp": [
-            "Aranza Osoro Jessica Castelló",
-            "Jessica Castelló"
-          ],
-          "score": "6–4 / 6–1",
-          "sets": [
-            [
-              "6",
-              "4"
-            ],
-            [
-              "6",
-              "1"
-            ]
-          ]
-        }
-      }
-    },
-    {
       "key": "wpt-2022-barcelona-master-final",
       "name": "Barcelona Master Final",
       "year": 2022,
@@ -1371,13 +1361,14 @@
       "finals": {
         "Men": {
           "winners": [
-            "Javi Martínez",
-            "Rafa Méndez"
+            "Rafa Méndez",
+            "Javi Martínez"
           ],
           "runnersUp": [
-            "José Diestro Pincho Fernández"
+            "Pincho Fernández",
+            "José G. Diestro"
           ],
-          "score": "6–4 / 6–4",
+          "score": "6-4 / 6-4",
           "sets": [
             [
               "6",
@@ -1534,11 +1525,11 @@
         },
         "Women": {
           "winners": [
-            "Gemma Triay y",
+            "Gemma Triay",
             "Alejandra Salazar"
           ],
           "runnersUp": [
-            "Ariana Sánchez y",
+            "Ariana Sánchez",
             "Paula Josemaría"
           ],
           "score": "6–4 / 7–5",
@@ -1953,7 +1944,7 @@
       "finals": {
         "Men": {
           "winners": [
-            "Coki Nieto y",
+            "Coki Nieto",
             "Miguel Yanguas"
           ],
           "runnersUp": [
@@ -3908,11 +3899,11 @@
         },
         "Women": {
           "winners": [
-            "Paula Josemaría y",
+            "Paula Josemaría",
             "Ariana Sánchez"
           ],
           "runnersUp": [
-            "María Virginia Riera y",
+            "María Virginia Riera",
             "Patricia Llaguno"
           ],
           "score": "6–2 / 6–3",
@@ -5058,6 +5049,10 @@
               "7"
             ],
             [
+              "7",
+              "6"
+            ],
+            [
               "6",
               "1"
             ]
@@ -5403,7 +5398,7 @@
             "Marta Ortega"
           ],
           "runnersUp": [
-            "Ana Catarina Nogueira y",
+            "Ana Catarina Nogueira",
             "Paula Josemaría"
           ],
           "score": "6–2 / 6–1",
@@ -7795,6 +7790,27 @@
       "country": "Spain",
       "start": "2017-05-08",
       "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Paquito Navarro",
+            "Sanyo Gutiérrez"
+          ],
+          "score": "7–5 / 6–3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        },
         "Women": {
           "winners": [
             "Mapi Sánchez Alayeto",
@@ -7935,37 +7951,6 @@
             [
               "7",
               "6"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2017-a-coruna-open",
-      "name": "A Coruña Open",
-      "year": 2017,
-      "city": null,
-      "country": null,
-      "start": "2017-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Pablo Lima"
-          ],
-          "runnersUp": [
-            "Paquito Navarro",
-            "Sanyo Gutiérrez"
-          ],
-          "score": "7–5 / 6–3",
-          "sets": [
-            [
-              "7",
-              "5"
-            ],
-            [
-              "6",
-              "3"
             ]
           ]
         }
@@ -8934,6 +8919,10 @@
             [
               "6",
               "2"
+            ],
+            [
+              "6",
+              "3"
             ]
           ]
         }
@@ -8974,7 +8963,7 @@
             "Marta Marrero"
           ],
           "runnersUp": [
-            "Carolina Navarro y",
+            "Carolina Navarro",
             "Cecilia Reiter"
           ],
           "score": "6–4 / 6–4",
@@ -9384,6 +9373,37 @@
       }
     },
     {
+      "key": "wpt-2015-palma-de-mallorca-open",
+      "name": "Palma de Mallorca Open",
+      "year": 2015,
+      "city": "Palma de Mallorca",
+      "country": "Spain",
+      "start": "2015-07-15",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Juan Martín Díaz",
+            "Maxi Sánchez"
+          ],
+          "score": "6–4 / 6–0",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ]
+        }
+      }
+    },
+    {
       "key": "wpt-2015-madrid-challenger",
       "name": "Madrid Challenger",
       "year": 2015,
@@ -9697,7 +9717,7 @@
             "Majo Sánchez Alayeto"
           ],
           "runnersUp": [
-            "Cata Tenorio y",
+            "Cata Tenorio",
             "Victoria Iglesias"
           ],
           "score": "4–6 / 6–2 / 7–5",
@@ -9719,147 +9739,66 @@
       }
     },
     {
-      "key": "wpt-2015-mallorca-open",
-      "name": "Mallorca Open",
-      "year": 2015,
-      "city": null,
-      "country": null,
-      "start": "2015-01-01",
+      "key": "wpt-2014-san-fernando-open",
+      "name": "San Fernando Open",
+      "year": 2014,
+      "city": "San Fernando",
+      "country": "Spain",
+      "start": "2014-11-17",
       "finals": {
         "Men": {
           "winners": [
-            "Fernando Belasteguín",
-            "Pablo Lima"
+            "Maxi Grabiel",
+            "Paquito Navarro"
           ],
           "runnersUp": [
-            "Juan Martín Díaz",
-            "Maxi Sánchez"
+            "Maxi Sánchez",
+            "Sanyo Gutiérrez"
           ],
-          "score": "6–4 / 6–0",
+          "score": "7–5 / 5–7 / 7–5 / 7–6",
           "sets": [
             [
-              "6",
-              "4"
+              "7",
+              "5"
             ],
             [
-              "6",
-              "0"
+              "5",
+              "7"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "7",
+              "6"
             ]
           ]
         }
       }
     },
     {
-      "key": "wpt-2014-barcelona",
-      "name": "Barcelona",
+      "key": "wpt-2014-valencia-open",
+      "name": "Valencia Open",
       "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
+      "city": "Valencia",
+      "country": "Spain",
+      "start": "2014-11-03",
       "finals": {
         "Men": {
           "winners": [
+            "Maxi Grabiel",
+            "Paquito Navarro"
+          ],
+          "runnersUp": [
             "Fernando Belasteguín",
             "Juan Martín Díaz"
           ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "6–3 / 4–6 / 6–2 / 6–3",
+          "score": "6–2 / 3–6 / 6–3 / 7–5",
           "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
-              "4",
-              "6"
-            ],
             [
               "6",
               "2"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Alejandra Salazar",
-            "Icíar Montes"
-          ],
-          "runnersUp": [
-            "Mapi Sánchez Alayeto",
-            "Majo Sánchez Alayeto"
-          ],
-          "score": "1–6 / 6–3 / 6–3",
-          "sets": [
-            [
-              "1",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2014-badajoz",
-      "name": "Badajoz",
-      "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "6–4 / 6–3 / 6–2",
-          "sets": [
-            [
-              "6",
-              "4"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "2"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Mapi Sánchez Alayeto",
-            "Majo Sánchez Alayeto"
-          ],
-          "runnersUp": [
-            "Alejandra Salazar",
-            "Icíar Montes"
-          ],
-          "score": "6–4 / 3–6 / 6–4",
-          "sets": [
-            [
-              "6",
-              "4"
             ],
             [
               "3",
@@ -9867,6 +9806,31 @@
             ],
             [
               "6",
+              "3"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Catalina Tenorio",
+            "Marta Marrero"
+          ],
+          "runnersUp": [
+            "Lucía Sainz",
+            "Marta Ortega"
+          ],
+          "score": "6–2 / 6–4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
               "4"
             ]
           ]
@@ -9874,12 +9838,12 @@
       }
     },
     {
-      "key": "wpt-2014-cordoba",
-      "name": "Córdoba",
+      "key": "wpt-2014-lisbon-open",
+      "name": "Lisbon Open",
       "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
+      "city": "Lisbon",
+      "country": "Portugal",
+      "start": "2014-09-29",
       "finals": {
         "Men": {
           "winners": [
@@ -9890,254 +9854,91 @@
             "Maxi Sánchez",
             "Sanyo Gutiérrez"
           ],
-          "score": "6–1 / 5–7 / 6–3",
+          "score": "6–4 / 6–4 / 6–1",
           "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ],
             [
               "6",
               "1"
-            ],
-            [
-              "5",
-              "7"
-            ],
-            [
-              "6",
-              "3"
             ]
           ]
         }
       }
     },
     {
-      "key": "wpt-2014-castellon",
-      "name": "Castellón",
+      "key": "wpt-2014-seville-open",
+      "name": "Seville Open",
       "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
+      "city": "Seville",
+      "country": "Spain",
+      "start": "2014-09-15",
       "finals": {
         "Men": {
           "winners": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "runnersUp": [
             "Fernando Belasteguín",
             "Juan Martín Díaz"
           ],
-          "score": "2–6 / 6–3 / 6–3 / 6–3",
-          "sets": [
-            [
-              "2",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2014-malaga",
-      "name": "Málaga",
-      "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
+          "runnersUp": [
             "Maxi Sánchez",
             "Sanyo Gutiérrez"
           ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "4–6 / 6–4 / 6–2 / 6–4",
+          "score": "6–3 / 6–3 / 6–1",
           "sets": [
             [
-              "4",
-              "6"
+              "6",
+              "3"
             ],
             [
               "6",
-              "4"
+              "3"
             ],
             [
               "6",
-              "2"
-            ],
-            [
-              "6",
-              "4"
+              "1"
             ]
           ]
         },
         "Women": {
           "winners": [
-            "Mapi Sánchez Alayeto",
-            "Majo Sánchez Alayeto"
+            "Icíar Montes",
+            "Alejandra Salazar"
           ],
           "runnersUp": [
-            "Elisabeth Amatriaín",
-            "Patricia Llaguno"
+            "Catalina Tenorio",
+            "Marta Marrero"
           ],
-          "score": "6–2 / 6–3",
+          "score": "6-7, 7-6 y 6-2",
           "sets": [
-            [
-              "6",
-              "2"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2014-marbella",
-      "name": "Marbella",
-      "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Adrián Allemandi",
-            "Paquito Navarro"
-          ],
-          "score": "6–1 / 6–7 / 6–3 / 6–4",
-          "sets": [
-            [
-              "6",
-              "1"
-            ],
             [
               "6",
               "7"
             ],
             [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Mapi Sánchez Alayeto",
-            "Majo Sánchez Alayeto"
-          ],
-          "runnersUp": [
-            "Elisabeth Amatriaín",
-            "Patricia Llaguno"
-          ],
-          "score": "6–3 / 7–5",
-          "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
               "7",
-              "5"
+              "6"
+            ],
+            [
+              "6",
+              "2"
             ]
           ]
         }
       }
     },
     {
-      "key": "wpt-2014-alicante",
-      "name": "Alicante",
+      "key": "wpt-2014-alcobendas-open",
+      "name": "Alcobendas Open",
       "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "runnersUp": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "score": "2–6 / 7–5 / 7–6 / 4–6 / 7–5",
-          "sets": [
-            [
-              "2",
-              "6"
-            ],
-            [
-              "7",
-              "5"
-            ],
-            [
-              "7",
-              "6"
-            ],
-            [
-              "4",
-              "6"
-            ],
-            [
-              "7",
-              "5"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Elisabeth Amatriaín",
-            "Patricia Llaguno"
-          ],
-          "runnersUp": [
-            "Alejandra Salazar",
-            "Icíar Montes"
-          ],
-          "score": "6–3 / 6–3",
-          "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2014-alcobendas",
-      "name": "Alcobendas",
-      "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
+      "city": "Alcobendas",
+      "country": "Spain",
+      "start": "2014-09-01",
       "finals": {
         "Men": {
           "winners": [
@@ -10196,23 +9997,56 @@
       }
     },
     {
-      "key": "wpt-2014-seville",
-      "name": "Seville",
+      "key": "wpt-2014-alicante-open",
+      "name": "Alicante Open",
       "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
+      "city": "La Nucía, Alicante",
+      "country": "Spain",
+      "start": "2014-08-18",
       "finals": {
         "Men": {
           "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
             "Fernando Belasteguín",
             "Juan Martín Díaz"
           ],
-          "runnersUp": [
-            "Maxi Sánchez",
-            "Sanyo Gutiérrez"
+          "score": "2–6 / 7–5 / 7–6 / 4–6 / 7–5",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Elisabeth Amatriaín",
+            "Patricia Llaguno"
           ],
-          "score": "6–3 / 6–3 / 6–1",
+          "runnersUp": [
+            "Alejandra Salazar",
+            "Icíar Montes"
+          ],
+          "score": "6–3 / 6–3",
           "sets": [
             [
               "6",
@@ -10221,22 +10055,177 @@
             [
               "6",
               "3"
-            ],
-            [
-              "6",
-              "1"
             ]
           ]
         }
       }
     },
     {
-      "key": "wpt-2014-lisbon",
-      "name": "Lisbon",
+      "key": "wpt-2014-marbella-open",
+      "name": "Marbella Open",
       "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
+      "city": "Marbella",
+      "country": "Spain",
+      "start": "2014-08-04",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Adrián Allemandi",
+            "Paquito Navarro"
+          ],
+          "score": "6–1 / 6–7 / 6–3 / 6–4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "runnersUp": [
+            "Elisabeth Amatriaín",
+            "Patricia Llaguno"
+          ],
+          "score": "6–3 / 7–5",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2014-malaga-open",
+      "name": "Málaga Open",
+      "year": 2014,
+      "city": "Málaga",
+      "country": "Spain",
+      "start": "2014-07-21",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Maxi Sánchez",
+            "Sanyo Gutiérrez"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "4–6 / 6–4 / 6–2 / 6–4",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "runnersUp": [
+            "Elisabeth Amatriaín",
+            "Patricia Llaguno"
+          ],
+          "score": "6–2 / 6–3",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2014-castellon-open",
+      "name": "Castellón Open",
+      "year": 2014,
+      "city": "Castellón",
+      "country": "Spain",
+      "start": "2014-07-07",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "score": "2–6 / 6–3 / 6–3 / 6–3",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2014-cordoba-open",
+      "name": "Córdoba Open",
+      "year": 2014,
+      "city": "Córdoba",
+      "country": "Spain",
+      "start": "2014-06-23",
       "finals": {
         "Men": {
           "winners": [
@@ -10247,7 +10236,42 @@
             "Maxi Sánchez",
             "Sanyo Gutiérrez"
           ],
-          "score": "6–4 / 6–4 / 6–1",
+          "score": "6–1 / 5–7 / 6–3",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "5",
+              "7"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2014-badajoz-open",
+      "name": "Badajoz Open",
+      "year": 2014,
+      "city": "Badajoz",
+      "country": "Spain",
+      "start": "2014-06-09",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "6–4 / 6–3 / 6–2",
           "sets": [
             [
               "6",
@@ -10255,11 +10279,100 @@
             ],
             [
               "6",
-              "4"
+              "3"
             ],
             [
               "6",
-              "1"
+              "2"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "runnersUp": [
+            "Alejandra Salazar",
+            "Icíar Montes"
+          ],
+          "score": "6–4 / 3–6 / 6–4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2014-barcelona-open",
+      "name": "Barcelona Open",
+      "year": 2014,
+      "city": "Barcelona",
+      "country": "Spain",
+      "start": "2014-05-19",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "6–3 / 4–6 / 6–2 / 6–3",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Alejandra Salazar",
+            "Icíar Montes"
+          ],
+          "runnersUp": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "score": "1–6 / 6–3 / 6–3",
+          "sets": [
+            [
+              "1",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
             ]
           ]
         }
@@ -10301,105 +10414,6 @@
       }
     },
     {
-      "key": "wpt-2014-valencia",
-      "name": "Valencia",
-      "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Maxi Grabiel",
-            "Paquito Navarro"
-          ],
-          "runnersUp": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "score": "6–2 / 3–6 / 6–3 / 7–5",
-          "sets": [
-            [
-              "6",
-              "2"
-            ],
-            [
-              "3",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "7",
-              "5"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Catalina Tenorio",
-            "Marta Marrero"
-          ],
-          "runnersUp": [
-            "Lucía Sainz",
-            "Marta Ortega"
-          ],
-          "score": "6–2 / 6–4",
-          "sets": [
-            [
-              "6",
-              "2"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2014-san-fernando",
-      "name": "San Fernando",
-      "year": 2014,
-      "city": null,
-      "country": null,
-      "start": "2014-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Maxi Grabiel",
-            "Paquito Navarro"
-          ],
-          "runnersUp": [
-            "Maxi Sánchez",
-            "Sanyo Gutiérrez"
-          ],
-          "score": "7–5 / 5–7 / 7–5 / 7–6",
-          "sets": [
-            [
-              "7",
-              "5"
-            ],
-            [
-              "5",
-              "7"
-            ],
-            [
-              "7",
-              "5"
-            ],
-            [
-              "7",
-              "6"
-            ]
-          ]
-        }
-      }
-    },
-    {
       "key": "wpt-2014-madrid",
       "name": "Madrid",
       "year": 2014,
@@ -10421,6 +10435,10 @@
             [
               "7",
               "6"
+            ],
+            [
+              "5",
+              "7"
             ],
             [
               "7",
@@ -10518,16 +10536,701 @@
               "4"
             ]
           ]
+        },
+        "Men": {
+          "winners": [
+            "Maxi Sánchez",
+            "Sanyo Gutiérrez"
+          ],
+          "runnersUp": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "score": "6-7, 6-1, 7-6 y ab-",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "1"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ]
         }
       }
     },
     {
-      "key": "wpt-2013-murcia",
-      "name": "Murcia",
+      "key": "wpt-2013-villa-carlos-paz-open",
+      "name": "Villa Carlos Paz Open",
       "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
+      "city": "Villa Carlos Paz",
+      "country": "Argentina",
+      "start": "2013-12-02",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Cristián Gutiérrez",
+            "Matías Díaz"
+          ],
+          "score": "6–7 / 6–1 / 6–2 / WO",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-buenos-aires-open",
+      "name": "Buenos Aires Open",
+      "year": 2013,
+      "city": "Buenos Aires",
+      "country": "Argentina",
+      "start": "2013-11-18",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Maxi Sánchez",
+            "Sanyo Gutiérrez"
+          ],
+          "runnersUp": [
+            "Cristián Gutiérrez",
+            "Matías Díaz"
+          ],
+          "score": "4–6 / 7–6 / 6–2 / 6–3",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-valencia-internacional-open",
+      "name": "Valencia Internacional Open",
+      "year": 2013,
+      "city": "Valencia",
+      "country": "Spain",
+      "start": "2013-11-04",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Maxi Sánchez",
+            "Sanyo Gutiérrez"
+          ],
+          "runnersUp": [
+            "Miguel Lamperti",
+            "Maxi Grabiel"
+          ],
+          "score": "6–3 / 7–5 / 6–4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-lisbon-internacional-open",
+      "name": "Lisbon Internacional Open",
+      "year": 2013,
+      "city": "Lisbon",
+      "country": "Portugal",
+      "start": "2013-10-07",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "6–3 / 2–6 / 6–3 / 6–4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-granada-internacional-open",
+      "name": "Granada Internacional Open",
+      "year": 2013,
+      "city": "Granada",
+      "country": "Spain",
+      "start": "2013-09-23",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "7–6 / 6–4 / 6–3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Carolina Navarro",
+            "Cecilia Reiter"
+          ],
+          "runnersUp": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "score": "6–4 / 7–5",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-bilbao-internacional-open",
+      "name": "Bilbao Internacional Open",
+      "year": 2013,
+      "city": "Bilbao",
+      "country": "Spain",
+      "start": "2013-09-09",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "4–6 / 6–3 / 7–5 / 6–2",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Patricia Llaguno",
+            "Elisabeth Amatriain"
+          ],
+          "runnersUp": [
+            "Carolina Navarro",
+            "Cecilia Reiter"
+          ],
+          "score": "6–1 / 6–4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-castellon-internacional-open",
+      "name": "Castellón Internacional Open",
+      "year": 2013,
+      "city": "Castellón",
+      "country": "Spain",
+      "start": "2013-08-12",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "7–5 / 6–1 / 4–6 / 6–4",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "1"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-malaga-internacional-open",
+      "name": "Málaga Internacional Open",
+      "year": 2013,
+      "city": "Málaga",
+      "country": "Spain",
+      "start": "2013-07-29",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "6–4 / 6–4 / 6–4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Carolina Navarro",
+            "Cecilia Reiter"
+          ],
+          "runnersUp": [
+            "Patricia Llaguno",
+            "Elisabeth Amatriain"
+          ],
+          "score": "6–2 / 5–7 / 7–6",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "5",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-puerto-de-santa-maria-internacional-open",
+      "name": "Puerto de Santa María Internacional Open",
+      "year": 2013,
+      "city": "Puerto de Santa María, Cádiz",
+      "country": "Spain",
+      "start": "2013-07-15",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Cristián Gutiérrez",
+            "Matías Díaz"
+          ],
+          "score": "6–3 / 6–2 / 6–3",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-santander-internacional-open",
+      "name": "Santander Internacional Open",
+      "year": 2013,
+      "city": "Santander",
+      "country": "Spain",
+      "start": "2013-07-01",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Cristián Gutiérrez",
+            "Matías Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "7–6 / 6–1 / 7–5",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Patricia Llaguno",
+            "Elisabeth Amatriain"
+          ],
+          "runnersUp": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "score": "4–6 / 6–3 / 6–2",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-la-coruna-internacional-open",
+      "name": "La Coruña Internacional Open",
+      "year": 2013,
+      "city": "A Coruña",
+      "country": "Spain",
+      "start": "2013-06-24",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Cristián Gutiérrez",
+            "Matías Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "6–7 / 7–6 / 1–6 / 6–3 / 6–3",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "1",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-madrid-internacional-open",
+      "name": "Madrid Internacional Open",
+      "year": 2013,
+      "city": "Madrid",
+      "country": "Spain",
+      "start": "2013-06-16",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "score": "6–7 / 6–0 / 7–6 / 6–4",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "0"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Carolina Navarro",
+            "Cecilia Reiter"
+          ],
+          "runnersUp": [
+            "Patricia Llaguno",
+            "Elisabeth Amatriain"
+          ],
+          "score": "3–6 / 7–5 / 6–2",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-barcelona-internacional-open",
+      "name": "Barcelona Internacional Open",
+      "year": 2013,
+      "city": "Barcelona",
+      "country": "Spain",
+      "start": "2013-06-03",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "score": "6–1 / 6–4 / 4–6 / 6–3",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ]
+        },
+        "Women": {
+          "winners": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "runnersUp": [
+            "Valeria Pavón",
+            "Cata Tenorio"
+          ],
+          "score": "6–2 / 7–5",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-caceres-internacional-open",
+      "name": "Cáceres Internacional Open",
+      "year": 2013,
+      "city": "Cáceres",
+      "country": "Spain",
+      "start": "2013-05-20",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguín",
+            "Juan Martín Díaz"
+          ],
+          "runnersUp": [
+            "Maxi Sánchez",
+            "Sanyo Gutiérrez"
+          ],
+          "score": "6–3 / 6–2 / 6–2",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "key": "wpt-2013-murcia-internacional-open",
+      "name": "Murcia Internacional Open",
+      "year": 2013,
+      "city": "Murcia",
+      "country": "Spain",
+      "start": "2013-04-08",
       "finals": {
         "Men": {
           "winners": [
@@ -10596,402 +11299,6 @@
       }
     },
     {
-      "key": "wpt-2013-caceres",
-      "name": "Cáceres",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Maxi Sánchez",
-            "Sanyo Gutiérrez"
-          ],
-          "score": "6–3 / 6–2 / 6–2",
-          "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "2"
-            ],
-            [
-              "6",
-              "2"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-barcelona",
-      "name": "Barcelona",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "6–1 / 6–4 / 4–6 / 6–3",
-          "sets": [
-            [
-              "6",
-              "1"
-            ],
-            [
-              "6",
-              "4"
-            ],
-            [
-              "4",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Mapi Sánchez Alayeto",
-            "Majo Sánchez Alayeto"
-          ],
-          "runnersUp": [
-            "Valeria Pavón",
-            "Cata Tenorio"
-          ],
-          "score": "6–2 / 7–5",
-          "sets": [
-            [
-              "6",
-              "2"
-            ],
-            [
-              "7",
-              "5"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-madrid",
-      "name": "Madrid",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "runnersUp": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "score": "6–7 / 6–0 / 7–6 / 6–4",
-          "sets": [
-            [
-              "6",
-              "7"
-            ],
-            [
-              "6",
-              "0"
-            ],
-            [
-              "7",
-              "6"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Carolina Navarro",
-            "Cecilia Reiter"
-          ],
-          "runnersUp": [
-            "Patricia Llaguno",
-            "Elisabeth Amatriain"
-          ],
-          "score": "3–6 / 7–5 / 6–2",
-          "sets": [
-            [
-              "3",
-              "6"
-            ],
-            [
-              "7",
-              "5"
-            ],
-            [
-              "6",
-              "2"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-a-coruna",
-      "name": "A Coruña",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Cristián Gutiérrez",
-            "Matías Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "6–7 / 7–6 / 1–6 / 6–3 / 6–3",
-          "sets": [
-            [
-              "6",
-              "7"
-            ],
-            [
-              "7",
-              "6"
-            ],
-            [
-              "1",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-santander",
-      "name": "Santander",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Cristián Gutiérrez",
-            "Matías Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "7–6 / 6–1 / 7–5",
-          "sets": [
-            [
-              "7",
-              "6"
-            ],
-            [
-              "6",
-              "1"
-            ],
-            [
-              "7",
-              "5"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Patricia Llaguno",
-            "Elisabeth Amatriain"
-          ],
-          "runnersUp": [
-            "Mapi Sánchez Alayeto",
-            "Majo Sánchez Alayeto"
-          ],
-          "score": "4–6 / 6–3 / 6–2",
-          "sets": [
-            [
-              "4",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "2"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-puerto-de-santa-maria",
-      "name": "Puerto de Santa María",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "runnersUp": [
-            "Cristián Gutiérrez",
-            "Matías Díaz"
-          ],
-          "score": "6–3 / 6–2 / 6–3",
-          "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
-              "6",
-              "2"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-malaga",
-      "name": "Málaga",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "6–4 / 6–4 / 6–4",
-          "sets": [
-            [
-              "6",
-              "4"
-            ],
-            [
-              "6",
-              "4"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Carolina Navarro",
-            "Cecilia Reiter"
-          ],
-          "runnersUp": [
-            "Patricia Llaguno",
-            "Elisabeth Amatriain"
-          ],
-          "score": "6–2 / 5–7 / 7–6",
-          "sets": [
-            [
-              "6",
-              "2"
-            ],
-            [
-              "5",
-              "7"
-            ],
-            [
-              "7",
-              "6"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-castellon",
-      "name": "Castellón",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "7–5 / 6–1 / 4–6 / 6–4",
-          "sets": [
-            [
-              "7",
-              "5"
-            ],
-            [
-              "6",
-              "1"
-            ],
-            [
-              "4",
-              "6"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        }
-      }
-    },
-    {
       "key": "wpt-2013-la-nucia",
       "name": "La Nucía",
       "year": 2013,
@@ -11017,161 +11324,6 @@
             [
               "6",
               "4"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-bilbao",
-      "name": "Bilbao",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "4–6 / 6–3 / 7–5 / 6–2",
-          "sets": [
-            [
-              "4",
-              "6"
-            ],
-            [
-              "6",
-              "3"
-            ],
-            [
-              "7",
-              "5"
-            ],
-            [
-              "6",
-              "2"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Patricia Llaguno",
-            "Elisabeth Amatriain"
-          ],
-          "runnersUp": [
-            "Carolina Navarro",
-            "Cecilia Reiter"
-          ],
-          "score": "6–1 / 6–4",
-          "sets": [
-            [
-              "6",
-              "1"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-granada",
-      "name": "Granada",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "7–6 / 6–4 / 6–3",
-          "sets": [
-            [
-              "7",
-              "6"
-            ],
-            [
-              "6",
-              "4"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        },
-        "Women": {
-          "winners": [
-            "Carolina Navarro y",
-            "Cecilia Reiter"
-          ],
-          "runnersUp": [
-            "Mapi Sánchez Alayeto y",
-            "Majo Sánchez Alayeto"
-          ],
-          "score": "6–4 / 7–5",
-          "sets": [
-            [
-              "6",
-              "4"
-            ],
-            [
-              "7",
-              "5"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-lisbon",
-      "name": "Lisbon",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Fernando Belasteguín",
-            "Juan Martín Díaz"
-          ],
-          "runnersUp": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "score": "6–3 / 2–6 / 6–3 / 6–4",
-          "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
-              "2",
-              "6"
-            ],
-            [
-              "6",
-              "3"
             ],
             [
               "6",
@@ -11217,115 +11369,6 @@
       }
     },
     {
-      "key": "wpt-2013-valencia",
-      "name": "Valencia",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Maxi Sánchez",
-            "Sanyo Gutiérrez"
-          ],
-          "runnersUp": [
-            "Miguel Lamperti",
-            "Maxi Grabiel"
-          ],
-          "score": "6–3 / 7–5 / 6–4",
-          "sets": [
-            [
-              "6",
-              "3"
-            ],
-            [
-              "7",
-              "5"
-            ],
-            [
-              "6",
-              "4"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-buenos-aires",
-      "name": "Buenos Aires",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Maxi Sánchez",
-            "Sanyo Gutiérrez"
-          ],
-          "runnersUp": [
-            "Cristián Gutiérrez",
-            "Matías Díaz"
-          ],
-          "score": "4–6 / 7–6 / 6–2 / 6–3",
-          "sets": [
-            [
-              "4",
-              "6"
-            ],
-            [
-              "7",
-              "6"
-            ],
-            [
-              "6",
-              "2"
-            ],
-            [
-              "6",
-              "3"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "key": "wpt-2013-villa-carlos-paz",
-      "name": "Villa Carlos Paz",
-      "year": 2013,
-      "city": null,
-      "country": null,
-      "start": "2013-01-01",
-      "finals": {
-        "Men": {
-          "winners": [
-            "Juani Mieres",
-            "Pablo Lima"
-          ],
-          "runnersUp": [
-            "Cristián Gutiérrez",
-            "Matías Díaz"
-          ],
-          "score": "6–7 / 6–1 / 6–2 / WO",
-          "sets": [
-            [
-              "6",
-              "7"
-            ],
-            [
-              "6",
-              "1"
-            ],
-            [
-              "6",
-              "2"
-            ]
-          ]
-        }
-      }
-    },
-    {
       "key": "wpt-2013-masters-final",
       "name": "Masters Final",
       "year": 2013,
@@ -11359,6 +11402,2024 @@
           ]
         }
       }
+    }
+  ],
+  "rankings": [
+    {
+      "year": 2023,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Ariana Sánchez",
+          "country": null,
+          "points": 19220
+        },
+        {
+          "rank": 3,
+          "name": "Gemma Triay",
+          "country": null,
+          "points": 14890
+        },
+        {
+          "rank": 4,
+          "name": "Beatriz González",
+          "country": null,
+          "points": 13680
+        },
+        {
+          "rank": 5,
+          "name": "Delfi Brea",
+          "country": null,
+          "points": 13360
+        },
+        {
+          "rank": 6,
+          "name": "Marta Ortega",
+          "country": null,
+          "points": 11160
+        },
+        {
+          "rank": 7,
+          "name": "Alejandra Salazar",
+          "country": null,
+          "points": 10170
+        },
+        {
+          "rank": 8,
+          "name": "Tamara Icardo",
+          "country": null,
+          "points": 8177
+        },
+        {
+          "rank": 10,
+          "name": "Sofia Araújo",
+          "country": null,
+          "points": 6785
+        },
+        {
+          "rank": 11,
+          "name": "Claudia Jensen",
+          "country": null,
+          "points": 6447
+        },
+        {
+          "rank": 12,
+          "name": "Jessica Castelló",
+          "country": null,
+          "points": 6392
+        },
+        {
+          "rank": 13,
+          "name": "Aranzazu Osoro",
+          "country": null,
+          "points": 5565
+        },
+        {
+          "rank": 14,
+          "name": "Lucía Sainz",
+          "country": null,
+          "points": 4685
+        },
+        {
+          "rank": 15,
+          "name": "Verónica Virseda",
+          "country": null,
+          "points": 4410
+        },
+        {
+          "rank": 15,
+          "name": "Mapi Sánchez Alayeto",
+          "country": "4.110",
+          "points": 0
+        }
+      ]
+    },
+    {
+      "year": 2022,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Alejandro Galán",
+          "country": null,
+          "points": 16720
+        },
+        {
+          "rank": 3,
+          "name": "Agustín Tapia",
+          "country": null,
+          "points": 10610
+        },
+        {
+          "rank": 5,
+          "name": "Arturo Coello",
+          "country": null,
+          "points": 9875
+        },
+        {
+          "rank": 7,
+          "name": "Paquito Navarro",
+          "country": null,
+          "points": 8420
+        },
+        {
+          "rank": 8,
+          "name": "Martín Di Nenno",
+          "country": null,
+          "points": 8145
+        },
+        {
+          "rank": 9,
+          "name": "Franco Stupaczuk",
+          "country": null,
+          "points": 7380
+        },
+        {
+          "rank": 10,
+          "name": "Juan Tello",
+          "country": null,
+          "points": 7130
+        },
+        {
+          "rank": 11,
+          "name": "Pablo Lima",
+          "country": null,
+          "points": 7040
+        },
+        {
+          "rank": 12,
+          "name": "Federico Chingotto",
+          "country": null,
+          "points": 6465
+        },
+        {
+          "rank": 13,
+          "name": "Alejandro Ruíz",
+          "country": null,
+          "points": 5950
+        },
+        {
+          "rank": 14,
+          "name": "Momo González",
+          "country": null,
+          "points": 5210
+        },
+        {
+          "rank": 15,
+          "name": "Lucho Capra",
+          "country": null,
+          "points": 4536
+        },
+        {
+          "rank": 16,
+          "name": "Maxi Sánchez",
+          "country": null,
+          "points": 4493
+        }
+      ]
+    },
+    {
+      "year": 2021,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Alejandro Galán",
+          "country": "España",
+          "points": 13055
+        },
+        {
+          "rank": 1,
+          "name": "Juan Lebrón",
+          "country": "España",
+          "points": 13055
+        },
+        {
+          "rank": 3,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 11910
+        },
+        {
+          "rank": 3,
+          "name": "Martín Di Nenno",
+          "country": "Argentina",
+          "points": 11910
+        },
+        {
+          "rank": 5,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 9010
+        },
+        {
+          "rank": 6,
+          "name": "Agustín Tapia",
+          "country": "Argentina",
+          "points": 8770
+        },
+        {
+          "rank": 7,
+          "name": "Alejandro Ruíz",
+          "country": "España",
+          "points": 7555
+        },
+        {
+          "rank": 8,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 7515
+        },
+        {
+          "rank": 9,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 6675
+        },
+        {
+          "rank": 10,
+          "name": "Federico Chingotto",
+          "country": "Argentina",
+          "points": 6515
+        },
+        {
+          "rank": 10,
+          "name": "Juan Tello",
+          "country": "Argentina",
+          "points": 6515
+        },
+        {
+          "rank": 12,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 6360
+        },
+        {
+          "rank": 13,
+          "name": "Luciano Capra",
+          "country": "Argentina",
+          "points": 4991
+        },
+        {
+          "rank": 14,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 4800
+        },
+        {
+          "rank": 15,
+          "name": "Arturo Coello",
+          "country": "España",
+          "points": 3696
+        },
+        {
+          "rank": 16,
+          "name": "Jerónimo González",
+          "country": "España",
+          "points": 3673
+        }
+      ]
+    },
+    {
+      "year": 2021,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Alejandra Salazar",
+          "country": "España",
+          "points": 12755
+        },
+        {
+          "rank": 1,
+          "name": "Gemma Triay",
+          "country": "España",
+          "points": 12755
+        },
+        {
+          "rank": 3,
+          "name": "Ariana Sánchez",
+          "country": "España",
+          "points": 11585
+        },
+        {
+          "rank": 3,
+          "name": "Paula Josemaría",
+          "country": "España",
+          "points": 11585
+        },
+        {
+          "rank": 5,
+          "name": "Delfi Brea",
+          "country": "Argentina",
+          "points": 7505
+        },
+        {
+          "rank": 6,
+          "name": "Tamara Icardo",
+          "country": "España",
+          "points": 7294
+        },
+        {
+          "rank": 7,
+          "name": "María Virginia Riera",
+          "country": "Argentina",
+          "points": 6955
+        },
+        {
+          "rank": 7,
+          "name": "Patricia Llaguno",
+          "country": "España",
+          "points": 6955
+        },
+        {
+          "rank": 9,
+          "name": "Lucía Sainz",
+          "country": "España",
+          "points": 6625
+        },
+        {
+          "rank": 10,
+          "name": "Marta Marrero",
+          "country": "España",
+          "points": 5840
+        },
+        {
+          "rank": 11,
+          "name": "Bea González",
+          "country": "España",
+          "points": 5735
+        },
+        {
+          "rank": 12,
+          "name": "Victoria Iglesias",
+          "country": "España",
+          "points": 5120
+        },
+        {
+          "rank": 13,
+          "name": "Aranzazu Osoro",
+          "country": "Argentina",
+          "points": 5115
+        },
+        {
+          "rank": 14,
+          "name": "Marta Ortega",
+          "country": "España",
+          "points": 4950
+        },
+        {
+          "rank": 15,
+          "name": "Majo Sánchez Alayeto",
+          "country": "España",
+          "points": 3435
+        },
+        {
+          "rank": 16,
+          "name": "Mapi Sánchez Alayeto",
+          "country": "España",
+          "points": 3265
+        }
+      ]
+    },
+    {
+      "year": 2020,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Alejandro Galán",
+          "country": "España",
+          "points": 8860
+        },
+        {
+          "rank": 1,
+          "name": "Juan Lebrón",
+          "country": "España",
+          "points": 8860
+        },
+        {
+          "rank": 3,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 5185
+        },
+        {
+          "rank": 3,
+          "name": "Agustín Tapia",
+          "country": "Argentina",
+          "points": 5185
+        },
+        {
+          "rank": 5,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 5005
+        },
+        {
+          "rank": 6,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 4960
+        },
+        {
+          "rank": 6,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 4960
+        },
+        {
+          "rank": 8,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 4770
+        },
+        {
+          "rank": 9,
+          "name": "Juan Tello",
+          "country": "Argentina",
+          "points": 4005
+        },
+        {
+          "rank": 9,
+          "name": "Federico Chingotto",
+          "country": "Argentina",
+          "points": 4005
+        },
+        {
+          "rank": 11,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 2700
+        },
+        {
+          "rank": 12,
+          "name": "Martín Di Nenno",
+          "country": "Argentina",
+          "points": 2260
+        },
+        {
+          "rank": 13,
+          "name": "Matías Díaz",
+          "country": "Argentina",
+          "points": 2235
+        },
+        {
+          "rank": 14,
+          "name": "Javier Ruiz",
+          "country": "España",
+          "points": 2065
+        },
+        {
+          "rank": 14,
+          "name": "Uri Botello",
+          "country": "España",
+          "points": 2065
+        },
+        {
+          "rank": 16,
+          "name": "Agustín Gómez Silingo",
+          "country": "Argentina",
+          "points": 1885
+        }
+      ]
+    },
+    {
+      "year": 2020,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Alejandro Galán",
+          "country": "Spain",
+          "points": 8860
+        },
+        {
+          "rank": 1,
+          "name": "Juan Lebrón",
+          "country": "Spain",
+          "points": 8860
+        },
+        {
+          "rank": 3,
+          "name": "Agustín Tapia",
+          "country": "Argentina",
+          "points": 5185
+        },
+        {
+          "rank": 3,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 5185
+        },
+        {
+          "rank": 5,
+          "name": "Paquito Navarro",
+          "country": "Spain",
+          "points": 5005
+        },
+        {
+          "rank": 6,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 4960
+        },
+        {
+          "rank": 6,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 4960
+        },
+        {
+          "rank": 8,
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "points": 4770
+        },
+        {
+          "rank": 9,
+          "name": "Federico Chingotto",
+          "country": "Argentina",
+          "points": 4005
+        },
+        {
+          "rank": 9,
+          "name": "Juan Tello",
+          "country": "Argentina",
+          "points": 4005
+        },
+        {
+          "rank": 11,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 2700
+        },
+        {
+          "rank": 12,
+          "name": "Martín Di Nenno",
+          "country": "Argentina",
+          "points": 2260
+        },
+        {
+          "rank": 13,
+          "name": "Matías Díaz",
+          "country": "Argentina",
+          "points": 2235
+        },
+        {
+          "rank": 14,
+          "name": "Javier Ruiz",
+          "country": "Spain",
+          "points": 2065
+        },
+        {
+          "rank": 14,
+          "name": "Uri Botello",
+          "country": "Spain",
+          "points": 2065
+        },
+        {
+          "rank": 16,
+          "name": "Agustín Gómez Silingo",
+          "country": "Argentina",
+          "points": 1885
+        }
+      ]
+    },
+    {
+      "year": 2019,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 11310
+        },
+        {
+          "rank": 1,
+          "name": "Juan Lebrón",
+          "country": "España",
+          "points": 11310
+        },
+        {
+          "rank": 3,
+          "name": "Alejandro Galán",
+          "country": "España",
+          "points": 10690
+        },
+        {
+          "rank": 4,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 10110
+        },
+        {
+          "rank": 4,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 10110
+        },
+        {
+          "rank": 6,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 9770
+        },
+        {
+          "rank": 7,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 7915
+        },
+        {
+          "rank": 8,
+          "name": "Agustín Tapia",
+          "country": "Argentina",
+          "points": 5610
+        },
+        {
+          "rank": 9,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 5310
+        },
+        {
+          "rank": 10,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 5105
+        },
+        {
+          "rank": 11,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 4820
+        },
+        {
+          "rank": 12,
+          "name": "Javi Ruiz",
+          "country": "España",
+          "points": 4700
+        },
+        {
+          "rank": 12,
+          "name": "Uri Botello",
+          "country": "España",
+          "points": 4700
+        },
+        {
+          "rank": 14,
+          "name": "Federico Chingotto",
+          "country": "Argentina",
+          "points": 4085
+        },
+        {
+          "rank": 14,
+          "name": "Juan Tello",
+          "country": "Argentina",
+          "points": 4085
+        }
+      ]
+    },
+    {
+      "year": 2019,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Marta Marrero",
+          "country": "Spain",
+          "points": 11710
+        },
+        {
+          "rank": 1,
+          "name": "Marta Ortega",
+          "country": "Spain",
+          "points": 11710
+        },
+        {
+          "rank": 3,
+          "name": "Alejandra Salazar",
+          "country": "Spain",
+          "points": 9960
+        },
+        {
+          "rank": 3,
+          "name": "Ariana Sánchez",
+          "country": "Spain",
+          "points": 9960
+        },
+        {
+          "rank": 5,
+          "name": "Majo Sánchez Alayeto",
+          "country": "Spain",
+          "points": 6320
+        },
+        {
+          "rank": 6,
+          "name": "Ana Catarina Nogueira",
+          "country": "Portugal",
+          "points": 5820
+        },
+        {
+          "rank": 6,
+          "name": "Paula Josemaría",
+          "country": "Spain",
+          "points": 5820
+        },
+        {
+          "rank": 8,
+          "name": "Gemma Triay",
+          "country": "Spain",
+          "points": 5140
+        },
+        {
+          "rank": 8,
+          "name": "Lucía Sainz",
+          "country": "Spain",
+          "points": 5140
+        },
+        {
+          "rank": 10,
+          "name": "Elisabet Amatriaín",
+          "country": "Spain",
+          "points": 5100
+        },
+        {
+          "rank": 10,
+          "name": "Patricia Llaguno",
+          "country": "Spain",
+          "points": 5100
+        },
+        {
+          "rank": 12,
+          "name": "Delfina Brea",
+          "country": "Argentina",
+          "points": 4840
+        },
+        {
+          "rank": 13,
+          "name": "Beatriz González",
+          "country": "Spain",
+          "points": 2890
+        },
+        {
+          "rank": 14,
+          "name": "Mapi Sánchez Alayeto",
+          "country": "Spain",
+          "points": 2880
+        },
+        {
+          "rank": 15,
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "points": 2640
+        },
+        {
+          "rank": 15,
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "points": 2640
+        }
+      ]
+    },
+    {
+      "year": 2018,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 13820
+        },
+        {
+          "rank": 1,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 13820
+        },
+        {
+          "rank": 3,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 8330
+        },
+        {
+          "rank": 4,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 7035
+        },
+        {
+          "rank": 5,
+          "name": "Juan Martín Díaz",
+          "country": "España",
+          "points": 6570
+        },
+        {
+          "rank": 6,
+          "name": "Alejandro Galán",
+          "country": "España",
+          "points": 6200
+        },
+        {
+          "rank": 6,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 6200
+        },
+        {
+          "rank": 8,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 6060
+        },
+        {
+          "rank": 9,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 5145
+        },
+        {
+          "rank": 9,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 5145
+        },
+        {
+          "rank": 11,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 4925
+        },
+        {
+          "rank": 11,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 4925
+        },
+        {
+          "rank": 13,
+          "name": "Juan Lebrón",
+          "country": "España",
+          "points": 4920
+        },
+        {
+          "rank": 14,
+          "name": "Juan Cruz Belluati",
+          "country": "Argentina",
+          "points": 4095
+        },
+        {
+          "rank": 15,
+          "name": "Javier Ruíz",
+          "country": "España",
+          "points": 4055
+        },
+        {
+          "rank": 15,
+          "name": "Uri Botello",
+          "country": "España",
+          "points": 4055
+        }
+      ]
+    },
+    {
+      "year": 2018,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 13820
+        },
+        {
+          "rank": 1,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 13820
+        },
+        {
+          "rank": 3,
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "points": 8330
+        },
+        {
+          "rank": 4,
+          "name": "Paquito Navarro",
+          "country": "Spain",
+          "points": 7035
+        },
+        {
+          "rank": 5,
+          "name": "Juan Martín Díaz",
+          "country": "Spain",
+          "points": 6570
+        },
+        {
+          "rank": 6,
+          "name": "Alejandro Galán",
+          "country": "Spain",
+          "points": 6200
+        },
+        {
+          "rank": 6,
+          "name": "Matías Díaz",
+          "country": "Spain",
+          "points": 6200
+        },
+        {
+          "rank": 8,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 6060
+        },
+        {
+          "rank": 9,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 5145
+        },
+        {
+          "rank": 9,
+          "name": "Juani Mieres",
+          "country": "Spain",
+          "points": 5145
+        },
+        {
+          "rank": 11,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 4925
+        },
+        {
+          "rank": 11,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 4925
+        },
+        {
+          "rank": 13,
+          "name": "Juan Lebrón",
+          "country": "Spain",
+          "points": 4920
+        },
+        {
+          "rank": 14,
+          "name": "Juan Cruz Belluati",
+          "country": "Argentina",
+          "points": 4095
+        },
+        {
+          "rank": 15,
+          "name": "Javier Ruíz",
+          "country": "Spain",
+          "points": 4055
+        },
+        {
+          "rank": 15,
+          "name": "Uri Botello",
+          "country": "Spain",
+          "points": 4055
+        }
+      ]
+    },
+    {
+      "year": 2017,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 14600
+        },
+        {
+          "rank": 1,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 14600
+        },
+        {
+          "rank": 3,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 11965
+        },
+        {
+          "rank": 3,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 11965
+        },
+        {
+          "rank": 5,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 8060
+        },
+        {
+          "rank": 5,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 8060
+        },
+        {
+          "rank": 7,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 6400
+        },
+        {
+          "rank": 8,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 6280
+        },
+        {
+          "rank": 9,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 4320
+        },
+        {
+          "rank": 10,
+          "name": "Alejandro Galán",
+          "country": "España",
+          "points": 3409
+        },
+        {
+          "rank": 10,
+          "name": "Juan Cruz Belluati",
+          "country": "Argentina",
+          "points": 3409
+        },
+        {
+          "rank": 12,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 3220
+        },
+        {
+          "rank": 13,
+          "name": "Godo Díaz",
+          "country": "Argentina",
+          "points": 2815
+        },
+        {
+          "rank": 13,
+          "name": "Luciano Capra",
+          "country": "Argentina",
+          "points": 2815
+        },
+        {
+          "rank": 15,
+          "name": "Álvaro Cepero",
+          "country": "España",
+          "points": 2730
+        }
+      ]
+    },
+    {
+      "year": 2017,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 14600
+        },
+        {
+          "rank": 1,
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "points": 14600
+        },
+        {
+          "rank": 3,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 11965
+        },
+        {
+          "rank": 3,
+          "name": "Paquito Navarro",
+          "country": "Spain",
+          "points": 11965
+        },
+        {
+          "rank": 5,
+          "name": "Matías Díaz",
+          "country": "Spain",
+          "points": 8060
+        },
+        {
+          "rank": 5,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 8060
+        },
+        {
+          "rank": 7,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 6400
+        },
+        {
+          "rank": 8,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 6280
+        },
+        {
+          "rank": 9,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 4320
+        },
+        {
+          "rank": 10,
+          "name": "Alejandro Galán",
+          "country": "Spain",
+          "points": 3409
+        },
+        {
+          "rank": 10,
+          "name": "Juan Cruz Belluati",
+          "country": "Argentina",
+          "points": 3409
+        },
+        {
+          "rank": 12,
+          "name": "Juani Mieres",
+          "country": "Spain",
+          "points": 3220
+        },
+        {
+          "rank": 13,
+          "name": "Godo Díaz",
+          "country": "Argentina",
+          "points": 2815
+        },
+        {
+          "rank": 13,
+          "name": "Lucho Capra",
+          "country": "Argentina",
+          "points": 2815
+        },
+        {
+          "rank": 15,
+          "name": "Álvaro Cepero",
+          "country": "Spain",
+          "points": 2730
+        }
+      ]
+    },
+    {
+      "year": 2016,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 14640
+        },
+        {
+          "rank": 1,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 14640
+        },
+        {
+          "rank": 3,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 9310
+        },
+        {
+          "rank": 3,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 9310
+        },
+        {
+          "rank": 5,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 6475
+        },
+        {
+          "rank": 5,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 6475
+        },
+        {
+          "rank": 7,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 5085
+        },
+        {
+          "rank": 7,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 5085
+        },
+        {
+          "rank": 9,
+          "name": "Juan Martín Díaz",
+          "country": "España",
+          "points": 3875
+        },
+        {
+          "rank": 10,
+          "name": "Adrián Allemandi",
+          "country": "Argentina",
+          "points": 3600
+        },
+        {
+          "rank": 10,
+          "name": "Agustín Gómez",
+          "country": "Argentina",
+          "points": 3600
+        },
+        {
+          "rank": 12,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 3245
+        },
+        {
+          "rank": 13,
+          "name": "Ramiro Moyano",
+          "country": "Argentina",
+          "points": 2615
+        },
+        {
+          "rank": 13,
+          "name": "Maxi Grabiel",
+          "country": "Argentina",
+          "points": 2615
+        },
+        {
+          "rank": 15,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 2515
+        }
+      ]
+    },
+    {
+      "year": 2016,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 14640
+        },
+        {
+          "rank": 1,
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "points": 14640
+        },
+        {
+          "rank": 3,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 9310
+        },
+        {
+          "rank": 3,
+          "name": "Paquito Navarro",
+          "country": "Spain",
+          "points": 9310
+        },
+        {
+          "rank": 5,
+          "name": "Matías Díaz",
+          "country": "Spain",
+          "points": 6475
+        },
+        {
+          "rank": 5,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 6475
+        },
+        {
+          "rank": 7,
+          "name": "Juani Mieres",
+          "country": "Spain",
+          "points": 5085
+        },
+        {
+          "rank": 7,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 5085
+        },
+        {
+          "rank": 9,
+          "name": "Juan Martín Díaz",
+          "country": "Spain",
+          "points": 3875
+        },
+        {
+          "rank": 10,
+          "name": "Adrián Allemandi",
+          "country": "Argentina",
+          "points": 3600
+        },
+        {
+          "rank": 10,
+          "name": "Agustín Gómez",
+          "country": "Argentina",
+          "points": 3600
+        },
+        {
+          "rank": 12,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 3245
+        },
+        {
+          "rank": 13,
+          "name": "Ramiro Moyano",
+          "country": "Argentina",
+          "points": 2615
+        },
+        {
+          "rank": 13,
+          "name": "Maxi Grabiel",
+          "country": "Argentina",
+          "points": 2615
+        },
+        {
+          "rank": 15,
+          "name": "Franco Stupaczuk",
+          "country": "Argentina",
+          "points": 2515
+        }
+      ]
+    },
+    {
+      "year": 2015,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 15540
+        },
+        {
+          "rank": 2,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 13540
+        },
+        {
+          "rank": 3,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 8400
+        },
+        {
+          "rank": 3,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 8400
+        },
+        {
+          "rank": 5,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 7025
+        },
+        {
+          "rank": 6,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 6880
+        },
+        {
+          "rank": 7,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 6715
+        },
+        {
+          "rank": 8,
+          "name": "Juan Martín Díaz",
+          "country": "España",
+          "points": 6570
+        },
+        {
+          "rank": 9,
+          "name": "Adrián Allemandi",
+          "country": "Argentina",
+          "points": 4185
+        },
+        {
+          "rank": 9,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 4185
+        },
+        {
+          "rank": 11,
+          "name": "Guillermo Lahoz",
+          "country": "España",
+          "points": 4155
+        },
+        {
+          "rank": 12,
+          "name": "Agustín Gómez",
+          "country": "Argentina",
+          "points": 3255
+        },
+        {
+          "rank": 13,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 2840
+        },
+        {
+          "rank": 14,
+          "name": "Ramiro Moyano",
+          "country": "Argentina",
+          "points": 2715
+        },
+        {
+          "rank": 15,
+          "name": "Aday Santana",
+          "country": "España",
+          "points": 2535
+        },
+        {
+          "rank": 16,
+          "name": "Maxi Grabiel",
+          "country": "Argentina",
+          "points": 2385
+        },
+        {
+          "rank": 17,
+          "name": "Federico Quiles",
+          "country": "Argentina",
+          "points": 2265
+        },
+        {
+          "rank": 18,
+          "name": "Gabriel Reca",
+          "country": "Argentina",
+          "points": 2180
+        },
+        {
+          "rank": 18,
+          "name": "Seba Nerone",
+          "country": "Argentina",
+          "points": 2180
+        },
+        {
+          "rank": 20,
+          "name": "Jordi Muñoz",
+          "country": "España",
+          "points": 2025
+        }
+      ]
+    },
+    {
+      "year": 2015,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Mapi Sánchez Alayeto",
+          "country": "España",
+          "points": 8140
+        },
+        {
+          "rank": 1,
+          "name": "Majo Sánchez Alayeto",
+          "country": "España",
+          "points": 8140
+        },
+        {
+          "rank": 3,
+          "name": "Marta Marrero",
+          "country": "España",
+          "points": 5900
+        },
+        {
+          "rank": 3,
+          "name": "Alejandra Salazar",
+          "country": "España",
+          "points": 5900
+        },
+        {
+          "rank": 5,
+          "name": "Patricia Llaguno",
+          "country": "España",
+          "points": 4540
+        },
+        {
+          "rank": 5,
+          "name": "Elisabeth Amatriain",
+          "country": "España",
+          "points": 4540
+        },
+        {
+          "rank": 7,
+          "name": "Catalina Tenorio",
+          "country": "Argentina",
+          "points": 2940
+        },
+        {
+          "rank": 7,
+          "name": "Victoria Iglesias",
+          "country": "España",
+          "points": 2940
+        },
+        {
+          "rank": 7,
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "points": 2940
+        },
+        {
+          "rank": 10,
+          "name": "Carolina Navarro",
+          "country": "España",
+          "points": 2760
+        },
+        {
+          "rank": 11,
+          "name": "Gemma Triay",
+          "country": "España",
+          "points": 1980
+        },
+        {
+          "rank": 11,
+          "name": "Paula Eyheraguibel",
+          "country": "España",
+          "points": 1980
+        },
+        {
+          "rank": 13,
+          "name": "Marta Ortega",
+          "country": "España",
+          "points": 1890
+        },
+        {
+          "rank": 15,
+          "name": "Nélida Brito",
+          "country": "Argentina",
+          "points": 1645
+        },
+        {
+          "rank": 17,
+          "name": "María del Carmen Villalba",
+          "country": "España",
+          "points": 1195
+        },
+        {
+          "rank": 17,
+          "name": "Alba Galán",
+          "country": "España",
+          "points": 1195
+        },
+        {
+          "rank": 19,
+          "name": "Ana Catarina Nogueira",
+          "country": "Portugal",
+          "points": 900
+        },
+        {
+          "rank": 19,
+          "name": "Sandra Hernández",
+          "country": "España",
+          "points": 900
+        }
+      ]
+    },
+    {
+      "year": 2014,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 8585
+        },
+        {
+          "rank": 1,
+          "name": "Juan Martín Díaz",
+          "country": "España",
+          "points": 8585
+        },
+        {
+          "rank": 3,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 5517
+        },
+        {
+          "rank": 3,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 5517
+        },
+        {
+          "rank": 5,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 4000
+        },
+        {
+          "rank": 5,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 4000
+        },
+        {
+          "rank": 7,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 3529
+        },
+        {
+          "rank": 8,
+          "name": "Maxi Grabiel",
+          "country": "Argentina",
+          "points": 3421
+        },
+        {
+          "rank": 9,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 3257
+        },
+        {
+          "rank": 9,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 3257
+        },
+        {
+          "rank": 11,
+          "name": "Adrián Allemandi",
+          "country": "Argentina",
+          "points": 2538
+        },
+        {
+          "rank": 12,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 2423
+        },
+        {
+          "rank": 13,
+          "name": "Aday Santana",
+          "country": "España",
+          "points": 1800
+        },
+        {
+          "rank": 13,
+          "name": "Jordi Muñoz",
+          "country": "España",
+          "points": 1800
+        },
+        {
+          "rank": 15,
+          "name": "Gabriel Reca",
+          "country": "Argentina",
+          "points": 1700
+        },
+        {
+          "rank": 15,
+          "name": "Seba Nerone",
+          "country": "Argentina",
+          "points": 1700
+        }
+      ]
+    },
+    {
+      "year": 2014,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Mapi Sánchez Alayeto",
+          "country": "España",
+          "points": 6300
+        },
+        {
+          "rank": 1,
+          "name": "Majo Sánchez Alayeto",
+          "country": "España",
+          "points": 6300
+        },
+        {
+          "rank": 3,
+          "name": "Alejandra Salazar",
+          "country": "España",
+          "points": 6150
+        },
+        {
+          "rank": 3,
+          "name": "Icíar Montes",
+          "country": "España",
+          "points": 6150
+        },
+        {
+          "rank": 5,
+          "name": "Elisabeth Amatriaín",
+          "country": "España",
+          "points": 4550
+        },
+        {
+          "rank": 5,
+          "name": "Patricia Llaguno",
+          "country": "España",
+          "points": 4550
+        },
+        {
+          "rank": 7,
+          "name": "Marta Marrero",
+          "country": "España",
+          "points": 4086
+        },
+        {
+          "rank": 8,
+          "name": "Catalina Tenorio",
+          "country": "Argentina",
+          "points": 3800
+        },
+        {
+          "rank": 9,
+          "name": "Carolina Navarro",
+          "country": "España",
+          "points": 3338
+        },
+        {
+          "rank": 9,
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "points": 3338
+        },
+        {
+          "rank": 11,
+          "name": "Lucía Sainz",
+          "country": "España",
+          "points": 2550
+        },
+        {
+          "rank": 11,
+          "name": "Marta Ortega",
+          "country": "España",
+          "points": 2550
+        },
+        {
+          "rank": 13,
+          "name": "Nelida Brito",
+          "country": "Argentina",
+          "points": 1688
+        },
+        {
+          "rank": 13,
+          "name": "Valeria Pavón",
+          "country": "Argentina",
+          "points": 1688
+        },
+        {
+          "rank": 15,
+          "name": "Paula Eyheraguibel",
+          "country": "Argentina",
+          "points": 1575
+        }
+      ]
+    },
+    {
+      "year": 2013,
+      "gender": "Men",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "points": 7453
+        },
+        {
+          "rank": 1,
+          "name": "Juan Martín Díaz",
+          "country": "España",
+          "points": 7453
+        },
+        {
+          "rank": 3,
+          "name": "Pablo Lima",
+          "country": "Brasil",
+          "points": 5856
+        },
+        {
+          "rank": 4,
+          "name": "Juani Mieres",
+          "country": "España",
+          "points": 5847
+        },
+        {
+          "rank": 5,
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "points": 4350
+        },
+        {
+          "rank": 6,
+          "name": "Matías Díaz",
+          "country": "España",
+          "points": 4200
+        },
+        {
+          "rank": 7,
+          "name": "Cristián Gutiérrez",
+          "country": "Argentina",
+          "points": 4059
+        },
+        {
+          "rank": 8,
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "points": 3817
+        },
+        {
+          "rank": 9,
+          "name": "Maxi Grabiel",
+          "country": "Argentina",
+          "points": 2967
+        },
+        {
+          "rank": 9,
+          "name": "Miguel Lamperti",
+          "country": "Argentina",
+          "points": 2967
+        },
+        {
+          "rank": 11,
+          "name": "Seba Nerone",
+          "country": "Argentina",
+          "points": 2478
+        },
+        {
+          "rank": 12,
+          "name": "Gabriel Reca",
+          "country": "Argentina",
+          "points": 2022
+        },
+        {
+          "rank": 13,
+          "name": "Paquito Navarro",
+          "country": "España",
+          "points": 1844
+        },
+        {
+          "rank": 14,
+          "name": "Jordi Muñoz",
+          "country": "España",
+          "points": 1767
+        },
+        {
+          "rank": 15,
+          "name": "Adrián Allemandi",
+          "country": "Argentina",
+          "points": 1489
+        },
+        {
+          "rank": 15,
+          "name": "Fernando Poggi",
+          "country": "Argentina",
+          "points": 1489
+        }
+      ]
+    },
+    {
+      "year": 2013,
+      "gender": "Women",
+      "rows": [
+        {
+          "rank": 1,
+          "name": "Elisabeth Amatriain",
+          "country": "España",
+          "points": 6200
+        },
+        {
+          "rank": 1,
+          "name": "Patricia Llaguno",
+          "country": "España",
+          "points": 6200
+        },
+        {
+          "rank": 3,
+          "name": "Carolina Navarro",
+          "country": "España",
+          "points": 6171
+        },
+        {
+          "rank": 3,
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "points": 6171
+        },
+        {
+          "rank": 5,
+          "name": "Majo Sánchez Alayeto",
+          "country": "España",
+          "points": 4943
+        },
+        {
+          "rank": 5,
+          "name": "Mapi Sánchez Alayeto",
+          "country": "España",
+          "points": 4943
+        },
+        {
+          "rank": 7,
+          "name": "Alejandra Salazar",
+          "country": "España",
+          "points": 4067
+        },
+        {
+          "rank": 8,
+          "name": "Icíar Montes",
+          "country": "España",
+          "points": 4000
+        },
+        {
+          "rank": 9,
+          "name": "Cata Tenorio",
+          "country": "Argentina",
+          "points": 3429
+        },
+        {
+          "rank": 9,
+          "name": "Valeria Pavón",
+          "country": "Argentina",
+          "points": 3429
+        },
+        {
+          "rank": 11,
+          "name": "Marta Marrero",
+          "country": "España",
+          "points": 1671
+        },
+        {
+          "rank": 11,
+          "name": "Nelida Brito",
+          "country": "Argentina",
+          "points": 1671
+        },
+        {
+          "rank": 13,
+          "name": "Paula Eyheraguibel",
+          "country": "Argentina",
+          "points": 1543
+        },
+        {
+          "rank": 14,
+          "name": "Ana Fernández",
+          "country": "España",
+          "points": 1414
+        },
+        {
+          "rank": 14,
+          "name": "Lucía Sainz",
+          "country": "España",
+          "points": 1414
+        },
+        {
+          "rank": 14,
+          "name": "Marta Ortega",
+          "country": "España",
+          "points": 1414
+        },
+        {
+          "rank": 14,
+          "name": "Michele Treptow",
+          "country": "Brasil",
+          "points": 1414
+        }
+      ]
     }
   ]
 }
