@@ -80,7 +80,10 @@ for (const m of matches) {
 for (const t of wpt.tournaments) if (t.rounds) t.rounds.sort((a, b) => (RORDER[b.round] || 0) - (RORDER[a.round] || 0));
 
 wpt.generatedAt = new Date().toISOString();
-wpt.roundsNote = `Deeper rounds (semis/quarters/…) extracted from padel-magazine news for ${YEAR}; finals + rankings remain from Wikipedia.`;
+wpt.roundsNote = `Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.`;
+// Mark this season processed so a self-healing/recurring run skips it next time — even
+// if it yielded 0 rounds (a genuinely thin season shouldn't be retried forever).
+wpt.roundsSeasons = [...new Set([...(wpt.roundsSeasons || []), YEAR])].sort();
 writeFileSync(WPT, JSON.stringify(wpt, null, 2));
 
 const withRounds = wpt.tournaments.filter((t) => t.year === YEAR && t.rounds?.length).length;

@@ -16856,5 +16856,8 @@
       ]
     }
   ],
-  "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news for 2019; finals + rankings remain from Wikipedia."
+  "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news for 2019; finals + rankings remain from Wikipedia.",
+  "roundsSeasons": [
+    2019
+  ]
 }
