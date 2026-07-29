@@ -174,6 +174,7 @@ const state = {
   mode: "live",              // "live" | "archive"
   archive: null,             // loaded index.json
   archiveYear: "all",
+  archiveMonth: "all",       // "all" | "01".."12" — month sub-filter within a year
   archiveTour: "all",        // within FIP: "all" | "FIP" | "WPT"
   archiveCap: 40,
   openArchive: new Set(),    // expanded tournament keys
@@ -843,15 +844,43 @@ const archYear = (t) => (t.start || "").slice(0, 4);
 // Year / federation / tour are INDEPENDENT filters that AND together, so they can be
 // picked in any order (year → FIP → WPT, or FIP → WPT → year). `skip` lets a caller
 // compute counts for one axis while honouring the others (e.g. per-year counts).
+const archMonth = (t) => (t.start || "").slice(5, 7); // "MM" | ""
 function archiveFiltered(skip = "") {
   const q = state.query.trim().toLowerCase();
   return state.archive.tournaments.filter((t) => {
     if (skip !== "fed" && state.fed !== "all" && t.federation !== state.fed) return false;
     if (skip !== "tour" && state.archiveTour !== "all" && tourOf(t) !== state.archiveTour) return false;
     if (skip !== "year" && state.archiveYear !== "all" && archYear(t) !== state.archiveYear) return false;
+    if (skip !== "month" && state.archiveMonth !== "all" && archMonth(t) !== state.archiveMonth) return false;
     if (q && !t.name.toLowerCase().includes(q)) return false;
     return true;
   });
+}
+
+// Rough prestige rank from the tournament name, so a single season can be sorted
+// marquee-first (Masters Final → Major/P1 → Master/P2 → Gold → Open → Silver →
+// Challenger → Bronze → Promises) instead of purely by date. Deliberately fuzzy —
+// it's a browse aid across FIP/Premier/WPT/RankedIn, not an official hierarchy.
+function prestige(t) {
+  const n = (t.name || "").toLowerCase();
+  // International pro (FIP/Premier + WPT) always outranks national circuits, so a
+  // Premier Major beats a domestic league's "Final Four". Base separates the two
+  // bands; the tier keyword orders within each.
+  const base = t.federation === "FIP" ? 1000 : 0;
+  const wpt = t.tour === "WPT";
+  const tier =
+    /master\s*final|premier padel finals|fip finals|season finals|final four|\bfinals\b/.test(n) ? 100 :
+    /\bmajor\b/.test(n) ? 92 :
+    /\bp1\b/.test(n) ? 88 :
+    /\bmaster\b/.test(n) ? 84 :          // WPT Master / FIP-era Master
+    /\bp2\b/.test(n) ? 80 :
+    /\bgold\b/.test(n) ? 70 :
+    /\bopen\b/.test(n) ? (wpt ? 66 : 42) : // a WPT Open outranks a club open
+    /\bsilver\b/.test(n) ? 52 :
+    /\bchallenger\b/.test(n) ? (wpt ? 48 : 32) :
+    /\bbronze\b/.test(n) ? 34 :
+    /promis/.test(n) ? 6 : 25;
+  return base + tier;
 }
 
 // End-of-season WPT standings for one year, as two compact top-10 tables (men /
@@ -878,22 +907,39 @@ function wptStandings(year) {
     `<div class="standnote">Season-end WPT ranking (top 10). Players sharing a rank were a ranked pair.</div></details>`;
 }
 
+const MONTHS3 = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function renderArchive() {
+  const yearView = state.archiveYear !== "all";
   const list = archiveFiltered();
+  // A single season sorts marquee-first (prestige, then latest); browsing across all
+  // years stays chronological.
+  if (yearView) list.sort((a, b) => prestige(b) - prestige(a) || (b.start || "").localeCompare(a.start || ""));
   const shown = list.slice(0, state.archiveCap);
   const all = state.archive.tournaments;
   const yrs = all.map((t) => +archYear(t)).filter(Boolean);
   const span = yrs.length ? `${Math.min(...yrs)}–${Math.max(...yrs)}` : "";
   const scope = [
-    state.archiveYear !== "all" ? state.archiveYear : null,
+    yearView ? state.archiveYear : null,
+    state.archiveMonth !== "all" ? MONTHS3[+state.archiveMonth] : null,
     state.fed !== "all" ? (state.fed === "FIP" ? "FIP international" : REGION_LABEL[state.fed] || state.fed) : null,
     state.archiveTour !== "all" ? (state.archiveTour === "WPT" ? "World Padel Tour" : "FIP / Premier") : null,
   ].filter(Boolean).join(" · ");
   let html =
     `<div class="section-label region">📅 ${list.length} tournament${list.length === 1 ? "" : "s"}` +
     `<span class="count">${scope || `${all.length} in archive · ${span}`}</span></div>`;
+  // Month sub-filter within a selected season
+  if (yearView) {
+    const mc = new Map();
+    for (const t of archiveFiltered("month")) { const m = archMonth(t); if (m) mc.set(m, (mc.get(m) || 0) + 1); }
+    if (mc.size > 1) {
+      const months = [...mc.keys()].sort();
+      html += `<div class="monthbar"><span class="mchip ${state.archiveMonth === "all" ? "active" : ""}" data-amonth="all">All</span>` +
+        months.map((m) => `<span class="mchip ${state.archiveMonth === m ? "active" : ""}" data-amonth="${m}">${MONTHS3[+m]}<span class="cn">${mc.get(m)}</span></span>`).join("") +
+        `</div>`;
+    }
+  }
   // WPT end-of-season standings, shown when a single WPT season is in view
-  if (state.archiveTour === "WPT" && state.archiveYear !== "all") html += wptStandings(state.archiveYear);
+  if (state.archiveTour === "WPT" && yearView) html += wptStandings(state.archiveYear);
   html += shown.map(archiveRow).join("");
   if (list.length > shown.length)
     html += `<button class="morebtn" data-archmore="1">Show ${list.length - shown.length} more ↓</button>`;
@@ -1738,10 +1784,20 @@ document.getElementById("daystrip").addEventListener("click", (e) => {
   if (!b) return;
   if (b.dataset.year !== undefined) {            // archive: year picker
     state.archiveYear = b.dataset.year;
+    state.archiveMonth = "all";                  // switching year clears the month sub-filter
     state.archiveCap = 40;
   } else {
     state.day = b.dataset.day;
   }
+  render();
+});
+
+// archive: month sub-filter (only present when a single year is selected)
+app.addEventListener("click", (e) => {
+  const m = e.target.closest("[data-amonth]");
+  if (!m) return;
+  state.archiveMonth = m.dataset.amonth;
+  state.archiveCap = 40;
   render();
 });
 
@@ -1755,6 +1811,7 @@ function activateMode(mode) {
   state.tournament = null;
   state.rankCountryQuery = "";
   state.archiveTour = "all";
+  state.archiveMonth = "all";
   state.archiveCap = 40;
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
   document.getElementById("tabs").style.display = mode === "live" ? "" : "none";

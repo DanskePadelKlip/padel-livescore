@@ -184,6 +184,13 @@
     .sr-name { flex: 1; min-width: 0; }
     .sr-pts { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
     .standnote { padding: 4px 14px 12px; font-size: 11px; color: var(--faint); }
+    /* archive: month sub-filter within a selected year */
+    .monthbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 10px; }
+    .mchip { flex: 0 0 auto; background: var(--card); border: 1px solid var(--line); color: var(--text);
+      border-radius: 999px; padding: 5px 11px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
+    .mchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .mchip .cn { font-size: 10px; color: var(--faint); margin-left: 5px; font-variant-numeric: tabular-nums; }
+    .mchip.active .cn { color: rgba(255,255,255,.85); }
     /* profile: per-tournament match filter (chips can wrap; long names truncate) */
     .profchips { flex-wrap: wrap; margin-bottom: 4px; }
     .profchips .chip { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -594,9 +601,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=4fd974d5<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=6912d94c<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=4fd974d5"></script>
+  <script src="/app.js?v=6912d94c"></script>
 </body>
 </html>
