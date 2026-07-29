@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T11:48:13.497Z",
+  "generatedAt": "2026-07-29T15:53:38.198Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -4797,7 +4797,189 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Pablo Lima",
+            "Alejandro Galán"
+          ],
+          "losers": [
+            "Sanyo Gutiérrez",
+            "Maxi Sánchez"
+          ],
+          "score": "6-4 4-6 6-1",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Carolina Navarro",
+            "Ceci Reiter"
+          ],
+          "score": "6-3 6-1",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Alejandra Salazar",
+            "Ariana Sánchez"
+          ],
+          "losers": [
+            "Delfi Brea",
+            "Bea González"
+          ],
+          "score": "3-6 6-3 7-6(6)",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Fernando Belasteguín",
+            "Agustín Tapia"
+          ],
+          "losers": [
+            "Agustín Silingo",
+            "Juani Mieres"
+          ],
+          "score": "6-1 6-3",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Paquito Navarro",
+            "Juan Lebrón"
+          ],
+          "losers": [
+            "Uri Botello",
+            "Javi Ruiz"
+          ],
+          "score": "3-6 6-4 6-4",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Carolina Navarro",
+            "Ceci Reiter"
+          ],
+          "losers": [
+            "Gemma Triay",
+            "Lucía Sainz"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Mapi Sánchez Alayeto",
+            "Majo Sánchez Alayeto"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-mexico-open",
@@ -4863,7 +5045,305 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Juan Lebron",
+            "Paquito Navarro"
+          ],
+          "losers": [
+            "Fernando Belasteguín",
+            "Agustín Tapia"
+          ],
+          "score": "6-7 7-6 6-4",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Uri Botello",
+            "Javier Ruiz"
+          ],
+          "losers": [
+            "Pablo Lima",
+            "Ale Galan"
+          ],
+          "score": "3-6 7-6 6-3",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Paquito Navarro",
+            "Juan Lebron"
+          ],
+          "losers": [
+            "Javier Garrido",
+            "Martín Di Nenno"
+          ],
+          "score": "6-2 6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Agustín Tapia",
+            "Fernando Belasteguín"
+          ],
+          "losers": [
+            "Federico Chingotto",
+            "Juan Tello"
+          ],
+          "score": "6-3 5-7 6-1",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "5",
+              "7"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Ale Galan",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Matías Díaz",
+            "Franco Stupaczuk"
+          ],
+          "score": "6-4 3-2 ab.",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "3",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Uri Botello",
+            "Javier Ruiz"
+          ],
+          "losers": [
+            "Pablo Lijo",
+            "Álvaro Cepero"
+          ],
+          "score": "2-6 6-4 6-2",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Álvaro Cepero",
+            "Pablo Lijo"
+          ],
+          "losers": [
+            "Maxi Sanchez",
+            "Sanyo Gutiérrez"
+          ],
+          "score": "6-4 3-6 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Javier Garrido",
+            "Martín Di Nenno"
+          ],
+          "losers": [
+            "Moyano",
+            "Belluati"
+          ],
+          "score": "7-6 6-7 6-4",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Pablo Lijo",
+            "Álvaro Cepero"
+          ],
+          "losers": [
+            "Javier Barahona",
+            "Jerónimo Gonzalez"
+          ],
+          "score": "3-6 6-2 7-6",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Lucas Bergamini",
+            "Aday Santana"
+          ],
+          "losers": [
+            "Maxi Grabiel",
+            "Miguel Lamperti"
+          ],
+          "score": "3-6 7-6 6-4",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Javier Ruiz",
+            "Uri Botello"
+          ],
+          "losers": [
+            "Martin S. Piñeiro",
+            "Alex Ruiz"
+          ],
+          "score": "6-1 6-0",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-cordoba-open",
@@ -4915,7 +5395,401 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Ana Catarina Nogueira",
+            "Paula Josemaría"
+          ],
+          "score": "7-5 6-2",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Patty Llaguno",
+            "Eli Amatriaín"
+          ],
+          "losers": [
+            "Mapi Sanchez Alayeto",
+            "Majo Sanchez Alayeto"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Matías Díaz",
+            "Franco Stupaczuk"
+          ],
+          "losers": [
+            "Agustín Silingo",
+            "Adrián Allemandi"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Eli Amatriaín",
+            "Patty Llaguno"
+          ],
+          "losers": [
+            "Alejandra Salazar",
+            "Ariana Sanchez"
+          ],
+          "score": "7-6 6-4",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Agustín Silingo",
+            "Adrián Allemandi"
+          ],
+          "losers": [
+            "Maxi Sanchez",
+            "Sanyo Gutiérrez"
+          ],
+          "score": "6-4 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Matías Díaz",
+            "Franco Stupaczuk"
+          ],
+          "losers": [
+            "Ale Galan",
+            "Pablo Lima"
+          ],
+          "score": "3-6 6-3 6-3",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "losers": [
+            "Melania Merino Saéz",
+            "Esther Carnicero Martín"
+          ],
+          "score": "6-2 7-6",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Ana Fernández de Ossó",
+            "Carla Mesa"
+          ],
+          "losers": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "score": "7-5 6-2",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "losers": [
+            "Fiona Ligi",
+            "Mélissa Martin"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "losers": [
+            "Ana María Cabrejas",
+            "Baharak Soleymani"
+          ],
+          "score": "6-2 6-3",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "losers": [
+            "Sandra Bellver",
+            "Lorena Rufo"
+          ],
+          "score": "3-6 7-5 6-4",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "losers": [
+            "Laia Bonilla",
+            "Julia Polo"
+          ],
+          "score": "6-4 6-3",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Marta Borrero",
+            "Arantxa Soriano Perez"
+          ],
+          "losers": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "score": "6-3 6-1",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Simon Vasquez",
+            "Cayetano Rocafort"
+          ],
+          "losers": [
+            "Johan Bergeron",
+            "Mario Cerezo Casado"
+          ],
+          "score": "6-3 6-3",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Facundo Dominguez",
+            "Vasco Pascoal"
+          ],
+          "losers": [
+            "Jérémy Scatena",
+            "Willy Lahoz"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-santander-wopen",
@@ -4950,7 +5824,289 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Gemma Triay",
+            "Lucía Sainz"
+          ],
+          "losers": [
+            "Ana Catarina Nogueira",
+            "Paula Josemaría Martín"
+          ],
+          "score": "7-5 3-6 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Maria Pilar Sanchez Alayeto",
+            "Maria José Sanchez Alayeto"
+          ],
+          "losers": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "score": "6-4 6-3",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Gemma Triay",
+            "Lucía Sainz"
+          ],
+          "losers": [
+            "Tamara Icardo",
+            "Sandra Hernández"
+          ],
+          "score": "6-1 5-7 6-2",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "5",
+              "7"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Ana Catarina Nogueira",
+            "Paula Josemaría"
+          ],
+          "losers": [
+            "Carolina Navarro",
+            "Ceci Reiter"
+          ],
+          "score": "3-6 7-6 6-2",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Eli Amatriain",
+            "Patty Llaguno"
+          ],
+          "score": "6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Sandra Hernández",
+            "Tamara Icardo"
+          ],
+          "losers": [
+            "Ariana Sanchez",
+            "Alejandra Salazar"
+          ],
+          "score": "7-5 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Carolina Navarro",
+            "Ceci Reiter"
+          ],
+          "losers": [
+            "Aranzazu Osoro Ulrich",
+            "Nelida Brito"
+          ],
+          "score": "1-6 7-5 6-3",
+          "sets": [
+            [
+              "1",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Aranzazu Osoro Ulrich",
+            "Nelida Brito"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "7-6 7-6",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Rebeca Lopez Lopez",
+            "Alba Lopez Blas"
+          ],
+          "losers": [
+            "Mélissa Martin",
+            "María Vera"
+          ],
+          "score": "7-5 6-4",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "losers": [
+            "Isabel Domínguez Munaiz",
+            "Marta G. de la Fuente"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Marina Martínez Lobo",
+            "Helena Wyckaert"
+          ],
+          "losers": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "score": "6-4 6-1",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-san-javier-challenger",
@@ -5114,7 +6270,289 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Teresa Navarro",
+            "Lucía Martínez Gómez"
+          ],
+          "losers": [
+            "Anna Cortiles Tapas",
+            "Jessica Castelló López"
+          ],
+          "score": "6-1 6-1",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Carolina Navarro",
+            "Cécilia Reiter"
+          ],
+          "losers": [
+            "Nelida Brito",
+            "Aranzazu Osoro Ulrich"
+          ],
+          "score": "6-3 3-6 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Delfina Brea",
+            "Beatriz González"
+          ],
+          "losers": [
+            "Blanco",
+            "Caldera"
+          ],
+          "score": "4-6 6-3 6-4",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Hernandez",
+            "Icardo"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "6-4 5-7 7-5",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "5",
+              "7"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Carolina Navarro",
+            "Cécilia Reiter"
+          ],
+          "losers": [
+            "Line Meites",
+            "Elodie Invernon"
+          ],
+          "score": "6-0 6-0",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Delfina Brea",
+            "Beatriz González"
+          ],
+          "losers": [
+            "Audrey Casanova",
+            "Carol-Ann Lovera"
+          ],
+          "score": "6-0 6-1",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Teresa Navarro",
+            "Lucía Martínez Gómez"
+          ],
+          "losers": [
+            "Laura Clergue",
+            "Barbara Las Heras"
+          ],
+          "score": "6-4 7-5",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Anna Cortiles Tapas",
+            "Jessica Castelló López"
+          ],
+          "losers": [
+            "Ginier",
+            "Godallier"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Paz",
+            "Vivancos"
+          ],
+          "losers": [
+            "Ligi",
+            "Rovira"
+          ],
+          "score": "6-1 7-5",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Laura Clergue",
+            "Barbara Las Heras"
+          ],
+          "losers": [
+            "Cabreras",
+            "Soleymani"
+          ],
+          "score": "6-0 6-2",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Yanguas",
+            "Ramirez"
+          ],
+          "losers": [
+            "Benjamin Tison",
+            "Adrien Maigret"
+          ],
+          "score": "3-6 7-6 6-2",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2019-portugal-master",
@@ -5166,7 +6604,357 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Ale Galan",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Fernando Belasteguín",
+            "Agustín Tapia"
+          ],
+          "score": "6-1 6-2",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Federico Chingotto",
+            "Juan Tello"
+          ],
+          "losers": [
+            "Sanyo Gutiérrez",
+            "Maxi Sanchez"
+          ],
+          "score": "7-5 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Ale Galan",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Agustín Silingo",
+            "Adrián Allemandi"
+          ],
+          "score": "6-1 6-0",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Marta Ortega",
+            "Marta Marrero"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "6-2 6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Agustín Tapia",
+            "Fernando Belasteguín"
+          ],
+          "losers": [
+            "Luciano Capra",
+            "Lucas Campagnolo"
+          ],
+          "score": "6-3 6-2",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Federico Chingotto",
+            "Juan Tello"
+          ],
+          "losers": [
+            "Fernández Cano",
+            "García Diestro"
+          ],
+          "score": "6-1 6-7 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Miguel Lamperti",
+            "Mieres"
+          ],
+          "losers": [
+            "Nerone",
+            "Gadea"
+          ],
+          "score": "6-2 6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Maxi Sanchez",
+            "Sanyo Gutiérrez"
+          ],
+          "losers": [
+            "Belluati",
+            "Moyano"
+          ],
+          "score": "7-6 7-6",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Ale Galan",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Álvaro Cepero",
+            "Pablo Lijo"
+          ],
+          "score": "7-6 7-5",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Federico Quiles",
+            "Cristian Gutiérrez"
+          ],
+          "losers": [
+            "Jorge Nieto Ruiz",
+            "Javier Rico Dasi"
+          ],
+          "score": "4-6 6-3 6-3",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "losers": [
+            "Alicia Blanco Rojo",
+            "Beatriz Caldera Sánchez"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Delfina Brea",
+            "Bea González"
+          ],
+          "losers": [
+            "Aranzazu Osoro Ulrich",
+            "Nelida Brito"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alba Galán",
+            "Victoria Iglesias"
+          ],
+          "losers": [
+            "Teresa Navarro",
+            "Lucía Martínez Gómez"
+          ],
+          "score": "6-2 6-0",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Sara Pujals",
+            "Lorena Alonso"
+          ],
+          "losers": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "score": "2-6 6-1 6-4",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-oureiro-de-rei-lugo-challenger",
@@ -5253,7 +7041,509 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Maxi Sanchez",
+            "Sanyo Gutierrez"
+          ],
+          "losers": [
+            "Agustin Gomez Silingo",
+            "Adrian Allemandi"
+          ],
+          "score": "6-2 6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Ramiro Moyano",
+            "Juan Cruz Belluati"
+          ],
+          "losers": [
+            "Josete Rico",
+            "Victor Ruiz"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Agustin Tapia",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Franco Stupaczuk",
+            "Matias Diaz"
+          ],
+          "score": "6-3 6-2",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Javier Ruiz",
+            "Uri Botello"
+          ],
+          "losers": [
+            "Pablo Lima",
+            "Alejandro Galan"
+          ],
+          "score": "6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Alejandra Salazar",
+            "Ari Sanchez"
+          ],
+          "losers": [
+            "Delfi Brea",
+            "Bea Gonzalez"
+          ],
+          "score": "7-6 6-4",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Agustin Tapia",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Paquito Navarro",
+            "Juan Lebron"
+          ],
+          "score": "6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Eli Amatriain",
+            "Patty Llaguno"
+          ],
+          "losers": [
+            "Marta Talavan",
+            "Elena Ramírez"
+          ],
+          "score": "6-3 6-0",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Pilar Alayeto",
+            "Majo Alayeto"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "losers": [
+            "Raquel Piltcher",
+            "Carla Mesa"
+          ],
+          "score": "6-4 2-6 6-1",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Javier García Mora",
+            "Alfonso Viuda"
+          ],
+          "losers": [
+            "Maxime Moreau",
+            "Robin Haziza"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Johan Bergeron",
+            "Gabriel Espelleta Font"
+          ],
+          "losers": [
+            "Rubén Sánchez Sánchez",
+            "Jacobo Pérez Cendón"
+          ],
+          "score": "7-6 6-1",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Jorge Señorán",
+            "Teodoro Zapata"
+          ],
+          "losers": [
+            "Johan Bergeron",
+            "Gabriel Espelleta Font"
+          ],
+          "score": "6-3 6-2",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Benjamin Tison",
+            "Mario Cerezo Casado"
+          ],
+          "losers": [
+            "Titas Mikelevičius",
+            "Hugo García Martínez"
+          ],
+          "score": "6-1 6-2",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Pedro San Román Gomendio",
+            "Nicolás Suescun"
+          ],
+          "losers": [
+            "Benjamin Tison",
+            "Mario Cerezo Casado"
+          ],
+          "score": "6-7 6-2 7-5",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Javier Rodríguez Márquez",
+            "Patricio Nahuel Belluati López"
+          ],
+          "losers": [
+            "Raul Medina Lopez",
+            "Bastien Blanqué"
+          ],
+          "score": "6-4 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Andreína de Los Santos",
+            "Manuela Isabel Alaga"
+          ],
+          "losers": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "score": "4-6 6-3 6-3",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Ainhoa Rico Martín",
+            "Alba Izquierdo Rodríguez"
+          ],
+          "losers": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "score": "6-2 7-5",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "losers": [
+            "Ángela Caro",
+            "Nuria Rovira"
+          ],
+          "score": "2-6 6-4 7-6",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Léa Godallier",
+            "Carmen García Pardo"
+          ],
+          "losers": [
+            "Sandra Enjuto Guisado",
+            "Irene Arzamendi García"
+          ],
+          "score": "5-7 7-6 6-2",
+          "sets": [
+            [
+              "5",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "losers": [
+            "Monica Gomez Rivas",
+            "Ana María Cabrejas Ruiz"
+          ],
+          "score": "6-4 7-6",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-mijas-open",
@@ -5305,7 +7595,409 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Pablo Lima",
+            "Alejandro Galan"
+          ],
+          "losers": [
+            "Paquito Navarro",
+            "Juan Lebron"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Jorge Nieto Ruiz",
+            "Javier Rico Dasi"
+          ],
+          "losers": [
+            "Martín S. Piñeiro",
+            "Alejandro Ruiz"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Ana Catarina Nogueira",
+            "Paula Josemaría Martín"
+          ],
+          "losers": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "score": "6-3 6-2",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Paquito Navarro",
+            "Juan Lebron"
+          ],
+          "losers": [
+            "Uri Botello",
+            "Javier Ruiz"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Alejandro Galan",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Ernesto Moreno",
+            "Gonzalo Rubio"
+          ],
+          "score": "7-5 7-6",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Jorge Nieto Ruiz",
+            "Javier Rico Dasi"
+          ],
+          "losers": [
+            "Ramiro Moyano",
+            "Juan Cruz Belluati"
+          ],
+          "score": "6-4 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Martín S. Piñeiro",
+            "Alejandro Ruiz"
+          ],
+          "losers": [
+            "Maximiliano Sánchez",
+            "Carlos D. Gutiérrez"
+          ],
+          "score": "4-6 6-4 6-4",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Agustin Tapia",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Adrian Allemandi",
+            "Agustin Gomez Silingo"
+          ],
+          "score": "3-6 6-3 6-0",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Martín S. Piñeiro",
+            "Alejandro Ruiz"
+          ],
+          "losers": [
+            "Sergio Alba Sánchez",
+            "Francisco M. Gil Morales"
+          ],
+          "score": "6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Sandra Hernández",
+            "Tamara Icardo"
+          ],
+          "losers": [
+            "Cata Tenorio",
+            "Bea Gonzalez"
+          ],
+          "score": "7-6 7-6",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Sergio Alba Sánchez",
+            "Francisco M. Gil Morales"
+          ],
+          "losers": [
+            "Jordi Muñoz",
+            "Matías Nicoletti"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Arturo Coello Manso",
+            "Juan Manuel Vázquez"
+          ],
+          "losers": [
+            "Fernando Poggi",
+            "Cristian Germán Gutiérrez"
+          ],
+          "score": "3-6 6-1 6-2",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Sergio Alba Sánchez",
+            "Francisco M. Gil Morales"
+          ],
+          "losers": [
+            "Arturo Coello Manso",
+            "Juan Manuel Vázquez"
+          ],
+          "score": "6-1 6-1",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Laura Clergue",
+            "Barbara Las Heras Monterde"
+          ],
+          "losers": [
+            "Alba Lopez Blas",
+            "Tamara Del Pino"
+          ],
+          "score": "6-0 6-3",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Melissa Martin",
+            "Léa Godallier"
+          ],
+          "losers": [
+            "Carlotta Casali Vannicelli",
+            "Lucía Pérez Parra"
+          ],
+          "score": "3-6 6-2 7-6(10-8)",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-valencia-open",
@@ -5361,7 +8053,181 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Adrian Allemandi",
+            "Agustin Gomez Silingo"
+          ],
+          "losers": [
+            "Agustin Tapia",
+            "Nacho Gadea"
+          ],
+          "score": "6-2 6-3",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Pablo Lima",
+            "Alejandro Galan"
+          ],
+          "losers": [
+            "Paquito Navarro",
+            "Juan Lebron"
+          ],
+          "score": "1-6 7-5 6-1",
+          "sets": [
+            [
+              "1",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Rafa Mendez",
+            "Diego Ramos"
+          ],
+          "losers": [
+            "Marcello Jardim",
+            "Denis Tomas Perino"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Pablo Lima",
+            "Alejandro Galan"
+          ],
+          "losers": [
+            "Ernesto Moreno",
+            "Gonzalo Rubio"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Juan Lebron",
+            "Paquito Navarro"
+          ],
+          "losers": [
+            "Pablo Lijo",
+            "Alvaro Cepero"
+          ],
+          "score": "7-5 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Agustin Tapia",
+            "Nacho Gadea"
+          ],
+          "losers": [
+            "Sanyo Gutierrez",
+            "Maxi Sanchez"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Marcello Jardim",
+            "Denis Tomas Perino"
+          ],
+          "losers": [
+            "Franco Stupaczuk",
+            "Matias Diaz"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-bastad-open",
@@ -5413,7 +8279,33 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Javier Martinez Vasquez",
+            "Adrien Blanco"
+          ],
+          "losers": [
+            "Sanyo Gutierrez",
+            "Maxi Sanchez"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-valladolid-master",
@@ -5473,7 +8365,81 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Bergamini",
+            "Campagnolo"
+          ],
+          "losers": [
+            "Franco Stupaczuk",
+            "Matias Diaz"
+          ],
+          "score": "6-7 0-3 ab.",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "0",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "losers": [
+            "Raquel Piltcher",
+            "Nuria Rovira"
+          ],
+          "score": "6-4 7-6",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Gaspar",
+            "Zapata"
+          ],
+          "losers": [
+            "Jérémy Scatena",
+            "Benjamin Tison"
+          ],
+          "score": "6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-buenos-aires-master",
@@ -5500,7 +8466,37 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": null,
+          "winners": [
+            "Roby Gattiker",
+            "Denis Tomas Perino"
+          ],
+          "losers": [
+            "Maxi Grabiel",
+            "Fernando Poggi"
+          ],
+          "score": "6-3 6-7 6-1",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2019-jaen-open",
@@ -5556,7 +8552,81 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Paquito Navarro",
+            "Juan Lebron"
+          ],
+          "losers": [
+            "Bela",
+            "Lima"
+          ],
+          "score": "6-2 6-3",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Maxi Sanchez",
+            "Sanyo Gutiérrez"
+          ],
+          "losers": [
+            "Franco Stupaczuk",
+            "Matias Diaz"
+          ],
+          "score": "7-6 7-5",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Garrido",
+            "De Ninno"
+          ],
+          "losers": [
+            "Cepero",
+            "Nerone"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2019-vigo-open",
@@ -5608,7 +8678,81 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Maxi Sanchez",
+            "Sanyo Guttierez"
+          ],
+          "losers": [
+            "Franco Stupaczuk",
+            "Mati Diaz"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Bergamini",
+            "Campagnolo"
+          ],
+          "losers": [
+            "Guarrido",
+            "De Ninno"
+          ],
+          "score": "6-1 6-3",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Christian Guiterrez",
+            "Ramiro Moyano"
+          ],
+          "losers": [
+            "Gonzalo Diaz",
+            "Alday Santana"
+          ],
+          "score": "7-6 7-5",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2019-alicante-open",
@@ -5664,7 +8808,133 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Ari Sanchez",
+            "Alejandra Salazar"
+          ],
+          "losers": [
+            "Gemma Triay",
+            "Lucia Sainz"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Béla",
+            "Lima"
+          ],
+          "losers": [
+            "Beluati",
+            "Pablo Santos"
+          ],
+          "score": "6-3 6-2",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Marta Marrero",
+            "Marta Ortega"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Nicole Traviesa"
+          ],
+          "score": "7-5 6-2",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Chingotto",
+            "Tello"
+          ],
+          "losers": [
+            "Maxi Sánchez",
+            "Sanyo Guttierez"
+          ],
+          "score": "2-6 6-4 7-5",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Javier Valdés González",
+            "Javier Pérez Morillas"
+          ],
+          "losers": [
+            "Johan Bergeron",
+            "Maxime Moreau"
+          ],
+          "score": "3-6 3-6",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "3",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2019-logrono-open",
@@ -5720,7 +8990,93 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Benjamin Tison",
+            "Adrien Maigret"
+          ],
+          "losers": [
+            "Nicolas Suescun",
+            "Diego Batista"
+          ],
+          "score": "6-7 6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Neria",
+            "Carballo"
+          ],
+          "losers": [
+            "Benjamin Tison",
+            "Adrien Maigret"
+          ],
+          "score": "6-7 6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Melissa Martin",
+            "Léa Godallier"
+          ],
+          "losers": [
+            "Milena Rojas",
+            "Lorena Rufo"
+          ],
+          "score": "6-1 6-7 6-2",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2019-marbella-master",
@@ -5776,7 +9132,85 @@
             ]
           ]
         }
-      }
+      },
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Marina Pinacho Sánchez",
+            "Helena Wyckaer"
+          ],
+          "losers": [
+            "Raquel Segura Aguilar",
+            "Laura Clergue"
+          ],
+          "score": "7-5 6-7 7-5",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "José Solano Marmolejo",
+            "Alejandro Arroyo Albert"
+          ],
+          "losers": [
+            "Jeremy Scatena",
+            "Marc Bernils Garcia"
+          ],
+          "score": "6-4 6-3",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": null,
+          "winners": [
+            "Sandra Hernández",
+            "Tamara Icardo"
+          ],
+          "losers": [
+            "Nicole Traviesa Mola",
+            "Alix Collombon"
+          ],
+          "score": "6-4 6-4",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2018-masters-final",
@@ -13421,5 +16855,6 @@
         }
       ]
     }
-  ]
+  ],
+  "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news for 2019; finals + rankings remain from Wikipedia."
 }

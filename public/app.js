@@ -780,15 +780,20 @@ function renderUpcoming() {
 // match shape: one row per FINAL (Men/Women), winners as the winning side.
 function wptMatches(t) {
   const mk = (names) => ({ name: (names || []).join(" / ") || "TBD", players: (names || []).map((n) => ({ name: n, country: null })) });
+  const row = (g, round, winners, losers, sets) => ({
+    className: g, round,
+    teams: [mk(winners), mk(losers)],
+    score: { sets: (sets || []).map((s) => [s[0], s[1]]), winner: 0 },
+  });
   const out = [];
+  // Per gender: the final (authoritative, from Wikipedia) then the deeper rounds
+  // (semis/quarters/…, from news extraction) already sorted business-end-first.
   for (const g of ["Men", "Women"]) {
     const f = t.finals && t.finals[g];
-    if (!f) continue;
-    out.push({
-      className: g, round: "Final",
-      teams: [mk(f.winners), mk(f.runnersUp)],
-      score: { sets: (f.sets || []).map((s) => [s[0], s[1]]), winner: 0 },
-    });
+    if (f) out.push(row(g, "Final", f.winners, f.runnersUp, f.sets));
+    for (const r of (t.rounds || []).filter((r) => (r.gender || "") === g)) {
+      out.push(row(g, r.round, r.winners, r.losers, r.sets));
+    }
   }
   return out;
 }
@@ -1339,7 +1344,10 @@ const isKO = (r) => { const rk = roundRank(r); return rk >= 50 && rk <= 100 && r
 // Reconstruct the single-elim tree from flat matches: a match in round r+1 is fed
 // by the round-r matches its two teams came from (team names are identical across
 // rounds within a tournament). Then lay it out with a DFS from the final.
-function buildBracket(matches) {
+// `project` = fill forward with "TBD · winner advances" stubs (useful for a LIVE
+// draw to show who plays next). Off for historic/archive events, where the rounds
+// we have are all that were played — projecting empties just adds BYE/TBD noise.
+function buildBracket(matches, project = true) {
   const ko = matches.filter((m) => isKO(m.round));
   const byRound = new Map();
   for (const m of ko) { if (!byRound.has(m.round)) byRound.set(m.round, []); byRound.get(m.round).push(m); }
@@ -1376,7 +1384,7 @@ function buildBracket(matches) {
   const pointed = new Set();
   for (const n of nodes) for (const c of n.children) pointed.add(c);
   const lastRi = rounds.length - 1;
-  for (const n of nodes.filter((n) => n.m && n.round < lastRi && !pointed.has(n))) {
+  if (project) for (const n of nodes.filter((n) => n.m && n.round < lastRi && !pointed.has(n))) {
     nodes.push({ m: null, round: n.round + 1, roundName: rounds[n.round + 1][0], children: [n], cy: 0, tbd: true });
   }
 
@@ -1510,7 +1518,10 @@ function renderTournament() {
 
     for (const [cls, rmap] of cats) {
       if (cls) html += `<div class="section-label region">${esc(cls)}</div>`;
-      const bracket = buildBracket([...rmap.values()].flat());
+      // WPT rounds are news-sourced and partial, so a bracket would be full of gap
+      // "BYE" slots — show a clean round-grouped list instead. Complete draws
+      // (FIP/RankedIn archive, or a live event) still get the visual bracket.
+      const bracket = tv.tour === "WPT" ? null : buildBracket([...rmap.values()].flat(), tv.kind === "live");
       if (bracket) {
         html += renderBracket(bracket);
         html += roundList([...rmap.entries()].filter(([r]) => !isKO(r))); // groups/qualifying as list
