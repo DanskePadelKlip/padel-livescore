@@ -8,7 +8,7 @@
 const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
 const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
 const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
-const FLAGS = { FIP: "🌍", WPT: "🏆", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
+const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
 
 // Player nationality → flag. Data uses two schemes: 2-letter federation codes
 // (national rankings/matches: "dk") and 3-letter IOC/FIP codes (FIP world: "ESP").
@@ -174,6 +174,7 @@ const state = {
   mode: "live",              // "live" | "archive"
   archive: null,             // loaded index.json
   archiveYear: "all",
+  archiveTour: "all",        // within FIP: "all" | "FIP" | "WPT"
   archiveCap: 40,
   openArchive: new Set(),    // expanded tournament keys
   archiveData: new Map(),    // key -> loaded tournament {matches}
@@ -322,7 +323,7 @@ function render(changed = new Set()) {
 
 // Federation → section label (FIP grouped as one "international" section).
 const REGION_LABEL = {
-  FIP: "FIP International", WPT: "World Padel Tour", DK: "Denmark", SE: "Sweden", NO: "Norway",
+  FIP: "FIP International", DK: "Denmark", SE: "Sweden", NO: "Norway",
   DE: "Germany", CZ: "Czechia", GB: "Great Britain", AU: "Australia", FI: "Finland", FR: "France",
   HR: "Croatia", EE: "Estonia", GE: "Georgia",
   HU: "Hungary", UA: "Ukraine", SI: "Slovenia", XK: "Kosovo", BA: "Bosnia", ME: "Montenegro",
@@ -552,12 +553,24 @@ function renderControls() {
       ? [...new Set(state.archive.tournaments.map((t) => t.federation))].sort()
       : [...new Set(state.matches.map((m) => m.federation))].sort();
   const chips = document.getElementById("chips");
-  const key = state.mode + ":" + feds.join(",");
+  // In the archive, selecting FIP reveals a second level: which circuit (the FIP /
+  // Premier tour, or the historic World Padel Tour). Year, federation and tour are
+  // independent, so they can be chosen in any order.
+  const showTour = state.mode === "archive" && state.fed === "FIP";
+  const key = state.mode + ":" + feds.join(",") + "|fed=" + state.fed + "|tour=" + (showTour ? state.archiveTour : "");
   if (feds.length && chips.dataset.key !== key) {
     chips.dataset.key = key;
-    chips.innerHTML =
+    let h =
       `<span class="chip ${state.fed === "all" ? "active" : ""}" data-fed="all">All</span>` +
       feds.map((f) => `<span class="chip ${state.fed === f ? "active" : ""}" data-fed="${f}">${fedFlag(f)} ${f}</span>`).join("");
+    if (showTour) {
+      const tcount = (v) => state.archive.tournaments.filter((t) => t.federation === "FIP" && (v === "all" || tourOf(t) === v)).length;
+      h += `<span class="chipsep"></span>` +
+        [["all", "All tours"], ["FIP", "FIP / Premier"], ["WPT", "WPT"]]
+          .map(([v, label]) => `<span class="chip sub ${state.archiveTour === v ? "active" : ""}" data-tour="${v}">${label}<span class="cn">${tcount(v)}</span></span>`)
+          .join("");
+    }
+    chips.innerHTML = h;
   }
 
   renderDayStrip();
@@ -580,6 +593,25 @@ const DAY_LOOKBACK = 9, DAY_LOOKAHEAD = 21;
 function renderDayStrip() {
   const strip = document.getElementById("daystrip");
   if (!strip) return;
+  // The archive is for browsing HISTORY (the live feed's day strip covers the last
+  // few days), so the same strip becomes a prominent one-tap YEAR picker there —
+  // it replaced a small <select> that was easy to miss.
+  if (state.mode === "archive") {
+    if (!state.archive) { strip.style.display = "none"; return; }
+    strip.style.display = "";
+    const counts = {};
+    for (const t of archiveFiltered("year")) { const y = archYear(t); if (y) counts[y] = (counts[y] || 0) + 1; }
+    const years = Object.keys(counts).sort().reverse();
+    const sig = "y|" + state.fed + "|" + state.archiveTour + "|" + state.query.trim() + "|" + years.map((y) => y + ":" + counts[y]).join(",") + "|sel=" + state.archiveYear;
+    if (strip.dataset.sig === sig) return;
+    strip.dataset.sig = sig;
+    strip.innerHTML =
+      `<button class="dchip ychip ${state.archiveYear === "all" ? "active" : ""}" data-year="all"><span class="dw">All</span><span class="dd">years</span></button>` +
+      years.map((y) => `<button class="dchip ychip ${state.archiveYear === y ? "active" : ""}" data-year="${y}"><span class="dw">${counts[y]}</span><span class="dd">${y}</span></button>`).join("");
+    const focus = strip.querySelector(`.dchip[data-year="${state.archiveYear}"]`);
+    if (focus) focus.scrollIntoView({ block: "nearest", inline: "center" });
+    return;
+  }
   if (state.mode !== "live") { strip.style.display = "none"; return; }
   strip.style.display = "";
 
@@ -771,8 +803,10 @@ async function ensureWpt() {
       for (const t of wpt.tournaments) {
         const matches = wptMatches(t);
         if (!matches.length) continue;
-        const row = { key: t.key, name: t.name, federation: "WPT", start: t.start, end: t.start, n: matches.length };
-        state.archiveData.set(t.key, { matches, name: t.name, federation: "WPT" });
+        // WPT sits under the FIP (international pro) bucket rather than being its own
+        // federation; `tour` distinguishes the two circuits within it.
+        const row = { key: t.key, name: t.name, federation: "FIP", tour: "WPT", start: t.start, end: t.start, n: matches.length };
+        state.archiveData.set(t.key, { matches, name: t.name, federation: "FIP", tour: "WPT" });
         state.wptIndex.set(t.key, row);
       }
     }
@@ -794,31 +828,48 @@ async function loadArchive() {
   // fold the preloaded WPT rows into the browseable list
   for (const row of state.wptIndex.values()) index.tournaments.push(row);
   state.archive = index;
-  const years = [...new Set(state.archive.tournaments.map((t) => (t.start || "").slice(0, 4)).filter(Boolean))].sort().reverse();
-  document.getElementById("year").innerHTML =
-    `<option value="all">All years</option>` + years.map((y) => `<option value="${y}">${y}</option>`).join("");
   render();
 }
 
-function renderArchive() {
+// Circuit within the FIP (international) bucket: the FIP/Premier tour, or the
+// historic World Padel Tour. Only meaningful for FIP rows.
+const tourOf = (t) => t.tour || (t.federation === "FIP" ? "FIP" : null);
+const archYear = (t) => (t.start || "").slice(0, 4);
+
+// Year / federation / tour are INDEPENDENT filters that AND together, so they can be
+// picked in any order (year → FIP → WPT, or FIP → WPT → year). `skip` lets a caller
+// compute counts for one axis while honouring the others (e.g. per-year counts).
+function archiveFiltered(skip = "") {
   const q = state.query.trim().toLowerCase();
-  const list = state.archive.tournaments.filter((t) => {
-    if (state.fed !== "all" && t.federation !== state.fed) return false;
-    if (state.archiveYear !== "all" && (t.start || "").slice(0, 4) !== state.archiveYear) return false;
+  return state.archive.tournaments.filter((t) => {
+    if (skip !== "fed" && state.fed !== "all" && t.federation !== state.fed) return false;
+    if (skip !== "tour" && state.archiveTour !== "all" && tourOf(t) !== state.archiveTour) return false;
+    if (skip !== "year" && state.archiveYear !== "all" && archYear(t) !== state.archiveYear) return false;
     if (q && !t.name.toLowerCase().includes(q)) return false;
     return true;
   });
+}
+
+function renderArchive() {
+  const list = archiveFiltered();
   const shown = list.slice(0, state.archiveCap);
   const all = state.archive.tournaments;
-  const yrs = all.map((t) => +(t.start || "").slice(0, 4)).filter(Boolean);
+  const yrs = all.map((t) => +archYear(t)).filter(Boolean);
   const span = yrs.length ? `${Math.min(...yrs)}–${Math.max(...yrs)}` : "";
+  const scope = [
+    state.archiveYear !== "all" ? state.archiveYear : null,
+    state.fed !== "all" ? (state.fed === "FIP" ? "FIP international" : REGION_LABEL[state.fed] || state.fed) : null,
+    state.archiveTour !== "all" ? (state.archiveTour === "WPT" ? "World Padel Tour" : "FIP / Premier") : null,
+  ].filter(Boolean).join(" · ");
   let html =
     `<div class="section-label region">📅 ${list.length} tournament${list.length === 1 ? "" : "s"}` +
-    `<span class="count">${all.length} in archive · ${span}</span></div>`;
+    `<span class="count">${scope || `${all.length} in archive · ${span}`}</span></div>`;
   html += shown.map(archiveRow).join("");
   if (list.length > shown.length)
     html += `<button class="morebtn" data-archmore="1">Show ${list.length - shown.length} more ↓</button>`;
-  if (!list.length) html = `<div class="empty"><div class="big">📅</div>No tournaments match.</div>`;
+  if (!list.length)
+    html = `<div class="empty"><div class="big">📅</div>No tournaments${scope ? ` for <b>${esc(scope)}</b>` : ""}.` +
+      `<div style="margin-top:8px;color:var(--faint);font-size:13px">Try another year or clear a filter.</div></div>`;
   app.innerHTML = html;
 }
 
@@ -829,7 +880,7 @@ function archiveRow(t) {
     <div class="group ${open ? "open" : ""}" data-arch="${esc(t.key)}">
       <div class="group__head" data-archtoggle="${esc(t.key)}">
         <span class="flag">${FLAGS[t.federation] || ""} ${t.federation}</span>
-        <span class="group__title"><span class="tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span></span>
+        <span class="group__title">${t.tour === "WPT" ? `<span class="tourtag">WPT</span>` : ""}<span class="tlink" data-tourney="arch" data-tkey="${esc(t.key)}" data-tname="${esc(t.name)}" data-tfed="${esc(t.federation)}">${esc(t.name)}</span></span>
         <span class="group__meta"><span class="count">${esc((t.start || "").slice(0, 10))} · ${t.n}</span><span class="chev">▶</span></span>
       </div>
       <div class="group__body">${open ? (loaded ? archiveMatches(loaded) : `<div class="detail" style="display:block">Loading…</div>`) : ""}</div>
@@ -1157,14 +1208,17 @@ function openTournament(kind, key, name, fed) {
         if (state.tournament && state.tournament.key === key) {
           state.tournament.matches = d.matches;
           if (d.name) state.tournament.name = d.name;
-          state.tournament.fed = "WPT";
+          state.tournament.fed = "FIP";
+          state.tournament.tour = "WPT";
         }
         render(); setTitle();
       });
       return;
     }
     if (state.archiveData.has(key)) {
-      state.tournament.matches = state.archiveData.get(key).matches;
+      const d = state.archiveData.get(key);
+      state.tournament.matches = d.matches;
+      if (d.tour) state.tournament.tour = d.tour;   // keep the WPT marker on the hub
     } else {
       render(); // shows skeleton
       fetch(`data/archive/t/${key}.json`)
@@ -1325,7 +1379,7 @@ function renderTournament() {
   const src = matches.find((m) => m.tournament?.url);
 
   let html = back + `<div class="thead">
-    <div class="trow1"><span class="flag">${FLAGS[tv.fed] || ""} ${esc(tv.fed || "")}</span>${star("tournaments", tv.key, tv.name, tv.fed)}</div>
+    <div class="trow1"><span class="flag">${FLAGS[tv.fed] || ""} ${esc(tv.fed || "")}</span>${tv.tour === "WPT" ? `<span class="tourtag">WPT</span>` : ""}${star("tournaments", tv.key, tv.name, tv.fed)}</div>
     <h2>${esc(tv.name)}</h2>
     <div class="tmeta">${matches.length} matches · ${players.size} players${dateStr ? " · " + esc(dateStr) : ""}${nLive ? ` · <span class="badge live">${nLive} live</span>` : ""}</div>
     ${src ? `<a class="src" href="${esc(src.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[src.source] || src.source)}</a>` : ""}
@@ -1622,15 +1676,25 @@ document.getElementById("tabs").addEventListener("click", (e) => {
 document.getElementById("chips").addEventListener("click", (e) => {
   const c = e.target.closest(".chip");
   if (!c) return;
-  state.fed = c.dataset.fed;
-  document.querySelectorAll("#chips .chip").forEach((x) => x.classList.toggle("active", x === c));
+  if (c.dataset.tour !== undefined) {            // sub-level: FIP / Premier vs WPT
+    state.archiveTour = c.dataset.tour;
+  } else {
+    state.fed = c.dataset.fed;
+    if (state.fed !== "FIP") state.archiveTour = "all"; // the tour level only exists under FIP
+  }
+  state.archiveCap = 40;
   render();
 });
 
 document.getElementById("daystrip").addEventListener("click", (e) => {
   const b = e.target.closest(".dchip");
   if (!b) return;
-  state.day = b.dataset.day;
+  if (b.dataset.year !== undefined) {            // archive: year picker
+    state.archiveYear = b.dataset.year;
+    state.archiveCap = 40;
+  } else {
+    state.day = b.dataset.day;
+  }
   render();
 });
 
@@ -1643,9 +1707,10 @@ function activateMode(mode) {
   state.player = null; state.playerId = null; state.h2h = null; state.playerResults = null; state.comparing = false;
   state.tournament = null;
   state.rankCountryQuery = "";
+  state.archiveTour = "all";
+  state.archiveCap = 40;
   document.querySelectorAll("#modes button").forEach((x) => x.classList.toggle("active", x.dataset.mode === mode));
   document.getElementById("tabs").style.display = mode === "live" ? "" : "none";
-  document.getElementById("year").hidden = mode !== "archive";
   document.getElementById("chips").style.display = mode === "live" || mode === "archive" || mode === "events" ? "" : "none";
   const qEl = document.getElementById("q");
   qEl.value = "";
@@ -1676,12 +1741,6 @@ document.getElementById("brand").addEventListener("click", (e) => {
   state.tournament = null;
   activateMode("live");
   try { window.scrollTo(0, 0); } catch {}
-});
-
-document.getElementById("year").addEventListener("change", (e) => {
-  state.archiveYear = e.target.value;
-  state.archiveCap = 40;
-  render();
 });
 
 // rankings country filter — narrows the federation chips without re-rendering

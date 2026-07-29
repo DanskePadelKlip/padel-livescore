@@ -154,6 +154,20 @@
     .dchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .dchip.active .dw, .dchip.active .dd, .dchip.active .dnum { color: #fff; }
     .dchip.active.today { border-bottom-color: #fff; }
+    /* archive year picker (same strip as the live day picker, year made prominent) */
+    .ychip { min-width: 58px; padding: 5px 12px 6px; }
+    .ychip .dd { font-size: 15px; letter-spacing: -.01em; }
+    .ychip .dw { font-size: 9px; color: var(--faint); }
+    .ychip.active .dw { color: rgba(255,255,255,.8); }
+    /* second-level chips (FIP / Premier vs WPT) + their separator */
+    .chipsep { flex: 0 0 auto; width: 1px; align-self: stretch; background: var(--line); margin: 2px 4px; }
+    .chip.sub { font-weight: 600; }
+    .chip .cn { font-size: 10px; color: var(--faint); margin-left: 5px; font-variant-numeric: tabular-nums; }
+    .chip.active .cn { color: rgba(255,255,255,.85); }
+    /* World Padel Tour marker (WPT sits inside the FIP bucket) */
+    .tourtag { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .04em;
+      padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: 1px;
+      background: var(--up-bg); color: var(--up); }
 
     .row2 { display: flex; gap: 8px; padding-bottom: 10px; align-items: center; flex-wrap: wrap; }
     .chips { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -510,7 +524,6 @@
       <div class="daystrip" id="daystrip"></div>
       <div class="row2">
         <div class="chips" id="chips"></div>
-        <select id="year" class="year" hidden></select>
         <div class="search"><input id="q" type="search" placeholder="Search player or tournament…" autocomplete="off" /></div>
       </div>
     </div>
@@ -560,9 +573,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=6b66c0f3<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=1b6a7488<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=6b66c0f3"></script>
+  <script src="/app.js?v=1b6a7488"></script>
 </body>
 </html>
