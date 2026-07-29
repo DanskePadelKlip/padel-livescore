@@ -112,7 +112,9 @@
     .wrap { padding-left: max(14px, env(safe-area-inset-left));
       padding-right: max(14px, env(safe-area-inset-right)); }
     .topbar { display: flex; align-items: center; gap: 12px; padding: 12px 0 10px; }
-    .brand { font-size: 18px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 7px; }
+    .brand { font-size: 18px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 7px;
+      color: inherit; text-decoration: none; cursor: pointer; }
+    .brand:hover { opacity: .8; }
     .brand small { font-weight: 600; color: var(--faint); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
     .refresh { margin-left: auto; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
     .refresh .dot { width: 8px; height: 8px; border-radius: 50%; background: #3ecf7c; box-shadow: 0 0 0 0 rgba(62,207,124,.5); }
@@ -486,7 +488,7 @@
   <header>
     <div class="wrap">
       <div class="topbar">
-        <div class="brand">🎾 PadelTicker <small>live padel scores</small></div>
+        <a class="brand" href="/" id="brand" aria-label="PadelTicker — go to live scores">🎾 PadelTicker <small>live padel scores</small></a>
         <div class="refresh" id="refresh"><span class="dot"></span><span id="refresh-txt">—</span></div>
         <button class="theme-btn" id="theme" title="Toggle theme">◐</button>
       </div>
@@ -558,9 +560,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=5975ccbf<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=6b66c0f3<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=5975ccbf"></script>
+  <script src="/app.js?v=6b66c0f3"></script>
 </body>
 </html>

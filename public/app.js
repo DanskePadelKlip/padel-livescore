@@ -1667,6 +1667,17 @@ document.getElementById("modes").addEventListener("click", (e) => {
   if (b && b.dataset.mode !== state.mode) activateMode(b.dataset.mode);
 });
 
+// Brand = home link. It's a real <a href="/"> (crawlable, middle-click / ⌘-click
+// opens a new tab, works without JS), but a plain left-click routes in-app instead
+// of triggering a full page reload.
+document.getElementById("brand").addEventListener("click", (e) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // let the browser handle it
+  e.preventDefault();
+  state.tournament = null;
+  activateMode("live");
+  try { window.scrollTo(0, 0); } catch {}
+});
+
 document.getElementById("year").addEventListener("change", (e) => {
   state.archiveYear = e.target.value;
   state.archiveCap = 40;
