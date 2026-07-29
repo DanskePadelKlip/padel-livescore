@@ -988,8 +988,10 @@ function renderProfile() {
   if (state.comparing && state.playerResults && state.playerResults.length)
     html += `<div class="section-label">Tap an opponent</div>` +
       state.playerResults.filter((p) => p.id !== player.id).map(playerResultRow).join("");
-  const years = summary.byYear.map((y) => `${y.yr}: ${y.won}/${y.played}`).join("   ·   ");
-  if (years) html += `<div class="section-label">By year</div><div class="detail" style="display:block">${esc(years)}</div>`;
+  if (summary.byYear.length)
+    html += `<div class="section-label">By year</div><div class="years">` +
+      summary.byYear.map((y) => `<span class="ychip"><b>${esc(y.yr)}</b> ${y.won}<span class="ysep">/</span>${y.played}</span>`).join("") +
+      `</div>`;
   html += `<div class="section-label">Recent matches (${matches.length})</div>` + matches.map((m) => apiMatchRow(m)).join("");
   app.innerHTML = html;
 }
@@ -1013,14 +1015,22 @@ function renderH2H() {
   app.innerHTML = html;
 }
 
+// One match in a player profile / head-to-head list. The tournament name can be very
+// long ("Swedish Padel Tour- SPT 2, 360 Björkquist Måleri, Karlstad, samt övriga…"),
+// so it gets its OWN full-width line below the row instead of sharing the right-hand
+// column — otherwise it blew the auto-width column out and squeezed the team names to
+// zero width (they looked blank). Score + date stay right-aligned, one per line.
 function apiMatchRow(m) {
   const t = m.teams;
   const line = (s) => `<div class="team ${t[s].won ? "win" : ""}"><span class="nm">${esc(t[s].name)}</span></div>`;
-  const sub = [m.date, m.tournament, m.round].filter(Boolean).join(" · ");
-  return `<div class="match"><div class="match__main archm">
+  const meta = [m.tournament, m.round].filter(Boolean).join(" · ");
+  return `<div class="match"><div class="match__main archm pmatch">
     <div class="teams">${line(0)}${line(1)}</div>
-    <div class="side"><span class="score-str">${esc(m.score || "")}</span><span class="sub">${esc(sub)}</span></div>
-  </div></div>`;
+    <div class="side">
+      <span class="score-str">${esc(m.score || "")}</span>
+      ${m.date ? `<span class="pdate">${esc(m.date)}</span>` : ""}
+    </div>
+  </div>${meta ? `<div class="pmeta" title="${esc(meta)}">${esc(meta)}</div>` : ""}</div>`;
 }
 
 // ---------- favorites (the "My PadelTicker" board) ----------
