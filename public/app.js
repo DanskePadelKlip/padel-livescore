@@ -180,6 +180,7 @@ const state = {
   archiveData: new Map(),    // key -> loaded tournament {matches}
   wptIndex: new Map(),       // wpt key -> archive list row (World Padel Tour, own file)
   wptRankings: {},           // year -> { Men:[…], Women:[…] } end-of-season standings
+  profileTours: new Set(),   // profile view: tournament names to filter matches to (empty = all)
   // ---- players (profiles / search / h2h) ----
   playerResults: null,       // search results
   player: null,              // loaded profile
@@ -970,6 +971,7 @@ async function openPlayerByName(name) {
 
 async function openPlayer(id) {
   state.h2h = null; state.comparing = false; state.player = "loading"; state.playerId = id;
+  state.profileTours = new Set(); // reset the per-player tournament filter
   render();
   syncUrl(); // /player/<id>
   ensureRankings(); // so the profile can show the player's ranking
@@ -1072,7 +1074,23 @@ function renderProfile() {
     html += `<div class="section-label">By year</div><div class="years">` +
       summary.byYear.map((y) => `<span class="ychip"><b>${esc(y.yr)}</b> ${y.won}<span class="ysep">/</span>${y.played}</span>`).join("") +
       `</div>`;
-  html += `<div class="section-label">Recent matches (${matches.length})</div>` + matches.map((m) => apiMatchRow(m)).join("");
+
+  // Tournament filter over the loaded matches. Multi-select: with none selected all
+  // matches show; clicking tournament chips narrows to just those (any-of).
+  const tourCounts = new Map();
+  for (const m of matches) { const t = m.tournament || "—"; tourCounts.set(t, (tourCounts.get(t) || 0) + 1); }
+  const sel = state.profileTours;
+  const shown = sel.size ? matches.filter((m) => sel.has(m.tournament || "—")) : matches;
+  if (tourCounts.size > 1) {
+    const tours = [...tourCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    html += `<div class="section-label">Filter by tournament</div><div class="chips profchips">` +
+      `<span class="chip ${sel.size === 0 ? "active" : ""}" data-ptour="__all">All</span>` +
+      tours.map(([t, n]) => `<span class="chip ${sel.has(t) ? "active" : ""}" data-ptour="${esc(t)}" title="${esc(t)}">${esc(t)}<span class="cn">${n}</span></span>`).join("") +
+      `</div>`;
+  }
+  const label = sel.size ? `Matches · ${shown.length} of ${matches.length}` : `Recent matches (${matches.length})`;
+  html += `<div class="section-label">${label}</div>` +
+    (shown.length ? shown.map((m) => apiMatchRow(m)).join("") : `<div class="empty" style="padding:24px">No matches for the selected tournament${sel.size === 1 ? "" : "s"}.</div>`);
   app.innerHTML = html;
 }
 
@@ -1833,6 +1851,17 @@ app.addEventListener("click", (e) => {
   if (rf) { state.rankFed = rf.dataset.rfed; render(); syncUrl(false); return; }
   const rc = e.target.closest("[data-rcat]");
   if (rc) { state.rankCat = rc.dataset.rcat; render(); syncUrl(false); return; }
+
+  // profile: tournament filter chips (multi-select; "All" clears)
+  const ptc = e.target.closest("[data-ptour]");
+  if (ptc) {
+    const t = ptc.dataset.ptour;
+    if (t === "__all") state.profileTours.clear();
+    else if (state.profileTours.has(t)) state.profileTours.delete(t);
+    else state.profileTours.add(t);
+    render();
+    return;
+  }
 
   // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");
