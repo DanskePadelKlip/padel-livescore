@@ -107,6 +107,18 @@ async function cycle() {
   );
 
   if (canDeploy) {
+    // Pull in data that lands on `main` from OFF this machine — the weekly WPT-rounds
+    // cloud routine pushes public/data/archive/wpt.json to main. This daemon deploys
+    // its LOCAL working tree every cycle, so without syncing it would keep shipping the
+    // stale local wpt.json and clobber those rounds on the live site. Surgical + best-
+    // effort: ONLY wpt.json, straight from the just-fetched main (FETCH_HEAD), never a
+    // full merge/pull (which would fight this loop's own gitignored data churn and the
+    // tracked calendar.json). wpt.json is script-generated + committed, never hand-edited
+    // locally, so origin/main is authoritative for it.
+    try {
+      execSync("git fetch origin main -q && git checkout FETCH_HEAD -- public/data/archive/wpt.json",
+        { cwd: root, stdio: "ignore", timeout: 60_000 });
+    } catch { /* offline, or nothing to pull — just deploy the local copy */ }
     stampAppVersion(root); // content-hash cache-bust: app.js?v=<hash> before every deploy
     try {
       // Bounded on purpose: execSync has no default timeout, so a wrangler that
