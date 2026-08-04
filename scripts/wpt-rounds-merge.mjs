@@ -69,7 +69,7 @@ console.log(`\nFINALS cross-check: ${finalsAgree}/${finalsChecked} extracted fin
 mism.slice(0, 10).forEach((x) => console.log(`  ⚠ ${x}`));
 
 // attach NON-final rounds to each tournament (finals stay from Wikipedia)
-for (const t of wpt.tournaments) t.rounds && delete t.rounds; // clean prior run
+for (const t of wpt.tournaments) if (t.year === YEAR && t.rounds) delete t.rounds; // clean prior run of THIS year only
 let attached = 0;
 for (const m of matches) {
   if (m.round === "Final") continue; // final is authoritative from finals{}
