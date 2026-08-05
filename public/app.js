@@ -1385,7 +1385,11 @@ function bioRow(bio) {
   }
   if (bio.height_cm) bits.push(`<span class="pb"><b>${(bio.height_cm / 100).toFixed(2)}</b> m</span>`);
   if (bio.position) bits.push(`<span class="pb"><b>${esc(bio.position)}</b> side</span>`);
-  if (bio.birth_place) bits.push(`<span class="pb pb-place">${esc(bio.birth_place)}</span>`);
+  // FIP writes "--" for facts it doesn't have. The exporter strips those, but a chip
+  // reading "--" is the kind of thing that reaches production once and stays, so the
+  // renderer refuses dash-only values too. Tested by shape: "Мурманск" is a real place.
+  const place = (bio.birth_place || "").trim();
+  if (place && !/^[\s\-‐-―.,/]*$/.test(place)) bits.push(`<span class="pb pb-place">${esc(place)}</span>`);
   if (!bits.length) return "";
   const src = fipProfileUrl(bio.fip_slug ? { slug: bio.fip_slug } : null);
   return `<div class="pbio">${bits.join("")}` +
