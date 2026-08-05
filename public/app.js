@@ -29,6 +29,12 @@ function countryFlag(code) {
 const fedFlag = (c) => FLAGS[c] || countryFlag(c) || "";
 
 // Team display with a flag before each player: "🇪🇸 A. Coello / 🇦🇷 M. Tapia".
+// One player per line, the way padelfip and the Premier Padel app both do it.
+// Two compound Spanish surnames plus a seeding marker do not fit one phone-width
+// line: measured 2026-08-04, 33% of ended names and 41% of live names were
+// truncated, worst case 131px of overflow. Stacking ends that, and leaves room
+// for a per-player ranking on the row later. NB the flag separator is a
+// non-breaking space, so a flag never wraps away from its name.
 function teamNameWithFlags(t) {
   if (t.players && t.players.length) {
     return t.players.map((p) => {
@@ -36,10 +42,10 @@ function teamNameWithFlags(t) {
       const nm = p.name && p.name !== "TBD"
         ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(p.name)}</span>`
         : esc(p.name);
-      return (f ? f + " " : "") + nm;
-    }).join(" / ");
+      return `<span class="pl">${f ? f + " " : ""}${nm}</span>`;
+    }).join("");
   }
-  return esc(t.name);
+  return `<span class="pl">${esc(t.name)}</span>`;
 }
 const SOURCE_LABEL = { rankedin: "RankedIn", tournamentsoftware: "tournamentsoftware.com", fip: "padelfip.com" };
 
@@ -168,6 +174,7 @@ const state = {
   expandedGroups: new Set(), // tournament ids
   groupCap: new Map(),       // tournament id -> max rows rendered
   openMatches: new Set(),    // match ids
+  matchup: new Map(),        // match id -> "loading" | matchup data | null (nothing found)
   scoreSig: new Map(),       // id -> score signature (for flash)
   firstRender: true,
   // ---- archive (historic results) ----
@@ -471,12 +478,15 @@ function matchRow(m, changed, showTournament) {
     m.status === "live"
       ? `<span class="lampe"></span><span class="badge live">Live</span>`
       : m.status === "final"
-      ? `<span class="badge final">Ended</span>`
+      // Compact tick, not a full "ENDED" pill: the pill held a 46px column open
+      // on every finished row, and finished rows are most of the board — that
+      // width was coming straight out of the player names.
+      ? `<span class="badge final mini" title="Ended" aria-label="Ended">✓</span>`
       : `${followed ? `<span class="foll">Next up</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
     <div class="match ${open ? "open" : ""}" data-match="${esc(m.id)}">
-      <div class="match__main" data-open="${esc(m.id)}">
+      <div class="match__main${m.status === "final" ? " ended" : ""}" data-open="${esc(m.id)}">
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
           ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${fedFlag(m.federation)} ${m.federation}</span><span class="nm" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
@@ -507,7 +517,18 @@ function teamLine(m, side, isChanged) {
     : side === 0
     ? `<span class="vs">vs</span>`
     : "";
-  return `<div class="team ${win ? "win" : ""}"><span class="nm">${teamNameWithFlags(t)}</span>${cells}</div>`;
+  // Serve + current game score, where the source publishes them (FIP's live
+  // board). The dot slot is rendered on BOTH rows whenever a server is known, so
+  // the names don't shift sideways when the serve changes hands mid-game.
+  const live = m.status === "live";
+  const srv = live && m.score.serving != null
+    ? `<span class="srv ${m.score.serving === side ? "on" : ""}"${m.score.serving === side ? ' title="Serving" aria-label="Serving"' : ' aria-hidden="true"'}></span>`
+    : "";
+  const pt = live && m.score.points ? m.score.points[side] : null;
+  // no flash here: isChanged tracks SET changes, and flashing the point cell on
+  // a set change (but not on the point changes it actually shows) reads as a bug.
+  const pts = pt != null && pt !== "" ? `<span class="pts">${esc(pt)}</span>` : "";
+  return `<div class="team ${win ? "win" : ""}">${srv}<span class="nm">${teamNameWithFlags(t)}</span>${cells}${pts}</div>`;
 }
 
 // "00:38" -> "38 min", "01:15" -> "1h 15m"
@@ -537,8 +558,179 @@ function detail(m) {
     <div class="detail">
       ${setGrid}
       <div class="kv">${kv}</div>
+      ${followPlayers(m)}
+      ${matchupHtml(m)}
       <a class="src" href="${esc(m.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[m.source] || m.source)}</a>
     </div>`;
+}
+
+// Follow either player from the match itself. Players and tournaments were
+// already followable, but only from the Players / Rankings / profile screens —
+// so the Live feed, the one screen people actually watch, was the one place you
+// could follow the tournament but not the pair playing in it.
+// Keyed by name (favKey's documented fallback): the live feed carries no player
+// ids, and matchInvolvesFav resolves follows by surname anyway.
+function followPlayers(m) {
+  const ps = m.teams.flatMap((t) => t.players || []).filter((p) => p.name && p.name !== "TBD");
+  if (!ps.length) return "";
+  return `<div class="followrow"><span class="fllbl">Follow</span>${ps
+    .map((p) => {
+      const f = countryFlag(p.country);
+      return `<span class="flp">${f ? f + " " : ""}${esc(p.name)}${star("players", null, p.name, p.country || "")}</span>`;
+    })
+    .join("")}</div>`;
+}
+
+// ---------- head-to-head on a match ----------
+// The live feed carries names but no player ids, so a match has to be matched to the
+// profile database by name before any history can be shown. Measured Aug 2026: ~84% of
+// FIP names resolve once seeding markers are stripped; RankedIn and TournamentSoftware
+// are close to nil because those players aren't in D1 yet. When a side can't be
+// resolved the block isn't rendered at all, rather than showing an empty shell.
+
+// "J. Zamora Perez (6)" / "Danut Cuc [4]" -> the bare name
+function cleanPlayerName(n) {
+  return String(n || "")
+    .replace(/\[[^\]]*\]/g, " ")               // [4] seeding
+    .replace(/\((?:Q|WC|LL|Alt|SE)\)/gi, " ")  // qualifier / wildcard markers
+    .replace(/\(\d+\)/g, " ")                  // (6) seeding
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const nameIdCache = new Map(); // cleaned lower-case name -> player id | null
+
+async function resolvePlayerId(rawName) {
+  const name = cleanPlayerName(rawName);
+  if (!name) return null;
+  const key = name.toLowerCase();
+  if (nameIdCache.has(key)) return nameIdCache.get(key);
+
+  let id = null;
+  try {
+    const hit = (await (await fetch("/api/search?q=" + encodeURIComponent(name))).json()).players || [];
+    const exact = hit.filter((p) => (p.name || "").toLowerCase() === key);
+    if (exact.length) id = exact[0].id;
+
+    // FIP abbreviates the first name ("J. Zamora Perez"), which never matches a stored
+    // full name. Retry on the surname and accept only an unambiguous initial match.
+    if (!id) {
+      const ab = /^([\p{L}])\.?\s+(.+)$/u.exec(name);
+      if (ab) {
+        const initial = ab[1].toLowerCase(), surname = ab[2].toLowerCase();
+        const alt = (await (await fetch("/api/search?q=" + encodeURIComponent(ab[2]))).json()).players || [];
+        const cands = alt.filter((p) => {
+          const pn = (p.name || "").toLowerCase();
+          return pn.endsWith(" " + surname) && pn.startsWith(initial);
+        });
+        if (cands.length === 1) id = cands[0].id;
+      }
+    }
+  } catch { /* offline or no profile db — fall through to null */ }
+
+  nameIdCache.set(key, id);
+  return id;
+}
+
+async function loadMatchup(m) {
+  if (state.matchup.has(m.id)) return; // already loaded, loading, or known-empty
+  state.matchup.set(m.id, "loading");
+  render();
+  try {
+    const t0 = (m.teams && m.teams[0] && m.teams[0].players) || [];
+    const t1 = (m.teams && m.teams[1] && m.teams[1].players) || [];
+    const [a1, a2, b1, b2] = await Promise.all([
+      resolvePlayerId(t0[0] && t0[0].name), resolvePlayerId(t0[1] && t0[1].name),
+      resolvePlayerId(t1[0] && t1[0].name), resolvePlayerId(t1[1] && t1[1].name),
+    ]);
+    if ((!a1 && !a2) || (!b1 && !b2)) { state.matchup.set(m.id, null); render(); return; }
+    const qs = new URLSearchParams();
+    if (a1) qs.set("a1", a1);
+    if (a2) qs.set("a2", a2);
+    if (b1) qs.set("b1", b1);
+    if (b2) qs.set("b2", b2);
+    const d = await (await fetch("/api/matchup?" + qs)).json();
+    state.matchup.set(m.id, d && !d.error ? d : null);
+  } catch { state.matchup.set(m.id, null); }
+  render();
+}
+
+function recordRow(label, left, right, sub) {
+  return `<div class="h2hrow">
+    <span class="h2hlbl">${label}</span>
+    <span class="h2hnum"><b>${left}</b>–<b>${right}</b></span>
+    ${sub ? `<span class="h2hsub">${sub}</span>` : ""}
+  </div>`;
+}
+
+function matchupHtml(m) {
+  const d = state.matchup.get(m.id);
+  if (d === undefined) return "";
+  if (d === "loading") return `<div class="h2h"><div class="h2hhead">Head-to-head</div><div class="h2hnone">Looking it up…</div></div>`;
+  if (!d) return "";
+
+  const nm = (id) => (d.players && d.players[id] && d.players[id].name) || "";
+  // FIP already abbreviates ("F. Luis Lopez") — only shorten a full first name, and
+  // keep every remaining part so a two-word surname survives.
+  const short = (s) => {
+    const p = String(s || "").trim().split(/\s+/);
+    if (p.length < 2 || /^\p{L}\.$/u.test(p[0])) return s;
+    return `${p[0][0]}. ${p.slice(1).join(" ")}`;
+  };
+  const teamLabel = (side) => (m.teams[side] && m.teams[side].players || []).map((p) => short(cleanPlayerName(p.name))).join(" / ");
+
+  const bits = [];
+
+  // exact pair vs pair
+  if (d.pair && d.pair.n) {
+    const p = d.pair;
+    const lead = p.aWins === p.bWins ? "All square" :
+      `${esc(teamLabel(p.aWins > p.bWins ? 0 : 1))} lead`;
+    bits.push(`<div class="h2hlead">${lead} <b>${Math.max(p.aWins, p.bWins)}–${Math.min(p.aWins, p.bWins)}</b>
+      <span class="h2hsub">as a pair · ${p.n} meeting${p.n === 1 ? "" : "s"}</span></div>`);
+    if (p.sets.a + p.sets.b)
+      bits.push(recordRow("Sets", p.sets.a, p.sets.b, `games ${p.games.a}–${p.games.b}`));
+    bits.push(`<div class="h2hlist">${p.list.map((x) => `
+      <div class="h2hm">
+        <span class="h2hres ${x.aWon ? "w" : "l"}">${x.aWon ? "W" : "L"}</span>
+        <span class="h2hsc">${esc(x.score || "")}</span>
+        <span class="h2hmeta">${esc([x.date ? x.date.slice(0, 10) : "", x.tournament, x.round].filter(Boolean).join(" · "))}</span>
+      </div>`).join("")}</div>`);
+  }
+
+  // player vs player, whoever they partnered
+  const cross = (d.cross || []).filter((c) => c.n);
+  if (cross.length) {
+    bits.push(`<div class="h2hsect">Player vs player</div>`);
+    for (const c of cross)
+      bits.push(recordRow(`${esc(short(nm(c.a)))} vs ${esc(short(nm(c.b)))}`, c.aWins, c.bWins,
+        `${c.n} match${c.n === 1 ? "" : "es"}`));
+  }
+
+  // opponents tonight who have played on the same side before
+  const exes = (d.cross || []).filter((c) => c.together);
+  if (exes.length) {
+    bits.push(`<div class="h2hsect">Used to partner</div>`);
+    for (const c of exes)
+      bits.push(`<div class="h2hrow">
+        <span class="h2hlbl">${esc(short(nm(c.a)))} &amp; ${esc(short(nm(c.b)))}</span>
+        <span class="h2hnum"><b>${c.together}</b></span>
+        <span class="h2hsub">together · won ${c.togetherWins}</span>
+      </div>`);
+  }
+
+  // how each pair does together
+  const pa = d.partners && d.partners.a, pb = d.partners && d.partners.b;
+  if ((pa && pa.n) || (pb && pb.n)) {
+    bits.push(`<div class="h2hsect">As a partnership</div>`);
+    if (pa && pa.n) bits.push(recordRow(esc(teamLabel(0)), pa.wins, pa.n - pa.wins, `${Math.round((pa.wins / pa.n) * 100)}% of ${pa.n}`));
+    if (pb && pb.n) bits.push(recordRow(esc(teamLabel(1)), pb.wins, pb.n - pb.wins, `${Math.round((pb.wins / pb.n) * 100)}% of ${pb.n}`));
+  }
+
+  if (!bits.length)
+    bits.push(`<div class="h2hnone">These two have no shared history on record.</div>`);
+
+  return `<div class="h2h"><div class="h2hhead">Head-to-head</div>${bits.join("")}</div>`;
 }
 
 // ---------- controls ----------
@@ -1000,12 +1192,42 @@ function archiveMatchRow(m) {
 
 // ---------- players (profiles / search / head-to-head) ----------
 
+// The profile database covers the Nordic (RankedIn) scene plus linked pros, so
+// most pro-tour players resolve to nothing — Albin Olsson is ranked #157 in the
+// world and still hit a dead end. The official FIP ranking now carries every
+// ranked player (with a padelfip profile URL), so when the profile DB misses we
+// fall back to it instead of showing an empty state.
+let _fipRankCache = null;
+async function fipRankRows() {
+  if (_fipRankCache) return _fipRankCache;
+  try {
+    const d = await (await fetch("data/rankings-fip.json?_=" + Date.now())).json();
+    _fipRankCache = (d.lists || []).flatMap((l) => (l.rows || []).map((r) => ({ ...r, cat: l.label })));
+  } catch { _fipRankCache = []; }
+  return _fipRankCache;
+}
+const normName = (s) =>
+  (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+async function fipFallback(q) {
+  const n = normName(q);
+  if (n.length < 3) return [];
+  const rows = await fipRankRows();
+  return rows.filter((r) => { const x = normName(r.name); return x.includes(n) || n.includes(x); }).slice(0, 12);
+}
+
 async function searchPlayers(q) {
-  if ((q || "").trim().length < 2) { state.playerResults = null; render(); return; }
+  state.query = (q || "").trim(); // the empty state names the player searched for
+  if ((q || "").trim().length < 2) { state.playerResults = null; state.fipResults = []; render(); return; }
   try {
     const d = await (await fetch("/api/search?q=" + encodeURIComponent(q.trim()))).json();
     state.playerResults = d.players || [];
-  } catch { state.playerResults = []; }
+    state.fipResults = state.playerResults.length ? [] : await fipFallback(q.trim());
+  } catch {
+    // Profile API unreachable — still try the ranking, so a search degrades to
+    // "here they are in the world ranking" instead of "no such player".
+    state.playerResults = [];
+    state.fipResults = await fipFallback(q.trim());
+  }
   render();
 }
 
@@ -1027,8 +1249,9 @@ async function openPlayerByName(name) {
     if (exact.length === 1) return openPlayer(exact[0].id);
     if (players.length === 1) return openPlayer(players[0].id);
     state.playerResults = players;
+    state.fipResults = players.length ? [] : await fipFallback(q);
     render();
-  } catch { state.playerResults = []; render(); }
+  } catch { state.playerResults = []; state.fipResults = []; render(); }
 }
 
 async function openPlayer(id) {
@@ -1056,9 +1279,27 @@ function renderPlayers() {
   if (state.playerResults == null)
     html = `<div class="empty"><div class="big">👤</div>Search a player to see their profile, results &amp; head-to-head.</div>`;
   else if (!state.playerResults.length)
-    html = `<div class="empty"><div class="big">👤</div>${state.query ? `No profile yet for <b>${esc(state.query)}</b>.` : "No players found."}<div style="margin-top:8px;color:var(--faint);font-size:13px;line-height:1.5">Player profiles currently cover the Nordic (RankedIn) scene and linked pros. Many international / pro-tour players aren't in the profile database yet.</div></div>`;
+    html = (state.fipResults || []).length
+      ? fipFallbackHtml()
+      : `<div class="empty"><div class="big">👤</div>${state.query ? `No profile yet for <b>${esc(state.query)}</b>.` : "No players found."}<div style="margin-top:8px;color:var(--faint);font-size:13px;line-height:1.5">Player profiles currently cover the Nordic (RankedIn) scene and linked pros. Many international / pro-tour players aren't in the profile database yet.</div></div>`;
   else html = state.playerResults.map(playerResultRow).join("");
   app.innerHTML = html;
+}
+
+// Ranked but not in the profile DB: show what we DO have (world rank, points,
+// weekly movement) plus a link to the player's padelfip.com page, and let them
+// be followed. Deliberately not styled as a profile — it is a real ranking row,
+// not a thin pretend-profile.
+function fipFallbackHtml() {
+  const rows = state.fipResults.map((r) => `
+    <div class="fipres">
+      <span class="flag">${esc((r.country || "").toUpperCase())}</span>
+      <span class="nm">${esc(r.name)}</span>
+      <span class="meta">${esc(r.cat || "")} · #${r.rank}${r.points != null ? ` · ${Math.round(r.points).toLocaleString()} pts` : ""}</span>
+      ${star("players", r.id, r.name, r.country || "")}
+      ${fipProfileUrl(r) ? `<a class="fiplink" href="${esc(fipProfileUrl(r))}" target="_blank" rel="noopener" title="View on padelfip.com">↗</a>` : ""}
+    </div>`).join("");
+  return `<div class="fipfall"><div class="fipfall__lbl">Not in the profile database yet — found in the FIP world ranking</div>${rows}</div>`;
 }
 
 function playerResultRow(p) {
@@ -1084,14 +1325,72 @@ async function ensureRankings() {
 }
 
 // Every ranking list this player appears in, best rank first.
-function playerRankings(id) {
-  if (!state.rankings || !id) return [];
+// National (RankedIn) lists carry a real player id, so those match on id. The FIP
+// world list does NOT: only ~27 of its 6,300 rows resolve to a RankedIn id via
+// fip_player_links, so matching on id alone hid the world ranking from virtually
+// every pro. Both sides use FIP's abbreviated form ("P. Garcia Rodrigo"), so fall
+// back to an exact accent-insensitive name match — and only when it is UNIQUE in
+// that list, because ~37 abbreviated names are shared by two players and a wrong
+// world ranking on a profile is worse than none.
+function playerRankings(id, name, country) {
+  if (!state.rankings) return [];
+  const n = normName(name);
+  const cc = (country || "").toUpperCase();
   const out = [];
   for (const l of state.rankings.lists) {
-    const row = (l.rows || []).find((r) => r.id === id);
+    let row = id ? (l.rows || []).find((r) => r.id === id) : null;
+    if (!row && n.length >= 4) {
+      const hits = (l.rows || []).filter((r) => normName(r.name) === n);
+      if (hits.length === 1) row = hits[0];
+      else if (!hits.length && cc) {
+        // Compound Spanish surnames are frequently fuller in match data than in
+        // the ranking — padel.db has "P. Garcia Rodrigo", FIP publishes
+        // "P. Garcia". Accept the ranking name as a PREFIX of ours, but only
+        // when the country agrees and exactly one row qualifies; two same-
+        // country "P. Garcia"s are genuinely ambiguous and get nothing.
+        const pre = (l.rows || []).filter(
+          (r) => (r.country || "").toUpperCase() === cc &&
+                 normName(r.name).length >= 6 && n.startsWith(normName(r.name))
+        );
+        if (pre.length === 1) row = pre[0];
+      }
+    }
     if (row) out.push({ fed: l.fed, movement: !!l.movement, ...row });
   }
   return out.sort((a, b) => a.rank - b.rank);
+}
+const fipProfileUrl = (r) => (r && r.slug ? "https://www.padelfip.com/player/" + r.slug + "/" : null);
+
+// Age is derived at render time, never stored: a cached "24" goes wrong on a birthday.
+function ageFrom(iso) {
+  const d = iso ? new Date(iso + "T00:00:00Z") : null;
+  if (!d || isNaN(d)) return null;
+  const now = new Date();
+  let age = now.getUTCFullYear() - d.getUTCFullYear();
+  const before = now.getUTCMonth() < d.getUTCMonth() ||
+                 (now.getUTCMonth() === d.getUTCMonth() && now.getUTCDate() < d.getUTCDate());
+  if (before) age--;
+  return age >= 5 && age <= 99 ? age : null;
+}
+
+// Profile bio strip. `position` is the COURT SIDE FIP publishes, not handedness —
+// FIP does not publish dominant hand, so do not label it as one.
+function bioRow(bio) {
+  if (!bio) return "";
+  const bits = [];
+  const age = ageFrom(bio.birth_date);
+  if (age != null) {
+    const [y, m, d] = bio.birth_date.split("-");
+    bits.push(`<span class="pb" title="Born ${d}/${m}/${y}"><b>${age}</b> yrs</span>`);
+  }
+  if (bio.height_cm) bits.push(`<span class="pb"><b>${(bio.height_cm / 100).toFixed(2)}</b> m</span>`);
+  if (bio.position) bits.push(`<span class="pb"><b>${esc(bio.position)}</b> side</span>`);
+  if (bio.birth_place) bits.push(`<span class="pb pb-place">${esc(bio.birth_place)}</span>`);
+  if (!bits.length) return "";
+  const src = fipProfileUrl(bio.fip_slug ? { slug: bio.fip_slug } : null);
+  return `<div class="pbio">${bits.join("")}` +
+    (src ? `<a class="pbio-src" href="${src}" target="_blank" rel="noopener">FIP profile ↗</a>` : "") +
+    `</div>`;
 }
 
 function renderProfile() {
@@ -1113,13 +1412,14 @@ function renderProfile() {
         ${summary.games && summary.games.pct != null ? `<div class="pstat"><b>${summary.games.pct}%</b><span>games won</span></div>` : ""}
       </div>
     </div>`;
+  html += bioRow(state.player.bio);
   const form = summary.form || [];
   if (form.length)
     html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${summary.streak > 1 ? `<span class="streak">${summary.streak} ${summary.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
   const tp = state.player.topPartner;
   if (tp)
     html += `<div class="toppartner" data-player="${esc(tp.id)}"><span class="tp-lbl">Top partner</span><b>${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span></div>`;
-  const ranks = playerRankings(player.id);
+  const ranks = playerRankings(player.id, player.name, player.country);
   if (ranks.length)
     html += `<div class="section-label">Ranking</div><div class="rankcards">` +
       ranks.map((r) => `<div class="rankcard">
@@ -2014,7 +2314,11 @@ app.addEventListener("click", (e) => {
   if (om) {
     const id = om.dataset.open;
     if (state.openMatches.has(id)) state.openMatches.delete(id);
-    else state.openMatches.add(id);
+    else {
+      state.openMatches.add(id);
+      const m = state.matches.find((x) => x.id === id);
+      if (m) loadMatchup(m); // renders on its own when the lookup lands
+    }
     render();
   }
 });

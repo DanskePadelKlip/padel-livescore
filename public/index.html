@@ -70,6 +70,7 @@
       --accent: #E5484A; --accent-2: #D13737;
       --win: #eef1f6; --shadow: 0 1px 3px rgba(0,0,0,.3);
       --flash: rgba(255,209,102,.28);
+      --serve: #3ecf7c;
     }
     @media (prefers-color-scheme: light) {
       :root {
@@ -78,6 +79,7 @@
         --text: #131720; --muted: #5a6472; --faint: #8b93a3;
         --final: #8b93a3; --final-bg: rgba(139,147,163,.14);
         --win: #131720; --shadow: 0 1px 3px rgba(20,30,50,.08);
+        --serve: #3ecf7c;
       }
     }
     :root[data-theme="dark"] {
@@ -85,12 +87,14 @@
       --line: #262c38; --line-hi: #333b4a; --text: #eef1f6; --muted: #9aa3b2;
       --faint: #6b7280; --final: #7a8494; --final-bg: rgba(122,132,148,.16);
       --win: #eef1f6; --shadow: 0 1px 3px rgba(0,0,0,.3);
+      --serve: #3ecf7c;
     }
     :root[data-theme="light"] {
       --bg: #f4f6fa; --bg-2: #eef1f6; --card: #ffffff; --card-hi: #f7f9fc;
       --line: #e4e8ef; --line-hi: #d3d9e3; --text: #131720; --muted: #5a6472;
       --faint: #8b93a3; --final: #8b93a3; --final-bg: rgba(139,147,163,.14);
       --win: #131720; --shadow: 0 1px 3px rgba(20,30,50,.08);
+      --serve: #3ecf7c;
     }
 
     * { box-sizing: border-box; }
@@ -255,6 +259,10 @@
     .badge.live { background: var(--live-bg); color: var(--live); }
     .badge.upcoming { background: var(--up-bg); color: var(--up); }
     .badge.final { background: var(--final-bg); color: var(--final); }
+    /* finished rows shrink their state column to a tick so the freed width goes
+       to player names, which were truncating on almost every ended match */
+    .badge.final.mini { background: none; padding: 0; font-size: 13px; line-height: 1; letter-spacing: 0; }
+    .match__main.ended { grid-template-columns: 18px 1fr auto; gap: 8px; }
     .match__state .t { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
     .match__state .foll { font-size: 8px; font-weight: 700; color: var(--faint); text-transform: uppercase;
       letter-spacing: .02em; line-height: 1.05; text-align: center; max-width: 48px; }
@@ -265,9 +273,23 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .crtline .crtpin { color: var(--muted); }
     .team { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .team .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    /* one player per line — the pair never fits on one phone-width line */
+    .team .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; color: var(--text); }
+    .team .nm .pl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
     .team.win .nm { font-weight: 700; color: var(--win); }
-    .team.win .srv { color: var(--live); }
+    /* serve indicator — a dot on the serving pair. The slot is present (but
+       invisible) on the non-serving row too, so names never shift when the
+       serve changes hands. Only rendered when the source publishes a server. */
+    .srv { flex: none; width: 7px; height: 7px; border-radius: 50%; background: transparent; }
+    /* green, not the red --live: red already means "this match is live" on the
+       badge, and both FIP and Premier Padel use a green ball for the server. */
+    .srv.on { background: var(--serve); }
+    /* current game score (0/15/30/40/Ad) — sits after the set columns */
+    .pts { flex: none; min-width: 26px; margin-left: 9px; padding: 1px 5px; border-radius: 5px;
+      background: var(--card-hi); color: var(--text); font-weight: 700; font-size: 12.5px;
+      text-align: center; font-variant-numeric: tabular-nums; }
+    .team.win .pts { color: var(--win); }
+    .pts.flash { animation: flashcell 1.6s ease-out; }
     /* clickable player names (match rows) -> profile lookup */
     .pn { cursor: pointer; }
     .pn:hover { text-decoration: underline; text-underline-offset: 2px; }
@@ -290,8 +312,37 @@
     .setcol .val { font-variant-numeric: tabular-nums; font-weight: 700; margin-top: 2px; }
     .detail .kv { display: flex; flex-wrap: wrap; gap: 5px 16px; }
     .detail .kv span b { color: var(--text); font-weight: 600; }
+    /* follow either player straight from the match */
+    .followrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 10px 0 2px; }
+    .followrow .fllbl { color: var(--faint); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em; }
+    .followrow .flp { display: inline-flex; align-items: center; gap: 1px; color: var(--muted); white-space: nowrap; }
     .detail a.src { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; color: var(--accent); text-decoration: none; font-weight: 600; }
     .detail a.src:hover { text-decoration: underline; }
+
+    /* head-to-head block inside a match's detail panel */
+    .h2h { margin: 11px 0 4px; padding: 9px 11px 10px; background: var(--bg-2);
+      border: 1px solid var(--line); border-radius: 9px; max-width: 460px; }
+    .h2hhead { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--faint); margin-bottom: 7px; }
+    .h2hnone { color: var(--faint); font-size: 12px; }
+    .h2hlead { font-size: 13px; color: var(--text); margin-bottom: 7px; }
+    .h2hlead b { font-variant-numeric: tabular-nums; }
+    .h2hsect { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--faint); margin: 9px 0 5px; padding-top: 7px; border-top: 1px solid var(--line); }
+    .h2hrow { display: flex; align-items: baseline; gap: 8px; padding: 2px 0; font-size: 12px; }
+    .h2hlbl { color: var(--muted); flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .h2hnum { font-variant-numeric: tabular-nums; color: var(--text); flex: 0 0 auto; }
+    .h2hnum b { font-weight: 700; }
+    .h2hsub { color: var(--faint); font-size: 11px; flex: 0 0 auto; }
+    .h2hlist { margin-top: 7px; display: flex; flex-direction: column; gap: 3px; }
+    .h2hm { display: flex; align-items: baseline; gap: 8px; font-size: 11.5px; }
+    .h2hres { flex: 0 0 auto; width: 15px; height: 15px; border-radius: 4px; display: inline-flex;
+      align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; }
+    .h2hres.w { background: var(--accent); }
+    .h2hres.l { background: var(--final); }
+    .h2hsc { font-variant-numeric: tabular-nums; color: var(--text); flex: 0 0 auto; }
+    .h2hmeta { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* ---- players / profile / h2h ---- */
     .presult { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border: 1px solid var(--line);
@@ -299,6 +350,14 @@
     .presult:hover { background: var(--card-hi); }
     .presult .nm { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .presult .meta { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+    /* ranked pros with no profile-DB entry: a ranking row, not a fake profile */
+    .fipfall__lbl { color: var(--faint); font-size: 12px; margin: 2px 0 9px; }
+    .fipres { display: flex; align-items: center; gap: 10px; padding: 11px 13px;
+      border: 1px solid var(--line); border-radius: 10px; background: var(--card); margin-bottom: 7px; }
+    .fipres .flag { font-size: 10px; font-weight: 700; color: var(--faint); }
+    .fipres .nm { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fipres .meta { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .fipres .fiplink { color: var(--accent); text-decoration: none; font-weight: 700; padding: 0 2px; }
     .pback { background: none; border: 0; color: var(--accent); cursor: pointer; font-weight: 600; font-size: 13px; padding: 10px 0 4px; }
     .phead { display: flex; align-items: center; gap: 12px; padding: 4px 0 12px; flex-wrap: wrap; }
     .phead h2 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
@@ -307,6 +366,13 @@
     .pstat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
     .pstat.hi b { color: var(--accent); }
     .pstat span { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; }
+    /* bio strip (age / height / court side / birthplace) */
+    .pbio { display: flex; align-items: center; gap: 6px; margin: -4px 0 12px; flex-wrap: wrap; }
+    .pb { font-size: 12px; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+    .pb b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .pb-place { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pbio-src { font-size: 11px; color: var(--faint); text-decoration: none; margin-left: auto; }
+    .pbio-src:hover { color: var(--accent); }
     /* form strip + top partner */
     .form-row { display: flex; align-items: center; gap: 5px; margin: 2px 0 12px; flex-wrap: wrap; }
     .form-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-right: 3px; }
@@ -526,6 +592,7 @@
       .brand small { display: none; }
       .detail { padding-left: 13px; }
       .match__main { grid-template-columns: 42px 1fr; }
+      .match__main.ended { grid-template-columns: 18px 1fr; }
       .match__main .sets { grid-column: 2; }
     }
   </style>
@@ -605,9 +672,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=ac4e1f35<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=1eea6aa3<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=ac4e1f35"></script>
+  <script src="/app.js?v=1eea6aa3"></script>
 </body>
 </html>
