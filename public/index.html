@@ -278,11 +278,14 @@
     .team .nm .pl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
     /* FIP world ranking, kept deliberately quiet — it annotates the name, it is
        not a score. Absent for anyone the ranking doesn't cover. */
-    .plrk { font-size: .66em; font-weight: 600; color: var(--faint); vertical-align: super;
+    /* NOT vertical-align: super. The name line clips (overflow:hidden, for the
+       ellipsis), and a raised emoji pokes 4px above that box and loses its top —
+       measured on prod. A 0.1em lift keeps it reading as an annotation while every
+       glyph stays inside the line box: 3px of slack above, 3.5px below, 0 of 60
+       clipped. Any raise beyond ~0.2em starts shaving the globe again. */
+    .plrk { font-size: .66em; font-weight: 600; color: var(--faint); vertical-align: .1em;
       margin-left: 3px; line-height: 0; font-variant-numeric: tabular-nums; }
-    /* The globe carries the meaning, so it gets back some of the size the .66em
-       superscript takes away — below ~9px a colour emoji turns to mush. */
-    .plrk-g { font-size: 1.25em; margin-right: 1px; }
+    .plrk-g { font-size: 1em; margin-right: 1px; }
     .team.win .nm { font-weight: 700; color: var(--win); }
     /* serve indicator — a dot on the serving pair. The slot is present (but
        invisible) on the non-serving row too, so names never shift when the
@@ -679,9 +682,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=4ef09ac9<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=6230e890<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=4ef09ac9"></script>
+  <script src="/app.js?v=6230e890"></script>
 </body>
 </html>
