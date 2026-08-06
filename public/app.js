@@ -35,6 +35,50 @@ const fedFlag = (c) => FLAGS[c] || countryFlag(c) || "";
 // truncated, worst case 131px of overflow. Stacking ends that, and leaves room
 // for a per-player ranking on the row later. NB the flag separator is a
 // non-breaking space, so a flag never wraps away from its name.
+// ---------- compound surnames: show the name the player actually uses ----------
+// A Spanish pro carries both parents' surnames ("M. Barrera De La Fuente"), which
+// overflows the name line and gets ellipsised mid-surname. They don't use the full
+// string themselves: Marta Barrera de la Fuente is @martabarrera04, Marta Borrero
+// Fernández De La Puente posts as "Martita Borrero", Marta Caparrós Maldonado is
+// @martacaparros17, Alejandra Salazar Bengoechea is "Ale Salazar" everywhere. Four
+// independent confirmations of one rule: keep the FIRST surname, drop the rest.
+//
+// Gated on country because the convention is not universal — Portuguese practice
+// puts the primary surname LAST, so "J. Gomes Dos Santos Fernandes" would very
+// likely become the wrong man as "J. Gomes". Neither Portuguese name on the board
+// resolves to an Instagram, so there is no evidence to act on and they keep the
+// ellipsis: a clipped name is ugly, a confidently wrong one is a lie.
+const SPANISH_SURNAME_CC = new Set(["ESP", "ARG", "MEX", "PAR", "CHI", "URU", "COL", "PER",
+  "ECU", "VEN", "BOL", "CRC", "GUA", "PAN", "DOM", "CUB", "HON", "NCA", "ESA", "PUR"]);
+// Particles bind to the surname that follows them: "Del Cacho", "De La Fuente".
+// Only consumed while LEADING, so "Gonzalez San Martin" still yields "Gonzalez"
+// rather than swallowing "San" from the second surname.
+const SURNAME_PARTICLES = new Set(["de", "del", "la", "las", "los", "da", "das", "do", "dos", "y"]);
+const LONG_NAME_CHARS = 20;   // measured: the name line starts overflowing at ~21 chars @375px
+
+// Seed / qualifier the draw appends: "(2)", "(WC)", "(Q)", "(7 - LL)". It is not part
+// of the name, and shortening must hand it back — a 2 seed is information a reader uses.
+const DRAW_MARKER = /\s*(\((?:\d+|WC|Q|LL|SE|A)(?:\s*-\s*\w+)?\))\s*$/i;
+
+function shortenSurname(name, country) {
+  const raw = String(name || "").trim();
+  if (raw.length <= LONG_NAME_CHARS || !SPANISH_SURNAME_CC.has(String(country || "").toUpperCase())) return null;
+  const mk = DRAW_MARKER.exec(raw);
+  const n = mk ? raw.slice(0, mk.index).trim() : raw;
+  const tail = mk ? " " + mk[1] : "";
+  const m = /^(\S\.)\s+(.+)$/.exec(n);          // FIP form: "M. Barrera De La Fuente"
+  if (!m) return null;
+  const toks = m[2].split(/\s+/);
+  if (toks.length < 2) return null;
+  const keep = [];
+  for (const t of toks) {
+    keep.push(t);
+    if (!SURNAME_PARTICLES.has(t.toLowerCase().replace(/[^a-záéíóúñü-]/gi, ""))) break;
+  }
+  const short = `${m[1]} ${keep.join(" ")}${tail}`;
+  return short.length < raw.length ? short : null;
+}
+
 // The globe says what the number IS. Without it the superscript is a bare digit
 // beside a name, explained only by a `title` — which a phone never shows. Same 🌍
 // the profile's ranking card uses for "FIP world".
@@ -45,8 +89,11 @@ function teamNameWithFlags(t) {
   if (t.players && t.players.length) {
     return t.players.map((p) => {
       const f = countryFlag(p.country);
+      // Only the DISPLAY is shortened. data-pname keeps the full name because that is
+      // what /api/search resolves a click against, and the title still spells it out.
+      const shown = shortenSurname(p.name, p.country) || p.name;
       const nm = p.name && p.name !== "TBD"
-        ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(p.name)}</span>`
+        ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(shown)}</span>`
         : esc(p.name);
       const rk = rankFor(p.name, p.country);
       return `<span class="pl">${f ? f + " " : ""}${nm}${rkHtml(rk)}</span>`;
@@ -565,6 +612,20 @@ function teamLine(m, side, isChanged) {
 }
 
 // "00:38" -> "38 min", "01:15" -> "1h 15m"
+// FIP sometimes publishes a duration that cannot be true: the Aug-6 Round of 16
+// that went 3-6 6-3 4-6 (28 games) is reported by the widget as "00:09", and we
+// were faithfully printing "9 min". Their referee app was presumably started
+// late. Print nothing rather than a wrong fact - the floor is deliberately
+// generous (0.6 min/game) so a genuinely quick 6-0 6-0 still shows.
+function plausibleDur(d, sets) {
+  const m = /^(\d+):(\d+)/.exec(String(d || ""));
+  if (!m) return d;
+  const mins = +m[1] * 60 + +m[2];
+  const games = (sets || []).reduce(
+    (n, s) => n + (parseInt(setParts(s[0]).g, 10) || 0) + (parseInt(setParts(s[1]).g, 10) || 0), 0);
+  return games && mins < games * 0.6 ? null : d;
+}
+
 function fmtDur(d) {
   const m = /^(\d+):(\d+)/.exec(String(d || ""));
   if (!m) return null;
@@ -577,7 +638,7 @@ function detail(m) {
   const setGrid = sets.length
     ? `<div class="grid">${sets.map((s, i) => `<div class="setcol"><div class="lbl">Set ${i + 1}</div><div class="val">${setCellHtml(s[0])}–${setCellHtml(s[1])}</div></div>`).join("")}</div>`
     : `<div style="margin:6px 0 10px;color:var(--faint)">No score yet.</div>`;
-  const dur = fmtDur(m.raw && m.raw.dur);
+  const dur = fmtDur(plausibleDur(m.raw && m.raw.dur, sets));
   const kv = [
     dur && `<span>Duration <b>${esc(dur)}</b></span>`,
     m.className && `<span>Class <b>${esc(m.className)}</b></span>`,
