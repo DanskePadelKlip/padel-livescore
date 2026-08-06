@@ -21,8 +21,11 @@ import { aggregate } from "../src/aggregate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
 import { refreshCalendar } from "../src/calendar-refresh.js";
+import { setClubStore } from "../src/rankedin-club.js";
+import { fsClubStore } from "../src/club-store-node.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+setClubStore(fsClubStore()); // organiser cache persists in .cache/ between restarts
 
 const LIVE_MS = 60_000;           // ≥1 live match      -> ~1 min (feels live)
 const UPCOMING_MS = 10 * 60_000;  // matches upcoming    -> 10 min

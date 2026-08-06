@@ -102,27 +102,50 @@ time we catch a live match.
 
 ## Deploy
 
-Live at **https://padel-livescore.pages.dev** (Cloudflare Pages, project `padel-livescore`).
+Live at **https://padelticker.com** (Cloudflare Pages, project `padel-livescore`).
 
-- **Frontend**: static `public/` on Cloudflare Pages. The UI polls `data/matches.json`,
-  which is a static file baked into each deployment.
-- **Data refresh**: `.github/workflows/refresh.yml` runs the Playwright fetch on a cron
-  and redeploys `public/` (with a fresh `matches.json`) via `wrangler pages deploy`.
+- **Frontend**: static `public/` on Cloudflare Pages — deploys ship CODE.
+- **Data**: the scheduled worker in [`worker/`](worker/index.js) runs the same
+  `aggregate()` pipeline on a Cron Trigger (fires every minute, self-paces: live
+  matches → 1 min, upcoming → 10 min, idle → 30 min) and writes
+  `matches.json` / `health.json` / `rankings.json` / `calendar.json` to a KV
+  namespace. `functions/data/*.json.js` serve those paths KV-first with a
+  fallback to the baked static file — so data freshness no longer depends on
+  deploys, GitHub cron throttling, or a laptop being awake. The worker also owns
+  the "now live" webhook alerts and Web Push fan-out (`src/webpush.js`, pure
+  WebCrypto — run `node scripts/test-webpush.mjs` after touching it).
 - **Manual deploy** (uses a Cloudflare `Pages: Edit` token + account id in your env):
   ```bash
-  node scripts/fetch-live.js
   npx wrangler pages deploy public --project-name padel-livescore --branch main
   ```
 
+### Worker setup (one-time)
+
+Needs the **Workers Paid plan** ($5/mo): a live refresh cycle exceeds the free
+tier's 50-subrequest cap, and 60s live cadence exceeds its 1000 KV writes/day.
+
+```bash
+npx wrangler kv namespace create padelticker-live
+# paste the returned id into worker/wrangler.toml AND uncomment+fill the
+# [[kv_namespaces]] block in the root wrangler.toml, then redeploy Pages once
+npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml
+npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml   # optional
+npx wrangler deploy -c worker/wrangler.toml
+```
+
+Verify: the worker's own URL (printed on deploy) shows its pacing state and data
+age; after a couple of minutes `padelticker.com/api/health` should report fresh
+`generated_at` and `/data/matches.json` should carry `"producer": "worker"`.
+
+Once that's confirmed, the old data paths become fallbacks you can wind down:
+- `.github/workflows/refresh.yml` — drop the cron + fetch step (deploy-on-push
+  stays useful for shipping code). Until then it's harmless: `fetch-live.js`
+  sees `producer:"worker"` on fresh data and skips alerts/push so nothing
+  double-fires.
+- `scripts/refresh-loop.js` (laptop daemon) — same story; keep it for local dev.
+
 **Required GitHub secrets** for the workflow (Settings → Secrets and variables → Actions):
 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
-
-**⚠️ Actions-minutes cost:** the fetch needs a real browser, so each run is ~4 min.
-On a **private** repo GitHub gives ~2000 free min/month — any useful cadence blows past
-that. Options: make the repo **public** (unlimited free minutes; the site + data are
-public anyway and no secrets live in the code), use a **self-hosted runner**, run the
-fetch+deploy from your **own machine on a schedule**, or accept a low cadence / pay for
-minutes.
 
 ## Roadmap
 
@@ -135,5 +158,6 @@ minutes.
 - ~~**P3** — FIP/Premier adapter~~ ✅ done (`src/adapters/fip.js`, via matchscorerlive).
   Next source: France (Ten'Up/FFT — likely another browser adapter on `src/browser.js`).
   FIP polish: parse the "Starting at 9:00 AM" schedule text into a real start time.
-- **Infra** — Cloudflare Pages + Functions; fetch job becomes a scheduled worker.
-  Browser adapters need a Playwright-capable runner (or a small separate service).
+- ~~**Infra** — fetch job becomes a scheduled worker~~ ✅ done (`worker/`, cron +
+  KV + `functions/data/*`). Remaining: wind down the Actions cron / laptop daemon
+  once the worker is verified in production (see "Deploy").

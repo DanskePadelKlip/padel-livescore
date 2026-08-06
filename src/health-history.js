@@ -14,16 +14,19 @@ import { join } from "node:path";
 
 // Returns `sources` with a `lastOkAt` (ISO string) added per adapter: now if the
 // adapter is ok this run, else its previous lastOkAt carried forward (or null if it
-// has never been seen succeeding). prevOk is seeded from the local snapshot when it
+// has never been seen succeeding). prevOk is seeded from `prev` (an already-loaded
+// snapshot — the Worker passes its KV copy), else the local snapshot when it
 // exists, else fetched from `liveUrl` so a fresh CI checkout still has history.
-export async function attachSourceHistory(sources, { outDir, liveUrl } = {}) {
+export async function attachSourceHistory(sources, { prev, outDir, liveUrl } = {}) {
   const prevOk = {};
   const seed = (snap) => {
     for (const s of snap?.sources || []) if (s.lastOkAt) prevOk[s.id] = s.lastOkAt;
   };
   try {
     const local = outDir && join(outDir, "health.json");
-    if (local && existsSync(local)) {
+    if (prev) {
+      seed(prev);
+    } else if (local && existsSync(local)) {
       seed(JSON.parse(readFileSync(local, "utf8")));
     } else if (liveUrl) {
       const r = await fetch(liveUrl, { signal: AbortSignal.timeout(5000) });

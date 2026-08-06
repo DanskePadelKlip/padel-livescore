@@ -71,19 +71,28 @@ export function parsePremierCalendar(html, year) {
   return events;
 }
 
-// Fetch + parse + write calendar.json. Returns the event count. Throws (without
-// writing) if the source can't be parsed into at least MIN_EVENTS events.
-export async function refreshCalendar(root, { year = new Date().getFullYear(), today = new Date().toISOString().slice(0, 10) } = {}) {
+// Fetch + parse into the calendar.json payload. Throws if the source can't be
+// parsed into at least MIN_EVENTS events, so a page/structure change can never
+// yield a garbage calendar — callers keep their last good copy. Shared by the
+// Node writer below and the Worker (which persists the payload to KV instead).
+export async function buildCalendar({ year = new Date().getFullYear(), today = new Date().toISOString().slice(0, 10) } = {}) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/html/Premier_Padel_${year}`;
   const res = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (PadelTicker calendar refresh)" }, signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`Wikipedia fetch ${res.status}`);
   const events = parsePremierCalendar(await res.text(), year);
   if (events.length < MIN_EVENTS) throw new Error(`only ${events.length} events parsed — refusing to overwrite calendar.json`);
-  const out = join(root, "public", "data", "calendar.json");
-  writeFileSync(out, JSON.stringify({
+  return {
     generatedAt: today,
     source: `Wikipedia Premier_Padel_${year} (auto-refreshed weekly)`,
     events,
-  }, null, 2) + "\n");
-  return events.length;
+  };
+}
+
+// Fetch + parse + write calendar.json. Returns the event count. Throws (without
+// writing) on a failed parse — the last good file just stays.
+export async function refreshCalendar(root, opts = {}) {
+  const payload = await buildCalendar(opts);
+  const out = join(root, "public", "data", "calendar.json");
+  writeFileSync(out, JSON.stringify(payload, null, 2) + "\n");
+  return payload.events.length;
 }

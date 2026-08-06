@@ -1,4 +1,4 @@
-// Organiser lookup for RankedIn tournaments, with a disk-backed cache.
+// Organiser lookup for RankedIn tournaments, with a pluggable persistent cache.
 //
 // RankedIn's UI labels a tournament's hosting club "Organisator", and that is the only
 // real organiser data the API exposes: `TournamentSidebarModel.ClubName` + `ClubUrl`,
@@ -7,31 +7,41 @@
 // calendar feed has no club at all — so it costs one extra GetInfoAsync per tournament.
 //
 // That call is why this cache exists, and the cache is load-bearing, not an
-// optimisation: refresh-loop.js re-runs every 60s while any match is live, over ~19
-// tournaments, and the pipeline already spends one GetMatchesSectionAsync per tournament
-// per cycle. Fetching the organiser uncached would double RankedIn API traffic for a
+// optimisation: the refresh pipeline re-runs every 60s while any match is live, over ~19
+// tournaments, and it already spends one GetMatchesSectionAsync per tournament per
+// cycle. Fetching the organiser uncached would double RankedIn API traffic for a
 // value that never changes for a given event id.
 //
-// Persisted to a git-ignored .cache/ file so daemon restarts and one-shot
-// scripts/fetch-live.js runs start warm. Misses are cached too (they are the majority —
-// only ~1 in 3 tournaments has a connected club) but expire, so a club connected after
-// we first looked is eventually picked up.
+// Persistence is injected so this module runs anywhere the pipeline runs:
+//   - Node (daemon / one-shot scripts): setClubStore(fsClubStore()) — src/club-store-node.js
+//   - Cloudflare Worker: setClubStore(kvClubStore(env)) — worker/index.js
+// With no store set it still works, just memory-only (cold starts begin empty).
+// Misses are cached too (they are the majority — only ~1 in 3 tournaments has a
+// connected club) but expire, so a club connected after we first looked is
+// eventually picked up.
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { rankedinGet } from "./http.js";
 
-const FILE = join(process.cwd(), ".cache", "rankedin-clubs.json");
 const MISS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // re-check "no club" weekly
 
 /** @type {Map<string, {name:string,url:string}|{miss:number}>|null} */
 let cache = null;
+/** @type {{load:()=>Promise<Object|null>|Object|null, save:(entries:Object)=>void|Promise<void>}|null} */
+let store = null;
 
-function load() {
+// Install a persistence backend BEFORE the first fetchClub call. Resets the
+// in-memory cache so the next lookup seeds from the new store.
+export function setClubStore(s) {
+  store = s;
+  cache = null;
+}
+
+async function load() {
   if (cache) return cache;
   cache = new Map();
   try {
-    for (const [k, v] of Object.entries(JSON.parse(readFileSync(FILE, "utf8")))) cache.set(k, v);
+    const obj = store ? await store.load() : null;
+    for (const [k, v] of Object.entries(obj || {})) cache.set(k, v);
   } catch {
     // no cache yet (or corrupt) — start empty; it refills itself
   }
@@ -39,9 +49,10 @@ function load() {
 }
 
 function persist() {
+  if (!store) return;
   try {
-    mkdirSync(join(process.cwd(), ".cache"), { recursive: true });
-    writeFileSync(FILE, JSON.stringify(Object.fromEntries(cache)));
+    const r = store.save(Object.fromEntries(cache));
+    if (r && typeof r.catch === "function") r.catch(() => {});
   } catch {
     // a cache we can't write is still a cache we can use in-process
   }
@@ -57,7 +68,7 @@ function persist() {
  */
 export async function fetchClub(eventId) {
   const key = String(eventId);
-  const c = load();
+  const c = await load();
   const hit = c.get(key);
   if (hit) {
     if (!hit.miss) return hit;

@@ -11,6 +11,13 @@ name: Refresh livescore
 # NOTE ON COST: GitHub Actions minutes are limited on PRIVATE repos (~2000/mo
 # free). Any useful cadence exceeds that — see README "Deploy" for options
 # (make the repo public for unlimited minutes, use a self-hosted runner, etc.).
+#
+# ⚠ SUPERSEDED as the data path: GitHub throttled this cron to every 4–14 h in
+# practice — the scheduled worker (worker/) is now the primary producer, writing
+# to KV that functions/data/*.json.js serve first. Once the worker is verified
+# in production (README "Worker setup"), drop the cron + "Fetch matches" step
+# here and keep this workflow as deploy-on-push for code. Until then it's a
+# harmless fallback: fetch-live.js defers alerts/push when the worker owns them.
 
 on:
   schedule:

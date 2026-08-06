@@ -13,8 +13,11 @@ import { attachSourceHistory } from "../src/health-history.js";
 import { newlyLive, newlySoon, sendAlerts, sendSoonAlerts } from "../src/alerts.js";
 import { sendLivePush, sendStartingSoonPush } from "../src/push-send.js";
 import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
+import { setClubStore } from "../src/rankedin-club.js";
+import { fsClubStore } from "../src/club-store-node.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+setClubStore(fsClubStore()); // organiser cache persists in .cache/ between runs
 const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) || new Date().toISOString().slice(0, 10);
 
 console.log(`\n⚡ Fetching padel matches for ${date}\n`);
@@ -43,19 +46,27 @@ if (process.env.ALERT_WEBHOOK_URL || process.env.VAPID_PRIVATE_KEY) {
   const nextAt = Date.now();
   const prevAt = Date.parse(prev?.generatedAt) || nextAt - 15 * 60_000;
 
-  const fresh = newlyLive(prevMatches, matches);
-  // "starting soon": FIP matches est. to start within 20 min (newly entered)
-  const soon = newlySoon(prevMatches, prevAt, matches, nextAt, 20 * 60_000);
-  console.log(`\n🔔 ${fresh.length} newly live · ${soon.length} starting soon`);
+  // The scheduled Worker (worker/index.js) stamps producer:"worker" on the live
+  // feed. If it's actively refreshing, it owns alerts + push — a CI run diffing
+  // the same transition minutes later would double-notify every subscriber.
+  const workerOwnsAlerts = prev?.producer === "worker" && nextAt - prevAt < 10 * 60_000;
+  if (workerOwnsAlerts) {
+    console.log("\n🔔 alerts skipped — the scheduled Worker is live and owns them");
+  } else {
+    const fresh = newlyLive(prevMatches, matches);
+    // "starting soon": FIP matches est. to start within 20 min (newly entered)
+    const soon = newlySoon(prevMatches, prevAt, matches, nextAt, 20 * 60_000);
+    console.log(`\n🔔 ${fresh.length} newly live · ${soon.length} starting soon`);
 
-  const webhook = process.env.ALERT_WEBHOOK_URL;
-  if (webhook) {
-    if (fresh.length) console.log(`   webhook live: ${await sendAlerts(fresh, webhook)} sent`);
-    if (soon.length) console.log(`   webhook soon: ${await sendSoonAlerts(soon, webhook)} sent`);
-  }
-  if (process.env.VAPID_PRIVATE_KEY) {
-    await sendLivePush(fresh, { log: console.log });
-    await sendStartingSoonPush(soon, { log: console.log });
+    const webhook = process.env.ALERT_WEBHOOK_URL;
+    if (webhook) {
+      if (fresh.length) console.log(`   webhook live: ${await sendAlerts(fresh, webhook)} sent`);
+      if (soon.length) console.log(`   webhook soon: ${await sendSoonAlerts(soon, webhook)} sent`);
+    }
+    if (process.env.VAPID_PRIVATE_KEY) {
+      await sendLivePush(fresh, { log: console.log });
+      await sendStartingSoonPush(soon, { log: console.log });
+    }
   }
 }
 
