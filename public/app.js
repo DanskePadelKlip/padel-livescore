@@ -35,6 +35,12 @@ const fedFlag = (c) => FLAGS[c] || countryFlag(c) || "";
 // truncated, worst case 131px of overflow. Stacking ends that, and leaves room
 // for a per-player ranking on the row later. NB the flag separator is a
 // non-breaking space, so a flag never wraps away from its name.
+// The globe says what the number IS. Without it the superscript is a bare digit
+// beside a name, explained only by a `title` — which a phone never shows. Same 🌍
+// the profile's ranking card uses for "FIP world".
+const rkHtml = (rk) =>
+  rk ? `<sup class="plrk" title="FIP world ranking"><span class="plrk-g">🌍</span>${rk}</sup>` : "";
+
 function teamNameWithFlags(t) {
   if (t.players && t.players.length) {
     return t.players.map((p) => {
@@ -42,11 +48,38 @@ function teamNameWithFlags(t) {
       const nm = p.name && p.name !== "TBD"
         ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(p.name)}</span>`
         : esc(p.name);
-      return `<span class="pl">${f ? f + " " : ""}${nm}</span>`;
+      const rk = rankFor(p.name, p.country);
+      return `<span class="pl">${f ? f + " " : ""}${nm}${rkHtml(rk)}</span>`;
     }).join("");
   }
   return `<span class="pl">${esc(t.name)}</span>`;
 }
+// ---------- world rank on the match row ----------
+// A slim name->rank map (42 KB brotli) rather than the full ranking file, which
+// is ~145 KB and carries points/movement/slugs the feed has no use for. Loaded
+// lazily after first paint: scores must never wait on it.
+let RANKS = null;
+async function loadRanksLite() {
+  if (RANKS) return;
+  try { RANKS = (await (await fetch("data/ranks-lite.json?_=" + Date.now())).json()).ranks || {}; }
+  catch { RANKS = {}; }
+  render();
+}
+// The live feed sometimes carries a fuller surname than the ranking does
+// ("M. Borrero Fernandez De La Puente" vs "M. Borrero"), so try the whole name
+// first and then drop trailing surname tokens. Country must match, which is what
+// keeps two same-initial namesakes apart.
+function rankFor(name, country) {
+  if (!RANKS || !country) return null;
+  const cc = String(country).toUpperCase();
+  const toks = String(name || "").trim().split(/\s+/);
+  for (let i = toks.length; i >= 2; i--) {
+    const hit = RANKS[normName(toks.slice(0, i).join(" ")) + "|" + cc];
+    if (hit) return hit;
+  }
+  return null;
+}
+
 const SOURCE_LABEL = { rankedin: "RankedIn", tournamentsoftware: "tournamentsoftware.com", fip: "padelfip.com" };
 
 const esc = (s) =>
@@ -1294,7 +1327,7 @@ function fipFallbackHtml() {
   const rows = state.fipResults.map((r) => `
     <div class="fipres">
       <span class="flag">${esc((r.country || "").toUpperCase())}</span>
-      <span class="nm">${esc(r.name)}</span>
+      <span class="nm">${esc(r.full || r.name)}</span>
       <span class="meta">${esc(r.cat || "")} · #${r.rank}${r.points != null ? ` · ${Math.round(r.points).toLocaleString()} pts` : ""}</span>
       ${star("players", r.id, r.name, r.country || "")}
       ${fipProfileUrl(r) ? `<a class="fiplink" href="${esc(fipProfileUrl(r))}" target="_blank" rel="noopener" title="View on padelfip.com">↗</a>` : ""}
@@ -1359,6 +1392,16 @@ function playerRankings(id, name, country) {
   }
   return out.sort((a, b) => a.rank - b.rank);
 }
+// "P. Garcia Rodrigo" + "Pablo Garcia" -> "Pablo Garcia Rodrigo".
+// Only fires on a genuine "X. Surname" abbreviation; anything else is returned
+// untouched so a name that is already full never gets a first name bolted on.
+function fullNameFor(name, full) {
+  const m = /^\s*[^\s.]\.\s+(.+)$/.exec(name || "");
+  const first = (full || "").trim().split(/\s+/)[0];
+  if (!m || !first) return full && !m ? name : (full || name);
+  return `${first} ${m[1]}`;
+}
+
 const fipProfileUrl = (r) => (r && r.slug ? "https://www.padelfip.com/player/" + r.slug + "/" : null);
 
 // Age is derived at render time, never stored: a cached "24" goes wrong on a birthday.
@@ -1401,10 +1444,20 @@ function renderProfile() {
   if (state.player === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
   const { player, summary, matches } = state.player;
   const pct = summary.total ? Math.round((summary.wins / summary.total) * 100) : 0;
+  const ranks = playerRankings(player.id, player.name, player.country);
+  // Every other source only has FIP's abbreviated form ("T. Zapata"); the world
+  // ranking feed carries the real first name, so expand it for the HEADING ONLY.
+  // player.name still drives the follow key, search and head-to-head - swapping
+  // the underlying value would orphan follows saved under the short name.
+  //
+  // Take the FIRST NAME from the ranking and keep OUR surname: FIP's surname is
+  // sometimes the shorter one ("P. Garcia Rodrigo" here vs "Pablo Garcia" there),
+  // so using its `full` wholesale would drop a surname rather than add a name.
+  const shownName = fullNameFor(player.name, (ranks.find((r) => r.fed === "FIP") || {}).full);
   let html = `<button class="pback" data-pback="1">← Search</button>
     <div class="phead">
       <span class="flag">${esc((player.country || "").toUpperCase())}</span>
-      <h2>${esc(player.name)}</h2>
+      <h2>${esc(shownName)}</h2>
       ${star("players", player.id, player.name, player.country || "")}
       <div class="pstats">
         <div class="pstat"><b>${summary.total}</b><span>matches</span></div>
@@ -1423,7 +1476,6 @@ function renderProfile() {
   const tp = state.player.topPartner;
   if (tp)
     html += `<div class="toppartner" data-player="${esc(tp.id)}"><span class="tp-lbl">Top partner</span><b>${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span></div>`;
-  const ranks = playerRankings(player.id, player.name, player.country);
   if (ranks.length)
     html += `<div class="section-label">Ranking</div><div class="rankcards">` +
       ranks.map((r) => `<div class="rankcard">
@@ -2491,3 +2543,5 @@ app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="ske
 load(false).then(() => { applyRoute(); pollLoop(); });
 // keep the "updated Xs ago" label ticking
 setInterval(renderControls, 15_000);
+// world ranks for the match rows - deferred so it never delays first paint
+setTimeout(loadRanksLite, 600);

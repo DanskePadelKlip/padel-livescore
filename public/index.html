@@ -276,6 +276,13 @@
     /* one player per line — the pair never fits on one phone-width line */
     .team .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; color: var(--text); }
     .team .nm .pl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    /* FIP world ranking, kept deliberately quiet — it annotates the name, it is
+       not a score. Absent for anyone the ranking doesn't cover. */
+    .plrk { font-size: .66em; font-weight: 600; color: var(--faint); vertical-align: super;
+      margin-left: 3px; line-height: 0; font-variant-numeric: tabular-nums; }
+    /* The globe carries the meaning, so it gets back some of the size the .66em
+       superscript takes away — below ~9px a colour emoji turns to mush. */
+    .plrk-g { font-size: 1.25em; margin-right: 1px; }
     .team.win .nm { font-weight: 700; color: var(--win); }
     /* serve indicator — a dot on the serving pair. The slot is present (but
        invisible) on the non-serving row too, so names never shift when the
@@ -672,9 +679,9 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=1eea6aa3<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=4ef09ac9<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=1eea6aa3"></script>
+  <script src="/app.js?v=4ef09ac9"></script>
 </body>
 </html>
