@@ -1,18 +1,19 @@
-# padelticker-refresh — the scheduled data worker (see worker/index.js).
+# padelticker-refresh — the FALLBACK data worker (see worker/index.js).
+# Primary producer is the laptop daemon (scripts/refresh-loop.js); this worker
+# stands by while the daemon is producing and takes over when it goes quiet.
+#
+# Designed for the FREE Workers plan: one source per firing (≤50 subrequests),
+# blobs stored in the existing D1 database (no KV — its free write quota is too
+# small), gentle fallback cadence. No new Cloudflare resources needed.
+#
 # This is a SEPARATE Cloudflare app from the Pages project in the repo root's
 # wrangler.toml; deploy it explicitly with:
 #
 #   npx wrangler deploy -c worker/wrangler.toml
 #
-# One-time setup (see README "Deploy"):
-#   1. npx wrangler kv namespace create padelticker-live
-#      → paste the returned id below AND into the root wrangler.toml [[kv_namespaces]]
-#   2. npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml
-#      npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml   (optional)
-#   3. npx wrangler deploy -c worker/wrangler.toml
-#
-# ⚠ Requires the Workers PAID plan ($5/mo): a live refresh cycle exceeds the free
-# tier's 50 subrequests, and 60s live cadence exceeds its 1000 KV writes/day.
+# Optional secrets (Web Push + webhook alerts while it's the active producer):
+#   npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml
+#   npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml
 
 name = "padelticker-refresh"
 main = "index.js"
@@ -23,9 +24,9 @@ compatibility_date = "2026-07-01"
 compatibility_flags = ["nodejs_compat"]
 
 [triggers]
-# Fires every minute; worker/index.js self-paces (live 1 min / upcoming 10 min /
-# idle 30 min), so most firings are a single KV read + immediate exit.
-crons = ["* * * * *"]
+# Every 2 min; worker/index.js decides whether anything is due (standby check is
+# a single fetch). Free plan allows 5 cron triggers per account — this is one.
+crons = ["*/2 * * * *"]
 
 [alias]
 # linkedom's default entry expects Node globals; ship its workerd-safe build.
@@ -33,11 +34,8 @@ crons = ["* * * * *"]
 # `import` condition, which wrangler's alias resolver doesn't match.)
 "linkedom" = "../node_modules/linkedom/worker.js"
 
-[[kv_namespaces]]
-binding = "LIVE"
-id = "REPLACE_WITH_padelticker-live_NAMESPACE_ID" # from: npx wrangler kv namespace create padelticker-live
-
-# Same D1 database the Pages Functions use (push subscriptions + history).
+# Same D1 database the Pages Functions already use — stores the live_blobs table
+# (matches/health/rankings/calendar snapshots) plus push subscriptions.
 [[d1_databases]]
 binding = "DB"
 database_name = "padelticker-history"

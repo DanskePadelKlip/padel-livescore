@@ -12,12 +12,12 @@ name: Refresh livescore
 # free). Any useful cadence exceeds that — see README "Deploy" for options
 # (make the repo public for unlimited minutes, use a self-hosted runner, etc.).
 #
-# ⚠ SUPERSEDED as the data path: GitHub throttled this cron to every 4–14 h in
-# practice — the scheduled worker (worker/) is now the primary producer, writing
-# to KV that functions/data/*.json.js serve first. Once the worker is verified
-# in production (README "Worker setup"), drop the cron + "Fetch matches" step
-# here and keep this workflow as deploy-on-push for code. Until then it's a
-# harmless fallback: fetch-live.js defers alerts/push when the worker owns them.
+# ⚠ THIRD-TIER safety net only: GitHub throttles this cron to every 4–14 h in
+# practice. The laptop daemon (scripts/refresh-loop.js) is the primary data
+# producer and the free-tier worker (worker/) is the automatic fallback —
+# functions/data/*.json.js serve whichever copy is freshest. This workflow's
+# fetch just tops up the baked static fallback files on each (rare) run;
+# fetch-live.js skips alerts/push whenever the worker's data is fresh.
 
 on:
   schedule:

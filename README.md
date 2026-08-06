@@ -105,44 +105,47 @@ time we catch a live match.
 Live at **https://padelticker.com** (Cloudflare Pages, project `padel-livescore`).
 
 - **Frontend**: static `public/` on Cloudflare Pages — deploys ship CODE.
-- **Data**: the scheduled worker in [`worker/`](worker/index.js) runs the same
-  `aggregate()` pipeline on a Cron Trigger (fires every minute, self-paces: live
-  matches → 1 min, upcoming → 10 min, idle → 30 min) and writes
-  `matches.json` / `health.json` / `rankings.json` / `calendar.json` to a KV
-  namespace. `functions/data/*.json.js` serve those paths KV-first with a
-  fallback to the baked static file — so data freshness no longer depends on
-  deploys, GitHub cron throttling, or a laptop being awake. The worker also owns
-  the "now live" webhook alerts and Web Push fan-out (`src/webpush.js`, pure
-  WebCrypto — run `node scripts/test-webpush.mjs` after touching it).
+- **Data — two producers, freshest wins:**
+  1. **Primary: the laptop daemon** (`scripts/refresh-loop.js`) — full pipeline,
+     adaptive cadence (live → 1 min, upcoming → 10 min, idle → 30 min), deploys
+     static data files each cycle. Install as a Windows scheduled task with
+     `scripts/install-refresh-task.ps1`.
+  2. **Fallback: the free-tier worker** ([`worker/`](worker/index.js)) — a Cron
+     Trigger that peeks at the live feed every 2 min. While the daemon is
+     producing it stands down (cost: one fetch). When the feed goes stale
+     (laptop asleep) it takes over at a gentler cadence (live sources ≈ 5 min,
+     one source per firing to fit the free plan's 50-subrequest cap), storing
+     snapshots in the existing D1 database. It also owns webhook alerts and Web
+     Push while active (`src/webpush.js`, pure WebCrypto — run
+     `node scripts/test-webpush.mjs` after touching it).
+
+  `functions/data/*.json.js` serve each `/data/*.json` path from whichever
+  producer's copy is fresher (D1 vs the baked static file), so the handoff in
+  both directions is automatic — no coordination, no redeploys for data.
 - **Manual deploy** (uses a Cloudflare `Pages: Edit` token + account id in your env):
   ```bash
   npx wrangler pages deploy public --project-name padel-livescore --branch main
   ```
 
-### Worker setup (one-time)
-
-Needs the **Workers Paid plan** ($5/mo): a live refresh cycle exceeds the free
-tier's 50-subrequest cap, and 60s live cadence exceeds its 1000 KV writes/day.
+### Fallback-worker setup (one-time, free plan, no new resources)
 
 ```bash
-npx wrangler kv namespace create padelticker-live
-# paste the returned id into worker/wrangler.toml AND uncomment+fill the
-# [[kv_namespaces]] block in the root wrangler.toml, then redeploy Pages once
-npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml
-npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml   # optional
+npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml   # optional: Web Push
+npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml   # optional: alerts
 npx wrangler deploy -c worker/wrangler.toml
 ```
 
-Verify: the worker's own URL (printed on deploy) shows its pacing state and data
-age; after a couple of minutes `padelticker.com/api/health` should report fresh
-`generated_at` and `/data/matches.json` should carry `"producer": "worker"`.
+Verify: the worker's own URL (printed on deploy) reports whether it's in
+standby or acting as fallback producer. With the daemon stopped for ~35 min,
+`/data/matches.json` on the site should start carrying `"producer": "worker"`;
+start the daemon again and its fresher deploys win back automatically.
 
-Once that's confirmed, the old data paths become fallbacks you can wind down:
-- `.github/workflows/refresh.yml` — drop the cron + fetch step (deploy-on-push
-  stays useful for shipping code). Until then it's harmless: `fetch-live.js`
-  sees `producer:"worker"` on fresh data and skips alerts/push so nothing
-  double-fires.
-- `scripts/refresh-loop.js` (laptop daemon) — same story; keep it for local dev.
+Free-plan caveat: the tournamentsoftware source's HTML parsing can exceed the
+free 10 ms CPU budget on heavy days — that slot then just stays on its last
+good data and retries later; `/api/health` shows it via `lastOkAt`. The
+Actions cron in `refresh.yml` remains a third, slow safety net; its
+`fetch-live.js` skips alerts/push whenever the worker's data is fresh, so
+nothing double-notifies.
 
 **Required GitHub secrets** for the workflow (Settings → Secrets and variables → Actions):
 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
@@ -158,6 +161,6 @@ Once that's confirmed, the old data paths become fallbacks you can wind down:
 - ~~**P3** — FIP/Premier adapter~~ ✅ done (`src/adapters/fip.js`, via matchscorerlive).
   Next source: France (Ten'Up/FFT — likely another browser adapter on `src/browser.js`).
   FIP polish: parse the "Starting at 9:00 AM" schedule text into a real start time.
-- ~~**Infra** — fetch job becomes a scheduled worker~~ ✅ done (`worker/`, cron +
-  KV + `functions/data/*`). Remaining: wind down the Actions cron / laptop daemon
-  once the worker is verified in production (see "Deploy").
+- ~~**Infra** — fetch job becomes a scheduled worker~~ ✅ done as a fallback tier
+  (`worker/` on the free plan + `functions/data/*` freshest-wins serving; the
+  laptop daemon stays primary — see "Deploy").

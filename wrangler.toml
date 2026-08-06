@@ -8,13 +8,6 @@ compatibility_date = "2026-07-01"
 binding = "DB"
 database_name = "padelticker-history"
 database_id = "e811bb33-b2ea-44a4-82a3-7a368770c293"
-
-# Live-data KV, written by the scheduled worker (worker/) and read by
-# functions/data/*.json.js so /data/matches.json etc. are fresh WITHOUT a
-# redeploy. UNCOMMENT once the namespace exists (functions gracefully fall back
-# to the baked static files until then):
-#   npx wrangler kv namespace create padelticker-live
-# then paste the id here AND in worker/wrangler.toml.
-# [[kv_namespaces]]
-# binding = "LIVE"
-# id = "REPLACE_WITH_padelticker-live_NAMESPACE_ID"
+# (The fallback worker in worker/ shares this database: it stores its live-data
+# snapshots in a `live_blobs` table that functions/data/*.json.js read whenever
+# they're fresher than the deployed static files. No extra bindings needed.)

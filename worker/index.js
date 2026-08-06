@@ -1,31 +1,41 @@
-// PadelTicker refresh — the scheduled edge worker the README always promised.
-// Replaces the GitHub-Actions cron (which GitHub throttled to every 4–14 h — fatal
-// for a livescore) and the laptop daemon as the primary data producer.
+// PadelTicker refresh worker — the FALLBACK data producer (free Workers plan).
 //
-//   cron (every minute) ──► due? ──► aggregate() ──► KV: matches.json + health.json
-//                                        │                (+ rankings ~6h, calendar ~weekly)
-//                                        └─► alerts webhook + Web Push (diff vs prev)
+// The PRIMARY producer is the laptop daemon (scripts/refresh-loop.js): full
+// pipeline, 1-min live cadence, deploys static files. This worker exists for
+// when that machine is asleep: every cron firing it peeks at the live feed —
+// if the daemon has produced recently it STANDS DOWN (cost: one fetch); once
+// the feed goes stale it takes over at a gentler cadence, writing blobs to D1
+// that functions/data/*.json.js serve whenever they're fresher than the static
+// files. When the daemon wakes and deploys, its data is fresher again and the
+// worker steps back automatically. No coordination, freshest data wins.
 //
-// The site reads these blobs through functions/data/*.json.js (KV-first, static
-// fallback), so the UI/SSR/health endpoints didn't change at all. Static deploys
-// go back to meaning what they should: shipping CODE, not data.
+//   cron (*/2) ─► daemon fresh? ──yes──► return (standby)
+//                     │no
+//                     ▼
+//        most-overdue source of: rankedin | fip | ts | rankings | calendar
+//                     ▼
+//        fetch that ONE source ─► merge with the other sources' D1 blobs
+//                     ▼
+//        D1: src:<id> + matches.json + health.json (+ alerts/Web Push diff)
 //
-// Self-pacing: the cron fires every minute, but each run stores when the next one
-// is actually due — live matches → every minute, upcoming → 10 min, idle → 30 min,
-// error → 5 min (same ladder as scripts/refresh-loop.js). A not-yet-due firing
-// costs one KV read.
-//
-// NOTE: needs the $5/mo Workers Paid plan. A live cycle fans out well past the
-// free tier's 50-subrequest cap (≈19 tournaments × matches + rankings + FIP/ts
-// pages), and 60s live cadence exceeds 1000 KV writes/day.
+// FREE-PLAN BUDGETS (why one source per firing):
+//   · ≤50 subrequests/invocation — each source alone fits (rankedin ≈5+events,
+//     fip ≈12, ts ≈27, rankings 24); a full cycle would not.
+//   · 10 ms CPU/invocation — fine for the JSON sources; tournamentsoftware's
+//     HTML parse is the tight one. If a slot blows the limit the invocation
+//     dies, last-good data persists, and the slot retries next window.
+//   · D1 free tier (100k row-writes/day) replaces KV (1k/day — too few).
 //
 // Deploy (from repo root):    npx wrangler deploy -c worker/wrangler.toml
-// Secrets (once):             npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml
-//                             npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml   (optional)
+// Secrets (once, optional):   npx wrangler secret put VAPID_PRIVATE_KEY -c worker/wrangler.toml
+//                             npx wrangler secret put ALERT_WEBHOOK_URL -c worker/wrangler.toml
 
-import { aggregate } from "../src/aggregate.js";
+import * as rankedinAdapter from "../src/adapters/rankedin.js";
+import * as fipAdapter from "../src/adapters/fip.js";
+import * as tsAdapter from "../src/adapters/tournamentsoftware.js";
+import { mergeMatches } from "../src/aggregate.js";
+import { assertMatch } from "../src/schema.js";
 import { fetchRankings } from "../src/rankings.js";
-import { attachSourceHistory } from "../src/health-history.js";
 import { newlyLive, newlySoon, sendAlerts, sendSoonAlerts } from "../src/alerts.js";
 import { fanOut, livePayload, soonPayload, VAPID_PUBLIC_KEY, VAPID_SUBJECT } from "../src/push-core.js";
 import { sendNotification } from "../src/webpush.js";
@@ -33,139 +43,194 @@ import { setClubStore } from "../src/rankedin-club.js";
 import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
 import { buildCalendar } from "../src/calendar-refresh.js";
 
-const LIVE_MS = 60_000;            // ≥1 live match  -> ~1 min (feels live)
-const UPCOMING_MS = 10 * 60_000;   // matches upcoming -> 10 min
-const IDLE_MS = 30 * 60_000;       // nothing on -> 30 min
-const ERROR_MS = 5 * 60_000;
-const RANKINGS_MS = 6 * 3600_000;  // rankings move ~weekly; 6h matches the daemon
-const CALENDAR_MS = 7 * 24 * 3600_000;
+const SITE = "https://padelticker.com";
+// The daemon writes matches.json every cycle, even idle (≤30 min apart). A feed
+// fresher than this that ISN'T ours means the daemon is alive → stand down.
+const DAEMON_FRESH_MS = 35 * 60_000;
+
+// Fallback cadence — deliberately gentler than the daemon's 1-min live pace.
+const CAD = {
+  liveMs: 5 * 60_000,       // source has live matches
+  upcomingMs: 15 * 60_000,  // only upcoming
+  idleMs: 30 * 60_000,      // nothing on
+  tsMs: 20 * 60_000,        // tournamentsoftware: schedules/results, flat
+  rankingsMs: 12 * 3600_000,
+  calendarMs: 7 * 24 * 3600_000,
+};
+
+// Match sources in ADAPTERS order (src/aggregate.js) so merge precedence is
+// identical to the daemon's: rankedin, then fip, then ts win on duplicate ids.
+const SOURCES = [
+  { id: "rankedin", mod: rankedinAdapter },
+  { id: "fip", mod: fipAdapter },
+  { id: "tournamentsoftware", mod: tsAdapter },
+];
+const SLOTS = [...SOURCES.map((s) => s.id), "rankings", "calendar"];
+
+let tableReady = false;
+async function ensureTable(env) {
+  if (tableReady) return;
+  await env.DB.prepare(
+    "CREATE TABLE IF NOT EXISTS live_blobs (key TEXT PRIMARY KEY, body TEXT NOT NULL, updated_at TEXT NOT NULL)"
+  ).run();
+  tableReady = true;
+}
+const getBlob = async (env, key) =>
+  JSON.parse((await env.DB.prepare("SELECT body FROM live_blobs WHERE key = ?").bind(key).first())?.body ?? "null");
+const putBlob = (env, key, value) =>
+  env.DB.prepare(
+    "INSERT INTO live_blobs (key, body, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT(key) DO UPDATE SET body = ?2, updated_at = ?3"
+  ).bind(key, JSON.stringify(value), new Date().toISOString()).run();
 
 export default {
-  // Peek endpoint for debugging/monitoring the pipeline itself (the public site
-  // health lives at padelticker.com/api/health): shows the pacing state and how
-  // old the current KV snapshot is.
+  // Peek endpoint: is the worker standing by or producing, and how old is what?
   async fetch(request, env) {
-    const [state, matches] = await Promise.all([
-      env.LIVE.get("state", "json"),
-      env.LIVE.get("matches.json", "json"),
-    ]);
+    await ensureTable(env);
+    const [meta, matches] = await Promise.all([getBlob(env, "meta"), getBlob(env, "matches.json")]);
     return new Response(JSON.stringify({
-      state,
-      dataGeneratedAt: matches?.generatedAt || null,
-      dataAgeMin: matches?.generatedAt ? Math.round((Date.now() - Date.parse(matches.generatedAt)) / 60000) : null,
-      matchCount: matches?.count ?? null,
+      mode: meta?.standby ? "standby (daemon is producing)" : "active (fallback producer)",
+      lastCheckAt: meta?.checkedAt || null,
+      slots: meta?.next || null,
+      blobGeneratedAt: matches?.generatedAt || null,
+      blobMatchCount: matches?.count ?? null,
     }, null, 2), { headers: { "content-type": "application/json" } });
   },
 
   async scheduled(event, env, ctx) {
-    const startedAt = Date.now();
-    const state = (await env.LIVE.get("state", "json")) || {};
-    if (state.nextDueAt && startedAt < state.nextDueAt - 5000) return; // not due yet (5s cron jitter slack)
+    const now = Date.now();
+    await ensureTable(env);
+    const meta = (await getBlob(env, "meta")) || { next: {} };
+    meta.checkedAt = new Date(now).toISOString();
 
-    // Lease-style claim BEFORE the slow work, so a cycle that outlives the next
-    // cron firing isn't run twice. (KV isn't a real lock, but cron invocations
-    // land in the same colo, where read-after-write is dependable.)
-    state.nextDueAt = startedAt + LIVE_MS;
-    await env.LIVE.put("state", JSON.stringify(state));
+    // ---- standby check: is the daemon (or CI) producing? --------------------
+    let feed = null;
+    try {
+      feed = await (await fetch(`${SITE}/data/matches.json?_=${now}`, { signal: AbortSignal.timeout(8000) })).json();
+    } catch {
+      // site unreachable — assume we're needed rather than leave the feed dark
+    }
+    const feedAt = Date.parse(feed?.generatedAt) || 0;
+    if (feed?.producer !== "worker" && now - feedAt < DAEMON_FRESH_MS) {
+      meta.standby = true;
+      await putBlob(env, "meta", meta);
+      return;
+    }
+    if (meta.standby) console.log("feed stale — taking over as fallback producer");
+    meta.standby = false;
 
-    // organiser cache persisted in KV (the .cache/ file's role in Node)
+    // ---- pick the most-overdue slot (one per firing: free-plan budgets) -----
+    const due = SLOTS.filter((k) => now >= (meta.next?.[k] || 0) - 5000);
+    if (!due.length) { await putBlob(env, "meta", meta); return; }
+    const slot = due.sort((a, b) => (meta.next?.[a] || 0) - (meta.next?.[b] || 0) || SLOTS.indexOf(a) - SLOTS.indexOf(b))[0];
+
+    // lease before the slow work so a slow slot isn't started twice
+    meta.next = { ...meta.next, [slot]: now + 60_000 };
+    await putBlob(env, "meta", meta);
+
     setClubStore({
-      load: () => env.LIVE.get("clubs", "json"),
-      save: (entries) => ctx.waitUntil(env.LIVE.put("clubs", JSON.stringify(entries))),
+      load: () => getBlob(env, "clubs"),
+      save: (entries) => ctx.waitUntil(putBlob(env, "clubs", entries)),
     });
 
-    let delay = ERROR_MS;
     try {
-      const date = new Date().toISOString().slice(0, 10);
-      const log = (m) => console.log(m);
-
-      const prev = await env.LIVE.get("matches.json", "json");
-      const { matches, sources } = await aggregate({ date, log });
-      const counts = matches.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
-
-      // ---- alerts + Web Push: diff against the previous snapshot ------------
-      if (env.ALERT_WEBHOOK_URL || env.VAPID_PRIVATE_KEY) {
-        const prevAt = Date.parse(prev?.generatedAt) || startedAt - 15 * 60_000;
-        const fresh = newlyLive(prev?.matches, matches);
-        const soon = newlySoon(prev?.matches, prevAt, matches, startedAt, 20 * 60_000);
-        if (fresh.length || soon.length) log(`🔔 ${fresh.length} newly live · ${soon.length} starting soon`);
-        if (env.ALERT_WEBHOOK_URL) {
-          if (fresh.length) await sendAlerts(fresh, env.ALERT_WEBHOOK_URL);
-          if (soon.length) await sendSoonAlerts(soon, env.ALERT_WEBHOOK_URL);
+      if (slot === "rankings") {
+        meta.next.rankings = now + CAD.rankingsMs; // even on failure: retry next window
+        const lists = await fetchRankings({ log: console.log });
+        if (lists.length) {
+          const [base, prevRankings] = await Promise.all([getBlob(env, "rankings-base.json"), getBlob(env, "rankings.json")]);
+          const baseToWrite = applyMovement(lists, base, prevRankings?.lists || [], isoWeekKey());
+          await putBlob(env, "rankings-base.json", baseToWrite);
+          await putBlob(env, "rankings.json", { generatedAt: new Date().toISOString(), lists });
+          meta.rankingsCount = lists.length;
         }
-        if (env.VAPID_PRIVATE_KEY && (fresh.length || soon.length)) {
-          await pushFanOut(env, fresh, soon, log);
-        }
+      } else if (slot === "calendar") {
+        meta.next.calendar = now + CAD.calendarMs; // a failing parse retries next week
+        const cal = await buildCalendar({ today: new Date().toISOString().slice(0, 10) });
+        await putBlob(env, "calendar.json", cal);
+        console.log(`calendar refreshed: ${cal.events.length} events`);
+      } else {
+        await runSourceSlot(env, slot, now, meta);
       }
-
-      // ---- the live feed ----------------------------------------------------
-      await env.LIVE.put("matches.json", JSON.stringify({
-        generatedAt: new Date().toISOString(), date, count: matches.length, matches,
-        producer: "worker", // tells scripts/fetch-live.js to leave alerts to us
-      }));
-
-      // ---- rankings (~6h) + weekly movement baselines ------------------------
-      if (!state.rankingsAt || startedAt - state.rankingsAt > RANKINGS_MS) {
-        try {
-          const lists = await fetchRankings({ log });
-          if (lists.length) {
-            const [base, prevRankings] = await Promise.all([
-              env.LIVE.get("rankings-base.json", "json"),
-              env.LIVE.get("rankings.json", "json"),
-            ]);
-            const baseToWrite = applyMovement(lists, base, prevRankings?.lists || [], isoWeekKey());
-            await env.LIVE.put("rankings-base.json", JSON.stringify(baseToWrite));
-            await env.LIVE.put("rankings.json", JSON.stringify({ generatedAt: new Date().toISOString(), lists }));
-            state.rankingsCount = lists.length;
-          }
-          state.rankingsAt = startedAt; // even on 0 lists — retry on the next window, not every cycle
-        } catch (e) {
-          console.error("rankings refresh failed:", e.message);
-        }
-      }
-
-      // ---- pro calendar (~weekly, parse-guarded) -----------------------------
-      if (!state.calendarAt || startedAt - state.calendarAt > CALENDAR_MS) {
-        state.calendarAt = startedAt; // a failing parse retries next week, not every cycle
-        try {
-          const cal = await buildCalendar({ today: date });
-          await env.LIVE.put("calendar.json", JSON.stringify(cal));
-          log(`calendar refreshed: ${cal.events.length} Premier Padel events`);
-        } catch (e) {
-          console.error("calendar refresh skipped:", e.message);
-        }
-      }
-
-      // ---- health snapshot (lastOkAt carried from the previous KV snapshot) --
-      const prevHealth = await env.LIVE.get("health.json", "json");
-      const sourcesWithHistory = await attachSourceHistory(sources, { prev: prevHealth });
-      await env.LIVE.put("health.json", JSON.stringify({
-        generated_at: new Date().toISOString(),
-        total: matches.length,
-        sources: sourcesWithHistory,
-        rankings: state.rankingsCount || 0,
-        byStatus: counts,
-        producer: "worker",
-      }));
-
-      // every source dark = an outage, not a quiet day — retry on the error ladder
-      const allDown = sources.length && sources.every((s) => s.ok === false);
-      delay = allDown ? ERROR_MS : counts.live ? LIVE_MS : counts.upcoming ? UPCOMING_MS : IDLE_MS;
-      log(`cycle ${allDown ? "DEGRADED (all sources failed)" : "ok"}: ${matches.length} matches (${JSON.stringify(counts)}) — next in ${delay / 60000} min`);
     } catch (e) {
-      console.error("cycle failed:", e.stack || e.message);
-      delay = ERROR_MS;
+      // rankings/calendar re-armed themselves before the attempt; a source slot
+      // that failed unexpectedly (adapter errors are handled inside runSourceSlot)
+      // retries on the idle interval.
+      console.error(`slot ${slot} failed:`, e.stack || e.message);
+      if (SOURCES.some((s) => s.id === slot)) meta.next[slot] = now + CAD.idleMs;
     }
-
-    state.nextDueAt = startedAt + delay;
-    await env.LIVE.put("state", JSON.stringify(state));
+    await putBlob(env, "meta", meta);
   },
 };
+
+async function runSourceSlot(env, slot, now, meta) {
+  const date = new Date().toISOString().slice(0, 10);
+  const src = SOURCES.find((s) => s.id === slot);
+
+  // previous per-source blobs (this slot's prev doubles as its last-good cache)
+  const blobs = {};
+  for (const s of SOURCES) blobs[s.id] = (await getBlob(env, `src:${s.id}`)) || { matches: [] };
+  const prevMerged = await getBlob(env, "matches.json");
+
+  let entry = blobs[slot];
+  try {
+    const matches = await src.mod.fetchMatches({ date, log: console.log });
+    for (const m of matches) assertMatch(m);
+    entry = { at: now, ok: true, error: null, lastOkAt: new Date(now).toISOString(), matches };
+  } catch (e) {
+    // keep last-good matches; record the failure for health
+    entry = { ...entry, at: now, ok: false, error: String(e?.message || e).slice(0, 200) };
+    console.error(`adapter ${slot} failed — ${entry.error}`);
+  }
+  blobs[slot] = entry;
+  await putBlob(env, `src:${slot}`, entry);
+
+  const merged = mergeMatches(SOURCES.map((s) => blobs[s.id].matches));
+  const counts = merged.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
+
+  // alerts + Web Push, diffed against whatever the site served before us
+  if (entry.ok && (env.ALERT_WEBHOOK_URL || env.VAPID_PRIVATE_KEY)) {
+    const prevAt = Date.parse(prevMerged?.generatedAt) || now - 15 * 60_000;
+    const fresh = newlyLive(prevMerged?.matches, merged);
+    const soon = newlySoon(prevMerged?.matches, prevAt, merged, now, 20 * 60_000);
+    if (env.ALERT_WEBHOOK_URL) {
+      if (fresh.length) await sendAlerts(fresh, env.ALERT_WEBHOOK_URL);
+      if (soon.length) await sendSoonAlerts(soon, env.ALERT_WEBHOOK_URL);
+    }
+    if (env.VAPID_PRIVATE_KEY && (fresh.length || soon.length)) await pushFanOut(env, fresh, soon);
+  }
+
+  await putBlob(env, "matches.json", {
+    generatedAt: new Date().toISOString(), date, count: merged.length, matches: merged,
+    producer: "worker", // lets the standby check + scripts/fetch-live.js recognise our data
+  });
+  await putBlob(env, "health.json", {
+    generated_at: new Date().toISOString(),
+    total: merged.length,
+    sources: SOURCES.map((s) => ({
+      id: s.mod.id,
+      ok: blobs[s.id].ok !== false,
+      count: (blobs[s.id].matches || []).length,
+      ...(blobs[s.id].ok === false ? { error: blobs[s.id].error } : {}),
+      lastOkAt: blobs[s.id].lastOkAt || null,
+    })),
+    rankings: meta.rankingsCount || 0,
+    byStatus: counts,
+    producer: "worker",
+  });
+
+  // re-arm: per-source pacing from that source's own content
+  const own = entry.matches || [];
+  const hasLive = own.some((m) => m.status === "live");
+  const hasUpcoming = own.some((m) => m.status === "upcoming");
+  meta.next[slot] = now + (slot === "tournamentsoftware" ? CAD.tsMs : hasLive ? CAD.liveMs : hasUpcoming ? CAD.upcomingMs : CAD.idleMs);
+  console.log(`slot ${slot}: ${own.length} matches (merged ${merged.length}, ${JSON.stringify(counts)}) — next in ${(meta.next[slot] - now) / 60000} min`);
+}
 
 // Web Push fan-out via the shared core (src/push-core.js) with the WebCrypto
 // sender and the native D1 binding — same subscriptions table, same matching and
 // payloads as the Node sender in src/push-send.js.
-async function pushFanOut(env, fresh, soon, log) {
+async function pushFanOut(env, fresh, soon) {
+  const log = (m) => console.log(m);
   let subs;
   try {
     subs = (await env.DB.prepare("SELECT endpoint,p256dh,auth,follows FROM push_subscriptions").all()).results || [];

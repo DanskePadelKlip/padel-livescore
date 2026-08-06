@@ -25,6 +25,20 @@ const cache = new Map(); // id -> { at, matches, ok, error }
 
 const STATUS_ORDER = { [STATUS.LIVE]: 0, [STATUS.UPCOMING]: 1, [STATUS.FINAL]: 2 };
 
+// Merge per-adapter match lists (in adapter order — last write wins on dupe id)
+// into the one sorted list the site serves. Shared with worker/index.js, which
+// refreshes one source at a time and re-merges from persisted per-source blobs;
+// keep the sort/dedupe HERE so the two pipelines can't disagree.
+export function mergeMatches(lists) {
+  const byId = new Map();
+  for (const arr of lists) for (const m of arr || []) byId.set(m.id, m);
+  return [...byId.values()].sort((a, b) => {
+    const s = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+    if (s !== 0) return s;
+    return (a.startTime || "").localeCompare(b.startTime || "");
+  });
+}
+
 // Returns { matches, sources } where sources = per-adapter status for health
 // monitoring. Adapters are isolated: one throwing no longer kills the others.
 export async function aggregate(opts = {}) {
