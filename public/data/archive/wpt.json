@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-12T02:58:14.570Z",
+  "generatedAt": "2026-08-12T02:59:23.362Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -13209,7 +13209,161 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Mieres",
+            "S. Gutierrez"
+          ],
+          "losers": [
+            "Silingo",
+            "C. Gutierrez"
+          ],
+          "score": "6-4 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Fernando Belasteguin",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Lamperti",
+            "Allemandi"
+          ],
+          "score": "6-4 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "JM Diaz",
+            "Maxi Sanchez"
+          ],
+          "losers": [
+            "Grabiel",
+            "Moyano"
+          ],
+          "score": "6-3 3-6 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Navarro",
+            "M. Diaz"
+          ],
+          "losers": [
+            "Lahoz",
+            "Santana"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": null,
+          "winners": [
+            "Llaguno",
+            "Amatriain"
+          ],
+          "losers": [
+            "Tryai",
+            "Eyheraguibel"
+          ],
+          "score": "6-2 6-1",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Women",
+          "round": null,
+          "winners": [
+            "Reiter",
+            "Navarro"
+          ],
+          "losers": [
+            "Tenorio",
+            "Iglesias"
+          ],
+          "score": "6-3 3-6 6-3",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2015-valencia-master",
@@ -25276,6 +25430,7 @@
   ],
   "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.",
   "roundsSeasons": [
+    2015,
     2016,
     2017,
     2018,
