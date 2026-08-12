@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T20:45:36.018Z",
+  "generatedAt": "2026-08-12T02:31:35.865Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -9372,7 +9372,57 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Alejandra Salazar",
+            "Marta Marrero"
+          ],
+          "losers": [
+            "Ortega",
+            "Sanchez"
+          ],
+          "score": "6-1 6-3",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "Alejandra Salazar",
+            "Marta Marrero"
+          ],
+          "losers": [
+            "Navarro",
+            "Reiter"
+          ],
+          "score": "6-1 6-0",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-murcia-open",
@@ -9433,7 +9483,85 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Quarterfinal",
+          "winners": [
+            "José S. Alayeto",
+            "Pilar S. Alayeto"
+          ],
+          "losers": [
+            "Alix Collombon",
+            "Sara Pujals"
+          ],
+          "score": "6-0 6-0",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "0"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 16",
+          "winners": [
+            "Sara Pujals",
+            "Alix Collombon"
+          ],
+          "losers": [
+            "Marta Talaván",
+            "Araceli Martínez Ibáñez"
+          ],
+          "score": "5-7 6-2 6-2",
+          "sets": [
+            [
+              "5",
+              "7"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alix Collombon",
+            "Sara Pujals"
+          ],
+          "losers": [
+            "Aguilar",
+            "Rovira"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2018-arroyo-de-la-encomienda-challenger",
@@ -9575,7 +9703,81 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Paquito Navarro",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Franco Stupaczuk",
+            "Cristian Gutiérrez"
+          ],
+          "score": "6-1 7-6",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Marta Marrero",
+            "Alejandra Salazar"
+          ],
+          "losers": [
+            "Gemma Triay",
+            "Lucia Sainz"
+          ],
+          "score": "6-2 6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Semifinal",
+          "winners": [
+            "Majo Sanchez Alayeto",
+            "Mapi Sanchez Alayeto"
+          ],
+          "losers": [
+            "Martita Ortega",
+            "Ariana Sanchez"
+          ],
+          "score": "6-3 6-1",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-paris-challenger",
@@ -9611,7 +9813,85 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Federico Chingotto",
+            "Juan Tello"
+          ],
+          "losers": [
+            "Álvaro Cepero",
+            "Sebastián Nerone"
+          ],
+          "score": "6-4 6-2",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Adrien Maigret",
+            "Benjamin Tison"
+          ],
+          "losers": [
+            "Loïc Le Panse",
+            "Julien Maigret"
+          ],
+          "score": "6-0 7-6",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Women",
+          "round": "Qualifying",
+          "winners": [
+            "Mélissa Martin",
+            "Géraldine Sorel"
+          ],
+          "losers": [
+            "Audrey Casanova",
+            "Cristina Dolce"
+          ],
+          "score": "7-5 0-6 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "0",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2018-granada-open",
@@ -9871,7 +10151,33 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Women",
+          "round": "Round of 32",
+          "winners": [
+            "Alix Collombon",
+            "Sara Pujals"
+          ],
+          "losers": [
+            "Nuria Rovira",
+            "Raquel Segura"
+          ],
+          "score": "6-0 4-1 ab.",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "4",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-andorra-open",
@@ -9985,7 +10291,109 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Benjamin Tison",
+            "Adrien Maigret"
+          ],
+          "losers": [
+            "Gianmarco Toccini",
+            "Saverio Palmieri"
+          ],
+          "score": "6-2 6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Bastien Blanqué",
+            "Johan Bergeron"
+          ],
+          "losers": [
+            "Alejandro Tasa Van beek",
+            "Juan Miguel Such Pérez"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Sergio Alba Sánchez",
+            "Francisco Manuel Gil Morales"
+          ],
+          "losers": [
+            "Iván Arrondo Pérez",
+            "Robin Haziza"
+          ],
+          "score": "6-1 6-4",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Javier González Barahona",
+            "Christian Fuster"
+          ],
+          "losers": [
+            "Jérémy Scatena",
+            "Nicolas Suescun"
+          ],
+          "score": "6-7 7-6 4-6",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "4",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-bastad-open",
@@ -10159,7 +10567,57 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": null,
+          "winners": [
+            "Víctor Ruiz Remedios",
+            "José Rico Dasi"
+          ],
+          "losers": [
+            "Jérémy Scatena",
+            "Nicolás Suescun"
+          ],
+          "score": "6-3 6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": null,
+          "winners": [
+            "Vasco Pascoal",
+            "Miguel Oliveira"
+          ],
+          "losers": [
+            "Maxime Moreau",
+            "Pablo Acevedo Iturribarra"
+          ],
+          "score": "6-0 6-3",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2018-valladolid-open",
@@ -10252,7 +10710,61 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Bastien Blanqué",
+            "Johan Bergeron"
+          ],
+          "losers": [
+            "Robin Haziza",
+            "Jérémy Scatena"
+          ],
+          "score": "5-7 7-6 6-1",
+          "sets": [
+            [
+              "5",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Bastien Blanqué",
+            "Johan Bergeron"
+          ],
+          "losers": [
+            "David Antolín Solla",
+            "Mario Lozano Encinas"
+          ],
+          "score": "7-6 6-4",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-madrid-challenger",
@@ -10337,7 +10849,33 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Juan Martín Díaz",
+            "Paquito Navarro"
+          ],
+          "losers": [
+            "Juan Mieres",
+            "Miguel Lamperti"
+          ],
+          "score": "7-6 6-2",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-zaragoza-open",
@@ -10451,7 +10989,37 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "Javier de Paiz",
+            "Mario Del Castillo Marin"
+          ],
+          "losers": [
+            "Bastien Blanqué",
+            "Johan Bergeron"
+          ],
+          "score": "7-5 6-7 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2018-catalunya-master",
@@ -24602,8 +25170,9 @@
       ]
     }
   ],
-  "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news for 2019; finals + rankings remain from Wikipedia.",
+  "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.",
   "roundsSeasons": [
+    2018,
     2019
   ],
   "circuitSource": "PPT finals from padelfip.com circuit-stats API; WPT finals still from Wikipedia"
