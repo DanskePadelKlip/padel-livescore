@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-12T02:56:41.078Z",
+  "generatedAt": "2026-08-12T02:58:14.570Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -13017,7 +13017,57 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "E. Sanmarti",
+            "A. Biglieri"
+          ],
+          "losers": [
+            "D. Schaeffer",
+            "P. Acevedo"
+          ],
+          "score": "7-6 6-4",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Qualifying",
+          "winners": [
+            "R. Rodriguez",
+            "M. Gonzalez"
+          ],
+          "losers": [
+            "Robin Haziza",
+            "Jérémy Scatena"
+          ],
+          "score": "6-4 6-1",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2016-valencia-master",
@@ -25226,6 +25276,7 @@
   ],
   "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.",
   "roundsSeasons": [
+    2016,
     2017,
     2018,
     2019
