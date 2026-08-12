@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-12T02:31:35.865Z",
+  "generatedAt": "2026-08-12T02:56:41.078Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -11595,7 +11595,61 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Fernando Belasteguín",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Juan Tello",
+            "Federico Chingotto"
+          ],
+          "score": "3-6 6-3 6-4",
+          "sets": [
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Sanyo Gutiérrez",
+            "Paquito Navarro"
+          ],
+          "losers": [
+            "Matías Díaz",
+            "Maxi Sanchez"
+          ],
+          "score": "6-4 7-5",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2017-gran-canaria-open",
@@ -25172,6 +25226,7 @@
   ],
   "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.",
   "roundsSeasons": [
+    2017,
     2018,
     2019
   ],
