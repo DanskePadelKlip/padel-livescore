@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-12T02:59:23.362Z",
+  "generatedAt": "2026-08-12T02:59:55.557Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -25430,6 +25430,7 @@
   ],
   "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.",
   "roundsSeasons": [
+    2014,
     2015,
     2016,
     2017,
