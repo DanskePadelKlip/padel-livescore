@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-12T02:59:55.557Z",
+  "generatedAt": "2026-08-12T03:01:51.447Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -15070,7 +15070,33 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Gaby Reca",
+            "Seba Nerone"
+          ],
+          "score": "6-1 7-5",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2013-buenos-aires-open",
@@ -15110,7 +15136,213 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Juan Martín Díaz",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Miguel Lamperti",
+            "Maxi Grabiel"
+          ],
+          "score": "7-5 6-4",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Sanyo Gutiérrez",
+            "Maxi Sánchez"
+          ],
+          "losers": [
+            "Agustín Gómez Silingo",
+            "Fede Quiles"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Paquito Navarro",
+            "Jordi Muñoz"
+          ],
+          "score": "6-3 7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Cristian Gutiérrez",
+            "Matías Díaz"
+          ],
+          "losers": [
+            "Gaby Reca",
+            "Seba Nerone"
+          ],
+          "score": "6-2 6-7 7-5",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "7"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Juan Tello",
+            "Carlos Saavedra"
+          ],
+          "losers": [
+            "Pedro Alonso Martínez",
+            "Matías Nicoletti"
+          ],
+          "score": "7-6 4-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Samuel Miltos",
+            "Adrián Pereza"
+          ],
+          "losers": [
+            "Roberto Saba",
+            "Guillermo Demianiuk"
+          ],
+          "score": "7-5 6-4",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Andoni Bardasco",
+            "Ignacio González Gadea"
+          ],
+          "losers": [
+            "Héctor Perona",
+            "Raúl Marcos"
+          ],
+          "score": "4-6 6-3 7-6",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Agustín Gómez Silingo",
+            "Fede Quiles"
+          ],
+          "losers": [
+            "Adrián Allemandi",
+            "Fernando Poggi"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "medium"
+        }
+      ]
     },
     {
       "key": "wpt-2013-valencia-internacional-open",
@@ -15186,7 +15418,329 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Sanyo Gutiérrez",
+            "Maxi Sánchez"
+          ],
+          "losers": [
+            "Miguel Lamperti",
+            "Maxi Grabiel"
+          ],
+          "score": "6-2 5-7 7-6",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "5",
+              "7"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Juan Martín Díaz",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Gaby Reca",
+            "Sebastián Nerone"
+          ],
+          "score": "7-5 6-3",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Cristian Gutiérrez",
+            "Matías Díaz"
+          ],
+          "losers": [
+            "Paquito Navarro",
+            "Jordi Muñoz"
+          ],
+          "score": "7-5 7-5",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Adrián Allemandi",
+            "Fernando Poggi"
+          ],
+          "score": "6-2 6-1",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Juan Martín Díaz",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Bainad",
+            "Gisbert"
+          ],
+          "score": "6-1 6-2",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Marcello Jardim",
+            "Guillermo Lahoz"
+          ],
+          "score": "6-2 6-4",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Cristian Gutiérrez",
+            "Matías Díaz"
+          ],
+          "losers": [
+            "Agustín Gómez Silingo",
+            "Federico Quiles"
+          ],
+          "score": "6-0 6-2",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Miguel Lamperti",
+            "Maxi Grabiel"
+          ],
+          "losers": [
+            "Díaz",
+            "Limones"
+          ],
+          "score": "6-2 6-1",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "medium"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 16",
+          "winners": [
+            "Gaby Reca",
+            "Sebastián Nerone"
+          ],
+          "losers": [
+            "Matías Nicoletti",
+            "Pedro Alonso Martínez"
+          ],
+          "score": "6-1 6-3",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Gastón Malacalza",
+            "Alejandro Ruiz Muñoz"
+          ],
+          "losers": [
+            "Godo Díaz",
+            "Matías Marina"
+          ],
+          "score": "7-5 7-6",
+          "sets": [
+            [
+              "7",
+              "5"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Agustín Gómez Silingo",
+            "Federico Quiles"
+          ],
+          "losers": [
+            "Juan Romagosa",
+            "Ignacio Gadea"
+          ],
+          "score": "6-7 6-2 7-5",
+          "sets": [
+            [
+              "6",
+              "7"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Juan Martín Díaz",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Héctor Marcos Perona",
+            "Raúl Durán"
+          ],
+          "score": "6-1 6-2",
+          "sets": [
+            [
+              "6",
+              "1"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Round of 32",
+          "winners": [
+            "Pablo Lima",
+            "Juani Mieres"
+          ],
+          "losers": [
+            "Cristian Calneggia",
+            "Gerardo Derito"
+          ],
+          "score": "6-0 6-1",
+          "sets": [
+            [
+              "6",
+              "0"
+            ],
+            [
+              "6",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2013-granada-internacional-open",
@@ -15304,7 +15858,133 @@
           ]
         }
       },
-      "tour": "WPT"
+      "tour": "WPT",
+      "rounds": [
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Cristian Gutiérrez",
+            "Matías Díaz"
+          ],
+          "score": "7-6 3-1 ret.",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "3",
+              "1"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Semifinal",
+          "winners": [
+            "Juan Martín Díaz",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Sanyo Gutiérrez",
+            "Maxi Sánchez"
+          ],
+          "score": "6-4 6-3",
+          "sets": [
+            [
+              "6",
+              "4"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Juani Mieres",
+            "Pablo Lima"
+          ],
+          "losers": [
+            "Paquito Navarro",
+            "Jordi Muñoz"
+          ],
+          "score": "7-6 3-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Juan Martín Díaz",
+            "Fernando Belasteguin"
+          ],
+          "losers": [
+            "Fernando Poggi",
+            "Adrián Allemandi"
+          ],
+          "score": "7-6 6-3",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "confidence": "high"
+        },
+        {
+          "gender": "Men",
+          "round": "Quarterfinal",
+          "winners": [
+            "Sanyo Gutiérrez",
+            "Maxi Sánchez"
+          ],
+          "losers": [
+            "Miguel Lamperti",
+            "Maxi Grabiel"
+          ],
+          "score": "7-6 6-4",
+          "sets": [
+            [
+              "7",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "confidence": "high"
+        }
+      ]
     },
     {
       "key": "wpt-2013-castellon-internacional-open",
@@ -25430,6 +26110,7 @@
   ],
   "roundsNote": "Deeper rounds (semis/quarters/…) extracted from padel-magazine news; finals + rankings remain from Wikipedia.",
   "roundsSeasons": [
+    2013,
     2014,
     2015,
     2016,
