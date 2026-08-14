@@ -145,6 +145,11 @@ for (const m of matches) {
   // Alejandra Salazar, her 2021 partner, in place of Lucía Sainz. Those matches are wrong at
   // the source, so a season-wide pass/fail would either lose good draws or import bad ones.
   if (verdict.get(`${m.path}|${m.gender}`) === "fail") { rejected++; continue; }
+  // A player cannot lose to themselves. The same snippet problem also corrupts the LOSING
+  // pair of otherwise-sound draws — 2018/2019 semifinals render Gemma Triay's opponents as
+  // "Triay/Salazar", her 2021 partnership — and the winners-only gate cannot see that.
+  const wset = new Set(m.winners.map((n) => slug(n)));
+  if (m.losers.some((l) => wset.has(slug(l)))) { rejected++; continue; }
   const entry = { gender: m.gender, round: m.round, winners: m.winners, losers: m.losers,
     score: m.score, sets: parseSets(m.score), confidence: "high", source: "padelnetwork" };
   const k = `${t.key}|${m.gender}|${m.round}|${nameKey(m.winners)}|${nameKey(m.losers)}`;
