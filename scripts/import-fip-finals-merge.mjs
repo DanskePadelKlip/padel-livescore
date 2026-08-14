@@ -57,8 +57,32 @@ const parseSets = (score) => {
 };
 const pair = (a, b) => [a, b].map((p) => clean(p?.name)).filter(Boolean);
 const ids = (a, b) => [a, b].map((p) => p?.player_id).filter((x) => x && !/^nd/i.test(x));
-const nameKey = (arr) => (arr || []).map(norm).sort().join("+");
 const days = (a, b) => Math.abs(new Date(a + "T12:00:00Z") - new Date(b + "T12:00:00Z")) / 864e5;
+
+// Wikipedia and FIP name the same player differently, in three consistent ways:
+// nicknames ("Sanyo Gutiérrez" / "Carlos Daniel Gutierrez", "Juani Mieres" / "Juan Mieres
+// Petruf"), Spanish second surnames FIP keeps and Wikipedia drops ("Juan Martín Díaz" /
+// "Juan Martin Diaz Martinez"), and accents. Comparing normalised strings therefore reports
+// hundreds of "conflicts" that are really the same pair spelled two ways, which both buries
+// the real disagreements and blocks the id enrichment. So score names on shared distinctive
+// tokens instead: a shared surname is strong evidence, a first-name prefix corroborates it.
+const nameTokens = (s) => norm(s).split(/[^a-z0-9]+/).filter((w) => w.length >= 4);
+function playerScore(a, b) {
+  const A = nameTokens(a), B = nameTokens(b);
+  if (!A.length || !B.length) return 0;
+  let score = 2 * A.filter((w) => B.includes(w)).length;
+  // "maxi" ↔ "maximiliano", "elisabet" ↔ "elisabeth": one given name abbreviates the other
+  if (A.some((x) => B.some((y) => x !== y && (x.startsWith(y) || y.startsWith(x))))) score += 1;
+  return score;
+}
+// Two pairs are the same pair if BOTH players match under one of the two assignments.
+// Within a single tournament/gender/final, a shared surname each side is conclusive.
+function samePair(p, q) {
+  if (!p?.length || !q?.length || p.length !== q.length) return false;
+  const straight = Math.min(playerScore(p[0], q[0]), playerScore(p[1], q[1]));
+  const swapped = Math.min(playerScore(p[0], q[1]), playerScore(p[1], q[0]));
+  return Math.max(straight, swapped) >= 2;
+}
 
 // Words that appear in so many tournament names they carry no matching signal.
 const STOP = new Set(["open", "master", "masters", "final", "finals", "padel", "tour", "world", "international",
@@ -127,7 +151,18 @@ function match(row) {
   return bestScore >= 2.5 ? { t: best, score: bestScore } : null; // below this it's a guess, so don't
 }
 
-const stats = { filled: 0, idsAdded: 0, conflicts: [], unmatched: [], alreadyOk: 0 };
+const stats = { filled: 0, idsAdded: 0, repaired: [], conflicts: [], unmatched: [], alreadyOk: 0 };
+
+// A handful of finals came out of the Wikipedia scrape with the two players fused into one
+// string ("Bea González Delfi Brea"), so they aren't a pair at all and nothing can match them.
+// That's a parsing failure, not a claim about who won, so FIP's correctly-split names are a
+// repair rather than an override — but only when FIP's two players are both actually present
+// in the fused string, which keeps this from quietly rewriting a genuine disagreement.
+const fusedMatches = (arr, players) => {
+  if (!Array.isArray(arr) || arr.length === 2 || !arr.length) return false;
+  const hay = nameTokens(arr.join(" "));
+  return players.every((p) => nameTokens(p).some((tok) => hay.includes(tok)));
+};
 
 for (const row of circuitRows) {
   const m = match(row);
@@ -153,7 +188,13 @@ for (const row of circuitRows) {
 
   // Tournament already has this final (from Wikipedia). Keep it authoritative, but
   // enrich it with the player ids it never had — and flag any real disagreement.
-  if (nameKey(existing.winners) === nameKey(winners)) {
+  if (fusedMatches(existing.winners, winners)) {
+    existing.winners = winners;
+    if (fusedMatches(existing.runnersUp, runnersUp) || (existing.runnersUp?.length !== 2 && runnersUp.length === 2)) existing.runnersUp = runnersUp;
+    if (winnerIds.length) existing.winnerIds = winnerIds;
+    if (runnerIds.length) existing.runnerIds = runnerIds;
+    stats.repaired.push(`${t.year} ${t.name} ${gender}: → ${winners.join(" / ")}`);
+  } else if (samePair(existing.winners, winners)) {
     let touched = false;
     if (!existing.winnerIds?.length && winnerIds.length) { existing.winnerIds = winnerIds; touched = true; }
     if (!existing.runnerIds?.length && runnerIds.length) { existing.runnerIds = runnerIds; touched = true; }
@@ -166,6 +207,8 @@ for (const row of circuitRows) {
 // --- 3. report, then write only if asked
 console.log(`filled missing finals : ${stats.filled}`);
 console.log(`finals given FIP ids  : ${stats.idsAdded}`);
+console.log(`fused pairs repaired  : ${stats.repaired.length}`);
+stats.repaired.forEach((r) => console.log(`  ✎ ${r}`));
 console.log(`already complete      : ${stats.alreadyOk}`);
 console.log(`conflicts (NOT changed): ${stats.conflicts.length}`);
 stats.conflicts.slice(0, 15).forEach((c) => console.log(`  ⚠ ${c}`));
