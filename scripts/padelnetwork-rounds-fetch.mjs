@@ -75,9 +75,90 @@ const decode = (s) => s.replace(/&([a-zA-Z]+);/g, (m, e) => ENT[e] ?? " ")
 // thing separating the two players — collapse it into a space and the boundary is gone for
 // good (a dictionary can only re-split the ~28% of players famous enough to appear in a
 // final). Keep it as a newline and every pair splits exactly.
-const cellLines = (s) => decode(s.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " "))
+// From 2018 the cells interleave each player with their hometown —
+// "Alejandra Salazar<br><span class=legalgreybold>madrid, españa</span><br>Ariana Sánchez…" —
+// so splitting on <br> alone yields four lines, not two players. The site marks that
+// metadata with its own class, which is the reliable way to drop it; earlier seasons put
+// the nationalities in plain parentheses instead, handled in pairPlayers.
+const cellLines = (s) => decode(s
+  .replace(/<!--[\s\S]*?-->/g, " ")
+  .replace(/<span[^>]*class="legalgrey[^"]*"[^>]*>[\s\S]*?<\/span>/gi, " ")
+  .replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " "))
   .split("\n").map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
 const stripTags = (s) => cellLines(s).join(" ").trim();
+
+// Later seasons wrap the bracket in layout tables (2019 pages carry 25 of them where 2015
+// had one), and a regex for <tr>/<td> cannot see nesting — it interleaves the wrapper's rows
+// with the bracket's and the grid comes out scrambled. So find the bracket's own table first:
+// walk every <table> with depth counting, and take the innermost one that still holds the
+// round headers and a full complement of pair cells.
+// Find each pair cell and, if it contains a nested table, replace that table with its rows
+// as <br>-separated text. The cell's own end tag has to be located by depth-counting: a
+// non-greedy /<\/td>/ would stop at the nested table's first cell instead.
+function flattenNameCells(html) {
+  const open = /<td[^>]*class="primera"[^>]*>/gi;
+  const out = [];
+  let last = 0, m;
+  while ((m = open.exec(html))) {
+    const start = m.index + m[0].length;
+    const tag = /<\/?td[^>]*>/gi;
+    tag.lastIndex = start;
+    let depth = 1, end = -1, t;
+    while ((t = tag.exec(html))) {
+      depth += t[0].startsWith("</") ? -1 : 1;
+      if (depth === 0) { end = t.index; break; }
+    }
+    if (end < 0) continue;
+    const inner = html.slice(start, end);
+    if (/<table/i.test(inner)) {
+      const flat = inner.replace(/<\/tr>/gi, "<br />").replace(/<\/?(table|tbody|thead|tr|td|th)[^>]*>/gi, " ");
+      out.push(html.slice(last, start), flat);
+      last = end;
+    }
+    open.lastIndex = end;
+  }
+  out.push(html.slice(last));
+  return out.join("");
+}
+
+function bracketTable(html) {
+  // From 2021 each pair cell holds its OWN little table (a flag icon and a name per row).
+  // That table has no "primera" class of its own, so the noise sweep below would delete the
+  // players along with it. Flatten those in place first — one row per line, which is exactly
+  // the shape the <br>-separated seasons already produce.
+  html = flattenNameCells(html);
+
+  // Later pages also sprinkle small nav/ad tables INSIDE the bracket. They carry no pair
+  // cells, but their <tr>/<td> tags are indistinguishable to a regex and shift every row
+  // that follows. Dissolve them innermost-first — what remains is a flat table again.
+  let prev;
+  do {
+    prev = html;
+    html = html.replace(/<table[^>]*>(?:(?!<table)[\s\S])*?<\/table>/gi,
+      (m) => (/class="primera"/i.test(m) ? m : " "));
+  } while (html !== prev);
+
+  const tags = [...html.matchAll(/<\/?table[^>]*>/gi)];
+  const spans = [];
+  for (let i = 0; i < tags.length; i++) {
+    if (tags[i][0].startsWith("</")) continue;
+    let depth = 0;
+    for (let j = i; j < tags.length; j++) {
+      depth += tags[j][0].startsWith("</") ? -1 : 1;
+      if (depth === 0) { spans.push(html.slice(tags[i].index, tags[j].index + tags[j][0].length)); break; }
+    }
+  }
+  const ok = spans.filter((s) => {
+    const heads = new Set();
+    for (const m of s.matchAll(/<td[^>]*>([\s\S]{0,120}?)<\/td>/gi)) {
+      const t = stripTags(m[1]);
+      if (t && t.length < 24) { const r = roundOf(t); if (r) heads.add(r); }
+    }
+    return heads.size >= 3 && (s.match(/class="primera"/gi) || []).length >= 8;
+  });
+  // innermost qualifying table = the shortest one
+  return ok.length ? ok.sort((a, b) => a.length - b.length)[0] : html;
+}
 
 // Build a true table grid: a rowspan blocks its columns on every later row, whether or not
 // that row has enough cells to reach them, so occupancy is resolved per row rather than
@@ -145,7 +226,7 @@ const pairPlayers = (lines = []) => lines
   .filter(Boolean);
 
 export function parseDraw(html, meta = {}) {
-  const grid = buildGrid(html);
+  const grid = buildGrid(bracketTable(html));
   // header row: the row naming three or more rounds
   let hdr = -1, hdrCols = {};
   grid.forEach((row, r) => {
