@@ -92,11 +92,24 @@ const stripTags = (s) => cellLines(s).join(" ").trim();
 // with the bracket's and the grid comes out scrambled. So find the bracket's own table first:
 // walk every <table> with depth counting, and take the innermost one that still holds the
 // round headers and a full complement of pair cells.
+// A pair cell is marked class="primera" on the WPT pages. The older PPT pages have no such
+// class at all and mark pairs only by their black background — which the WPT pages also use
+// for a few 5px spacer bars, so it is the weaker signal. Pick per page: use "primera" when
+// the page has it, and fall back to the background only for the pages that don't.
+// The WPT pages put both on the pair cell itself (<td bgcolor="#000000" class="primera">).
+// The PPT ones put the background on the outer cell and, on some tournaments, "primera" on an
+// INNER cell nested inside it — so keying on the class there would target the wrong element
+// and leave the nested table intact, scrambling the grid. Both markers on one tag is therefore
+// the discriminator, not the mere presence of the class.
+const cellMarker = (html) => (/<td[^>]*class="primera"[^>]*bgcolor="#0{6}"|<td[^>]*bgcolor="#0{6}"[^>]*class="primera"/i.test(html)
+  ? { re: /class="primera"/i, td: /<td[^>]*class="primera"[^>]*>/gi }
+  : { re: /bgcolor="#0{6}"/i, td: /<td[^>]*bgcolor="#0{6}"[^>]*>/gi });
+
 // Find each pair cell and, if it contains a nested table, replace that table with its rows
 // as <br>-separated text. The cell's own end tag has to be located by depth-counting: a
 // non-greedy /<\/td>/ would stop at the nested table's first cell instead.
-function flattenNameCells(html) {
-  const open = /<td[^>]*class="primera"[^>]*>/gi;
+function flattenNameCells(html, marker) {
+  const open = new RegExp(marker.td.source, "gi");
   const out = [];
   let last = 0, m;
   while ((m = open.exec(html))) {
@@ -121,12 +134,12 @@ function flattenNameCells(html) {
   return out.join("");
 }
 
-function bracketTable(html) {
+function bracketTable(html, marker) {
   // From 2021 each pair cell holds its OWN little table (a flag icon and a name per row).
   // That table has no "primera" class of its own, so the noise sweep below would delete the
   // players along with it. Flatten those in place first — one row per line, which is exactly
   // the shape the <br>-separated seasons already produce.
-  html = flattenNameCells(html);
+  html = flattenNameCells(html, marker);
 
   // Later pages also sprinkle small nav/ad tables INSIDE the bracket. They carry no pair
   // cells, but their <tr>/<td> tags are indistinguishable to a regex and shift every row
@@ -135,7 +148,7 @@ function bracketTable(html) {
   do {
     prev = html;
     html = html.replace(/<table[^>]*>(?:(?!<table)[\s\S])*?<\/table>/gi,
-      (m) => (/class="primera"/i.test(m) ? m : " "));
+      (m) => (marker.re.test(m) ? m : " "));
   } while (html !== prev);
 
   const tags = [...html.matchAll(/<\/?table[^>]*>/gi)];
@@ -154,7 +167,8 @@ function bracketTable(html) {
       const t = stripTags(m[1]);
       if (t && t.length < 24) { const r = roundOf(t); if (r) heads.add(r); }
     }
-    return heads.size >= 3 && (s.match(/class="primera"/gi) || []).length >= 8;
+    const names = (s.match(new RegExp(marker.td.source, "gi")) || []).length;
+    return heads.size >= 3 && names >= 8;
   });
   // innermost qualifying table = the shortest one
   return ok.length ? ok.sort((a, b) => a.length - b.length)[0] : html;
@@ -163,7 +177,7 @@ function bracketTable(html) {
 // Build a true table grid: a rowspan blocks its columns on every later row, whether or not
 // that row has enough cells to reach them, so occupancy is resolved per row rather than
 // while walking cells (which silently drifts the columns and scrambles the bracket).
-function buildGrid(html) {
+function buildGrid(html, marker) {
   const rows = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map((m) => m[1]);
   const grid = [];
   const pending = new Map();
@@ -177,7 +191,7 @@ function buildGrid(html) {
       const colspan = +(attr.match(/colspan="(\d+)"/i)?.[1] || 1);
       const rowspan = +(attr.match(/rowspan="(\d+)"/i)?.[1] || 1);
       const lines = cellLines(m[2]);
-      grid[r][c] = { text: lines.join(" ").trim(), lines, isName: /class="primera"/i.test(attr) };
+      grid[r][c] = { text: lines.join(" ").trim(), lines, isName: marker.re.test(attr) };
       for (let k = 1; k < colspan; k++) grid[r][c + k] = { text: "", isName: false };
       if (rowspan > 1) for (let k = 0; k < colspan; k++) pending.set(c + k, rowspan - 1);
       c += colspan;
@@ -226,7 +240,8 @@ const pairPlayers = (lines = []) => lines
   .filter(Boolean);
 
 export function parseDraw(html, meta = {}) {
-  const grid = buildGrid(bracketTable(html));
+  const marker = cellMarker(html);
+  const grid = buildGrid(bracketTable(html, marker), marker);
   // header row: the row naming three or more rounds
   let hdr = -1, hdrCols = {};
   grid.forEach((row, r) => {
@@ -287,14 +302,20 @@ const RUN_DIRECTLY = process.argv[1] && import.meta.url.endsWith(process.argv[1]
 if (RUN_DIRECTLY) {
 const all = [];
 for (let year = Y0; year <= Y1; year++) {
-  const idx = await get(`/wpt/${year}/`);
+  // The tour changed hands after 2012: Padel Pro Tour seasons are indexed at /ppt/{year}/ but
+  // their tournaments hang off a country segment (/ppt/espana/2011/junio/valladolid/), where
+  // WPT's sit directly under the year. The season index links both, so filter on the year.
+  const ppt = year <= 2012;
+  const idx = await get(ppt ? `/ppt/${year}/` : `/wpt/${year}/`);
   if (!idx) { console.log(`${year}: index unavailable`); continue; }
-  const tourns = hrefs(idx, new RegExp(`^/wpt/${year}/[a-z]+/[^/]+/$`, "i"));
+  const tourns = hrefs(idx, ppt
+    ? new RegExp(`^/ppt/[a-z]+/${year}/[a-z]+/[^/]+/$`, "i")
+    : new RegExp(`^/wpt/${year}/[a-z]+/[^/]+/$`, "i"));
   console.log(`\n${year}: ${tourns.length} tournaments`);
   for (const tp of tourns) {
     const page = await get(tp);
     const title = stripTags(page.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || "");
-    const name = title.replace(/\s*en Padelnetwork.*$/i, "").replace(/^WPT\s+World Padel Tour\s*/i, "").trim();
+    const name = title.replace(/\s*en Padelnetwork.*$/i, "").replace(/^(WPT\s+World Padel Tour|PPT\s+Padel Pro Tour)\s*/i, "").trim();
     const draws = hrefs(page, new RegExp(`^${tp}cuadro/(masculino|femenino)/(previa/|preprevia/)?$`, "i"));
     let n = 0;
     for (const dp of draws) {

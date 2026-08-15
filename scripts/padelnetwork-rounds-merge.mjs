@@ -71,8 +71,10 @@ const pathTo = new Map();
 // 2013-01-01 start, so the month can't separate them and only exclusivity can.
 const scored = [];
 for (const p of paths) {
-  const seg = p.split("/").filter(Boolean);          // wpt, year, month, city
-  const month = MONTHS[seg[2]] || null, city = seg[3] || "";
+  // /wpt/{year}/{month}/{city}/ but /ppt/{country}/{year}/{month}/{city}/ — the PPT era
+  // carries an extra country segment, so index from the end rather than the front.
+  const seg = p.split("/").filter(Boolean);
+  const month = MONTHS[seg[seg.length - 2]] || null, city = seg[seg.length - 1] || "";
   const label = matches.find((m) => m.path === p)?.name || "";
   for (const t of yearTourns) {
     let s = 0;
