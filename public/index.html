@@ -361,6 +361,25 @@
       padding: 6px 12px; cursor: pointer; font-size: 13px; font-weight: 700; }
     .rchip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
     .rsep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+
+    /* ---------- world No.1 timeline ---------- */
+    .no1-era { display: grid; grid-template-columns: 62px 1fr; gap: 10px; align-items: stretch;
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+    .no1-era.cur { border-color: var(--accent); }
+    .no1-yrs { display: flex; flex-direction: column; justify-content: center; align-items: center;
+      border-right: 1px solid var(--line); padding-right: 8px; }
+    .no1-yrs b { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.15; }
+    .no1-yrs span { font-size: 10.5px; color: var(--faint); font-weight: 700; }
+    .no1-pair { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+    .no1-name { font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .no1-amp { color: var(--faint); font-size: 12px; }
+    .no1-meta { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
+      font-size: 11px; color: var(--faint); margin-top: 2px; }
+    .no1-src { background: var(--bg-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-weight: 600; }
+    .no1-src.hist { border-style: dashed; }
+    .no1-reign { font-weight: 700; color: var(--muted); }
+    .no1-note { font-size: 12px; color: var(--muted); background: var(--card); border: 1px solid var(--line);
+      border-left: 3px solid var(--accent); border-radius: 8px; padding: 9px 12px; margin-bottom: 12px; line-height: 1.5; }
     .rank-natf { display: flex; align-items: center; gap: 8px; padding: 0 0 12px; }
     .rank-natf__lbl { font-size: 12px; font-weight: 700; color: var(--muted); }
     .rank-natf select { flex: 0 1 260px; }
@@ -546,6 +565,7 @@
         <button data-mode="archive">📅 Results</button>
         <button data-mode="players">👤 Players</button>
         <button data-mode="rankings">🏆 Rankings</button>
+        <button data-mode="no1">👑 World #1</button>
       </div>
       <div class="tabs" id="tabs">
         <button class="tab active" data-status="all">All</button>
