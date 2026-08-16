@@ -205,7 +205,16 @@ function buildGrid(html, marker) {
 }
 
 // --- domain parsing ---------------------------------------------------------
+// Qualifying draws ("previa"/"preprevia") label their columns by ordinal round — "1 ronda",
+// "2 ronda" — and put the qualified pairs under "clasificado", none of which the main-draw
+// vocabulary matches. Without these, header detection fails and every qualifying draw parses
+// as empty: 546 of 548 of them, before this was added.
 const ROUND_MAP = [
+  // 2019+ writes "1° ronda previa" with a DEGREE sign, not the masculine ordinal º of the
+  // earlier seasons — one codepoint apart, and every qualifying draw of those years hung on it.
+  [/^\s*\d+\s*[ªº°ᵃ.\-]?\s*ronda/i, "Qualifying"],
+  [/^\s*(primera|segunda|tercera|cuarta)\s+ronda/i, "Qualifying"],
+  [/^\s*clasificad/i, "Qualifying"],
   [/^\s*(64|treintaidosavos|32avos)/i, "Round of 64"],
   [/^\s*(32|dieciseisavos|16avos|16\s*º|16º)/i, "Round of 32"],
   [/octavos|1\s*\/\s*8|8\s*º/i, "Round of 16"],
