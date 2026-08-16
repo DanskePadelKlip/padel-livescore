@@ -42,7 +42,7 @@ async function httpGet(url) {
   if (!useCurl) {
     try {
       const res = await fetch(url, { headers: { "user-agent": UA, accept: "text/html" } });
-      if (res.ok) return await res.text();
+      if (res.ok) return Buffer.from(await res.arrayBuffer());
       if (res.status !== 403) return "";
     } catch { /* fall through */ }
     useCurl = true;
@@ -50,17 +50,26 @@ async function httpGet(url) {
   }
   const { execFile } = await import("node:child_process");
   return await new Promise((resolve) => {
-    execFile("curl", ["-sL", "-m", "45", "-A", UA, url], { maxBuffer: 32 << 20 },
-      (err, stdout) => resolve(err ? "" : stdout));
+    execFile("curl", ["-sL", "-m", "45", "-A", UA, url], { maxBuffer: 32 << 20, encoding: "buffer" },
+      (err, stdout) => resolve(err ? Buffer.alloc(0) : stdout));
   });
 }
 
+// The pages declare UTF-8 and mostly use HTML entities, but the legacy .asp tree also emits
+// the odd raw latin-1 byte (Muñoz, Díaz). Decoding those as UTF-8 yields U+FFFD and silently
+// corrupts the name, so fall back to latin-1 for any page where that happens.
+const decodeBody = (buf) => {
+  const utf8 = buf.toString("utf8");
+  return utf8.includes("\uFFFD") ? buf.toString("latin1") : utf8;
+};
+
 async function get(path) {
   const file = join(CACHE, path.replace(/[^a-z0-9]+/gi, "_") + ".html");
-  if (existsSync(file)) return readFileSync(file, "utf8");
-  const body = await httpGet(BASE + path);
+  if (existsSync(file)) return decodeBody(readFileSync(file));
+  const raw = await httpGet(BASE + path);
+  const body = Buffer.isBuffer(raw) ? decodeBody(raw) : raw;
   mkdirSync(CACHE, { recursive: true });
-  writeFileSync(file, body);
+  writeFileSync(file, Buffer.isBuffer(raw) ? raw : Buffer.from(raw));
   await sleep(1100); // ~1 req/s: the site is a single owner's IIS box, don't hammer it
   return body;
 }
@@ -243,10 +252,19 @@ const PLACEHOLDER = /^(exento|exenta|bye|previa|preprevia|clasificad|qualifier|\
 const cleanPair = (t) => t.replace(/\s*\([^)]*\)\s*$/, "").replace(/\s+/g, " ").trim();
 // The cell's lines are [player one, player two, "(nationalities)"] — the parenthesised
 // nationalities line is metadata, and a seeding marker can precede the names.
-const pairPlayers = (lines = []) => lines
-  .filter((l) => !/^\(/.test(l) && !/^\d+$/.test(l) && !PLACEHOLDER.test(l))
-  .map((l) => l.replace(/^\s*\d+[.\-)]?\s*/, "").replace(/\s*\([^)]*\)/g, "").trim())
-  .filter(Boolean);
+const pairPlayers = (lines = []) => {
+  const out = lines
+    .filter((l) => !/^\(/.test(l) && !/^\d+$/.test(l) && !PLACEHOLDER.test(l))
+    .map((l) => l.replace(/^\s*\d+[.\-)]?\s*/, "").replace(/\s*\([^)]*\)/g, "").trim())
+    .filter(Boolean);
+  // The 2006-07 legacy pages put the whole pair on one line, slash-separated
+  // ("P Navarro/B Ramírez"), where every later season uses a <br> between the two players.
+  if (out.length === 1 && out[0].includes("/")) {
+    const parts = out[0].split("/").map((x) => x.trim()).filter(Boolean);
+    if (parts.length === 2) return parts;
+  }
+  return out;
+};
 
 export function parseDraw(html, meta = {}) {
   const marker = cellMarker(html);
@@ -310,10 +328,45 @@ const RUN_DIRECTLY = process.argv[1] && import.meta.url.endsWith(process.argv[1]
 
 if (RUN_DIRECTLY) {
 const all = [];
+// Seasons before 2010 predate the /ppt/ tree and live under /otrospaises/espana/espanaYYYY.asp.
+// That index also lists regional and federation events, so only the ppt-prefixed slugs are the
+// professional tour. Each links a hub page, and the draws are siblings of it — a two-level
+// crawl, unlike the later generations where the tournament page links its draws directly.
+async function crawlLegacy(year) {
+  const base = "/otrospaises/espana";
+  const idx = await get(`${base}/espana${year}.asp`);
+  if (!idx) { console.log(`${year}: no legacy index`); return; }
+  const hubs = [...new Set([...idx.matchAll(/href="(torneos\/\d{4}\/[^"]*ppt[^"]*\.asp)"/gi)].map((m) => m[1]))];
+  console.log(`\n${year}: ${hubs.length} Padel Pro Tour event(s) (legacy tree)`);
+  for (const hub of hubs) {
+    const page = await get(`${base}/${hub}`);
+    if (!page) continue;
+    const name = stripTags(page.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || "")
+      .replace(/\s*en Padelnetwork.*$/i, "").replace(/\s*[-–]\s*Padelnetwork.*$/i, "").trim();
+    const dir = hub.slice(0, hub.lastIndexOf("/"));
+    const draws = [...new Set([...page.matchAll(/href="([^"]*_(?:previa)?(?:masc|fem)\.asp)"/gi)].map((m) => m[1]))];
+    let n = 0;
+    for (const d of draws) {
+      const path = d.startsWith("/") ? d : `${base}/${dir}/${d.split("/").pop()}`;
+      const html = await get(path);
+      if (!html) continue;
+      const gender = /fem/i.test(path) ? "Women" : "Men";
+      const rows = parseDraw(html, { year, path: `${base}/${dir}/`, name, gender, url: BASE + path });
+      if (/previa/i.test(path)) for (const r of rows) r.round = "Qualifying";
+      all.push(...rows); n += rows.length;
+    }
+    console.log(`  ${String(n).padStart(3)} matches  ${name.slice(0, 58)}`);
+  }
+}
+
 for (let year = Y0; year <= Y1; year++) {
   // The tour changed hands after 2012: Padel Pro Tour seasons are indexed at /ppt/{year}/ but
   // their tournaments hang off a country segment (/ppt/espana/2011/junio/valladolid/), where
   // WPT's sit directly under the year. The season index links both, so filter on the year.
+  // Three site generations. 2013+ is /wpt/{year}/; 2010-12 is /ppt/{year}/ with a country
+  // segment; and before that the season lives in the legacy .asp tree, where each event is a
+  // hub page with its draws hanging off it as _masc/_fem/_previamasc/_previafem siblings.
+  if (year <= 2009) { await crawlLegacy(year); continue; }
   const ppt = year <= 2012;
   const idx = await get(ppt ? `/ppt/${year}/` : `/wpt/${year}/`);
   if (!idx) { console.log(`${year}: index unavailable`); continue; }

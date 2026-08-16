@@ -86,6 +86,12 @@ for (const p of paths) {
       else if (tCity.slice(0, 5) === pCity.slice(0, 5)) s += 2.5;
     }
     s += 3 * overlap(label, t.name || "");
+    // The legacy tree gives every event the same useless <title> (", PPT 2007 …, España") and
+    // names its directory for the REGION where the archive stores the host city — euskadi vs
+    // Bilbao, balears vs Palma de Mallorca. The region does appear in the tournament's name,
+    // so match the slug against that too.
+    const slugWord = pCity.replace(/^ppt/, "").replace(/\d+$/, "");
+    if (slugWord.length > 3 && slug(t.name || "").includes(slugWord)) s += 3;
     // The month is the decisive signal where it exists: a season revisits cities, and a label
     // can name a city it isn't held in ("Estrella Damm Master Final Madrid" is December's
     // Masters Final, not September's Madrid Open), so a distant month must disqualify. A
