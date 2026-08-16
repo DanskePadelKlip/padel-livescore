@@ -28,7 +28,8 @@ const argv = process.argv.slice(2);
 const CIRCUIT = (argv[0] || "PPT").toUpperCase();
 const Y0 = +(argv[1] || 2006), Y1 = +(argv[2] || 2012);
 const tourTag = CIRCUIT === "PADEL PRO TOUR" ? "PPT" : CIRCUIT; // normalise
-const keyPrefix = tourTag.toLowerCase();
+// Multi-word circuits ("PREMIER PADEL") would otherwise put a space in every tournament key.
+const keyPrefix = tourTag.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
 const slug = (s) => clean(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -97,7 +98,9 @@ wpt.tournaments.push(...added);
 for (const t of wpt.tournaments) t.start ||= `${t.year}-01-01`;
 wpt.tournaments.sort((a, b) => (b.start || "").localeCompare(a.start || ""));
 wpt.generatedAt = new Date().toISOString();
-wpt.circuitSource = `${tourTag} finals from padelfip.com circuit-stats API; WPT finals still from Wikipedia`;
+// Don't clobber what a previous import recorded — note this circuit alongside it.
+wpt.circuitSource = [...new Set([...(wpt.circuitSource || "").split("; ").filter(Boolean),
+  `${tourTag} finals from padelfip.com circuit-stats API`])].join("; ");
 writeFileSync(WPT, JSON.stringify(wpt, null, 2));
 
 const finals = added.reduce((a, t) => a + Object.keys(t.finals).length, 0);
