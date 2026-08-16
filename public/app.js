@@ -295,6 +295,7 @@ function render(changed = new Set()) {
   if (state.mode === "rankings") return renderRankings();
   if (state.mode === "players") return renderPlayers();
   if (state.mode === "archive") return renderArchive();
+  if (state.mode === "no1") return renderNo1();
 
   const list = filtered();
   const live = list.filter((m) => m.status === "live");
@@ -1581,6 +1582,67 @@ function renderByDay(matches, tv) {
   return out;
 }
 
+// ---------- world No.1 timeline ----------
+// The deepest history the archive holds: FIP records a year-end No.1 pair back to 1986,
+// where tournament data starts in 2006 and round-level detail in 2010. Consecutive years
+// held by the same pair are collapsed into one era — the shape of the sport's history is
+// who stayed on top and for how long, which a flat year-by-year list buries.
+async function loadNo1() {
+  try {
+    const r = await fetch("data/archive/world-no1.json");
+    state.no1 = await r.json();
+  } catch { state.no1 = { years: [], error: true }; }
+  render();
+}
+
+function renderNo1() {
+  if (!state.no1) return;
+  const cat = state.no1Cat || "Men";
+  const q = state.query.trim().toLowerCase();
+  const years = (state.no1.years || []).filter((y) => y[cat]);
+
+  // group consecutive years that share the same pair
+  const eras = [];
+  for (const y of years) {
+    const key = y[cat].map((p) => p.name).join(" & ");
+    const prev = eras[eras.length - 1];
+    if (prev && prev.key === key && prev.from - y.year === 1) { prev.from = y.year; prev.rows.push(y); }
+    else eras.push({ key, from: y.year, to: y.year, players: y[cat], rows: [y] });
+  }
+  const shown = q ? eras.filter((e) => e.key.toLowerCase().includes(q)) : eras;
+
+  const counts = { Men: (state.no1.years || []).filter((y) => y.Men).length,
+                   Women: (state.no1.years || []).filter((y) => y.Women).length };
+  const span = years.length ? `${years[years.length - 1].year}–${years[0].year}` : "";
+
+  let html = `<div class="rank-sel">
+    ${["Men", "Women"].map((c) => `<button class="rchip ${cat === c ? "on" : ""}" data-no1cat="${c}">${c} · ${counts[c]}</button>`).join("")}
+  </div>`;
+  html += `<div class="no1-note">Year-end world No.1 pair, ${esc(span)}. The authority changes with the era — the Argentine APA and Spanish FEP before a global tour existed, then Padel Pro Tour, World Padel Tour and today's FIP ranking — so each era is labelled with its source. FIP records 1986–87 from <em>historical sources</em> rather than a published ranking, and no women's No.1 is recorded before 1990.</div>`;
+  html += `<div class="section-label region">👑 ${cat === "Men" ? "Men's" : "Women's"} world No.1<span class="count">${shown.length} era${shown.length === 1 ? "" : "s"} · ${years.length} years</span></div>`;
+
+  html += shown.map((e, i) => {
+    const yrs = e.to - e.from + 1;
+    const label = yrs === 1 ? String(e.from) : `${e.from}–${String(e.to).slice(2)}`;
+    // an era is "current" only if it runs to the most recent year on record
+    const cur = i === 0 && e.to === years[0].year;
+    const srcs = [...new Set(e.rows.map((r) => r.source).filter(Boolean))];
+    return `<div class="no1-era${cur ? " cur" : ""}">
+      <div class="no1-yrs"><b>${label}</b><span>${yrs} yr${yrs === 1 ? "" : "s"}</span></div>
+      <div class="no1-pair">
+        ${e.players.map((p) => `<span class="no1-name">${p.code ? countryFlag(p.code) + " " : ""}${esc(p.name)}</span>`).join('<span class="no1-amp">&amp;</span>')}
+        <div class="no1-meta">
+          ${cur ? '<span class="no1-reign">current</span>' : ""}
+          ${srcs.map((sv) => `<span class="no1-src${/historical/i.test(sv) ? " hist" : ""}">${esc(sv)}</span>`).join("")}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  if (!shown.length) html += `<div class="empty">${q ? "No pair matches." : "No data."}</div>`;
+  app.innerHTML = html;
+}
+
 // ---------- competitions overview ----------
 
 // Tournament (knockout draw) vs League (round-robin / team). KO rounds are the
@@ -1845,8 +1907,10 @@ function activateMode(mode) {
     mode === "players" ? "Search a player by name…" :
     mode === "rankings" ? "Filter this ranking…" :
     mode === "events" ? "Search competitions…" :
-    mode === "archive" ? "Search tournament…" : "Search player or tournament…";
-  if (mode === "archive" && !state.archive) loadArchive();
+    mode === "archive" ? "Search tournament…" :
+    mode === "no1" ? "Find a No.1 pair…" : "Search player or tournament…";
+  if (mode === "no1" && !state.no1) loadNo1();
+  else if (mode === "archive" && !state.archive) loadArchive();
   else if (mode === "rankings" && !state.rankings) loadRankings();
   else if (mode === "upcoming" && !state.calendar) loadCalendar();
   else render();
@@ -1918,6 +1982,8 @@ app.addEventListener("click", (e) => {
     return;
   }
   if (e.target.closest("[data-tback]")) { state.tournament = null; render(); syncUrl(); return; }
+  const n1 = e.target.closest("[data-no1cat]");
+  if (n1) { state.no1Cat = n1.dataset.no1cat; render(); return; }
   const tvw = e.target.closest("[data-tview]");
   if (tvw) { state.tView = tvw.dataset.tview; render(); return; }
 
@@ -2113,6 +2179,7 @@ function currentPath() {
   if (state.mode === "rankings") return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}` : "/rankings";
   if (state.mode === "favorites") return "/following";
   if (state.mode === "archive") return "/results";
+  if (state.mode === "no1") return "/world-no1";
   if (state.mode === "events") return "/events";
   if (state.mode === "upcoming") return "/upcoming";
   return "/";
@@ -2125,6 +2192,7 @@ function setTitle() {
   else if (P) t = `${P.name} — padel results, ranking & head-to-head · PadelTicker`;
   else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
+  else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
   else if (state.mode === "players") t = "Padel players — profiles, results & head-to-head · PadelTicker";
   else if (state.mode === "favorites") t = "Following — your padel players & tournaments · PadelTicker";
   else if (state.mode === "events") t = "Padel tournaments & leagues — live competitions · PadelTicker";
@@ -2162,6 +2230,7 @@ function applyRoute() {
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
     }
     else if (seg[0] === "results") activateMode("archive");
+    else if (seg[0] === "world-no1") activateMode("no1");
     else if (seg[0] === "upcoming") activateMode("upcoming");
     else if (seg[0] === "events") activateMode("events");
     else if (seg[0] === "players") {

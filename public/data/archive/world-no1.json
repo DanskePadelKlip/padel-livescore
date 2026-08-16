@@ -1,0 +1,1080 @@
+{
+  "generatedAt": "2026-08-16T19:05:01.817Z",
+  "source": "https://www.padelfip.com/ranking-history/",
+  "note": "Year-end world No.1 pair per gender. The authority differs by era and is given per row; 1986-87 are FIP's own \"Historical sources\" rather than a published ranking.",
+  "count": 40,
+  "years": [
+    {
+      "year": 2025,
+      "source": "Ranking FIP",
+      "Men": [
+        {
+          "name": "Arturo Coello",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Agustin Tapia",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Gemma Triay",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Delfina Brea",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 2024,
+      "source": "Ranking FIP",
+      "Men": [
+        {
+          "name": "Arturo Coello",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Agustin Tapia",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Ariana Sánchez",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Paula Josemaría",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2023,
+      "source": "Ranking FIP",
+      "Men": [
+        {
+          "name": "Arturo Coello",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Agustin Tapia",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Ariana Sánchez",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Paula Josemaría",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2022,
+      "source": "Ranking World Padel Tour / FIP",
+      "Men": [
+        {
+          "name": "Alejandro Galán",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Juan Lebrón",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Gemma Triay",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Alejandra Salazar",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2021,
+      "source": "Ranking World Padel Tour / FIP",
+      "Men": [
+        {
+          "name": "Alejandro Galán",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Juan Lebrón",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Gemma Triay",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Alejandra Salazar",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2020,
+      "source": "Ranking World Padel Tour / FIP",
+      "Men": [
+        {
+          "name": "Alejandro Galán",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Juan Lebrón",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Gemma Triay",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Lucía Sainz",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2019,
+      "source": "Ranking World Padel Tour / FIP",
+      "Men": [
+        {
+          "name": "Paquito Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Juan Lebrón",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Marta Marrero",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Marta Ortega",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2018,
+      "source": "Ranking World Padel Tour",
+      "Men": [
+        {
+          "name": "Maxi Sánchez",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Sanyo Gutiérrez",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Majo Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Mapi Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2017,
+      "source": "Ranking World Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Majo Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Mapi Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2016,
+      "source": "Ranking World Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Marta Marrero",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Alejandra Salazar",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2015,
+      "source": "Ranking World Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Pablo Lima",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Majo Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Mapi Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2014,
+      "source": "Ranking World Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Majo Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Mapi Sánchez Alayeto",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2013,
+      "source": "Ranking World Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Patricia Llaguno",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Elisabeth Amatriain",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2012,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2011,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2010,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Reiter",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2009,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Alejandra Salazar",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2008,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cata Tenorio",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2007,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Neki Berwig",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ]
+    },
+    {
+      "year": 2006,
+      "source": "Ranking Pro Padel Tour",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Neki Berwig",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ]
+    },
+    {
+      "year": 2005,
+      "source": "Ranking Español FEP",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Neki Berwig",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ]
+    },
+    {
+      "year": 2004,
+      "source": "Ranking Español FEP - World Cup",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Paula Eyheraguibel",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 2003,
+      "source": "FEP",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Paula Eyheraguibel",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2002,
+      "source": "FEP - World championships",
+      "Men": [
+        {
+          "name": "Fernando Belasteguín",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Neki Berwig",
+          "country": "Brazil",
+          "code": "BRA"
+        }
+      ]
+    },
+    {
+      "year": 2001,
+      "source": "FEP",
+      "Men": [
+        {
+          "name": "Sebastián Nerone",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Gabriel Reca",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 2000,
+      "source": "FEP - World championships",
+      "Men": [
+        {
+          "name": "Hernan Auguste",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Juan Martín Díaz",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 1999,
+      "source": "FEP",
+      "Men": [
+        {
+          "name": "Alberto Rodríguez Piñón",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Cristian Gutiérrez",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Carolina Navarro",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 1998,
+      "source": "APA - World championships - FEP",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Cristian Gutiérrez",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Araceli Montero",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 1997,
+      "source": "APA - FEP",
+      "Men": [
+        {
+          "name": "Hernan Auguste",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Iciar Montes",
+          "country": "Spain",
+          "code": "ESP"
+        },
+        {
+          "name": "Belen Castrillo",
+          "country": "Spain",
+          "code": "ESP"
+        }
+      ]
+    },
+    {
+      "year": 1996,
+      "source": "APA - World championships",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Baccigalupo",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Adriana Costagliola",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1995,
+      "source": "APA - FEP",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Baccigalupo",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Adriana Costagliola",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1994,
+      "source": "APA - World championships",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Baccigalupo",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Adriana Costagliola",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1993,
+      "source": "APA - FEP",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Claudia Cespedes",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Adriana Costagliola",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1992,
+      "source": "APA - World championships",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Baccigalupo",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Virginia Mazzuchi",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1991,
+      "source": "APA- FEP",
+      "Men": [
+        {
+          "name": "Roberto Gattiker",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Javier Maquirrain",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Baccigalupo",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Adriana Costagliola",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1990,
+      "source": "APA- FEP",
+      "Men": [
+        {
+          "name": "Alvarez Clementi",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ],
+      "Women": [
+        {
+          "name": "Cecilia Baccigalupo",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Adriana Costagliola",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1989,
+      "source": "APA",
+      "Men": [
+        {
+          "name": "Alvarez Clementi",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1988,
+      "source": "APA",
+      "Men": [
+        {
+          "name": "Alvarez Clementi",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Alejandro Lasaigues",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1987,
+      "source": "Historical sources",
+      "Men": [
+        {
+          "name": "Javier Maquirrian",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Gustavo Maquirrian",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    },
+    {
+      "year": 1986,
+      "source": "Historical sources",
+      "Men": [
+        {
+          "name": "Javier Maquirrian",
+          "country": "Argentina",
+          "code": "ARG"
+        },
+        {
+          "name": "Gustavo Maquirrian",
+          "country": "Argentina",
+          "code": "ARG"
+        }
+      ]
+    }
+  ]
+}
