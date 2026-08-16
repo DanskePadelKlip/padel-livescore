@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T00:07:23.574Z",
+  "generatedAt": "2026-08-16T19:02:13.645Z",
   "source": "Wikipedia — '{year} World Padel Tour' season articles (EN + ES), finals + end-of-season rankings",
   "count": 231,
   "tournaments": [
@@ -8426,6 +8426,92 @@
       ]
     },
     {
+      "key": "premier-padel-2022-milano-p1",
+      "name": "Milano P1",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Milano",
+      "country": "Italy",
+      "start": "2022-12-11",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Alejandro Galan",
+            "Juan Lebron"
+          ],
+          "runnersUp": [
+            "Lucas Bergamini",
+            "Victor Ruiz"
+          ],
+          "score": "6-2/6-2",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "2"
+            ]
+          ],
+          "winnerIds": [
+            "P000001",
+            "P000002"
+          ],
+          "runnerIds": [
+            "P000036",
+            "P000035"
+          ]
+        }
+      }
+    },
+    {
+      "key": "premier-padel-2022-gnp-mexico-major",
+      "name": "Gnp MeXIco Major",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Monterrey",
+      "country": "Mexico",
+      "start": "2022-12-04",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Fernando Belasteguin",
+            "Arturo Coello"
+          ],
+          "runnersUp": [
+            "Carlos Daniel Gutierrez",
+            "Agustin Tapia"
+          ],
+          "score": "6-3/3-6/6-3",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "3",
+              "6"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "winnerIds": [
+            "P000009",
+            "P000010"
+          ],
+          "runnerIds": [
+            "P000291",
+            "P000285"
+          ]
+        }
+      }
+    },
+    {
       "key": "wpt-2022-menorca-challenger-final",
       "name": "Menorca Challenger Final",
       "year": 2022,
@@ -9546,6 +9632,51 @@
         }
       },
       "tour": "WPT"
+    },
+    {
+      "key": "premier-padel-2022-newgiza-p1",
+      "name": "Newgiza P1",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Newgiza",
+      "country": "Egypt",
+      "start": "2022-10-30",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Franco Stupaczuk",
+            "Pablo Lima"
+          ],
+          "runnersUp": [
+            "Alejandro Galan",
+            "Juan Lebron"
+          ],
+          "score": "2-6/7-6/7-6",
+          "sets": [
+            [
+              "2",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "winnerIds": [
+            "P000005",
+            "P000006"
+          ],
+          "runnerIds": [
+            "P000001",
+            "P000002"
+          ]
+        }
+      }
     },
     {
       "key": "wpt-2022-menorca-open",
@@ -12311,6 +12442,96 @@
       ]
     },
     {
+      "key": "premier-padel-2022-mendoza-p1",
+      "name": "Mendoza P1",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Mendoza",
+      "country": "Argentina",
+      "start": "2022-08-14",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Pablo Lima",
+            "Franco Stupaczuk"
+          ],
+          "runnersUp": [
+            "Fernando Belasteguin",
+            "Arturo Coello"
+          ],
+          "score": "6-2/4-6/7-5",
+          "sets": [
+            [
+              "6",
+              "2"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ]
+          ],
+          "winnerIds": [
+            "P000006",
+            "P000005"
+          ],
+          "runnerIds": [
+            "P000009",
+            "P000010"
+          ]
+        }
+      }
+    },
+    {
+      "key": "premier-padel-2022-madrid-p1",
+      "name": "Madrid P1",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Madrid",
+      "country": "Spain",
+      "start": "2022-08-06",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Alejandro Galan",
+            "Juan Lebron"
+          ],
+          "runnersUp": [
+            "Martin Di Nenno",
+            "Francisco Navarro"
+          ],
+          "score": "5-7/6-2/6-3",
+          "sets": [
+            [
+              "5",
+              "7"
+            ],
+            [
+              "6",
+              "2"
+            ],
+            [
+              "6",
+              "3"
+            ]
+          ],
+          "winnerIds": [
+            "P000001",
+            "P000002"
+          ],
+          "runnerIds": [
+            "P000004",
+            "P000003"
+          ]
+        }
+      }
+    },
+    {
       "key": "wpt-2022-malaga-open",
       "name": "Málaga Open",
       "year": 2022,
@@ -12788,6 +13009,51 @@
           "confidence": "high"
         }
       ]
+    },
+    {
+      "key": "premier-padel-2022-paris-major",
+      "name": "Paris Major",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Paris",
+      "country": "France",
+      "start": "2022-07-17",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Alejandro Galan",
+            "Juan Lebron"
+          ],
+          "runnersUp": [
+            "Federico Chingotto",
+            "Juan Tello"
+          ],
+          "score": "6-3/4-6/6-4",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "4",
+              "6"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "winnerIds": [
+            "P000001",
+            "P000002"
+          ],
+          "runnerIds": [
+            "P000007",
+            "P000008"
+          ]
+        }
+      }
     },
     {
       "key": "wpt-2022-valencia-open",
@@ -19318,6 +19584,51 @@
       ]
     },
     {
+      "key": "premier-padel-2022-italy-major",
+      "name": "Italy Major",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Roma",
+      "country": "Italy",
+      "start": "2022-05-29",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Alejandro Galan",
+            "Juan Lebron"
+          ],
+          "runnersUp": [
+            "Martin Di Nenno",
+            "Francisco Navarro"
+          ],
+          "score": "4-6/7-5/6-4",
+          "sets": [
+            [
+              "4",
+              "6"
+            ],
+            [
+              "7",
+              "5"
+            ],
+            [
+              "6",
+              "4"
+            ]
+          ],
+          "winnerIds": [
+            "P000001",
+            "P000002"
+          ],
+          "runnerIds": [
+            "P000004",
+            "P000003"
+          ]
+        }
+      }
+    },
+    {
       "key": "wpt-2022-mallorca-challenger",
       "name": "Mallorca Challenger",
       "year": 2022,
@@ -25126,6 +25437,47 @@
           "confidence": "high"
         }
       ]
+    },
+    {
+      "key": "premier-padel-2022-qatar-major",
+      "name": "Qatar Major",
+      "year": 2022,
+      "tour": "PREMIER PADEL",
+      "circuit": "PREMIER PADEL",
+      "city": "Doha",
+      "country": "Qatar",
+      "start": "2022-04-02",
+      "finals": {
+        "Men": {
+          "winners": [
+            "Martin Di Nenno",
+            "Francisco Navarro"
+          ],
+          "runnersUp": [
+            "Alejandro Galan",
+            "Juan Lebron"
+          ],
+          "score": "6-3/7-6",
+          "sets": [
+            [
+              "6",
+              "3"
+            ],
+            [
+              "7",
+              "6"
+            ]
+          ],
+          "winnerIds": [
+            "P000004",
+            "P000003"
+          ],
+          "runnerIds": [
+            "P000001",
+            "P000002"
+          ]
+        }
+      }
     },
     {
       "key": "wpt-2022-getafe-challenger",
@@ -261372,5 +261724,5 @@
     2022,
     2023
   ],
-  "circuitSource": "PPT finals from padelfip.com circuit-stats API; WPT finals from Wikipedia, gap-filled + player-id enriched from the same FIP API"
+  "circuitSource": "PPT finals from padelfip.com circuit-stats API; WPT finals from Wikipedia, gap-filled + player-id enriched from the same FIP API; PREMIER PADEL finals from padelfip.com circuit-stats API"
 }
