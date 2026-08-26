@@ -31,6 +31,22 @@ export async function onRequestGet({ params, env }) {
     ).bind(id).first();
   } catch { /* table not created yet */ }
 
+  // Elo rating + rank within its pool (padel-db/export_d1_elo.py). Wrapped for
+  // the same reason as the bio above — the table is loaded by a separate
+  // wrangler step, and a deploy landing first must degrade to "no rating"
+  // rather than 500 every player page.
+  // The rating is ONLY meaningful inside its own (source, pool): men and women
+  // are rated separately, and so are the RankedIn and FIP tours. Never render
+  // it against a rating carrying a different source/pool.
+  // "rank" and "of" are quoted — both are SQLite keywords.
+  let elo = null;
+  try {
+    elo = await env.DB.prepare(
+      `SELECT source,pool,rating,"rank" AS rank,"of" AS of,n_matches,peak,peak_date
+       FROM player_elo WHERE id=?1`
+    ).bind(id).first();
+  } catch { /* table not created yet */ }
+
   const { results: byYear } = await env.DB.prepare(
     `SELECT substr(m.date,1,4) yr, COUNT(*) played, SUM(CASE WHEN mp.is_winner=1 THEN 1 ELSE 0 END) won
      FROM match_players mp JOIN matches m ON m.id=mp.match_id
@@ -109,6 +125,7 @@ export async function onRequestGet({ params, env }) {
   return json({
     player,
     bio,
+    elo,
     summary: {
       total, wins, losses: total - wins, byYear,
       titles, finals: finalRows.length,

@@ -1592,6 +1592,26 @@ function bioRow(bio) {
     `</div>`;
 }
 
+// Elo rating + the rank it implies. The rank matters as much as the number: a
+// bare "2053" means nothing on its own, and the pool it is ranked WITHIN is the
+// only context in which it means anything at all. Men and women are rated
+// separately, as are the RankedIn and FIP tours, so the tooltip always names
+// the population rather than implying a single global ladder.
+// Absent when the player has too few matches to rate, or before the table is
+// loaded — the API returns null and this renders nothing.
+const ELO_POOL = { M: "men", W: "women" };
+const ELO_SOURCE = { fip: "FIP", rin: "Nordic" };
+function eloStat(elo) {
+  if (!elo || elo.rating == null) return "";
+  const pool = ELO_POOL[elo.pool] || "";
+  const src = ELO_SOURCE[elo.source] || "";
+  const title = `Elo ${elo.rating} — #${elo.rank} of ${elo.of} rated ${src} ${pool}`
+    + ` · ${elo.n_matches} matches`
+    + (elo.peak ? ` · peak ${elo.peak}${elo.peak_date ? " " + elo.peak_date.slice(0, 7) : ""}` : "");
+  return `<div class="pstat hi" title="${esc(title)}"><b>${esc(elo.rating)}</b>`
+    + `<span>Elo #${esc(elo.rank)}</span></div>`;
+}
+
 function renderProfile() {
   if (state.player === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
   const { player, summary, matches } = state.player;
@@ -1619,6 +1639,7 @@ function renderProfile() {
         ${summary.finals ? `<div class="pstat"><b>${summary.finals}</b><span>finals</span></div>` : ""}
         ${summary.sets && summary.sets.pct != null ? `<div class="pstat"><b>${summary.sets.pct}%</b><span>sets won</span></div>` : ""}
         ${summary.games && summary.games.pct != null ? `<div class="pstat"><b>${summary.games.pct}%</b><span>games won</span></div>` : ""}
+        ${eloStat(state.player.elo)}
       </div>
     </div>`;
   html += bioRow(state.player.bio);
