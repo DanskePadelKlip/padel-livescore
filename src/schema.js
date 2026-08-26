@@ -51,6 +51,12 @@ export const gid = (source, nativeId) => `${source}:${nativeId}`;
  * @typedef {Object} Score
  * @property {Array<[number|string, number|string]>} sets  per-set [sideA, sideB]
  * @property {0|1|null} winner        0 = side A, 1 = side B, null = undecided
+ * @property {[string,string]} [points]  CURRENT GAME score ["40","30"] — only while
+ *           a match is actually on court, and only from sources that publish it
+ *           (fip's live board; RankedIn and tournamentsoftware carry set games only).
+ *           Absent means "not published", NEVER "0–0".
+ * @property {0|1} [serving]          side currently serving, when the source says so
+ * @property {boolean} [warmup]       on court but not yet started (fip live board)
  */
 
 // Lightweight shape guard — throws in dev if an adapter emits something off.
