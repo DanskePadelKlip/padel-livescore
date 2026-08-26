@@ -36,7 +36,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22, not 20: wrangler is a devDependency now (it has to be — see
+          # refresh-loop.js on `npx --yes wrangler@4` and the EBUSY freeze), and
+          # wrangler 4.118 declares engines node>=22. npm ci installs it regardless
+          # (engines only warns), then the deploy step's npx picks the LOCAL copy
+          # over resolving a Node-20-compatible 4.x from the registry, and it
+          # refuses to run. Broke every run from 3163d79 until this bump.
+          node-version: 22
           cache: npm
       - run: npm ci
       - name: Fetch matches
