@@ -19,6 +19,13 @@
 // Resumable: files that already carry `organizerUrl`, or a `noOrganizer` marker from a
 // previous run, are skipped — so a re-run costs nothing for the majority that have none.
 // Usage:  node scripts/backfill-archive-organizer.js [--limit N] [--dry]
+//
+// SOURCE OF TRUTH IS padel.db, NOT THIS SCRIPT. `padel-db/export_archive.py` rebuilds
+// every archive file from the database and will overwrite whatever this writes. The
+// durable path is padel-db: `rin_tournaments.organizer`/`organizer_url`, populated by
+// `load_rankedin.py --fill-info`, emitted by `export_archive.py`. This script remains
+// only as a direct patcher for when running the full export isn't wanted — if its output
+// and the DB ever disagree, the DB wins on the next export.
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

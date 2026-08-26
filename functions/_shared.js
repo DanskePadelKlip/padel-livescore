@@ -49,3 +49,29 @@ export function withMeta(shellRes, m) {
   out.headers.set("cache-control", "no-cache"); // mirror the shell; entity data is cached at the API layer
   return out;
 }
+
+// Player meta needs only identity + the W-L record. Reading D1 directly here
+// replaces the old fetch("/api/player/:id") from the page Function: that was a
+// SECOND Function invocation per render, and it ran six queries - including a
+// whole-history scan and a most-frequent-partner GROUP BY - to produce four
+// numbers. The filter below (m.date IS NOT NULL) is the same one /api/player
+// uses for its byYear aggregation, so the rendered figures are identical.
+// Returns null when the id is unknown OR D1 is unavailable, which is exactly
+// how the old code behaved when the API fetch failed: fall back to the shell.
+export async function playerMeta(env, id) {
+  try {
+    const player = await env.DB
+      .prepare("SELECT id,name,country FROM players WHERE id=?1").bind(id).first();
+    if (!player) return null;
+    const agg = await env.DB.prepare(
+      `SELECT COUNT(*) total, SUM(CASE WHEN mp.is_winner=1 THEN 1 ELSE 0 END) wins
+       FROM match_players mp JOIN matches m ON m.id=mp.match_id
+       WHERE mp.player_id=?1 AND m.date IS NOT NULL`
+    ).bind(id).first();
+    const total = Number(agg?.total || 0);
+    const wins = Number(agg?.wins || 0);
+    return { player, summary: { total, wins, losses: total - wins } };
+  } catch {
+    return null;
+  }
+}

@@ -13,6 +13,7 @@
 
 import { parseHTML } from "linkedom";
 import { STATUS, gid } from "../schema.js";
+import * as sporteaser from "./sporteaser.js";
 
 export const id = "fip";
 
@@ -24,6 +25,15 @@ const FIP_HEADERS = {
 };
 const WIDGET = "https://widget.matchscorerlive.com/screen";
 const WP = "https://www.padelfip.com/wp-json/wp/v2";
+// The order-of-play widget above carries SET games only. The live board is a
+// separate view of the same Crionet data — same markup family (.double
+// .line-thin, img.flags, td.set) — and it additionally carries the current game
+// points (td.points) and a ball icon on the serving team (img.ballg), plus a
+// warm-up state. This is what padelfip.com's own "Live Score" tab embeds
+// (verified 2026-08-03: it reloads that iframe every 20s). It only ever lists
+// matches currently on court, so it is fetched per event and merged onto the
+// matches the OOP already produced — never as a source of matches itself.
+const LIVE_BOARD = `${WIDGET}/tournamentlive`;
 
 export async function fetchMatches({ date = todayISO(), maxTournaments = Infinity, maxDay = 9, log = () => {} } = {}) {
   const events = await discoverActiveEvents(date, log);
@@ -49,9 +59,19 @@ export async function fetchMatches({ date = todayISO(), maxTournaments = Infinit
         log(`    · ${ev.slug} (${msId}): no widget matches yet`);
         continue;
       }
-      let n = 0;
-      for (const d of days) { estimateDay(d); for (const m of d.matches) { out.push(normalize(m, ev, msId, { n: d.day, label: d.dayDate })); n++; } }
-      log(`    ✓ ${ev.title} — day(s) ${days.map((d) => d.day).join(",")}: ${n} matches`);
+      const evMatches = [];
+      for (const d of days) { estimateDay(d); for (const m of d.matches) evMatches.push(normalize(m, ev, msId, { n: d.day, label: d.dayDate })); }
+      // Overlay live points + serve onto the matches that are on court right now.
+      // Never fails the event: a missing/HTML-changed board just leaves the OOP
+      // set scores exactly as they were.
+      let enriched = await applyLiveDetail(evMatches, msId, log);
+      // Crionet's live board is EMPTY for events scored on Sporteaser instead, and
+      // its order-of-play leaves an in-progress match blank until it completes - so
+      // without this those events show every on-court match as upcoming with no
+      // score. See adapters/sporteaser.js.
+      enriched += await applySporteaserDetail(evMatches, ev, log);
+      out.push(...evMatches);
+      log(`    ✓ ${ev.title} — day(s) ${days.map((d) => d.day).join(",")}: ${evMatches.length} matches${enriched ? ` (${enriched} live-detailed)` : ""}`);
     } catch (err) {
       log(`    ! ${ev.slug} failed — ${err.message}`);
     }
@@ -145,6 +165,96 @@ function parseWidget(document) {
   return { now, dayDate, matches: out };
 }
 
+// ---- live board (points + serve) -------------------------------------------
+
+// One court block per in-play match. Points live in `td.points`; the serving
+// side is the team whose cell contains the ball image. Warm-up blocks carry no
+// points and no ball yet, which is exactly how they should render.
+function parseLiveBoard(document) {
+  const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
+  const out = [];
+  for (const table of document.querySelectorAll("table")) {
+    if (!table.querySelector("tr.scorebox-header-live")) continue;
+    const teamRows = [...table.querySelectorAll("tr")].filter((tr) => tr.querySelector("td.team"));
+    if (teamRows.length < 2) continue;
+    const teams = teamRows.slice(0, 2).map((tr) => ({
+      players: [...tr.querySelectorAll(".double .line-thin")].map((e) => clean(e.textContent)).filter(Boolean),
+      points: clean(tr.querySelector("td.points")?.textContent) || null,
+      serving: !!tr.querySelector("img.ballg"),
+    }));
+    const summary = clean(table.querySelector(".live-status-summary")?.textContent);
+    out.push({ teams, warmup: /warm\s*up/i.test(summary) });
+  }
+  return out;
+}
+
+// Order-independent key over all four players, so a board and an OOP row match
+// even if the two widgets list the sides (or the pair) in a different order.
+// Seeding markers ("(5)") are stripped: they appear on the board but not always
+// on the OOP row for the same pair.
+const pkey = (names) =>
+  (names || []).map((n) => String(n).replace(/\(\d+\)/g, "").toLowerCase().replace(/[^a-z]/g, "")).sort().join("+");
+const boardKey = (sides) => sides.map(pkey).sort().join("~");
+
+async function applyLiveDetail(matches, msId, log) {
+  let boards;
+  try {
+    const res = await fetch(`${LIVE_BOARD}/${msId}?t=tol`, { headers: FIP_HEADERS });
+    if (!res.ok) return 0;
+    const { document } = parseHTML(await res.text());
+    boards = parseLiveBoard(document);
+  } catch (err) {
+    log(`    · live board ${msId} skipped — ${err.message}`);
+    return 0;
+  }
+  if (!boards?.length) return 0;
+
+  const byKey = new Map();
+  for (const b of boards) byKey.set(boardKey(b.teams.map((t) => t.players)), b);
+
+  let n = 0;
+  for (const m of matches) {
+    const sides = m.teams.map((t) => t.players.map((p) => p.name));
+    const b = byKey.get(boardKey(sides));
+    if (!b) continue;
+    // Align the board's sides to the match's sides before attaching anything —
+    // getting this backwards would put the serve dot on the wrong pair.
+    const flipped = pkey(b.teams[0].players) !== pkey(sides[0]);
+    const [ta, tb] = flipped ? [b.teams[1], b.teams[0]] : b.teams;
+    if (b.warmup) {
+      m.score.warmup = true;
+    } else {
+      if (ta.points != null || tb.points != null) m.score.points = [ta.points ?? "", tb.points ?? ""];
+      const side = ta.serving ? 0 : tb.serving ? 1 : null;
+      if (side !== null) m.score.serving = side;
+    }
+    n++;
+  }
+  return n;
+}
+
+// Fallback live detail for events whose scoring is not on Crionet at all. Runs
+// only for matches the board left without points, and only after discovery finds
+// a sporteaser tournament for the event - most FIP events have none, which costs
+// one cached lookup and nothing else.
+async function applySporteaserDetail(matches, ev, log) {
+  const pending = matches.filter((m) => m.status !== STATUS.FINAL && !m.score.points);
+  if (!pending.length) return 0;
+  const tid = await sporteaser.discoverTournamentId(ev.link, log);
+  if (!tid) return 0;
+
+  // Sporteaser is addressed by day-of-month; the widget's play-day label ("AUG 26")
+  // is where that number comes from.
+  const dayNums = [...new Set(pending.map((m) => sporteaser.dayOfMonth(m.day?.label)).filter(Boolean))];
+  let n = 0;
+  for (const d of dayNums) {
+    const records = await sporteaser.fetchDay(tid, d, log);
+    if (!records.length) continue;
+    n += sporteaser.attach(matches.filter((m) => sporteaser.dayOfMonth(m.day?.label) === d), records, log);
+  }
+  if (n) log(`    sporteaser: ${n} match(es) live-detailed (tournament ${tid})`);
+  return n;
+}
 // ---- time estimation (Node) ----------------------------------------------
 // Estimate a venue-local start clock for each upcoming match by chaining per
 // court: completed matches consume their ACTUAL duration, a live match is

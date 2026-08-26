@@ -19,6 +19,8 @@ $ProjectName = "padel-livescore"
 # alongside public/.
 Set-Location $root
 Write-Host "Deploying public/ + functions/ to Cloudflare Pages project '$ProjectName'..." -ForegroundColor Cyan
-& npx --yes wrangler@4 pages deploy public --project-name=$ProjectName --branch main --commit-dirty=true
+# Resolves to node_modules/.bin (wrangler is a devDependency) instead of re-fetching
+# wrangler@4 from the registry every run — see the note in scripts/refresh-loop.js.
+& npx wrangler pages deploy public --project-name=$ProjectName --branch main --commit-dirty=true
 if ($LASTEXITCODE -ne 0) { Write-Host "Deploy FAILED (exit $LASTEXITCODE)." -ForegroundColor Red; exit $LASTEXITCODE }
 Write-Host "Done." -ForegroundColor Green

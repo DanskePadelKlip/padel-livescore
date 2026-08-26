@@ -1,4 +1,42 @@
+﻿# PadelTicker robots policy
+#
+# Search and answer engines that send traffic back are welcome everywhere.
+# Training-only crawlers, which take the aggregated federation data and return
+# nothing, are disallowed. Note Google-Extended and Applebot-Extended control
+# AI training ONLY - they do not affect Googlebot or Applebot search indexing.
+#
+# Deliberately still allowed: OAI-SearchBot and PerplexityBot. Those power
+# answer engines that cite and link, so they are an acquisition channel.
+
 User-agent: *
 Allow: /
+
+# --- AI training crawlers: disallowed ---
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
 
 Sitemap: https://padelticker.com/sitemap.xml

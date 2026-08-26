@@ -1,17 +1,13 @@
 // GET /player/:id — app shell with this player's meta injected for scrapers.
-import { SITE, shell, withMeta } from "../_shared.js";
+import { SITE, shell, withMeta, playerMeta } from "../_shared.js";
 
-export async function onRequestGet({ request, params }) {
+export async function onRequestGet({ request, params, env }) {
   const origin = new URL(request.url).origin;
   const id = params.id;
   const base = await shell(origin);
-
-  let d = null;
-  try {
-    const r = await fetch(origin + "/api/player/" + encodeURIComponent(id));
-    if (r.ok) d = await r.json();
-  } catch {}
-  if (!d || !d.player) return base; // unknown id → generic shell (SPA still works)
+  // One direct D1 read; no second Function invocation. See playerMeta in _shared.js.
+  const d = await playerMeta(env, id);
+  if (!d) return base; // unknown id, or D1 down -> generic shell (SPA still works)
 
   const p = d.player;
   const s = d.summary || {};
