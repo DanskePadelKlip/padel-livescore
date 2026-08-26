@@ -27,19 +27,32 @@ export async function onRequestGet({ request, params }) {
       const r = await fetch(origin + "/data/matches.json", { cf: { cacheTtl: 0 } });
       if (r.ok) {
         const d = await r.json();
-        const m = (d.matches || []).find((x) => x.source === source && String(x.tournament.id) === String(id));
-        if (m) {
-          const t = m.tournament;
-          name = t.name; fed = m.federation || "";
+        const ms = (d.matches || []).filter((x) => x.source === source && String(x.tournament.id) === String(id));
+        if (ms.length) {
+          const t = ms[0].tournament;
+          name = t.name; fed = ms[0].federation || "";
           start = t.start || null; end = t.end || null;
           venue = t.venue || null; address = t.address || null;
           organizer = t.organizer || null; organizerUrl = t.organizerUrl || null;
+          // Only rankedin publishes tournament-level dates. Without a fallback the
+          // other sources shipped an Event with no startDate, which Google rejects
+          // outright (GSC, 2026-08-12). Match times are the next best source, and
+          // ISO 8601 sorts lexicographically so min/max needs no date parsing.
+          if (!start) {
+            const times = ms.map((x) => isoDate(x.startTime)).filter(Boolean).sort();
+            if (times.length) { start = times[0]; end = times[times.length - 1]; }
+            else { const d2 = fipPlayDates(ms, id); if (d2) { start = d2.start; end = d2.end; } }
+          }
         }
       }
     } catch {}
   }
 
   if (!name) return base; // unknown → generic shell
+
+  // Whatever the source said, only a well-formed date reaches the markup.
+  start = isoDate(start);
+  end = isoDate(end);
 
   const title = `${name} — draw, results & schedule · PadelTicker`;
   const description =
@@ -64,8 +77,8 @@ export async function onRequestGet({ request, params }) {
         ? { organizer: { "@type": "Organization", name: organizer, url: organizerUrl } }
         : {}),
       ...((venue || address) ? { location: { "@type": "Place", name: venue || address, ...(address ? { address } : {}) } } : {}),
-      ...(start ? { startDate: start } : {}),
-      ...(end ? { endDate: end } : {}),
+      startDate: start,
+      endDate: (end && end >= start) ? end : start,
     },
     {
       "@context": "https://schema.org",
@@ -78,5 +91,48 @@ export async function onRequestGet({ request, params }) {
     },
   ];
 
-  return withMeta(base, { title, description, canonical, ogType: "website", image, jsonld });
+  // An Event without startDate is an error on every such page; no Event at all
+  // just forgoes the rich result. The BreadcrumbList is unaffected either way.
+  const graphs = start ? jsonld : jsonld.filter((g) => g["@type"] !== "SportsEvent");
+
+  return withMeta(base, { title, description, canonical, ogType: "website", image, jsonld: graphs });
+}
+
+const MONTHS = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
+
+// FIP matches carry no startTime - the order-of-play widget only labels each play
+// day "AUG 12 WED". The year is in the tournament id ("FIP-2026-3401"), and day.n
+// gives the true play order, so a tournament running Dec->Jan rolls the year over.
+export function fipPlayDates(ms, id) {
+  const year = Number((String(id).match(/-(\d{4})-/) || [])[1]);
+  if (!year) return null;
+
+  const days = [];
+  for (const m of ms) {
+    const p = String(m.day?.label || "").match(/([A-Z]{3})\s+(\d{1,2})/i);
+    const mo = p && MONTHS[p[1].toUpperCase()];
+    if (!mo) continue;
+    days.push({ n: Number(m.day.n) || 0, mo, d: Number(p[2]) });
+  }
+  if (!days.length) return null;
+
+  days.sort((a, b) => a.n - b.n);
+  const pad = (n) => String(n).padStart(2, "0");
+  let y = year, prevMo = days[0].mo;
+  const dates = days.map((x) => {
+    if (x.mo < prevMo) y++; // month went backwards -> crossed into the next year
+    prevMo = x.mo;
+    return `${y}-${pad(x.mo)}-${pad(x.d)}`;
+  });
+  return { start: dates[0], end: dates[dates.length - 1] };
+}
+
+// Accept "2026-08-12" or "2026-08-12T09:30(:00)", padding a single-digit hour;
+// reject anything else rather than publish a date Google will refuse.
+function isoDate(v) {
+  const s = String(v || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})T(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!m) return null;
+  return `${m[1]}T${m[2].padStart(2, "0")}:${m[3]}:${m[4] || "00"}`;
 }

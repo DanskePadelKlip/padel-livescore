@@ -21,6 +21,16 @@ export async function onRequestGet({ params, env }) {
   const player = await env.DB.prepare("SELECT id,name,country,is_nordic FROM players WHERE id=?1").bind(id).first();
   if (!player) return json({ error: "not found" }, 404);
 
+  // Biography (padelfip.com profile facts, loaded by padel-db/export_d1_bio.py).
+  // Wrapped: the table is populated by a separate job, so a deploy that lands before
+  // the first upload must degrade to "no bio", never to a 500 on the whole profile.
+  let bio = null;
+  try {
+    bio = await env.DB.prepare(
+      "SELECT birth_date,height_cm,position,birth_place,coaches,partner,photo_url,fip_slug FROM player_bio WHERE player_id=?1"
+    ).bind(id).first();
+  } catch { /* table not created yet */ }
+
   const { results: byYear } = await env.DB.prepare(
     `SELECT substr(m.date,1,4) yr, COUNT(*) played, SUM(CASE WHEN mp.is_winner=1 THEN 1 ELSE 0 END) won
      FROM match_players mp JOIN matches m ON m.id=mp.match_id
@@ -98,6 +108,7 @@ export async function onRequestGet({ params, env }) {
 
   return json({
     player,
+    bio,
     summary: {
       total, wins, losses: total - wins, byYear,
       titles, finals: finalRows.length,

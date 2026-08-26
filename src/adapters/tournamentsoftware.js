@@ -315,7 +315,7 @@ function normalize(m, t, inst) {
     round,
     court: null,
     status: decided ? STATUS.FINAL : hasScore ? STATUS.LIVE : STATUS.UPCOMING,
-    startTime: m.date ? `${m.date}T${m.time || "00:00"}:00` : null,
+    startTime: m.date ? `${m.date}T${padHour(m.time) || "00:00"}:00` : null,
     teams: [team(a, inst.code), team(b, inst.code)],
     score: { sets: m.sets, winner: a.won ? 0 : b.won ? 1 : null },
     raw: { header: m.header, time: m.time },
@@ -347,4 +347,12 @@ function overlapsWindow(t, lo, hi) {
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// The site renders single-digit hours unpadded ("8:00"), which would make a
+// startTime like "2026-08-08T8:00:00" - not valid ISO 8601, and it sorts wrong
+// against a padded "15:00" too.
+function padHour(t) {
+  const m = String(t || "").match(/^(\d{1,2}):(\d{2})$/);
+  return m ? `${m[1].padStart(2, "0")}:${m[2]}` : null;
 }
