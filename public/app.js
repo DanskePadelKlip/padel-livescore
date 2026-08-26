@@ -1376,9 +1376,8 @@ function renderPlayers() {
   if (state.h2h) return renderH2H();
   if (state.player) return renderProfile();
   let html;
-  if (state.playerResults == null)
-    html = `<div class="empty"><div class="big">👤</div>Search a player to see their profile, results &amp; head-to-head.</div>`;
-  else if (!state.playerResults.length)
+  if (state.playerResults == null) return renderPlayersBrowse();
+  if (!state.playerResults.length)
     html = (state.fipResults || []).length
       ? fipFallbackHtml()
       : `<div class="empty"><div class="big">👤</div>${state.query ? `No profile yet for <b>${esc(state.query)}</b>.` : "No players found."}<div style="margin-top:8px;color:var(--faint);font-size:13px;line-height:1.5">Player profiles currently cover the Nordic (RankedIn) scene and linked pros. Many international / pro-tour players aren't in the profile database yet.</div></div>`;
@@ -1390,16 +1389,102 @@ function renderPlayers() {
 // weekly movement) plus a link to the player's padelfip.com page, and let them
 // be followed. Deliberately not styled as a profile — it is a real ranking row,
 // not a thin pretend-profile.
-function fipFallbackHtml() {
-  const rows = state.fipResults.map((r) => `
+function fipRankRow(r) {
+  return `
     <div class="fipres">
       <span class="flag">${esc((r.country || "").toUpperCase())}</span>
       <span class="nm">${esc(r.full || r.name)}</span>
       <span class="meta">${esc(r.cat || "")} · #${r.rank}${r.points != null ? ` · ${Math.round(r.points).toLocaleString()} pts` : ""}</span>
       ${star("players", r.id, r.name, r.country || "")}
       ${fipProfileUrl(r) ? `<a class="fiplink" href="${esc(fipProfileUrl(r))}" target="_blank" rel="noopener" title="View on padelfip.com">↗</a>` : ""}
-    </div>`).join("");
+    </div>`;
+}
+
+function fipFallbackHtml() {
+  const rows = state.fipResults.map(fipRankRow).join("");
   return `<div class="fipfall"><div class="fipfall__lbl">Not in the profile database yet — found in the FIP world ranking</div>${rows}</div>`;
+}
+
+// ---------- players: the default view (nothing searched yet) ----------
+// /players used to open on a bare "search a player" prompt: nothing to look at,
+// and it is the page search engines land people on. Default to something
+// browsable instead — who you follow, who is on court today, and the top of the
+// world + Danish lists. It all comes from data the app already holds
+// (matches.json + the ranking files), so the default view costs no extra call.
+function renderPlayersBrowse() {
+  ensureRankings(); // the ranking blocks fill in when those files land
+  let html = `<div class="browse-hint">Search a player by name above — or start here.</div>`;
+
+  const favs = Object.entries(state.favs.players);
+  if (favs.length) {
+    html += `<div class="section-label">⭐ Following · ${favs.length}</div>`;
+    html += favs.slice(0, 10).map(([id, d]) => favPlayerRow(id, d)).join("");
+  }
+
+  html += browseOnCourt();
+  html += browseRankBlock("FIP", `${FLAGS.FIP} World ranking`);
+  html += browseRankBlock("DK", `${FLAGS.DK} Denmark`);
+  html += `<button class="browse-all" data-goto-mode="rankings">All rankings →</button>`;
+  app.innerHTML = html;
+}
+
+// Names on court today, from the live feed. Matches carry no player id, so these
+// are name chips that resolve through search on click (openPlayerByName).
+function browseOnCourt() {
+  const today = todayYmd();
+  const seen = new Map();
+  for (const m of state.matches || []) {
+    if (m.status === "final") continue;
+    const d = matchDate(m);
+    if (d && d !== today) continue;
+    for (const t of m.teams || []) {
+      const ps = (t.players || []).length
+        ? t.players
+        : (t.name || "").split("/").map((n) => ({ name: n.trim(), country: "" }));
+      for (const p of ps) {
+        // Drop the draw marker ("(WC)", "(3)", "(Q)"): it belongs to the entry, not
+        // the person, and it would otherwise both split one player into several
+        // chips and break the name lookup a click runs.
+        const name = (p.name || "").replace(DRAW_MARKER, "").trim();
+        if (!name || name === "TBD") continue;
+        const cur = seen.get(name);
+        if (cur) { cur.live = cur.live || m.status === "live"; continue; }
+        seen.set(name, { name, country: p.country || "", live: m.status === "live" });
+      }
+    }
+  }
+  const rows = [...seen.values()].sort((a, b) => (b.live - a.live) || a.name.localeCompare(b.name));
+  if (!rows.length) return "";
+  const nLive = rows.filter((r) => r.live).length;
+  const shown = rows.slice(0, 40);
+  return `<div class="section-label${nLive ? " live" : ""}">${nLive ? '<span class="lampe"></span>' : "🎾 "}On court today · ${rows.length}</div>
+    <div class="tplayers">${shown.map((r) => `<span class="pchip pn${r.live ? " onlive" : ""}" data-pname="${esc(r.name)}" title="View ${esc(r.name)}">${countryFlag(r.country)} ${esc(r.name)}</span>`).join("")}${
+      rows.length > shown.length ? `<span class="pchip">+${rows.length - shown.length} more</span>` : ""}</div>`;
+}
+
+// Top of one federation's lists (men + women), five rows each. FIP world rows
+// carry no RankedIn id, so they render as ranking rows (not fake profiles);
+// national rows do carry one and open the profile.
+function browseRankBlock(fed, label) {
+  if (!state.rankings) return "";
+  let html = "";
+  for (const l of state.rankings.lists.filter((x) => x.fed === fed)) {
+    const rows = (l.rows || []).slice(0, 5);
+    if (!rows.length) continue;
+    html += `<div class="section-label">${label} · ${esc(l.label || l.category || "")}</div>`;
+    html += rows.map((r) => (fed === "FIP" ? fipRankRow({ ...r, cat: l.label }) : natRankRow(r))).join("");
+  }
+  return html;
+}
+
+function natRankRow(r) {
+  const linked = !!r.id;
+  return `<div class="presult${linked ? "" : " noprofile"}"${linked ? ` data-player="${esc(r.id)}"` : ""}>
+    <span class="rk">#${r.rank}</span>
+    <span class="nm">${countryFlag(r.country)} ${esc(r.name)}</span>
+    <span class="meta">${r.points != null ? Math.round(r.points).toLocaleString() + " pts" : ""}</span>
+    ${star("players", r.id, r.name, r.country || "")}
+  </div>`;
 }
 
 function playerResultRow(p) {
@@ -1421,7 +1506,7 @@ async function ensureRankings() {
   const [fip, nat] = await Promise.all([grab("data/rankings-fip.json"), grab("data/rankings.json")]);
   state.rankings = { lists: [...(fip.lists || []), ...(nat.lists || [])] };
   _ranksLoading = false;
-  if (state.mode === "players" && state.player && state.player !== "loading") render();
+  if (state.mode === "players" && state.player !== "loading") render(); // profile ranking + the browse blocks
 }
 
 // Every ranking list this player appears in, best rank first.
@@ -2429,6 +2514,9 @@ app.addEventListener("click", (e) => {
     render();
     return;
   }
+
+  const gm = e.target.closest("[data-goto-mode]");
+  if (gm) { activateMode(gm.dataset.gotoMode); return; }
 
   // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");

@@ -360,6 +360,14 @@
     .presult:hover { background: var(--card-hi); }
     .presult .nm { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .presult .meta { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .presult.noprofile { cursor: default; }
+    .presult .rk { color: var(--faint); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 26px; }
+    /* /players with nothing searched yet: the browse view */
+    .browse-hint { color: var(--faint); font-size: 13px; margin: 2px 0 14px; }
+    .pchip.pn { cursor: pointer; }
+    .pchip.pn:hover { background: var(--card-hi); color: var(--text); }
+    .pchip.onlive { border-color: var(--live, var(--accent)); color: var(--text); }
+    .browse-all { background: none; border: 0; color: var(--accent); cursor: pointer; font-weight: 600; font-size: 13px; padding: 4px 0 20px; }
     /* ranked pros with no profile-DB entry: a ranking row, not a fake profile */
     .fipfall__lbl { color: var(--faint); font-size: 12px; margin: 2px 0 9px; }
     .fipres { display: flex; align-items: center; gap: 10px; padding: 11px 13px;
