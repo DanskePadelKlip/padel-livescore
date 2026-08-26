@@ -471,15 +471,6 @@ function renderGroups(matches, changed) {
   const arr = [...groups.values()];
   arr.forEach((g) => g.matches.sort(cmpByStart)); // chronological within each event
 
-  // auto-expand only live groups + the first (keeps the DOM light), until the
-  // user starts toggling groups themselves.
-  arr.forEach((g, i) => {
-    if (!state._touched) {
-      const hasLive = g.matches.some((m) => m.status === "live");
-      if (hasLive || i === 0) state.expandedGroups.add(g.key);
-    }
-  });
-
   // bucket tournaments into federation sections; FIP International first, rest A–Z
   const sections = new Map();
   for (const g of arr) {
@@ -492,9 +483,23 @@ function renderGroups(matches, changed) {
     return ka.localeCompare(kb);
   });
 
+  // biggest / most prestigious first, within each section
+  ordered.forEach(([, gs]) => gs.sort((a, b) => tournamentRank(b) - tournamentRank(a)));
+
+  // auto-expand only live groups + the first one *as displayed* (keeps the DOM
+  // light), until the user starts toggling groups themselves. Must run after the
+  // section + prestige sort above: indexing the raw feed order opened whichever
+  // event the aggregator happened to emit first, so on a day with no live
+  // matches an FIP Bronze could sit expanded under a collapsed FIP Gold.
+  if (!state._touched) {
+    ordered.flatMap(([, gs]) => gs).forEach((g, i) => {
+      const hasLive = g.matches.some((m) => m.status === "live");
+      if (hasLive || i === 0) state.expandedGroups.add(g.key);
+    });
+  }
+
   return ordered
     .map(([fed, gs]) => {
-      gs.sort((a, b) => tournamentRank(b) - tournamentRank(a)); // biggest / most prestigious first
       const n = gs.reduce((s, g) => s + g.matches.length, 0);
       const header =
         `<div class="section-label region"><span class="rflag">${fedFlag(fed)}</span>${esc(REGION_LABEL[fed] || fed)}` +
