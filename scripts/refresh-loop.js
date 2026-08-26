@@ -127,8 +127,13 @@ async function cycle() {
       // switch reports the site down while nothing looks broken. A timed-out deploy
       // throws, gets logged below, and the next cycle simply deploys again; a
       // repeated static deploy is idempotent.
+      // No `--yes wrangler@4`: that re-resolved wrangler from the registry on every
+      // cycle and the unpacked copy in the npx cache could be locked open by a stale
+      // wrangler/workerd, so the rename failed EBUSY and the deploy died each pass
+      // (site froze at the last good edge copy, 2026-08-01). Wrangler is a
+      // devDependency now, so this resolves to node_modules/.bin with no download.
       execSync(
-        "npx --yes wrangler@4 pages deploy public --project-name padel-livescore --branch main --commit-dirty=true",
+        "npx wrangler pages deploy public --project-name padel-livescore --branch main --commit-dirty=true",
         { cwd: root, stdio: "inherit", timeout: 4 * 60_000 }
       );
     } catch (e) {
