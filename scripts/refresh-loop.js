@@ -24,10 +24,15 @@ import { refreshCalendar } from "../src/calendar-refresh.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const LIVE_MS = 60_000;           // ≥1 live match      -> ~1 min (feels live)
+const LIVE_MS = 20_000;           // >=1 live match      -> 20s (cycle work adds ~35s on top)
 const UPCOMING_MS = 10 * 60_000;  // matches upcoming    -> 10 min
 const IDLE_MS = 30 * 60_000;      // nothing on          -> 30 min
 const ERROR_MS = 5 * 60_000;
+// The wpt.json sync below is a git fetch over the network. It exists for a WEEKLY
+// cloud push, so running it every cycle cost a network round trip 60x/hour for
+// nothing. Every 20th cycle is still far faster than the thing it tracks.
+const WPT_SYNC_EVERY = 20;
+let cycleN = 0;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const canDeploy =
@@ -51,6 +56,8 @@ async function maybeRefreshCalendar(date) {
 }
 
 async function cycle() {
+  cycleN += 1;
+  const t0 = Date.now();
   const date = new Date().toISOString().slice(0, 10);
   await maybeRefreshCalendar(date);
   const { matches, sources } = await aggregate({ date });
@@ -106,6 +113,8 @@ async function cycle() {
     }, null, 2)
   );
 
+  const tFetch = Date.now() - t0;
+  let tDeploy = 0;
   if (canDeploy) {
     // Pull in data that lands on `main` from OFF this machine — the weekly WPT-rounds
     // cloud routine pushes public/data/archive/wpt.json to main. This daemon deploys
@@ -116,8 +125,9 @@ async function cycle() {
     // tracked calendar.json). wpt.json is script-generated + committed, never hand-edited
     // locally, so origin/main is authoritative for it.
     try {
-      execSync("git fetch origin main -q && git checkout FETCH_HEAD -- public/data/archive/wpt.json",
-        { cwd: root, stdio: "ignore", timeout: 60_000 });
+      if ((cycleN - 1) % WPT_SYNC_EVERY === 0)
+        execSync("git fetch origin main -q && git checkout FETCH_HEAD -- public/data/archive/wpt.json",
+          { cwd: root, stdio: "ignore", timeout: 60_000 });
     } catch { /* offline, or nothing to pull — just deploy the local copy */ }
     stampAppVersion(root); // content-hash cache-bust: app.js?v=<hash> before every deploy
     try {
@@ -141,11 +151,13 @@ async function cycle() {
     }
   }
 
+  tDeploy = Date.now() - t0 - tFetch;
   const delay = counts.live ? LIVE_MS : counts.upcoming ? UPCOMING_MS : IDLE_MS;
   console.log(
     `[${new Date().toISOString()}] ${matches.length} matches ${JSON.stringify(counts)} ` +
       `→ next in ${Math.round(delay / 60000)}m${counts.live ? "  🔴 LIVE" : ""}`
   );
+  console.log(`  timing: fetch ${tFetch}ms  deploy ${tDeploy}ms  total ${Date.now() - t0}ms`);
   return delay;
 }
 
