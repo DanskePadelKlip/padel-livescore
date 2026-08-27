@@ -4,6 +4,7 @@
 // profile (Phase 2 D1). Output -> public/data/rankings.json.
 
 import { rankedinGet, sleep } from "./http.js";
+import { iso2 } from "./iso.js";
 
 // federation -> RankedIn national ranking-list id. All share one global category
 // taxonomy (see CATS) — verified 2026-07-13 via GetOrganisationRankingsAsync, so
@@ -42,7 +43,11 @@ export async function fetchRankings({ take = 250, log = () => {} } = {}) {
         const rows = (d.Payload || []).map((r) => ({
           rank: r.Standing,
           name: r.Name,
-          country: r.CountryShort,
+          // Same unguarded CountryShort the match adapter carried: the "rin"
+          // sentinel and "gb-eng" subdivisions reached rankings.json too (3 rows
+          // on 2026-08-27). Normalises to uppercase, matching matches.json, so
+          // one representation holds across both feeds.
+          country: iso2(r.CountryShort),
           points: r.ParticipantPoints?.Points ?? null,
           club: r.HomeClubName || null,
           id: r.RankedinId || null,
