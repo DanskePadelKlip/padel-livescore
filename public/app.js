@@ -1336,7 +1336,9 @@ async function searchPlayers(q) {
 // exact match, otherwise show the search results for disambiguation. Names not in the
 // DB (e.g. some 2010s WPT-only players) just yield an empty list — no error.
 async function openPlayerByName(name) {
-  const q = (name || "").trim();
+  // Match rows carry the draw marker ("(1)", "(WC)") on the name; it belongs to the
+  // entry, not the person, and /api/search finds nothing with it attached.
+  const q = String(name || "").replace(DRAW_MARKER, "").trim();
   if (!q) return;
   activateMode("players");
   const el = document.getElementById("q");
