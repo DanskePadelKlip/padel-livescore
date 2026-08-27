@@ -329,6 +329,19 @@
     .followrow .flp { display: inline-flex; align-items: center; gap: 1px; color: var(--muted); white-space: nowrap; }
     .detail a.src { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; color: var(--accent); text-decoration: none; font-weight: 600; }
     .detail a.src:hover { text-decoration: underline; }
+    /* shareable match links */
+    .dlinks { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .mshare { background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer;
+      font: inherit; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 7px; margin-top: 9px; white-space: nowrap; }
+    .mshare:hover { border-color: var(--line-hi); color: var(--text); background: var(--card-hi); }
+    .archm .mshare { margin-top: 4px; opacity: 0; transition: opacity .12s; }
+    /* On a phone there is no hover, so the archive row's button has to stay visible. */
+    .match:hover .archm .mshare, .match.focus .archm .mshare { opacity: 1; }
+    @media (hover: none) { .archm .mshare { opacity: 1; } }
+    /* The row a /match/... link landed on. accent-tinted, not a colour of its own, so
+       it reads as "this one" without competing with the live/final badges. */
+    .match.focus { background: var(--accent-soft, rgba(229,72,74,.10)); box-shadow: inset 3px 0 0 var(--accent); }
+    .bk-box.focus rect { stroke: var(--accent); stroke-width: 2; }
 
     /* head-to-head block inside a match's detail panel */
     .h2h { margin: 11px 0 4px; padding: 9px 11px 10px; background: var(--bg-2);

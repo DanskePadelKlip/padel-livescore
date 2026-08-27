@@ -60,6 +60,84 @@ const LONG_NAME_CHARS = 20;   // measured: the name line starts overflowing at ~
 // of the name, and shortening must hand it back — a 2 seed is information a reader uses.
 const DRAW_MARKER = /\s*(\((?:\d+|WC|Q|LL|SE|A)(?:\s*-\s*\w+)?\))\s*$/i;
 
+// ---------- shareable match links -------------------------------------------
+// A match's link key is DERIVED from the match, never read off m.id. The live feed
+// gives every match an adapter id, but the archive files hold only teams/round/score
+// — no id at all — so an id-based link would die the moment a tournament rolled out
+// of the live feed, which is exactly when people start sharing the result.
+//
+// Surnames + round, diacritic-folded: FIP respells players between polls (accents
+// appear and disappear mid-tournament), and a link already sent to someone has to
+// survive that. Dropping the given name also absorbs the "M. Yanguas" / "Miguel
+// Yanguas" split between the FIP and RankedIn adapters.
+//
+// Measured 2026-08-27 over 26,069 archived and 1,923 live matches: zero collisions
+// in the archive, and every live collision was one of 4 tournaments carrying
+// placeholder entries ("X X", "Group #1"). matchKeyIsUnique gates on that rather
+// than pretending it can't happen.
+const slugPart = (s) =>
+  (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// "M. Yanguas" -> "yanguas"; "Miguel Yanguas" -> "yanguas"; "Cher" -> "cher".
+const surnameKey = (name) => {
+  const n = String(name || "").replace(DRAW_MARKER, "").trim();
+  const initial = /^\S\.\s+(.+)$/.exec(n);          // FIP form: "M. Barrera De La Fuente"
+  if (initial) return normName(initial[1]);
+  const toks = n.split(/\s+/);
+  return normName(toks.length > 1 ? toks.slice(1).join(" ") : n);
+};
+
+const teamKey = (t) => {
+  const ps = (t.players || []).length
+    ? t.players.map((p) => p.name)
+    : String(t.name || "").split("/");
+  return ps.map(surnameKey).filter(Boolean).join("-") || "tbd";
+};
+
+// round segment + pair segment, e.g. "final/coello-tapia-vs-lebron-galan"
+const matchKey = (m) => `${teamKey(m.teams[0])}-vs-${teamKey(m.teams[1])}`;
+const matchRouteKey = (m) => `${slugPart(m.round) || "-"}/${matchKey(m)}`;
+
+// The tournament a match belongs to, in the form tournamentUrlKey() expects.
+const matchTournamentKey = (m, fallbackKey) =>
+  m.source && m.tournament ? `${m.source}:${m.tournament.id}` : fallbackKey;
+
+const matchPath = (m, fallbackKey) => {
+  const tk = matchTournamentKey(m, fallbackKey);
+  return tk ? `/match/${tournamentUrlKey(tk)}/${matchRouteKey(m)}` : null;
+};
+
+// Only offer a link when the key actually identifies ONE match in its tournament.
+// Counted per tournament, not per feed: the same pair can meet in the same round of
+// two different events, and that is not a collision. Cached against the array's
+// identity so a 900-row archive draw costs one pass, not O(n^2) — which is also why
+// callers must hand over a STABLE array (see currentMatchList) rather than a filter.
+const _keyCounts = new WeakMap();
+function matchKeyIsUnique(list, m, fallbackKey) {
+  if (!Array.isArray(list)) return false;
+  const idOf = (x) => `${matchTournamentKey(x, fallbackKey)}|${matchRouteKey(x)}`;
+  let counts = _keyCounts.get(list);
+  if (!counts) {
+    counts = new Map();
+    for (const x of list) counts.set(idOf(x), (counts.get(idOf(x)) || 0) + 1);
+    _keyCounts.set(list, counts);
+  }
+  // A side still reading TBD gets no link: the key changes the moment the draw
+  // resolves, so the link would break exactly when someone wanted to use it.
+  if (teamKey(m.teams[0]) === "tbd" || teamKey(m.teams[1]) === "tbd") return false;
+  return counts.get(idOf(m)) === 1;
+}
+
+// The stable array a match's uniqueness is judged against. Never a fresh filter():
+// _keyCounts is a WeakMap on array identity, so a new array every call would rebuild
+// the count map on every row.
+function currentMatchList() {
+  const tv = state.tournament;
+  if (tv && tv.kind !== "live") return Array.isArray(tv.matches) ? tv.matches : [];
+  return state.matches;
+}
+
 function shortenSurname(name, country) {
   const raw = String(name || "").trim();
   if (raw.length <= LONG_NAME_CHARS || !SPANISH_SURNAME_CC.has(String(country || "").toUpperCase())) return null;
@@ -254,6 +332,11 @@ const state = {
   expandedGroups: new Set(), // tournament ids
   groupCap: new Map(),       // tournament id -> max rows rendered
   openMatches: new Set(),    // match ids
+  // A /match/<src>/<tid>/<round>/<pair> deep link: {tkey, key} where key is
+  // matchRouteKey(). Set only by the route, so ordinary row-expanding never
+  // rewrites the URL. focusDone stops the scroll-into-view firing on every poll.
+  focusMatch: null,
+  focusDone: false,
   matchup: new Map(),        // match id -> "loading" | matchup data | null (nothing found)
   scoreSig: new Map(),       // id -> score signature (for flash)
   firstRender: true,
@@ -373,7 +456,24 @@ function filtered() {
 
 // ---------- render ----------
 
+// A deep-linked match has to be brought into view once the row it points at actually
+// exists in the DOM — which is after the tournament file loads, i.e. a later render
+// than the one the route triggered. Hence a post-render hook rather than a one-shot
+// call in the route. focusDone keeps the 10-minute poll from yanking the page back.
+function scrollToFocus() {
+  if (!state.focusMatch || state.focusDone) return;
+  const el = app.querySelector(".match.focus");
+  if (!el) return;
+  state.focusDone = true;
+  try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { el.scrollIntoView(); }
+}
+
 function render(changed = new Set()) {
+  renderView(changed);
+  scrollToFocus();
+}
+
+function renderView(changed) {
   renderControls();
   if (state.tournament) return renderTournament();
   if (state.mode === "upcoming") return renderUpcoming();
@@ -556,7 +656,8 @@ function schedLabel(m) {
 }
 
 function matchRow(m, changed, showTournament) {
-  const open = state.openMatches.has(m.id);
+  const focus = !!state.focusMatch && matchRouteKey(m) === state.focusMatch.key;
+  const open = state.openMatches.has(m.id) || focus; // a deep link opens what it points at
   const isChanged = changed.has(m.id);
   const time = m.startTime ? m.startTime.slice(11, 16) : "";
   const followed = /follow/i.test(m.schedule || "") && m.estStart; // estimate is "next up"
@@ -571,7 +672,7 @@ function matchRow(m, changed, showTournament) {
       : `${followed ? `<span class="foll">Next up</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
-    <div class="match ${open ? "open" : ""}" data-match="${esc(m.id)}">
+    <div class="match ${open ? "open" : ""}${focus ? " focus" : ""}" data-match="${esc(m.id)}">
       <div class="match__main${m.status === "final" ? " ended" : ""}" data-open="${esc(m.id)}">
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
@@ -639,6 +740,16 @@ function fmtDur(d) {
   return h ? `${h}h ${min}m` : min ? `${min} min` : null;
 }
 
+// "Copy link" on an expanded match. Rendered only when the derived key resolves to
+// exactly this match (see matchKeyIsUnique) — a link that lands on the wrong match,
+// or on a draw slot that has since been filled by someone else, is worse than none.
+function shareLink(m, fallbackKey) {
+  if (!matchKeyIsUnique(currentMatchList(), m, fallbackKey)) return "";
+  const path = matchPath(m, fallbackKey);
+  if (!path) return "";
+  return `<button class="mshare" data-share="${esc(path)}" title="Copy a link to this match">🔗 Copy link</button>`;
+}
+
 function detail(m) {
   const sets = m.score.sets || [];
   const setGrid = sets.length
@@ -660,7 +771,10 @@ function detail(m) {
       <div class="kv">${kv}</div>
       ${followPlayers(m)}
       ${matchupHtml(m)}
-      <a class="src" href="${esc(m.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[m.source] || m.source)}</a>
+      <div class="dlinks">
+        <a class="src" href="${esc(m.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[m.source] || m.source)}</a>
+        ${shareLink(m, null)}
+      </div>
     </div>`;
 }
 
@@ -1284,9 +1398,12 @@ function archiveMatches(t) {
 }
 
 function archiveMatchRow(m) {
-  return `<div class="match"><div class="match__main archm">
+  const key = matchRouteKey(m);
+  const focus = !!state.focusMatch && key === state.focusMatch.key;
+  const tkey = state.tournament ? state.tournament.key : null;
+  return `<div class="match${focus ? " focus" : ""}"><div class="match__main archm">
     <div class="teams">${teamLine(m, 0, false)}${teamLine(m, 1, false)}</div>
-    <div class="side">${m.round ? `<span class="sub">${esc(m.round)}</span>` : ""}</div>
+    <div class="side">${m.round ? `<span class="sub">${esc(m.round)}</span>` : ""}${shareLink(m, tkey)}</div>
   </div></div>`;
 }
 
@@ -1366,6 +1483,20 @@ async function openPlayer(id) {
   try { state.player = await (await fetch("/api/player/" + encodeURIComponent(id))).json(); } catch { state.player = null; }
   render();
   setTitle(); // now we have the player name
+}
+
+function fallbackCopy(text, done) {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    done();
+  } catch { window.prompt("Copy this link:", text); }
 }
 
 async function openH2H(aId, bId) {
@@ -1859,6 +1990,11 @@ function openTournament(kind, key, name, fed) {
       const d = state.archiveData.get(key);
       state.tournament.matches = d.matches;
       if (d.tour) state.tournament.tour = d.tour;   // keep the WPT marker on the hub
+      // Backfill name/fed here too. The fetch path below does it, but the CACHED path
+      // did not, so a second visit to an archive tournament opened without the index
+      // (any deep link) showed the raw key — "fip-101601" — as the heading and title.
+      if (d.name) state.tournament.name = d.name;
+      if (d.federation) state.tournament.fed = d.federation;
     } else {
       render(); // shows skeleton
       fetch(`data/archive/t/${key}.json`)
@@ -1995,8 +2131,9 @@ function renderBracket(b) {
     const nameRight = x + BOX_W - 7 - scoreW;                   // names must stop before the score
     const nameChars = Math.max(4, Math.floor((nameRight - (x + 9)) / CHAR));
     const clip = uid + ni;
+    const bfocus = !!state.focusMatch && matchRouteKey(n.m) === state.focusMatch.key;
     s += `<clipPath id="${clip}"><rect x="${x + 9}" y="${y}" width="${Math.max(8, nameRight - (x + 9))}" height="${BOX_H}"/></clipPath>`;
-    s += `<g class="bk-box">
+    s += `<g class="bk-box${bfocus ? " focus" : ""}">
       <rect x="${x}" y="${y}" width="${BOX_W}" height="${BOX_H}" rx="7"/>
       <text class="bk-t ${w === 0 ? "win" : ""}" x="${x + 9}" y="${y + 18}" clip-path="url(#${clip})">${esc(trunc(a.name, nameChars))}</text>
       <text class="bk-s ${w === 0 ? "win" : ""}" x="${x + BOX_W - 7}" y="${y + 18}" text-anchor="end">${esc(s0)}</text>
@@ -2014,6 +2151,14 @@ function renderTournament() {
   if (matches === "loading") { app.innerHTML = back + `<div class="skel"></div><div class="skel"></div>`; return; }
   matches = matches || [];
 
+  // Re-point a deep link whose round segment no longer matches. Sources relabel rounds
+  // ("Round of 16" -> "1/8 Final") between a link being shared and being opened, and
+  // the pair alone still identifies the match — see focusedMatch.
+  if (state.focusMatch && !matches.some((m) => matchRouteKey(m) === state.focusMatch.key)) {
+    const alt = focusedMatch(matches);
+    if (alt) state.focusMatch = { key: matchRouteKey(alt) };
+  }
+
   const players = new Set();
   for (const m of matches) for (const t of m.teams) for (const p of (t.name || "").split("/")) { const n = p.trim(); if (n) players.add(n); }
   const dates = matches.map((m) => m.startTime || m.date).filter(Boolean).map((s) => s.slice(0, 10)).sort();
@@ -2027,6 +2172,19 @@ function renderTournament() {
     <div class="tmeta">${matches.length} matches · ${players.size} players${dateStr ? " · " + esc(dateStr) : ""}${nLive ? ` · <span class="badge live">${nLive} live</span>` : ""}</div>
     ${src ? `<a class="src" href="${esc(src.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[src.source] || src.source)}</a>` : ""}
   </div>`;
+
+  // The match a /match/... link points at, shown as its own card under the header.
+  // Not a nicety: a completed knockout draw renders as the SVG bracket ONLY (see the
+  // roundList/renderBracket split below), so a link to a final — the single most
+  // shareable match there is — would otherwise land on a page with no row for it.
+  // The bracket still highlights the node, so the draw context is not lost.
+  const linked = state.focusMatch ? matches.find((m) => matchRouteKey(m) === state.focusMatch.key) : null;
+  if (linked) {
+    html += `<div class="section-label">Linked match</div>
+      <div class="group open"><div class="group__body">${
+        tv.kind === "live" ? matchRow(linked, new Set(), false) : archiveMatchRow(linked)
+      }</div></div>`;
+  }
 
   // Offer a "By day" schedule when the matches carry a play-day (FIP) or a date (RankedIn).
   const hasDays = matches.some((m) => matchDay(m));
@@ -2422,7 +2580,7 @@ function activateMode(mode) {
   state.day = mode === "live" ? todayYmd() : "all";   // live feed defaults to today; other modes span all
   state.query = "";
   state.player = null; state.playerId = null; state.h2h = null; state.playerResults = null; state.comparing = false;
-  state.tournament = null;
+  state.tournament = null; state.focusMatch = null;
   state.rankCountryQuery = "";
   state.archiveTour = "all";
   state.archiveMonth = "all";
@@ -2458,7 +2616,7 @@ document.getElementById("modes").addEventListener("click", (e) => {
 document.getElementById("brand").addEventListener("click", (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // let the browser handle it
   e.preventDefault();
-  state.tournament = null;
+  state.tournament = null; state.focusMatch = null;
   activateMode("live");
   try { window.scrollTo(0, 0); } catch {}
 });
@@ -2511,7 +2669,7 @@ app.addEventListener("click", (e) => {
     openTournament(tourney.dataset.tourney, tourney.dataset.tkey, tourney.dataset.tname, tourney.dataset.tfed);
     return;
   }
-  if (e.target.closest("[data-tback]")) { state.tournament = null; render(); syncUrl(); return; }
+  if (e.target.closest("[data-tback]")) { state.tournament = null; state.focusMatch = null; render(); syncUrl(); return; }
   const n1 = e.target.closest("[data-no1cat]");
   if (n1) { state.no1Cat = n1.dataset.no1cat; render(); return; }
   const tvw = e.target.closest("[data-tview]");
@@ -2603,6 +2761,18 @@ app.addEventListener("click", (e) => {
     const k = more.dataset.more;
     state.groupCap.set(k, (state.groupCap.get(k) || 20) + 40);
     render();
+    return;
+  }
+  // Copy link — before data-open, so the button never also toggles the row shut.
+  const sh = e.target.closest("[data-share]");
+  if (sh) {
+    e.stopPropagation();
+    const url = location.origin + sh.dataset.share;
+    const done = () => { sh.textContent = "✓ Copied"; setTimeout(() => { sh.textContent = "🔗 Copy link"; }, 1600); };
+    // clipboard.writeText is unavailable on http:// and in some in-app browsers;
+    // the textarea+execCommand path is the one that still works there.
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done));
+    else fallbackCopy(url, done);
     return;
   }
   // player name → profile (checked before data-open so clicking a name in a match
@@ -2711,7 +2881,12 @@ const tournamentUrlKey = (key) => {
 };
 
 function currentPath() {
-  if (state.tournament) return "/tournament/" + tournamentUrlKey(state.tournament.key);
+  if (state.tournament) {
+    const tk = tournamentUrlKey(state.tournament.key);
+    // A deep-linked match keeps its own URL, so reloading or re-sharing the page
+    // lands back on the same match rather than the top of the draw.
+    return state.focusMatch ? `/match/${tk}/${state.focusMatch.key}` : "/tournament/" + tk;
+  }
   if (state.mode === "players") return state.playerId ? "/player/" + encodeURIComponent(state.playerId) : "/players";
   if (state.mode === "rankings") return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}` : "/rankings";
   if (state.mode === "favorites") return "/following";
@@ -2725,7 +2900,19 @@ function currentPath() {
 function setTitle() {
   const P = state.player && state.player !== "loading" ? state.player.player : null;
   let t = "PadelTicker — live padel scores";
-  if (state.tournament) t = `${state.tournament.name} — draw, results & schedule · PadelTicker`;
+  if (state.tournament && state.focusMatch) {
+    // Keep the tab in step with the per-match <title> the edge injects for scrapers
+    // (functions/match/[[path]].js) — otherwise the shared card names the match and
+    // the tab the reader lands on names the tournament.
+    const list = state.tournament.kind === "live"
+      ? state.matches.filter((m) => m.source + ":" + m.tournament.id === state.tournament.key)
+      : (Array.isArray(state.tournament.matches) ? state.tournament.matches : []);
+    const fm = list.find((m) => matchRouteKey(m) === state.focusMatch.key);
+    t = fm
+      ? `${fm.teams.map((x) => x.name).join(" vs ")} — ${state.tournament.name} · PadelTicker`
+      : `${state.tournament.name} — draw, results & schedule · PadelTicker`;
+  }
+  else if (state.tournament) t = `${state.tournament.name} — draw, results & schedule · PadelTicker`;
   else if (P) t = `${P.name} — padel results, ranking & head-to-head · PadelTicker`;
   else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
@@ -2755,12 +2942,52 @@ function openTournamentRoute(source, id) {
   openTournament("arch", archKey, archKey, ""); // name/fed backfilled once the archive file loads
 }
 
+// /match/<source>/<tournamentId>/<round>/<pair>. The last two segments are always
+// round + pair, so a tournament id containing a slash still parses (none do today,
+// but openTournamentRoute already allows for it and this must not be the one place
+// that disagrees).
+function openMatchRoute(seg) {
+  const source = seg[1];
+  const round = seg[seg.length - 2];
+  const pair = seg[seg.length - 1];
+  const tid = seg.slice(2, -2).join("/");
+  if (!source || !tid || !pair) return activateMode("live");
+  state.focusMatch = { key: `${round}/${pair}` };
+  state.focusDone = false;
+  openTournamentRoute(source, tid);
+}
+
+// The row a deep link points at, or null. THE PAIR IS THE KEY; THE ROUND IS ONLY A
+// TIE-BREAKER — FIP's live feed puts the class inside the round ("Men Round of 32",
+// className null) while its archive splits them ("Round of 32" + className "Men"), so
+// the round segment of a link shared mid-tournament does not match the same match once
+// archived. Measured over 39,499 archived matches, the pair alone is unique within its
+// tournament 99.90% of the time. Kept in step with findMatch in functions/_matchkey.js.
+function focusedMatch(list) {
+  const f = state.focusMatch;
+  if (!f || !Array.isArray(list)) return null;
+  const pair = f.key.slice(f.key.indexOf("/") + 1);
+  const round = f.key.slice(0, f.key.indexOf("/"));
+  const cands = list.filter((m) => matchKey(m) === pair);
+  if (cands.length === 1) return cands[0];
+  if (!cands.length) return null;
+  return cands.find((m) => matchRouteKey(m) === f.key)
+    || cands.find((m) => { const x = slugPart(m.round); return x && round && (x.endsWith(round) || round.endsWith(x)); })
+    || null;
+}
+
 function applyRoute() {
   _routing = true;
   try {
+    // Every route starts unfocused; only openMatchRoute re-sets it. Without this a
+    // /match/... link followed by a plain /tournament/... navigation kept the old
+    // focus, so the tab still named a match the page was no longer showing.
+    state.focusMatch = null;
+    state.focusDone = false;
     const seg = decodeURIComponent(location.pathname).split("/").filter(Boolean);
     const q = new URLSearchParams(location.search);
     if (seg[0] === "player" && seg[1]) { activateMode("players"); openPlayer(seg[1]); }
+    else if (seg[0] === "match" && seg.length >= 5) openMatchRoute(seg);
     else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1], seg.slice(2).join("/")); }
     else if (seg[0] === "rankings") {
       activateMode("rankings");

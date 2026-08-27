@@ -77,6 +77,19 @@ export function tournamentCardSvg({ name, fed, sub }) {
   <text x="70" y="${l2 ? 520 : 450}" font-family="Inter" font-weight="400" font-size="38" fill="${MUTED}">${xesc(sub)}</text>`);
 }
 
+// A match card: both pairs stacked with their score, the winner in full contrast and
+// the loser muted, so the result reads at thumbnail size without the text being legible.
+export function matchCardSvg({ a, b, score, winner, sub, live }) {
+  const line = (name, y, dim) => `<text x="70" y="${y}" font-family="Inter" font-weight="700" font-size="${name.length > 30 ? 42 : 52}" fill="${dim ? MUTED : TEXT}">${xesc(clip(name, 38))}</text>`;
+  return frame(`
+  ${live ? chip(70, 160, "LIVE") : ""}
+  <text x="70" y="${live ? 268 : 232}" font-family="Inter" font-weight="400" font-size="30" fill="${MUTED}">${xesc(clip(sub, 62))}</text>
+  ${line(a, live ? 356 : 320, winner === 1)}
+  ${line(b, live ? 434 : 398, winner === 0)}
+  <rect x="72" y="${live ? 470 : 434}" width="120" height="6" rx="3" fill="${ACCENT}"/>
+  ${score ? `<text x="70" y="${live ? 534 : 498}" font-family="Inter" font-weight="700" font-size="44" fill="${TEXT}">${xesc(score)}</text>` : ""}`);
+}
+
 export function fallbackCardSvg() {
   return frame(`
   <text x="70" y="360" font-family="Inter" font-weight="700" font-size="88" fill="${TEXT}">Live padel scores</text>
