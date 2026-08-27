@@ -1741,8 +1741,27 @@ function eloStat(elo) {
   const title = `Elo ${elo.rating} — #${elo.rank} of ${elo.of} rated ${src} ${pool}`
     + ` · ${elo.n_matches} matches`
     + (elo.peak ? ` · peak ${elo.peak}${elo.peak_date ? " " + elo.peak_date.slice(0, 7) : ""}` : "");
-  return `<div class="pstat hi" title="${esc(title)}"><b>${esc(elo.rating)}</b>`
-    + `<span>Elo #${esc(elo.rank)}</span></div>`;
+  // RANK is the headline, rating is the subtitle. "2039" on its own tells a
+  // reader nothing — the position it implies is the part that carries meaning.
+  return `<div class="pstat hi" title="${esc(title)}"><b>#${esc(elo.rank)}</b>`
+    + `<span>Elo ${esc(elo.rating)}</span></div>`;
+}
+
+// The official points ranking, shown right next to the Elo rank so the two are
+// directly comparable — that contrast is the whole point of carrying both.
+// FIP is preferred when a player holds several; otherwise the first list they
+// appear in. `ranks` is empty until rankings.json has loaded, exactly as the
+// Ranking cards further down already handle.
+function rankStat(ranks) {
+  if (!ranks || !ranks.length) return "";
+  const r = ranks.find((x) => x.fed === "FIP") || ranks[0];
+  if (r.rank == null) return "";
+  const label = r.fed === "FIP" ? "FIP" : (REGION_LABEL[r.fed] || r.fed);
+  const pts = r.points != null ? Math.round(r.points).toLocaleString() : null;
+  const title = `${r.fed === "FIP" ? "FIP world" : label} ranking — #${r.rank}`
+    + (pts ? ` · ${pts} pts` : "");
+  return `<div class="pstat" title="${esc(title)}"><b>#${esc(r.rank)}</b>`
+    + `<span>${esc(label)}${pts ? " " + esc(pts) + " pts" : ""}</span></div>`;
 }
 
 function renderProfile() {
@@ -1772,6 +1791,7 @@ function renderProfile() {
         ${summary.finals ? `<div class="pstat"><b>${summary.finals}</b><span>finals</span></div>` : ""}
         ${summary.sets && summary.sets.pct != null ? `<div class="pstat"><b>${summary.sets.pct}%</b><span>sets won</span></div>` : ""}
         ${summary.games && summary.games.pct != null ? `<div class="pstat"><b>${summary.games.pct}%</b><span>games won</span></div>` : ""}
+        ${rankStat(ranks)}
         ${eloStat(state.player.elo)}
       </div>
     </div>`;
