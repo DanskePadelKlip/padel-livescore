@@ -361,7 +361,14 @@ const state = {
   // ---- upcoming (curated pro calendar) ----
   calendar: null,            // loaded calendar.json
   // ---- rankings ----
-  rankings: null,            // loaded rankings.json
+  rankings: null,            // loaded rankings.json — POINTS lists only
+  // Elo lists get their own slot, deliberately NOT merged into `rankings`:
+  // playerRankings() walks rankings.lists to build a profile's ranking cards, so
+  // merging would give every player a bogus extra "FIP world" card sourced from
+  // the Elo board, and the header's rankStat() could pick it as the official
+  // ranking. Separate slot, no contamination.
+  eloRankings: null,         // loaded rankings-elo.json
+  rankMetric: "points",      // "points" | "elo" — which board the view shows
   rankFed: null,
   rankCat: null,
   rankNat: "",               // "" = all; else a country code to filter a ranking to that nationality
@@ -2416,13 +2423,19 @@ function renderEvents() {
 async function loadRankings() {
   app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
   const grab = (u) => fetch(u + "?_=" + Date.now()).then((r) => (r.ok ? r.json() : { lists: [] })).catch(() => ({ lists: [] }));
-  const [fip, nat] = await Promise.all([grab("data/rankings-fip.json"), grab("data/rankings.json")]);
+  const [fip, nat, elo] = await Promise.all([
+    grab("data/rankings-fip.json"), grab("data/rankings.json"), grab("data/rankings-elo.json"),
+  ]);
   const lists = [...(fip.lists || []), ...(nat.lists || [])]; // FIP world first, then national
   if (!lists.length) {
     app.innerHTML = `<div class="empty"><div class="big">🏆</div>Rankings not available.</div>`;
     return;
   }
   state.rankings = { lists };
+  // Optional: an older deploy, or a data refresh that has not run the export
+  // yet, simply has no rankings-elo.json. grab() resolves to {lists:[]} on a
+  // 404, so the toggle just never appears rather than the page breaking.
+  state.eloRankings = (elo.lists || []).length ? { lists: elo.lists, minMatches: elo.minMatches } : null;
   render();
 }
 
@@ -2455,7 +2468,14 @@ function racePanel(rows, cat) {
 
 function renderRankings() {
   if (!state.rankings) return;
-  const lists = state.rankings.lists;
+  const hasElo = !!state.eloRankings;
+  if (state.rankMetric === "elo" && !hasElo) state.rankMetric = "points";
+  const isElo = state.rankMetric === "elo";
+  // The two boards cover different federations (Elo publishes only where the
+  // pool genuinely covers that country's play), so the fed/cat chips derive from
+  // whichever board is showing, and a selection absent from the other one falls
+  // back rather than rendering an empty table.
+  const lists = (isElo ? state.eloRankings : state.rankings).lists;
   const feds = [...new Set(lists.map((l) => l.fed))];
   const cats = [...new Set(lists.map((l) => l.category))];
   if (!state.rankFed || !feds.includes(state.rankFed)) state.rankFed = feds[0];
@@ -2472,6 +2492,9 @@ function renderRankings() {
     ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}" title="${esc(REGION_LABEL[f] || f)}">${FLAGS[f] || ""} ${f}</button>`).join("")}
     <span class="rsep"></span>
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
+    ${hasElo ? `<span class="rsep"></span>
+    <button class="rchip ${!isElo ? "on" : ""}" data-rmetric="points" title="Official ranking points over the trailing 12 months">Points</button>
+    <button class="rchip ${isElo ? "on" : ""}" data-rmetric="elo" title="Elo rating — strength from results, not from how much you played">Elo</button>` : ""}
   </div>`;
   const movement = !!list?.movement;
   // Nationality filter — only meaningful on a multi-country list (i.e. FIP world).
@@ -2490,13 +2513,18 @@ function renderRankings() {
     </div>`;
   }
   const shown = state.rankNat ? rows.filter((r) => r.country === state.rankNat) : rows;
-  if (multiCountry && !state.rankNat && !q) html += racePanel(list?.rows, state.rankCat);
-  html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ranking` +
-    `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ranked${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
+  // racePanel is a points-race-to-year-end panel; it reads `points` as ranking
+  // points and would render nonsense against Elo ratings.
+  if (multiCountry && !state.rankNat && !q && !isElo) html += racePanel(list?.rows, state.rankCat);
+  html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ${isElo ? "Elo" : "ranking"}` +
+    `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ${isElo ? "rated" : "ranked"}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
+  // Say plainly what the number is and who is missing, so nobody reads an Elo
+  // board as an official ranking.
+  if (isElo) html += `<div class="elo-note">Strength rating from match results — separate pools for men, women, FIP and Nordic, so ranks only compare within a list. Players with fewer than ${state.eloRankings.minMatches || 20} rated matches are not shown.</div>`;
   // Full list caps at 250 rendered rows (keeps the DOM light on a 1000-deep list);
   // a nationality filter renders all matches so every player of that country shows.
   const cap = state.rankNat || q ? 1000 : 250;
-  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + shown.slice(0, cap).map((r) => rankRow(r, movement)).join("") + `</div>`;
+  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + shown.slice(0, cap).map((r) => rankRow(r, movement, isElo)).join("") + `</div>`;
   if (!shown.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
   applyCountryFilter();
@@ -2527,7 +2555,9 @@ function moveCell(r, movement) {
   return `<span class="mv zero">–</span>`;                     // unchanged
 }
 
-function rankRow(r, movement) {
+// isElo: render the value ungrouped. An Elo rating is a scale position, not a
+// quantity — "2,323" reads as points, "2323" reads as a rating.
+function rankRow(r, movement, isElo) {
   const prof = r.id ? " has-profile" : "";
   const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
   const flag = countryFlag(r.country);
@@ -2536,7 +2566,7 @@ function rankRow(r, movement) {
     <span class="rmove">${moveCell(r, movement)}</span>
     <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
     <span class="rclub">${esc(r.club || "")}</span>
-    <span class="rpts">${r.points != null ? Math.round(r.points).toLocaleString() : ""}${r.defending ? `<span class="rdef" title="points being defended (at risk) in the next ~8 weeks">def ${Math.round(r.defending).toLocaleString()}</span>` : ""}</span>
+    <span class="rpts">${r.points != null ? (isElo ? String(Math.round(r.points)) : Math.round(r.points).toLocaleString()) : ""}${r.defending ? `<span class="rdef" title="points being defended (at risk) in the next ~8 weeks">def ${Math.round(r.defending).toLocaleString()}</span>` : ""}</span>
     <span class="rstar">${star("players", r.id, r.name, r.country || "")}</span>
   </div>`;
 }
@@ -2704,6 +2734,11 @@ app.addEventListener("click", (e) => {
   if (rf) { state.rankFed = rf.dataset.rfed; render(); syncUrl(false); return; }
   const rc = e.target.closest("[data-rcat]");
   if (rc) { state.rankCat = rc.dataset.rcat; render(); syncUrl(false); return; }
+  const rm = e.target.closest("[data-rmetric]");
+  // Clear the nationality filter when switching board: the two cover different
+  // federations, so a country selected on one is often absent from the other and
+  // would silently render an empty table.
+  if (rm) { state.rankMetric = rm.dataset.rmetric; state.rankNat = ""; render(); syncUrl(false); return; }
 
   // profile: tournament filter chips (multi-select; "All" clears)
   const ptc = e.target.closest("[data-ptour]");
@@ -2908,7 +2943,13 @@ function currentPath() {
     return state.focusMatch ? `/match/${tk}/${state.focusMatch.key}` : "/tournament/" + tk;
   }
   if (state.mode === "players") return state.playerId ? "/player/" + encodeURIComponent(state.playerId) : "/players";
-  if (state.mode === "rankings") return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}` : "/rankings";
+  // ?by=elo rather than a fourth path segment: the Pages Function route is
+  // /rankings/[fed]/[cat], so a third segment would need the route rewritten,
+  // and a query string still gives a shareable, bookmarkable board.
+  if (state.mode === "rankings") {
+    const by = state.rankMetric === "elo" ? "?by=elo" : "";
+    return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}${by}` : "/rankings" + by;
+  }
   if (state.mode === "favorites") return "/following";
   if (state.mode === "archive") return "/results";
   if (state.mode === "no1") return "/world-no1";
@@ -3011,6 +3052,11 @@ function applyRoute() {
     else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1], seg.slice(2).join("/")); }
     else if (seg[0] === "rankings") {
       activateMode("rankings");
+      // ?by=elo is validated in renderRankings, which falls back to points when
+      // rankings-elo.json is absent, so a stale bookmark cannot blank the page.
+      try {
+        state.rankMetric = new URLSearchParams(location.search).get("by") === "elo" ? "elo" : "points";
+      } catch { state.rankMetric = "points"; }
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
     }
     else if (seg[0] === "results") activateMode("archive");
