@@ -36,6 +36,7 @@ export async function onRequestGet({ request }) {
   add("/rankings", { changefreq: "daily", priority: "0.8", lastmod: today });
   add("/results", { changefreq: "daily", priority: "0.7", lastmod: today });
   add("/players", { changefreq: "weekly", priority: "0.6" });
+  add("/national-teams", { changefreq: "monthly", priority: "0.6" });
   add("/pairs", { changefreq: "weekly", priority: "0.6" });
 
   // 2) One page per ranking list (fed + category).

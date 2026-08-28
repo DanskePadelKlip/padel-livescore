@@ -42,6 +42,12 @@ const HUBS = {
     description:
       "Padel tournaments from every federation we cover — live now, coming up, and recently finished, with draws and full results.",
   },
+  "national-teams": {
+    name: "National teams",
+    title: "Danish national team padel results — European, World & Nordic · PadelTicker",
+    description:
+      "Denmark's padel national team results: European, World and Nordic team championships from 2019, senior, veteran and junior, with the source of every placing.",
+  },
 };
 
 /**

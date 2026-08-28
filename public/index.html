@@ -493,6 +493,16 @@
     .team.pairlink { cursor: pointer; }
     .team.pairlink:hover .nm { text-decoration: underline; text-decoration-style: dotted; }
 
+    /* ---- national teams ---- */
+    .nt-wrap { padding: 4px 10px 26px; }
+    .nt-scroll { overflow-x: auto; }
+    .nt-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .nt-table th, .nt-table td { text-align: left; padding: 7px 8px; border-bottom: 1px solid rgba(128,128,128,.22); white-space: nowrap; }
+    .nt-table th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .6; font-weight: 600; }
+    .nt-table td.nt-pos { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .nt-body { display: inline-block; font-size: 10px; letter-spacing: .05em; padding: 1px 5px; border-radius: 3px; border: 1px solid currentColor; opacity: .85; }
+    .nt-src { font-size: 11px; opacity: .55; }
+    .nt-note { font-size: 12px; opacity: .6; padding: 12px 2px 0; max-width: 70ch; line-height: 1.5; white-space: normal; }
     /* ---- rankings ---- */
     .rank-country-wrap { display: flex; align-items: center; gap: 10px; padding: 6px 0 8px; }
     .rank-country { flex: 1 1 auto; max-width: 340px; background: var(--card); border: 1px solid var(--line); color: var(--text);
@@ -717,6 +727,7 @@
         <button data-mode="pairs">🤝 Pairs</button>
         <button data-mode="rankings">🏆 Rankings</button>
         <button data-mode="no1">👑 World #1</button>
+        <button data-mode="natteams">🇩🇰 National teams</button>
       </div>
       <div class="tabs" id="tabs">
         <button class="tab active" data-status="all">All</button>

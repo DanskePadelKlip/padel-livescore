@@ -1,0 +1,28 @@
+{
+  "updated": "2026-08-28",
+  "note": "Denmark's national team results in international padel team championships. Placings are verified against the official tournament draw wherever a draw is public; each row carries its source.",
+  "rows": [
+    { "year": 2019, "comp": "European Championship", "body": "FEPA", "cat": "Senior", "venue": "Lisbon", "men": 8, "women": 8, "source": "Official draw" },
+    { "year": 2019, "comp": "European Championship", "body": "FIP", "cat": "Senior", "venue": "Rome", "men": null, "women": null, "note": "Did not enter", "source": "Entry list" },
+    { "year": 2020, "comp": "World Championship", "body": "FIP", "cat": "Senior", "venue": "", "men": 14, "women": 13, "source": "DPF" },
+    { "year": 2021, "comp": "European Championship", "body": "FIP", "cat": "Senior", "venue": "Marbella", "men": 9, "women": 6, "source": "Tournament diary" },
+    { "year": 2021, "comp": "European Championship", "body": "FEPA", "cat": "Senior", "venue": "Bilbao", "men": 5, "women": 4, "source": "Official draw" },
+    { "year": 2021, "comp": "European Championship", "body": "FEPA", "cat": "Veteran", "venue": "Vilamoura", "men": 8, "women": 2, "source": "Official draw" },
+    { "year": 2022, "comp": "World Championship", "body": "FIP", "cat": "Senior", "venue": "", "men": null, "women": null, "note": "Did not qualify", "source": "DPF" },
+    { "year": 2022, "comp": "World Championship", "body": "FIP", "cat": "Veteran", "venue": "", "men": 16, "women": 7, "source": "DPF" },
+    { "year": 2023, "comp": "European Championship", "body": "FEPA", "cat": "Senior", "venue": "Oeiras", "men": 3, "women": 2, "source": "Official draw" },
+    { "year": 2023, "comp": "European Championship", "body": "FIP", "cat": "Veteran", "venue": "La Nucia", "men": 8, "women": 7, "source": "DPF" },
+    { "year": 2023, "comp": "European Championship", "body": "FEPA", "cat": "Veteran", "venue": "Liege", "men": 3, "women": 3, "source": "Official draw" },
+    { "year": 2024, "comp": "European Championship", "body": "FIP", "cat": "Senior", "venue": "Cagliari", "men": 10, "women": 8, "source": "Final classification" },
+    { "year": 2024, "comp": "World Championship", "body": "FIP", "cat": "Senior", "venue": "", "men": null, "women": 10, "note": "Men did not qualify", "source": "DPF" },
+    { "year": 2024, "comp": "European Championship", "body": "FIP", "cat": "Junior", "venue": "Budapest", "men": 9, "women": null, "note": "Girls did not qualify", "source": "Official draw" },
+    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Senior", "venue": "Drammen", "men": 2, "women": 2, "source": "DPF" },
+    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Veteran", "venue": "Drammen", "men": 3, "women": 3, "source": "DPF" },
+    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Junior", "venue": "Drammen", "men": 3, "women": 2, "source": "DPF" },
+    { "year": 2025, "comp": "European Championship", "body": "FIP", "cat": "Veteran", "venue": "Valencia", "men": 5, "women": 7, "source": "DPF" },
+    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Senior", "venue": "Denmark", "men": 1, "women": 1, "source": "DPF" },
+    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Veteran", "venue": "Denmark", "men": 3, "women": 3, "source": "DPF" },
+    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Junior", "venue": "Denmark", "men": 2, "women": 3, "source": "DPF" },
+    { "year": 2026, "comp": "Euro Padel Cup", "body": "FIP", "cat": "Junior", "venue": "Porto", "men": 7, "women": null, "source": "DPF" }
+  ]
+}
