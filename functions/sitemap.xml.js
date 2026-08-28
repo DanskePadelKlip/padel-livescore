@@ -72,12 +72,15 @@ export async function onRequestGet({ request }) {
   // a page with one row on it, and thousands of those are how a sitemap turns
   // into thin content. Wrapped so a D1 hiccup costs the pair block, not the
   // whole sitemap. `last` is a real date, so pair URLs carry a true lastmod.
+  // The limit must stay <= /api/pairs' own ceiling, or it clamps and this
+  // block quietly lists a fraction of the eligible pairs — which is exactly
+  // what happened when it asked for 1000 against a ceiling of 500.
   // NB fetched WITHOUT grab()'s cache-buster: grab is for the data files, which
   // must be read fresh, but busting the cache here would re-run that GROUP BY on
   // every sitemap request. This answer moves at the pace of tournaments.
   let pairs = null;
   try {
-    const r = await fetch(origin + "/api/pairs?min=4&limit=1000");
+    const r = await fetch(origin + "/api/pairs?min=4&limit=20000");
     if (r.ok) pairs = await r.json();
   } catch {}
   for (const p of (pairs && pairs.pairs) || []) {

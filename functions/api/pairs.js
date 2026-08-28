@@ -50,7 +50,12 @@ const computeLive = (env, min, limit) =>
 
 export async function onRequestGet({ request, env }) {
   const u = new URL(request.url).searchParams;
-  const limit = clampInt(u.get("limit"), 1, 500, 100);
+  // The ceiling has to clear the SITEMAP's whole eligible set, not just a
+  // browse page. It was 500 while sitemap.xml asked for 1000: the clamp won,
+  // silently, and the sitemap listed 500 pair URLs out of the ~10k eligible.
+  // A caller wanting fewer passes a smaller limit; `truncated` still says when
+  // the answer was cut.
+  const limit = clampInt(u.get("limit"), 1, 20000, 100);
   // Floor of 2, matching the roll-up's own HAVING: asking for min=1 and being
   // handed a list that quietly starts at 2 would misreport what it contains.
   // Both listings want repeat partnerships anyway — a one-match pair still has a
