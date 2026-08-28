@@ -36,6 +36,7 @@ export async function onRequestGet({ request }) {
   add("/rankings", { changefreq: "daily", priority: "0.8", lastmod: today });
   add("/results", { changefreq: "daily", priority: "0.7", lastmod: today });
   add("/players", { changefreq: "weekly", priority: "0.6" });
+  add("/pairs", { changefreq: "weekly", priority: "0.6" });
 
   // 2) One page per ranking list (fed + category).
   const lists = [...((fipRanks && fipRanks.lists) || []), ...((natRanks && natRanks.lists) || [])];
@@ -64,6 +65,25 @@ export async function onRequestGet({ request }) {
   const players = new Set();
   for (const l of lists) for (const r of l.rows || []) if (r.id) players.add(r.id);
   for (const id of players) add(`/player/${seg(id)}`, { changefreq: "weekly", priority: "0.5" });
+
+  // 6) Pair pages — the partnerships with enough history to be worth a page.
+  // Comes from /api/pairs (a whole-archive GROUP BY, cached hard at that layer,
+  // never run inline here). Deliberately thresholded: a pair that played once is
+  // a page with one row on it, and thousands of those are how a sitemap turns
+  // into thin content. Wrapped so a D1 hiccup costs the pair block, not the
+  // whole sitemap. `last` is a real date, so pair URLs carry a true lastmod.
+  // NB fetched WITHOUT grab()'s cache-buster: grab is for the data files, which
+  // must be read fresh, but busting the cache here would re-run that GROUP BY on
+  // every sitemap request. This answer moves at the pace of tournaments.
+  let pairs = null;
+  try {
+    const r = await fetch(origin + "/api/pairs?min=4&limit=1000");
+    if (r.ok) pairs = await r.json();
+  } catch {}
+  for (const p of (pairs && pairs.pairs) || []) {
+    if (!p.a || !p.b) continue;
+    add(`/pair/${seg(p.a)}/${seg(p.b)}`, { changefreq: "weekly", priority: "0.4", lastmod: p.last || undefined });
+  }
 
   const body =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +

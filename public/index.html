@@ -446,6 +446,53 @@
     .h2h-tally .n { font-size: 30px; font-variant-numeric: tabular-nums; font-weight: 800; }
     .h2h-tally .who { font-size: 12px; color: var(--muted); text-align: center; max-width: 120px; }
     .h2h-tally .vs { color: var(--faint); font-weight: 700; }
+
+    /* ---- pairs (partnership pages) ---- */
+    /* The header carries two names, so it wraps rather than shrinking them; the
+       "/" between them is the only thing allowed to look like a separator. */
+    .pairh2 { margin: 0; font-size: 20px; letter-spacing: -.02em; display: flex; align-items: center;
+      gap: 8px; flex-wrap: wrap; line-height: 1.25; }
+    .pairslash { color: var(--faint); font-weight: 400; }
+    /* A player name inside a pair row: the innermost click target, so tapping the
+       name opens that profile while the row around it opens the pair. */
+    .pairp { cursor: pointer; border-bottom: 1px dotted transparent; }
+    .pairp:hover { border-bottom-color: var(--accent); }
+    .pairspan { font-size: 12.5px; color: var(--muted); margin: -4px 0 12px; }
+    .pairplayers { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .pairpcard { flex: 1 1 200px; display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 13.5px; }
+    .pairpcard:hover { background: var(--card-hi); }
+    .pp-meta { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .pairjump { padding: 9px 12px; margin: 6px 0 8px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--accent); }
+    .pairjump:hover { background: var(--card-hi); }
+    .pairshare { padding: 10px 0 4px; }
+    /* rivalry row: who this pair keeps meeting */
+    .rival { padding: 9px 12px; margin-bottom: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+    .rival.linkable { cursor: pointer; }
+    .rival.linkable:hover { background: var(--card-hi); }
+    .rv-main { display: flex; align-items: center; gap: 10px; }
+    .rv-name { font-weight: 600; font-size: 13.5px; flex: 1 1 auto; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rv-rec { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+    .rv-rec.up { color: #2f9e5e; }
+    .rv-rec.down { color: #b64a4a; }
+    .rv-n { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rv-last { color: var(--faint); font-size: 11px; margin-top: 4px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rv-more { color: var(--faint); font-size: 12px; padding: 2px 0 10px; }
+    /* partnership row on a player profile */
+    .partner { display: flex; align-items: center; gap: 9px; padding: 9px 12px; margin-bottom: 5px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 13.5px; }
+    .partner:hover { background: var(--card-hi); }
+    .pt-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pt-rec { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .pt-n { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tp-go { color: var(--accent); font-size: 11.5px; font-weight: 700; }
+    /* a match-row team that resolves to a pair page */
+    .team.pairlink { cursor: pointer; }
+    .team.pairlink:hover .nm { text-decoration: underline; text-decoration-style: dotted; }
+
     /* ---- rankings ---- */
     .rank-country-wrap { display: flex; align-items: center; gap: 10px; padding: 6px 0 8px; }
     .rank-country { flex: 1 1 auto; max-width: 340px; background: var(--card); border: 1px solid var(--line); color: var(--text);
@@ -667,6 +714,7 @@
         <button data-mode="favorites">⭐ Following <span class="favcount" id="favcount" hidden>0</span></button>
         <button data-mode="archive">📅 Results</button>
         <button data-mode="players">👤 Players</button>
+        <button data-mode="pairs">🤝 Pairs</button>
         <button data-mode="rankings">🏆 Rankings</button>
         <button data-mode="no1">👑 World #1</button>
       </div>

@@ -1,0 +1,107 @@
+// Match-derived statistics shared by the player profile and the pair page.
+//
+// Both pages report titles, finals, form, sets and games over a list of a
+// competitor's matches, and they MUST agree to the digit — a profile saying
+// "62% sets won" next to a pair page saying 58% for the same run of matches is
+// the kind of contradiction a reader notices and never trusts again. So the
+// definitions live here once instead of being written out per route.
+//
+// Every function takes rows of the shape { round, score, side, win } ordered
+// NEWEST FIRST, which is what both routes' queries already produce.
+// (Filenames starting with "_" are not turned into routes by Cloudflare Pages.)
+
+// "final" as a whole word, excluding semi-/quarter- and the 1/8-style labels.
+// Deliberately conservative: RankedIn's `round` is usually a DRAW name
+// ("Herrar C", "Grupp B", "Elimination"), not a round, so this recognises the
+// rounds it can and silently ignores everything else rather than guessing.
+export const isFinal = (r) => r && /\bfinals?\b/i.test(r) && !/semi|quarter|1\/[0-9]/i.test(r);
+
+// A set score cell → games won. Games digit only, so a tie-break written "66"
+// (6-6, won on the breaker) still counts as 6.
+export const gameOf = (c) => {
+  const m = /^([67])\d+$/.exec(String(c));
+  return m ? +m[1] : (parseInt(c, 10) || 0);
+};
+
+export const pct = (w, l) => (w + l ? Math.round((w / (w + l)) * 100) : null);
+
+// A score string is always written side-1-first. Wherever a score is printed next
+// to ONE competitor's result — "Last: won 6-3 6-4" — it has to be read from that
+// competitor's side, or a win from side 2 gets printed as "won 3-6 4-6". Cells
+// that don't parse are passed through untouched rather than mangled.
+export function scoreFrom(score, side) {
+  if (!score || side !== 2) return score || "";
+  return String(score).trim().split(/\s+/).map((set) => {
+    const p = set.split("-");
+    return p.length === 2 ? `${p[1]}-${p[0]}` : set;
+  }).join(" ");
+}
+
+// Sets and games from the score strings. `side` says which half of "6-4" is
+// ours, so this works unchanged for a pair (both players share a side).
+export function setsAndGames(rows) {
+  let setsWon = 0, setsLost = 0, gamesWon = 0, gamesLost = 0;
+  for (const r of rows) {
+    if (!r.score) continue;
+    const mine = r.side === 1 ? 0 : 1;
+    for (const set of String(r.score).trim().split(/\s+/)) {
+      const p = set.split("-");
+      if (p.length !== 2) continue;
+      const my = gameOf(p[mine]), op = gameOf(p[1 - mine]);
+      gamesWon += my; gamesLost += op;
+      if (my > op) setsWon++; else if (op > my) setsLost++;
+    }
+  }
+  return {
+    sets: { won: setsWon, lost: setsLost, pct: pct(setsWon, setsLost) },
+    games: { won: gamesWon, lost: gamesLost, pct: pct(gamesWon, gamesLost) },
+  };
+}
+
+// Recent form (newest first, capped) plus the current run of the same result.
+export function formAndStreak(rows, cap = 12) {
+  const form = rows.slice(0, cap).map((r) => (r.win === 1 ? "W" : "L"));
+  let streak = 0;
+  const s0 = rows[0]?.win;
+  for (const r of rows) { if (r.win === s0) streak++; else break; }
+  return { form, streak, streakType: s0 === 1 ? "W" : "L" };
+}
+
+// How deep in a draw a round label sits. Used ONLY for "best result", so it
+// returns null for anything it does not positively recognise — across the
+// archive most `round` values are draw names, and inventing a depth for
+// "Herrar C" would put a fake "reached the final" on thousands of pair pages.
+const ROUNDS = [
+  [/\bq(?:ual|ualifying|ualification)?\s*\d*\b|\bqualification/i, 1, "qualifying"],
+  [/round of 128|\b1\/64\b/i, 2, "round of 128"],
+  [/round of 64|\b1\/32\b|\br64\b/i, 3, "round of 64"],
+  [/round of 32|\b1\/16\b|\br32\b/i, 4, "round of 32"],
+  [/round of 16|\b1\/8\b|\br16\b|\beighth\b/i, 5, "round of 16"],
+  [/quarter\s*-?\s*finals?|\bqf\b|\b1\/4\b/i, 6, "quarter-final"],
+  [/semi\s*-?\s*finals?|\bsf\b|\b1\/2\b/i, 7, "semi-final"],
+];
+export function roundRank(round) {
+  const r = String(round || "");
+  if (!r) return null;
+  // A third-place play-off is not the final, however it is spelled.
+  if (/3(?:rd|:e|e)?\s*(?:place|plats|plass|platz)/i.test(r)) return null;
+  for (const [re, rank, label] of ROUNDS) if (re.test(r)) return { rank, label };
+  if (isFinal(r)) return { rank: 8, label: "final" };
+  return null;
+}
+
+// The deepest round this run of matches reached, or null when no row carried a
+// round label we recognise. `won` is true only for a final that was won.
+export function bestResult(rows) {
+  let best = null;
+  for (const r of rows) {
+    const rr = roundRank(r.round);
+    if (!rr) continue;
+    if (!best || rr.rank > best.rank || (rr.rank === best.rank && r.win === 1 && !best.won)) {
+      best = { rank: rr.rank, label: rr.label, won: r.win === 1, date: r.date || null, tournament: r.tournament || null };
+    }
+  }
+  if (!best) return null;
+  best.title = best.rank === 8 && best.won;
+  return best;
+}

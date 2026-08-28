@@ -1,0 +1,38 @@
+name: Rebuild pairs roll-up
+
+# Manual: rebuilds the `pairs` table that /api/pairs (and the pair block of
+# sitemap.xml) read from. See scripts/pairs-rollup.sql for why the table exists — the live
+# GROUP BY it replaces measures ~2.7 s against the real archive.
+#
+# Run this after an archive import. Nothing breaks if it hasn't run: /api/pairs
+# falls back to computing the list live, just slowly.
+#
+# Reuses the same secrets as refresh.yml. NOTE: this WRITES to D1, so the token
+# needs D1: Edit, not only Pages: Edit — if the run fails on permissions, that is
+# why, and the same command works from a machine holding the deploy token:
+#   npx wrangler d1 execute padelticker-history --remote --file scripts/pairs-rollup.sql
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  rollup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Rebuild the pairs table
+        run: npx --yes wrangler@4 d1 execute padelticker-history --remote --yes --file scripts/pairs-rollup.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Report the row count
+        run: npx --yes wrangler@4 d1 execute padelticker-history --remote --yes --command "SELECT COUNT(*) pairs FROM pairs"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

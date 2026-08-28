@@ -63,6 +63,23 @@ export function playerCardSvg({ name, country, stats }) {
   <text x="70" y="470" font-family="Inter" font-weight="400" font-size="42" fill="${MUTED}">${xesc(stats)}</text>`);
 }
 
+// A pair card: both names stacked, because two full names never fit on one line
+// at a size that survives being shrunk to a chat thumbnail. `countries` reads
+// like "SWE · DEN".
+export function pairCardSvg({ a, b, countries, stats }) {
+  const size = (n) => (String(n).length > 24 ? 54 : String(n).length > 18 ? 64 : 74);
+  // The accent "/" hanging in the left margin of the second line is what makes
+  // this read as a PAIR. Without it the two stacked names look like one person
+  // whose name wrapped, which is exactly what the first version looked like.
+  return frame(`
+  ${countries ? chip(70, 172, countries) : ""}
+  <text x="70" y="330" font-family="Inter" font-weight="700" font-size="${size(a)}" fill="${TEXT}">${xesc(clip(a, 30))}</text>
+  <text x="70" y="412" font-family="Inter" font-weight="700" font-size="${size(b)}" fill="${ACCENT}">/</text>
+  <text x="118" y="412" font-family="Inter" font-weight="700" font-size="${size(b)}" fill="${TEXT}">${xesc(clip(b, 28))}</text>
+  <rect x="72" y="444" width="120" height="6" rx="3" fill="${ACCENT}"/>
+  <text x="70" y="512" font-family="Inter" font-weight="400" font-size="38" fill="${MUTED}">${xesc(stats)}</text>`);
+}
+
 export function tournamentCardSvg({ name, fed, sub }) {
   let l1 = clip(name, 26), l2 = "";
   if (name && name.length > 26) {

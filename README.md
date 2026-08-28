@@ -43,6 +43,60 @@ A dependency-free vanilla livescore front-end (`public/`):
 - **Auto-refresh**: polls `data/matches.json` every 25s, flashing changed scores
 - Theme-aware (light/dark) with a manual toggle; responsive down to mobile
 
+### Pair pages
+A **pair** is two players on the same side of a match — a first-class entity with
+its own page, sitting beside players and tournaments.
+
+| Route | What it is |
+| --- | --- |
+| `/pair/:a/:b` | one partnership: record, form, best result, rivals, every match together |
+| `/pairs` | browse the most-played partnerships |
+| `/api/pair/:a/:b` | the pair payload (identity + Elo, summary, rivals, matches) |
+| `/api/pairs` | the most-played pairs (feeds `/pairs` + the sitemap) |
+| `/og/pair/:a/:b` | the share card |
+
+Notes that matter if you touch this:
+
+- **One pair, one URL.** The two ids are interchangeable, so `/pair/:a/:b` is
+  canonicalised to sorted id order and `functions/pair/[a]/[b].js` 301s anything
+  else there. Without that, every pair has two crawlable URLs. `pairIds()` in
+  `app.js` sorts for the same reason; `a === b` redirects to that player's profile.
+- **No bound-parameter list.** D1 caps a statement at 100 bound parameters —
+  which is why `/api/h2h` slices its match ids to 100. `/api/pair` never builds an
+  `IN (?,?,…)` list at all: the participants query re-derives the pair's match ids
+  as a subquery, so a 300-match partnership is reported in full, not truncated.
+- **Shared statistics.** Titles, form, sets and games come from
+  [`functions/_stats.js`](functions/_stats.js), used by both `/api/player` and
+  `/api/pair`. A profile and a pair page describe overlapping runs of matches, so
+  they must not disagree about what counts as a final or how a tie-break scores.
+- **Combined Elo is an average of two players, not a rating of the pair.** It is
+  only produced when both ratings share a `(source, pool)` — men and women are
+  rated separately, as are the RankedIn and FIP tours. Nothing rates partnerships.
+- **Best result** is derived by `roundRank()`, which returns null for anything it
+  does not positively recognise. Most RankedIn `round` values are draw names
+  ("Herrar C", "Grupp B"), and inventing a depth for those would print a fake
+  "reached the final" on thousands of pages.
+- **Discovery is the point.** Pair pages are linked from every completed match row
+  (each team links to its pair), the profile's Top partner and Partnerships list,
+  the head-to-head "as partners" block, `/pairs`, and the sitemap.
+- **The listings read a roll-up, not a live aggregate.** `/api/pairs` was
+  originally a whole-archive `GROUP BY`; measured against a copy of the real
+  archive (100,144 matches / 399,042 `match_players` rows) that takes **~2.7 s**,
+  which is too slow for a request even behind a cache. It now reads the `pairs`
+  table built by [`scripts/pairs-rollup.sql`](scripts/pairs-rollup.sql) — sub-millisecond — and falls
+  back to computing live if the table isn't there. **Re-run it after an archive
+  import:**
+  ```bash
+  npx wrangler d1 execute padelticker-history --remote --file scripts/pairs-rollup.sql
+  ```
+  The roll-up holds partnerships with **2+** matches together (21,604 of 21,944
+  today); one-match pairs are excluded from the listings only — their pages still
+  work and are still linked from both players' profiles.
+
+Measured on that same copy: the per-pair queries are 8 ms and 5 ms, and the
+profile's partner `GROUP BY` is 54 ms for the busiest player in the archive
+(678 matches). Only the global aggregate ever needed the roll-up.
+
 ### Three classes of source
 - **JSON APIs** (RankedIn) — clean fetch-and-parse, fast, robust. DK/SE/DE/CZ.
 - **JS-only web apps** (tournamentsoftware) — no API; rendered via `src/browser.js`

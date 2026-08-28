@@ -24,6 +24,12 @@ const HUBS = {
     description:
       "Browse padel players across every federation: match history, head-to-head records, rankings and the tournaments they played.",
   },
+  pairs: {
+    name: "Pairs",
+    title: "Padel pairs — partnership records, rivals & results · PadelTicker",
+    description:
+      "Padel partnerships: how every pair has done together — win-loss record, titles, the rivals they keep meeting, and every match they have played as a team.",
+  },
   rankings: {
     name: "Rankings",
     title: "Padel rankings — FIP world and national lists · PadelTicker",

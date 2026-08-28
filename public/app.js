@@ -358,6 +358,16 @@ const state = {
   playerId: null,            // id of the open/loading profile (for the URL)
   h2h: null,                 // loaded head-to-head
   comparing: false,          // in "pick an opponent" mode
+  partnersAll: false,        // profile: partnership list expanded past the first 8
+  // ---- pairs (partnership profiles) ----
+  // A pair is two players who play on the SAME SIDE. pairKey is kept in canonical
+  // (sorted) id order, which is the order the /pair/:a/:b URL uses — the same
+  // partnership must never produce two different URLs.
+  pair: null,                // "loading" | loaded partnership | null
+  pairKey: null,             // { a, b } of the open pair (for the URL)
+  pairTours: new Set(),      // pair view: tournament names to filter matches to (empty = all)
+  pairsTop: null,            // /pairs browse list (loaded once, then cached)
+  pairsError: false,         // the browse list failed to load (stops a retry loop)
   // ---- upcoming (curated pro calendar) ----
   calendar: null,            // loaded calendar.json
   // ---- rankings ----
@@ -482,11 +492,16 @@ function render(changed = new Set()) {
 
 function renderView(changed) {
   renderControls();
+  // A pair can be opened from any view that lists matches, so it is checked
+  // first — and currentPath()/setTitle() order their pair checks the same way,
+  // or the view, the URL and the tab title could disagree about what is showing.
+  if (state.pair) return renderPair();
   if (state.tournament) return renderTournament();
   if (state.mode === "upcoming") return renderUpcoming();
   if (state.mode === "events") return renderEvents();
   if (state.mode === "favorites") return renderFavorites();
   if (state.mode === "rankings") return renderRankings();
+  if (state.mode === "pairs") return renderPairsBrowse();
   if (state.mode === "players") return renderPlayers();
   if (state.mode === "archive") return renderArchive();
   if (state.mode === "no1") return renderNo1();
@@ -1482,6 +1497,8 @@ async function openPlayerByName(name) {
 
 async function openPlayer(id) {
   state.h2h = null; state.comparing = false; state.player = "loading"; state.playerId = id;
+  state.pair = null; state.pairKey = null;   // a profile replaces any open pair
+  state.partnersAll = false;
   state.profileTours = new Set(); // reset the per-player tournament filter
   render();
   syncUrl(); // /player/<id>
@@ -1808,7 +1825,23 @@ function renderProfile() {
     html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${summary.streak > 1 ? `<span class="streak">${summary.streak} ${summary.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
   const tp = state.player.topPartner;
   if (tp)
-    html += `<div class="toppartner" data-player="${esc(tp.id)}"><span class="tp-lbl">Top partner</span><b>${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span></div>`;
+    html += `<div class="toppartner" ${pairAttr(player.id, tp.id)}><span class="tp-lbl">Top partner</span><b class="pairp" data-player="${esc(tp.id)}">${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span><span class="tp-go">pair →</span></div>`;
+
+  // Every partnership this player has had. Each row is a pair page; the name
+  // inside it still goes to the partner's own profile (innermost target wins).
+  const partners = state.player.partners || [];
+  if (partners.length > 1) {
+    const cap = state.partnersAll ? partners.length : 8;
+    html += `<div class="section-label">Partnerships <span class="count">${partners.length}</span></div>`;
+    html += partners.slice(0, cap).map((p) => `<div class="partner" ${pairAttr(player.id, p.id)}>
+      <span class="flag">${esc((p.country || "").toUpperCase())}</span>
+      <span class="pt-name pairp" data-player="${esc(p.id)}">${esc(p.name)}</span>
+      <span class="pt-rec">${p.wins}-${p.losses}</span>
+      <span class="pt-n">${p.matches} match${p.matches === 1 ? "" : "es"}${p.last ? " · " + esc(monthYear(p.last)) : ""}</span>
+    </div>`).join("");
+    if (partners.length > cap)
+      html += `<button class="morebtn" data-partnersall="1">Show ${partners.length - cap} more partner${partners.length - cap === 1 ? "" : "s"} ↓</button>`;
+  }
   if (ranks.length)
     html += `<div class="section-label">Ranking</div><div class="rankcards">` +
       ranks.map((r) => `<div class="rankcard">
@@ -1859,7 +1892,248 @@ function renderH2H() {
   html += asOpponents.list.slice(0, 30).map((m) => apiMatchRow(m)).join("");
   if (asPartners.list.length) {
     html += `<div class="section-label">As partners · ${asPartners.list.length} match${asPartners.list.length === 1 ? "" : "es"} (${asPartners.wins}W)</div>`;
+    // These two have also played TOGETHER, which is a pair with its own page —
+    // offer it rather than making this the only place that record is visible.
+    html += `<div class="pairjump" ${pairAttr(a.id, b.id)}>🤝 Their record as a pair →</div>`;
     html += asPartners.list.slice(0, 20).map((m) => apiMatchRow(m)).join("");
+  }
+  app.innerHTML = html;
+}
+
+// ---------- pairs (partnership profiles) ----------
+// A pair is two players on the SAME SIDE of a match. The ids are interchangeable,
+// so they are sorted into a canonical order everywhere — the URL, the click
+// attribute and the API — because one partnership must resolve to exactly one
+// page. The edge route 301s the unsorted form for the same reason.
+const pairIds = (a, b) => (String(a) < String(b) ? [String(a), String(b)] : [String(b), String(a)]);
+const pairAttr = (a, b) => {
+  if (!a || !b || a === b) return "";
+  const [x, y] = pairIds(a, b);
+  return `data-pair="${esc(x)}" data-pair2="${esc(y)}"`;
+};
+const pairPath = (a, b) => {
+  const [x, y] = pairIds(a, b);
+  return `/pair/${encodeURIComponent(x)}/${encodeURIComponent(y)}`;
+};
+// Both names, in the canonical id order the page is keyed on.
+const pairName = (d) => `${d.players.a.name} / ${d.players.b.name}`;
+
+async function openPair(a, b) {
+  const [x, y] = pairIds(a, b);
+  // The profile (or head-to-head) the pair was opened from is deliberately LEFT
+  // LOADED: renderView checks state.pair first, so the pair takes the view, and
+  // "← Back" drops straight onto the page the reader came from instead of the
+  // bare search box. Only the "pick an opponent" mode has to end here.
+  state.comparing = false;
+  state.pair = "loading"; state.pairKey = { a: x, b: y };
+  state.pairTours = new Set();
+  render();
+  syncUrl(); // /pair/<a>/<b>
+  ensureRankings(); // so the pair header can show each player's ranking
+
+  try {
+    const r = await fetch(`/api/pair/${encodeURIComponent(x)}/${encodeURIComponent(y)}`);
+    const d = await r.json();
+    state.pair = d && !d.error ? d : null;
+  } catch { state.pair = null; }
+  render();
+  setTitle(); // now we have both names
+}
+
+// Guarded like ensureRankings(): renderPairsBrowse calls this from inside render,
+// so without the in-flight flag a failed fetch would set pairsTop back to null,
+// re-render, and start the fetch again — a permanent request loop against a
+// query that is expensive on the server.
+let _pairsLoading = false;
+async function loadTopPairs() {
+  if (state.pairsTop || _pairsLoading) return;
+  _pairsLoading = true;
+  try {
+    const d = await (await fetch("/api/pairs?limit=100&min=5")).json();
+    state.pairsTop = d && d.pairs ? d : null;
+    state.pairsError = !state.pairsTop;
+  } catch { state.pairsTop = null; state.pairsError = true; }
+  _pairsLoading = false;
+  render();
+}
+
+// "since Feb 2026" / "Feb 2026 – Aug 2026". Months, not days: a partnership is a
+// span of a career, and the exact day they first played is noise at this size.
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function monthYear(iso) {
+  if (!iso || iso.length < 7) return "";
+  const m = +iso.slice(5, 7);
+  return `${MONTH_ABBR[m - 1] || ""} ${iso.slice(0, 4)}`;
+}
+function pairSpan(first, last) {
+  if (!first) return "";
+  const f = monthYear(first), l = monthYear(last);
+  return !l || f === l ? `Played together ${f}` : `Together ${f} – ${l}`;
+}
+
+// The pair's Elo: the average of both ratings, and only when the two ratings come
+// from the same population (see combineElo in /api/pair). An average across pools
+// would be arithmetic on two different scales.
+function pairEloStat(elo) {
+  if (!elo || !elo.combined) return "";
+  const c = elo.combined;
+  const pool = ELO_POOL[c.pool] || "";
+  const src = ELO_SOURCE[c.source] || "";
+  const parts = [elo.a, elo.b].filter((e) => e && e.rating != null).map((e) => `${e.rating}`);
+  const title = `Combined Elo ${c.rating} — the mean of ${parts.join(" and ")}`
+    + `, both rated among ${src} ${pool}. Not a rating of the pair itself: no rating system`
+    + ` measures a partnership, so this says how strong the two players are, not how well they play together.`;
+  return `<div class="pstat hi" title="${esc(title)}"><b>${esc(c.rating)}</b><span>combined Elo</span></div>`;
+}
+
+function bestResultChip(best) {
+  if (!best) return "";
+  const label = best.title ? "title" : best.label;
+  const where = [best.tournament, best.date ? best.date.slice(0, 4) : ""].filter(Boolean).join(" · ");
+  return `<div class="pstat${best.rank >= 7 ? " hi" : ""}" title="${esc(`Best result together: ${label}${where ? " — " + where : ""}`)}">`
+    + `<b>${esc(best.title ? "🏆" : label.replace("round of ", "R"))}</b><span>best result</span></div>`;
+}
+
+function renderPair() {
+  if (state.pair === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
+  if (!state.pair) {
+    app.innerHTML = `<button class="pback" data-pback="1">← Back</button>
+      <div class="empty"><div class="big">🤝</div>No partnership found for those two players.</div>`;
+    return;
+  }
+  const d = state.pair;
+  const { a, b } = d.players;
+  const s = d.summary || {};
+  const pct = s.total ? Math.round((s.wins / s.total) * 100) : 0;
+  const name = pairName(d);
+
+  let html = `<button class="pback" data-pback="1">← Back</button>
+    <div class="phead">
+      <h2 class="pairh2">
+        <span class="pairp" data-player="${esc(a.id)}"><span class="flag">${esc((a.country || "").toUpperCase())}</span> ${esc(a.name)}</span>
+        <span class="pairslash">/</span>
+        <span class="pairp" data-player="${esc(b.id)}"><span class="flag">${esc((b.country || "").toUpperCase())}</span> ${esc(b.name)}</span>
+      </h2>
+      <div class="pstats">
+        <div class="pstat"><b>${s.total || 0}</b><span>together</span></div>
+        <div class="pstat"><b>${s.wins || 0}-${s.losses || 0}</b><span>W-L</span></div>
+        <div class="pstat"><b>${pct}%</b><span>win rate</span></div>
+        ${s.titles ? `<div class="pstat hi"><b>${s.titles}</b><span>title${s.titles === 1 ? "" : "s"}</span></div>` : ""}
+        ${s.finals ? `<div class="pstat"><b>${s.finals}</b><span>finals</span></div>` : ""}
+        ${!s.titles && !s.finals ? bestResultChip(s.best) : ""}
+        ${s.sets && s.sets.pct != null ? `<div class="pstat"><b>${s.sets.pct}%</b><span>sets won</span></div>` : ""}
+        ${s.games && s.games.pct != null ? `<div class="pstat"><b>${s.games.pct}%</b><span>games won</span></div>` : ""}
+        ${pairEloStat(d.players.elo)}
+      </div>
+    </div>`;
+
+  if (!s.total) {
+    html += `<div class="empty" style="padding:28px"><div class="big">🤝</div>
+      ${esc(a.name)} and ${esc(b.name)} have no recorded matches together.
+      <div style="margin-top:8px;color:var(--faint);font-size:13px">They may have partnered outside the tours PadelTicker covers.</div></div>`;
+    app.innerHTML = html;
+    return;
+  }
+
+  const span = pairSpan(s.first, s.last);
+  if (span) html += `<div class="pairspan">${esc(span)}</div>`;
+
+  const form = s.form || [];
+  if (form.length)
+    html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${s.streak > 1 ? `<span class="streak">${s.streak} ${s.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
+
+  // Each half's own profile, with the ranking already loaded for the header.
+  html += `<div class="section-label">The players</div><div class="pairplayers">` +
+    [a, b].map((p) => {
+      const rk = playerRankings(p.id, p.name, p.country);
+      const r = rk.find((x) => x.fed === "FIP") || rk[0];
+      return `<div class="pairpcard" data-player="${esc(p.id)}">
+        <span class="flag">${esc((p.country || "").toUpperCase())}</span>
+        <b>${esc(p.name)}</b>
+        <span class="pp-meta">${r && r.rank != null ? `#${r.rank} ${r.fed === "FIP" ? "FIP" : (REGION_LABEL[r.fed] || r.fed)}` : "profile →"}</span>
+      </div>`;
+    }).join("") + `</div>`;
+
+  if (s.byYear && s.byYear.length)
+    html += `<div class="section-label">By year</div><div class="years">` +
+      s.byYear.map((y) => `<span class="ychip"><b>${esc(y.yr)}</b> ${y.won}<span class="ysep">/</span>${y.played}</span>`).join("") +
+      `</div>`;
+
+  // ---- rivals ----
+  // The pair-page answer to "who do they keep running into": every opposing pair
+  // they have faced, most-met first, each linking to that pair's own page.
+  const rivals = d.rivals || [];
+  if (rivals.length) {
+    const repeat = rivals.filter((r) => r.meetings > 1);
+    // Ranked by meetings, so one-off opponents sink to the bottom; show the
+    // repeat rivalries plus enough one-offs to be useful, and say what's hidden.
+    const shownRivals = repeat.length >= 3 ? repeat.slice(0, 20) : rivals.slice(0, 12);
+    html += `<div class="section-label">Rivals <span class="count">${rivals.length} pair${rivals.length === 1 ? "" : "s"} faced</span></div>`;
+    html += shownRivals.map((r) => {
+      const link = r.linkable ? pairAttr(r.players[0].id, r.players[1].id) : "";
+      const last = r.last || {};
+      const meta = [last.tournament, last.round, last.date].filter(Boolean).join(" · ");
+      return `<div class="rival${link ? " linkable" : ""}" ${link}>
+        <div class="rv-main">
+          <span class="rv-name">${esc(r.name)}</span>
+          <span class="rv-rec ${r.wins > r.losses ? "up" : r.wins < r.losses ? "down" : ""}">${r.wins}-${r.losses}</span>
+          <span class="rv-n">${r.meetings} meeting${r.meetings === 1 ? "" : "s"}${r.pct != null ? ` · ${r.pct}%` : ""}</span>
+        </div>
+        ${meta ? `<div class="rv-last" title="${esc(meta)}">Last: ${esc(last.won ? "won" : "lost")}${last.score ? " " + esc(last.score) : ""} — ${esc(meta)}</div>` : ""}
+      </div>`;
+    }).join("");
+    if (shownRivals.length < rivals.length)
+      html += `<div class="rv-more">${rivals.length - shownRivals.length} more pair${rivals.length - shownRivals.length === 1 ? "" : "s"} met once each — they are in the match list below.</div>`;
+  }
+
+  // ---- match list, with the same tournament filter the profile uses ----
+  const matches = d.matches || [];
+  const tourCounts = new Map();
+  for (const m of matches) { const t = m.tournament || "—"; tourCounts.set(t, (tourCounts.get(t) || 0) + 1); }
+  const sel = state.pairTours;
+  const shown = sel.size ? matches.filter((m) => sel.has(m.tournament || "—")) : matches;
+  if (tourCounts.size > 1) {
+    const tours = [...tourCounts.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]));
+    html += `<div class="section-label">Filter by tournament</div><div class="chips profchips">` +
+      `<span class="chip ${sel.size === 0 ? "active" : ""}" data-pairtour="__all">All</span>` +
+      tours.map(([t, n]) => `<span class="chip ${sel.has(t) ? "active" : ""}" data-pairtour="${esc(t)}" title="${esc(t)}">${esc(t)}<span class="cn">${n}</span></span>`).join("") +
+      `</div>`;
+  }
+  const label = sel.size ? `Matches together · ${shown.length} of ${matches.length}` : `Matches together (${matches.length})`;
+  html += `<div class="section-label">${label}</div>` +
+    (shown.length ? shown.map((m) => apiMatchRow(m)).join("") : `<div class="empty" style="padding:24px">No matches for the selected tournament${sel.size === 1 ? "" : "s"}.</div>`);
+
+  // data-share (not a bespoke handler): the existing copy button already deals
+  // with in-app browsers where clipboard.writeText is unavailable, and it resets
+  // its own label, so the label here must match the one it restores.
+  html += `<div class="pairshare"><button class="mshare" data-share="${esc(pairPath(a.id, b.id))}" title="Copy a link to this pair">🔗 Copy link</button></div>`;
+  app.innerHTML = html;
+}
+
+// /pairs — the browse list. It exists so pair pages are reachable by a reader and
+// a crawler without knowing two ids in advance; the sitemap covers the same set.
+function renderPairsBrowse() {
+  if (!state.pairsTop) {
+    app.innerHTML = state.pairsError
+      ? `<div class="empty"><div class="big">🤝</div>Couldn't load the pair list just now.<div style="margin-top:8px;color:var(--faint);font-size:13px">Open a player and use their Partnerships list in the meantime.</div></div>`
+      : `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
+    loadTopPairs();
+    return;
+  }
+  const q = (state.query || "").trim().toLowerCase();
+  const all = state.pairsTop.pairs || [];
+  const list = q ? all.filter((p) => p.name.toLowerCase().includes(q)) : all;
+  // Say that this is a top-N cut, not the whole set: "the most-played
+  // partnerships" over a list that silently stops at 100 reads as a complete
+  // answer, and a reader who can't find a pair here would conclude it has no page.
+  let html = `<div class="browse-hint">The ${state.pairsTop.truncated ? `${all.length} most-played` : "most-played"} partnerships on record — at least ${state.pairsTop.min} matches together.${state.pairsTop.truncated ? " Any other pair still has its own page: open either player and use their Partnerships list." : ""} Tap a pair for its record, rivals and every match they have played as a team.</div>`;
+  if (!list.length) {
+    html += `<div class="empty"><div class="big">🤝</div>No pair matches <b>${esc(state.query)}</b>.</div>`;
+  } else {
+    html += list.map((p) => `<div class="presult has-profile" ${pairAttr(p.a, p.b)}>
+      <span class="nm">${esc(p.name)}</span>
+      <span class="meta">${p.played} · ${p.won}-${p.lost}</span>
+    </div>`).join("");
   }
   app.innerHTML = html;
 }
@@ -1871,7 +2145,15 @@ function renderH2H() {
 // zero width (they looked blank). Score + date stay right-aligned, one per line.
 function apiMatchRow(m) {
   const t = m.teams;
-  const line = (s) => `<div class="team ${t[s].won ? "win" : ""}"><span class="nm">${esc(t[s].name)}</span></div>`;
+  // Each side of a completed match IS a pair, so it links to that pair's page
+  // whenever both halves resolve to a profile id. This is where most pair pages
+  // are actually discovered — from a match a reader is already looking at —
+  // rather than from the browse list.
+  const line = (s) => {
+    const ps = t[s].players || [];
+    const attr = ps.length === 2 && ps[0].id && ps[1].id ? pairAttr(ps[0].id, ps[1].id) : "";
+    return `<div class="team ${t[s].won ? "win" : ""}${attr ? " pairlink" : ""}" ${attr}><span class="nm">${esc(t[s].name)}</span></div>`;
+  };
   const meta = [m.tournament, m.round].filter(Boolean).join(" · ");
   return `<div class="match"><div class="match__main archm pmatch">
     <div class="teams">${line(0)}${line(1)}</div>
@@ -2630,6 +2912,10 @@ function activateMode(mode) {
   state.day = mode === "live" ? todayYmd() : "all";   // live feed defaults to today; other modes span all
   state.query = "";
   state.player = null; state.playerId = null; state.h2h = null; state.playerResults = null; state.comparing = false;
+  // The open pair clears with the rest; state.pairsTop (the browse list) does NOT
+  // — it is a cached fetch, like state.archive and state.rankings, and re-fetching
+  // a whole-archive GROUP BY every time the mode is clicked would be wasteful.
+  state.pair = null; state.pairKey = null; state.pairTours = new Set();
   state.tournament = null; state.focusMatch = null;
   state.rankCountryQuery = "";
   state.archiveTour = "all";
@@ -2643,6 +2929,7 @@ function activateMode(mode) {
   qEl.closest(".search").style.display = mode === "favorites" || mode === "upcoming" ? "none" : "";
   qEl.placeholder =
     mode === "players" ? "Search a player by name…" :
+    mode === "pairs" ? "Filter these pairs…" :
     mode === "rankings" ? "Filter this ranking…" :
     mode === "events" ? "Search competitions…" :
     mode === "archive" ? "Search tournament…" :
@@ -2751,8 +3038,31 @@ app.addEventListener("click", (e) => {
     return;
   }
 
+  if (e.target.closest("[data-partnersall]")) { state.partnersAll = true; render(); return; }
+
+  // pair: tournament filter chips (the pair page's own copy of the profile's)
+  const ptp = e.target.closest("[data-pairtour]");
+  if (ptp) {
+    const t = ptp.dataset.pairtour;
+    if (t === "__all") state.pairTours.clear();
+    else if (state.pairTours.has(t)) state.pairTours.delete(t);
+    else state.pairTours.add(t);
+    render();
+    return;
+  }
+
   const gm = e.target.closest("[data-goto-mode]");
   if (gm) { activateMode(gm.dataset.gotoMode); return; }
+
+  // pair page — BEFORE data-player, because a pair row (a rivalry, a match team,
+  // the pair header) contains player links inside it. Innermost wins in the DOM,
+  // so a click on a name still opens that profile; a click anywhere else on the
+  // row opens the pair.
+  const pp = e.target.closest("[data-pair]");
+  if (pp && !e.target.closest("[data-player]")) {
+    openPair(pp.dataset.pair, pp.dataset.pair2);
+    return;
+  }
 
   // players: result click / compare / back (also from a ranked player row)
   const pr = e.target.closest("[data-player]");
@@ -2764,7 +3074,10 @@ app.addEventListener("click", (e) => {
     return;
   }
   if (e.target.closest("[data-pback]")) {
-    if (state.h2h) state.h2h = null;
+    // Innermost view first: a pair can be opened from a profile, so backing out
+    // of the pair should land on that profile rather than skipping past it.
+    if (state.pair) { state.pair = null; state.pairKey = null; }
+    else if (state.h2h) state.h2h = null;
     else { state.player = null; state.playerId = null; }
     render();
     syncUrl();
@@ -2936,12 +3249,16 @@ const tournamentUrlKey = (key) => {
 };
 
 function currentPath() {
+  // Checked first, to match renderView: whatever the pair was opened from is
+  // still loaded underneath it, and the URL must name what is on screen.
+  if (state.pairKey && state.pair) return pairPath(state.pairKey.a, state.pairKey.b);
   if (state.tournament) {
     const tk = tournamentUrlKey(state.tournament.key);
     // A deep-linked match keeps its own URL, so reloading or re-sharing the page
     // lands back on the same match rather than the top of the draw.
     return state.focusMatch ? `/match/${tk}/${state.focusMatch.key}` : "/tournament/" + tk;
   }
+  if (state.mode === "pairs") return "/pairs";
   if (state.mode === "players") return state.playerId ? "/player/" + encodeURIComponent(state.playerId) : "/players";
   // ?by=elo rather than a fourth path segment: the Pages Function route is
   // /rankings/[fed]/[cat], so a third segment would need the route rewritten,
@@ -2961,7 +3278,11 @@ function currentPath() {
 function setTitle() {
   const P = state.player && state.player !== "loading" ? state.player.player : null;
   let t = "PadelTicker — live padel scores";
-  if (state.tournament && state.focusMatch) {
+  // First, to match renderView and currentPath. Kept in step with the per-pair
+  // <title> the edge injects for scrapers (functions/pair/[a]/[b].js) —
+  // otherwise the shared card names the pair and the tab names a player.
+  if (state.pair && state.pair !== "loading") t = `${pairName(state.pair)} — padel pair record, rivals & results · PadelTicker`;
+  else if (state.tournament && state.focusMatch) {
     // Keep the tab in step with the per-match <title> the edge injects for scrapers
     // (functions/match/[[path]].js) — otherwise the shared card names the match and
     // the tab the reader lands on names the tournament.
@@ -2978,6 +3299,7 @@ function setTitle() {
   else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
+  else if (state.mode === "pairs") t = "Padel pairs — partnership records, rivals & results · PadelTicker";
   else if (state.mode === "players") t = "Padel players — profiles, results & head-to-head · PadelTicker";
   else if (state.mode === "favorites") t = "Following — your padel players & tournaments · PadelTicker";
   else if (state.mode === "events") t = "Padel tournaments & leagues — live competitions · PadelTicker";
@@ -3048,6 +3370,11 @@ function applyRoute() {
     const seg = decodeURIComponent(location.pathname).split("/").filter(Boolean);
     const q = new URLSearchParams(location.search);
     if (seg[0] === "player" && seg[1]) { activateMode("players"); openPlayer(seg[1]); }
+    // /pair/<a>/<b>. The edge 301s the unsorted form, so a link that arrives here
+    // is already canonical; openPair sorts anyway, since in-app callers pass the
+    // two ids in whatever order the row they clicked happened to hold them.
+    else if (seg[0] === "pair" && seg[1] && seg[2]) { activateMode("pairs"); openPair(seg[1], seg[2]); }
+    else if (seg[0] === "pairs") activateMode("pairs");
     else if (seg[0] === "match" && seg.length >= 5) openMatchRoute(seg);
     else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1], seg.slice(2).join("/")); }
     else if (seg[0] === "rankings") {

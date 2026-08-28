@@ -75,3 +75,41 @@ export async function playerMeta(env, id) {
     return null;
   }
 }
+// One player's identity, falling back to the name/country carried on the match
+// rows. FIP-only players ("fip-i-sager") appear in match_players long before
+// they appear in `players`; without the fallback a pair page linked from a
+// rivalry row would 404 purely because of that bookkeeping gap.
+export async function identifyPlayer(env, id) {
+  const p = await env.DB.prepare("SELECT id,name,country,is_nordic FROM players WHERE id=?1").bind(id).first();
+  if (p) return p;
+  const m = await env.DB
+    .prepare("SELECT player_id id,name,country FROM match_players WHERE player_id=?1 AND name IS NOT NULL LIMIT 1")
+    .bind(id).first();
+  return m ? { ...m, is_nordic: 0, partial: 1 } : null;
+}
+
+// Pair meta needs only both identities and the record they have TOGETHER, so it
+// reads D1 directly rather than calling /api/pair/:a/:b — that would be a second
+// Function invocation per render, to produce four numbers out of a payload
+// carrying every match and rivalry the pair has. The m.date IS NOT NULL filter
+// matches playerMeta above, so the two pages' figures are derived alike.
+// Returns null when either id is unknown or D1 is unavailable — the caller then
+// serves the plain shell, exactly as the player route does.
+export async function pairMeta(env, a, b) {
+  try {
+    const [pa, pb] = await Promise.all([identifyPlayer(env, a), identifyPlayer(env, b)]);
+    if (!pa || !pb) return null;
+    const agg = await env.DB.prepare(
+      `SELECT COUNT(*) total, SUM(CASE WHEN p1.is_winner=1 THEN 1 ELSE 0 END) wins
+       FROM match_players p1
+       JOIN match_players p2 ON p2.match_id=p1.match_id AND p2.side=p1.side AND p2.player_id=?2
+       JOIN matches m ON m.id=p1.match_id
+       WHERE p1.player_id=?1 AND m.date IS NOT NULL`
+    ).bind(a, b).first();
+    const total = Number(agg?.total || 0);
+    const wins = Number(agg?.wins || 0);
+    return { a: pa, b: pb, summary: { total, wins, losses: total - wins } };
+  } catch {
+    return null;
+  }
+}
