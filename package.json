@@ -10,7 +10,10 @@
   "scripts": {
     "fetch": "node scripts/fetch-live.js",
     "serve": "node scripts/serve.js",
-    "dev": "node scripts/fetch-live.js && node scripts/serve.js"
+    "dev": "node scripts/fetch-live.js && node scripts/serve.js",
+    "test": "node test/replay.js && node test/render.js && node test/relay.js",
+    "test:live": "node test/relay.js --live",
+    "preflight": "node scripts/live-detail-check.js"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",

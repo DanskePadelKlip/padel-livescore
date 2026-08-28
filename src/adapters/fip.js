@@ -14,16 +14,11 @@
 import { parseHTML } from "linkedom";
 import { STATUS, gid } from "../schema.js";
 import * as sporteaser from "./sporteaser.js";
+// Endpoints + headers live in ../live-detail.js, shared with the edge relay.
+import { FIP_HEADERS, liveBoardUrl, oopUrl } from "../live-detail.js";
 
 export const id = "fip";
 
-const FIP_HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
-  Referer: "https://www.padelfip.com/",
-  Accept: "text/html,application/json",
-};
-const WIDGET = "https://widget.matchscorerlive.com/screen";
 const WP = "https://www.padelfip.com/wp-json/wp/v2";
 // The order-of-play widget above carries SET games only. The live board is a
 // separate view of the same Crionet data — same markup family (.double
@@ -33,7 +28,6 @@ const WP = "https://www.padelfip.com/wp-json/wp/v2";
 // (verified 2026-08-03: it reloads that iframe every 20s). It only ever lists
 // matches currently on court, so it is fetched per event and merged onto the
 // matches the OOP already produced — never as a source of matches itself.
-const LIVE_BOARD = `${WIDGET}/tournamentlive`;
 
 export async function fetchMatches({ date = todayISO(), maxTournaments = Infinity, maxDay = 9, log = () => {} } = {}) {
   const events = await discoverActiveEvents(date, log);
@@ -96,7 +90,7 @@ export async function fetchMatches({ date = todayISO(), maxTournaments = Infinit
 
 // ---- discovery -------------------------------------------------------------
 
-async function discoverActiveEvents(date, log) {
+export async function discoverActiveEvents(date, log) {
   let events;
   try {
     const res = await fetch(`${WP}/events?orderby=modified&order=desc&per_page=40`, { headers: FIP_HEADERS });
@@ -117,7 +111,7 @@ async function discoverActiveEvents(date, log) {
     }));
 }
 
-async function matchscorerId(ev) {
+export async function matchscorerId(ev) {
   const res = await fetch(ev.link, { headers: FIP_HEADERS });
   const html = await res.text();
   const m = html.match(/idEvent[_-](\d+)/i);
@@ -129,7 +123,7 @@ async function matchscorerId(ev) {
 async function recentDays(msId, maxDay, windowN = 2) {
   const days = [];
   for (let day = 1; day <= maxDay; day++) {
-    const res = await fetch(`${WIDGET}/oopbyday/${msId}/${day}?t=tol`, { headers: FIP_HEADERS });
+    const res = await fetch(oopUrl(msId, day), { headers: FIP_HEADERS });
     if (!res.ok) break;
     const { document } = parseHTML(await res.text());
     const parsed = parseWidget(document);
@@ -185,7 +179,7 @@ function parseWidget(document) {
 // One court block per in-play match. Points live in `td.points`; the serving
 // side is the team whose cell contains the ball image. Warm-up blocks carry no
 // points and no ball yet, which is exactly how they should render.
-function parseLiveBoard(document) {
+export function parseLiveBoard(document) {
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
   const out = [];
   for (const table of document.querySelectorAll("table")) {
@@ -214,7 +208,7 @@ const boardKey = (sides) => sides.map(pkey).sort().join("~");
 async function applyLiveDetail(matches, msId, log) {
   let boards;
   try {
-    const res = await fetch(`${LIVE_BOARD}/${msId}?t=tol`, { headers: FIP_HEADERS });
+    const res = await fetch(liveBoardUrl(msId), { headers: FIP_HEADERS });
     if (!res.ok) return 0;
     const { document } = parseHTML(await res.text());
     boards = parseLiveBoard(document);

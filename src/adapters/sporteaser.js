@@ -26,17 +26,14 @@
 // which is a normal, non-error outcome. Coverage is per-event, never tour-wide.
 
 import { STATUS } from "../schema.js";
+import { PADELFIP_AJAX, SPORTEASER_HEADERS, sporteaserDayUrl } from "../live-detail.js";
 
 export const id = "sporteaser";
 
-const API = "https://v0.sporteaser.app/api/public";
-const AJAX = "https://www.padelfip.com/wp-admin/admin-ajax.php";
-const HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
-  Referer: "https://www.padelfip.com/",
-  Accept: "application/json, text/html",
-};
+// Endpoints + headers live in ../live-detail.js so the edge relay
+// (functions/api/live-detail.js) addresses the same upstream the same way.
+const AJAX = PADELFIP_AJAX;
+const HEADERS = SPORTEASER_HEADERS;
 
 // Discovery is two fetches of padelfip per event, so it is cached per process
 // (the refresh loop is long-lived). A hit is stable for the life of a tournament;
@@ -91,7 +88,7 @@ export async function discoverTournamentId(eventLink, log = () => {}) {
  */
 export async function fetchDay(tid, day, log = () => {}) {
   try {
-    const res = await fetch(`${API}/tournament/${tid}/matches/day/${day}/sort/fieldname/0`, { headers: HEADERS });
+    const res = await fetch(sporteaserDayUrl(tid, day), { headers: HEADERS });
     if (!res.ok) return [];
     const json = await res.json();
     if (Array.isArray(json?.days) && !json.days.includes(Number(day))) return [];

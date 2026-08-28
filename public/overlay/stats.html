@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>DPK changeover stats overlay</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<link rel="stylesheet" href="stats.css">
+</head>
+<body>
+<!--
+  OBS Browser Source, 1920x1080, transparent background. It renders NOTHING until
+  a changeover starts, so an empty page is the normal resting state — use &debug=1
+  while setting the source up, and &preview=serve to pin a card for positioning.
+
+  See STATS-OVERLAY.md for the full parameter list. The short version:
+    /overlay/stats.html?tid=397&day=29&court=Centralni&delay=30
+-->
+<div id="stage" data-pos="bottom-left"></div>
+<div id="debug" class="hidden"></div>
+<script type="module" src="stats.js"></script>
+</body>
+</html>

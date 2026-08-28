@@ -4,8 +4,22 @@
     {
       "name": "padel-livescore",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["scripts/serve.js"],
+      "runtimeArgs": [
+        "scripts/serve.js"
+      ],
       "port": 8787
+    },
+    {
+      "name": "pages-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "wrangler",
+        "pages",
+        "dev",
+        "--port",
+        "8788"
+      ],
+      "port": 8788
     }
   ]
 }
