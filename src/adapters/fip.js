@@ -356,8 +356,18 @@ function normalize(m, ev, msId, day) {
 
 const team = (t) => ({
   name: (t.players || []).join(" / ") || "TBD",
-  players: (t.players || []).map((p, i) => ({ name: p, country: (t.countries || [])[i] || null })),
+  players: (t.players || []).map((p, i) => ({ name: p, country: ioc((t.countries || [])[i]) })),
 });
+
+// The widget's flag `alt` is an upper-case IOC code ("SRB"), but when the alt is
+// missing parseWidget falls back to the image FILENAME, which is lower case and
+// sometimes not a country at all (padel.db carries 376 rows of ".JPG" from the
+// same fallback). Upper-case what is a code, drop what isn't. NB: IOC 3-letter,
+// NOT the ISO-2 that iso.js guards — the two feeds use different code systems.
+const ioc = (code) => {
+  const c = String(code || "").trim().toUpperCase();
+  return /^[A-Z]{2,3}$/.test(c) ? c : null;
+};
 
 const sig = (a, b, round) =>
   [a.players?.join("+"), b.players?.join("+"), round].join("|").replace(/\s+/g, "");
