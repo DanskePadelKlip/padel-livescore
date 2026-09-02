@@ -62,5 +62,10 @@ export async function serveBlob({ request, env, waitUntil }, key, { emptyFallbac
 function withClientHeaders(res) {
   const out = new Response(res.body, res);
   out.headers.set("cache-control", "no-store");
+  // Pages adds this to STATIC assets by itself; a Function-built Response does
+  // not, so routing /data/*.json through here silently broke the only
+  // cross-origin consumer (danskepadelklip.com's scoreboard control panel).
+  // Set on this path, not in the constructor: it also covers the colo-cache hit.
+  out.headers.set("access-control-allow-origin", "*");
   return out;
 }
