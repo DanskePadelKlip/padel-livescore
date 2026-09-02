@@ -568,8 +568,9 @@ function cmpByStart(a, b) {
   return 0; // keep feed order within live / final
 }
 
-// Prestige tier from a tournament name (Premier Padel + FIP ladder). National
-// events have no tier keyword → 0, so they rank by size within their section.
+// Prestige tier from a tournament name (Premier Padel + FIP ladder, then the
+// national ladders below). Used on a bare name where no matches are in hand;
+// prefer groupTier() when they are, because a Danish event's tier is in its CLASS.
 function tournamentTier(name) {
   const s = (name || "").toLowerCase();
   if (/\bmajor\b|\bfinals?\b/.test(s)) return 100;   // Premier Padel Major / Finals
@@ -579,10 +580,49 @@ function tournamentTier(name) {
   if (/\bsilver\b/.test(s)) return 60;                // FIP Silver
   if (/\bbronze\b/.test(s)) return 50;                // FIP Bronze
   if (/promis/.test(s)) return 30;                    // FIP Promises (youth)
+  return nationalTier(s);
+}
+
+// Points -> tier. A FORMULA, not a table: DPF400 and DPF700 are real tiers that any
+// list of the common values would drop to 0. Monotonic in the points, capped at 90
+// so a national event never outranks a Major/Finals.
+//   DPF10 -> 30.4   DPF100 -> 34   DPF500 -> 50   DPF1000 -> 70   DPF2000 -> 90
+function pointsTier(n) {
+  return 30 + Math.min(60, n / 25);
+}
+
+// National ladders, for names AND class names. Danish events carry their tier as a
+// points number (DPF1000); the team leagues carry none, so Elitedivisionen and DM
+// are pinned above every ranking event as the top of the Danish pyramid.
+function nationalTier(s) {
+  if (/elitedivision/.test(s)) return 95;
+  if (/\bdm\b|danmarksmesterskab/.test(s)) return 95;
+  if (/nordic championship/.test(s)) return 90;
+  const dpf = [...s.matchAll(/\bdpf\s*-?\s*(\d{2,4})\b/g)].map((m) => +m[1]);
+  if (dpf.length) return pointsTier(Math.max(...dpf));
+  // Swedish Padel Tour writes the STOP number first and the POINTS second
+  // ("SPT 5 300 OXDOG"), so the points are the 3-digit token — not the one after SPT.
+  if (/\bspt\b/.test(s)) {
+    const p = s.match(/\b(\d{3})\b/);
+    return p ? pointsTier(+p[1]) : 55;
+  }
   return 0;
 }
+
+// The tier of a tournament AS DISPLAYED. A Danish event's tier lives in its class
+// names ("Herrer DPF1000"), never in the tournament name ("Arla Protein Padel
+// Series 5") — reading the name alone is why the weekend's DPF1000 sorted fourth in
+// Denmark, behind a league carrying 184 already-finished matches.
+function groupTier(name, matches) {
+  let t = tournamentTier(name);
+  for (const m of matches || []) {
+    const ct = nationalTier((m.className || "").toLowerCase());
+    if (ct > t) t = ct;
+  }
+  return t;
+}
 // Bigger first: tier dominates, match count breaks ties (and orders nationals).
-const tournamentRank = (g) => tournamentTier(g.t.name) * 1000 + g.matches.length;
+const tournamentRank = (g) => groupTier(g.t.name, g.matches) * 1000 + g.matches.length;
 
 function renderGroups(matches, changed) {
   // group by tournament, preserve aggregate order
@@ -1551,7 +1591,7 @@ function fipRankRow(r) {
   return `
     <div class="fipres">
       <span class="flag">${esc((r.country || "").toUpperCase())}</span>
-      <span class="nm">${esc(r.full || r.name)}</span>
+      <span class="nm pn" data-pname="${esc(r.name)}" title="View ${esc(r.full || r.name)}">${esc(r.full || r.name)}</span>
       <span class="meta">${esc(r.cat || "")} · #${r.rank}${r.points != null ? ` · ${Math.round(r.points).toLocaleString()} pts` : ""}</span>
       ${star("players", r.id, r.name, r.country || "")}
       ${fipProfileUrl(r) ? `<a class="fiplink" href="${esc(fipProfileUrl(r))}" target="_blank" rel="noopener" title="View on padelfip.com">↗</a>` : ""}
@@ -1582,7 +1622,8 @@ function renderPlayersBrowse() {
   html += browseOnCourt();
   html += browseRankBlock("FIP", `${FLAGS.FIP} World ranking`);
   html += browseRankBlock("DK", `${FLAGS.DK} Denmark`);
-  html += `<button class="browse-all" data-goto-mode="rankings">All rankings →</button>`;
+  html += `<button class="browse-all" data-goto-mode="rankings">All rankings →</button>`
+    + `<button class="browse-all" style="margin-left:18px" data-goto-elo="1" title="Strength rating from results — not from how much you played">Elo ratings →</button>`;
   app.innerHTML = html;
 }
 
@@ -1637,7 +1678,7 @@ function browseRankBlock(fed, label) {
 
 function natRankRow(r) {
   const linked = !!r.id;
-  return `<div class="presult${linked ? "" : " noprofile"}"${linked ? ` data-player="${esc(r.id)}"` : ""}>
+  return `<div class="presult${linked || r.name ? "" : " noprofile"}"${linked ? ` data-player="${esc(r.id)}"` : r.name ? ` data-pname="${esc(r.name)}"` : ""}>
     <span class="rk">#${r.rank}</span>
     <span class="nm">${countryFlag(r.country)} ${esc(r.name)}</span>
     <span class="meta">${r.points != null ? Math.round(r.points).toLocaleString() + " pts" : ""}</span>
@@ -2671,7 +2712,7 @@ function renderEvents() {
   }
   list.sort((a, b) =>
     (b.live > 0) - (a.live > 0) ||
-    tournamentTier(b.name) - tournamentTier(a.name) ||
+    groupTier(b.name, b.matches) - groupTier(a.name, a.matches) ||
     b.matches.length - a.matches.length ||
     a.name.localeCompare(b.name));
 
@@ -2706,20 +2747,36 @@ function renderEvents() {
 async function loadRankings() {
   app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
   const grab = (u) => fetch(u + "?_=" + Date.now()).then((r) => (r.ok ? r.json() : { lists: [] })).catch(() => ({ lists: [] }));
-  const [fip, nat, elo] = await Promise.all([
-    grab("data/rankings-fip.json"), grab("data/rankings.json"), grab("data/rankings-elo.json"),
-  ]);
+  const [fip, nat] = await Promise.all([grab("data/rankings-fip.json"), grab("data/rankings.json")]);
   const lists = [...(fip.lists || []), ...(nat.lists || [])]; // FIP world first, then national
   if (!lists.length) {
     app.innerHTML = `<div class="empty"><div class="big">🏆</div>Rankings not available.</div>`;
     return;
   }
   state.rankings = { lists };
-  // Optional: an older deploy, or a data refresh that has not run the export
-  // yet, simply has no rankings-elo.json. grab() resolves to {lists:[]} on a
-  // 404, so the toggle just never appears rather than the page breaking.
-  state.eloRankings = (elo.lists || []).length ? { lists: elo.lists, minMatches: elo.minMatches } : null;
+  ensureElo(); // re-renders when it lands; the board paints without waiting for it
   render();
+}
+
+// The Elo lists load SEPARATELY from the points lists, never inside loadRankings'
+// await. loadRankings only runs when state.rankings is unset — and
+// ensureRankings() (the players page, a profile) sets that WITHOUT fetching Elo,
+// so gating Elo on loadRankings hid the Points/Elo toggle for the whole session
+// for anyone who opened /players before /rankings.
+// _eloTried, not a null check, guards the retry: a genuinely absent
+// rankings-elo.json (older deploy, export not run yet) leaves eloRankings null,
+// and re-checking that on every render would refetch on every keystroke.
+let _eloLoading = false, _eloTried = false;
+async function ensureElo() {
+  if (state.eloRankings || _eloLoading || _eloTried) return;
+  _eloLoading = true;
+  try {
+    const d = await fetch("data/rankings-elo.json?_=" + Date.now()).then((r) => (r.ok ? r.json() : null));
+    if (d && (d.lists || []).length) state.eloRankings = { lists: d.lists, minMatches: d.minMatches };
+  } catch { /* absent or unreachable — the toggle simply doesn't appear */ }
+  _eloLoading = false;
+  _eloTried = true;
+  if (state.mode === "rankings") render();
 }
 
 // "Race to #1" — the top-5 story for a FIP list: points, gap to the leader, and
@@ -2751,9 +2808,13 @@ function racePanel(rows, cat) {
 
 function renderRankings() {
   if (!state.rankings) return;
+  ensureElo(); // no-op after the first attempt
   const hasElo = !!state.eloRankings;
-  if (state.rankMetric === "elo" && !hasElo) state.rankMetric = "points";
-  const isElo = state.rankMetric === "elo";
+  // Fall back to points only once the load has actually been TRIED: a deep link to
+  // /rankings?by=elo renders before the Elo file lands, and resetting the metric
+  // there would silently strand the visitor on the points board.
+  if (state.rankMetric === "elo" && !hasElo && _eloTried) state.rankMetric = "points";
+  const isElo = state.rankMetric === "elo" && hasElo;
   // The two boards cover different federations (Elo publishes only where the
   // pool genuinely covers that country's play), so the fed/cat chips derive from
   // whichever board is showing, and a selection absent from the other one falls
@@ -2841,10 +2902,16 @@ function moveCell(r, movement) {
 // isElo: render the value ungrouped. An Elo rating is a scale position, not a
 // quantity — "2,323" reads as points, "2323" reads as a rating.
 function rankRow(r, movement, isElo) {
-  const prof = r.id ? " has-profile" : "";
+  // Clicking a row opens that player: by id where the list carries one, otherwise
+  // by name through /api/search. Only ~150 of the FIP points list's 6,300 rows
+  // resolve to a profile id, so id-only linking left the world ranking — the most
+  // browsed list on the site — almost entirely dead to the touch. An ambiguous name,
+  // or one absent from the profile DB, lands on the search view rather than on a
+  // wrong profile (see openPlayerByName).
+  const prof = r.id || r.name ? " has-profile" : "";
   const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
   const flag = countryFlag(r.country);
-  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : r.name ? ` data-pname="${esc(r.name)}"` : ""}>
     <span class="rnum">${r.rank}</span>
     <span class="rmove">${moveCell(r, movement)}</span>
     <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
@@ -3054,6 +3121,13 @@ app.addEventListener("click", (e) => {
 
   const gm = e.target.closest("[data-goto-mode]");
   if (gm) { activateMode(gm.dataset.gotoMode); return; }
+
+  // Elo board. ensureElo() runs FIRST and the metric is set inside its callback:
+  // renderRankings falls back to points once a load has been tried and found
+  // nothing, so setting the metric before the file is in hand would be undone.
+  // activateMode's syncUrl then writes ?by=elo.
+  const ge = e.target.closest("[data-goto-elo]");
+  if (ge) { ensureElo().then(() => { state.rankMetric = "elo"; activateMode("rankings"); }); return; }
 
   // pair page — BEFORE data-player, because a pair row (a rivalry, a match team,
   // the pair header) contains player links inside it. Innermost wins in the DOM,
