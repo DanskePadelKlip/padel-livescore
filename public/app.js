@@ -1791,6 +1791,55 @@ function bioRow(bio) {
     `</div>`;
 }
 
+// HOW a player wins, from the score strings — deciders, straight sets, tie-break
+// sets, comebacks. Every cell is a W-L record over the whole career, and a cell
+// is omitted entirely when its denominator is 0, so a player with no three-set
+// match never sees an empty "0-0 deciding set".
+function shapeBlock(sh) {
+  if (!sh || !sh.scored) return "";
+  const rec = (r) => `${r.w}-${r.l}`;
+  const p = (r) => (r.w + r.l ? Math.round((r.w / (r.w + r.l)) * 100) + "% " : "");
+  const cells = [];
+  if (sh.straight.w + sh.straight.l)
+    cells.push(`<div class="pstat" title="Matches where one side took every set — ${p(sh.straight)}of them went this player's way"><b>${rec(sh.straight)}</b><span>straight sets</span></div>`);
+  if (sh.decider.w + sh.decider.l)
+    cells.push(`<div class="pstat${sh.decider.w > sh.decider.l ? " hi" : ""}" title="Matches that went to a final set with the sets level — ${p(sh.decider)}won"><b>${rec(sh.decider)}</b><span>deciding set</span></div>`);
+  if (sh.tiebreakSets.w + sh.tiebreakSets.l)
+    cells.push(`<div class="pstat" title="Individual sets that finished 7-6 or 6-7 — ${p(sh.tiebreakSets)}won"><b>${rec(sh.tiebreakSets)}</b><span>tie-break sets</span></div>`);
+  if (sh.firstSetLost.w)
+    cells.push(`<div class="pstat" title="Won the match after losing the opening set${sh.firstSetLost.l ? ` — and lost ${sh.firstSetLost.l} time${sh.firstSetLost.l === 1 ? "" : "s"} from a set up` : ""}"><b>${sh.firstSetLost.w}</b><span>comeback${sh.firstSetLost.w === 1 ? "" : "s"}</span></div>`);
+  if (sh.bagel.f + sh.bagel.a)
+    cells.push(`<div class="pstat" title="6-0 sets won, against ${sh.bagel.a} conceded"><b>${sh.bagel.f}</b><span>6-0 sets</span></div>`);
+  if (!cells.length) return "";
+  return `<div class="section-label">Match profile <span class="count">${sh.scored} scored matches</span></div>
+    <div class="pstats">${cells.join("")}</div>`;
+}
+
+// Who they played, measured with our own Elo. The ratings are the opponents'
+// CURRENT ones — player_elo keeps no history — so every label here says "today"
+// and the footnote says it in words. Without that, "beat 12 top-10 players"
+// would read as 12 wins over players who were top 10 AT THE TIME, which is a
+// different and much stronger claim than the data supports.
+function qualityBlock(q) {
+  if (!q || !q.rated) return "";
+  const rec = (r) => `${r.w}-${r.l}`;
+  const cells = [`<div class="pstat" title="Mean Elo of the opponents in the ${q.rated} matches where both sides are rated"><b>${q.avgOpp}</b><span>avg opponent</span></div>`];
+  if (q.top10.w + q.top10.l)
+    cells.push(`<div class="pstat${q.top10.w ? " hi" : ""}" title="Against pairs containing a player ranked in today's Elo top 10"><b>${rec(q.top10)}</b><span>vs top 10</span></div>`);
+  if (q.top50.w + q.top50.l)
+    cells.push(`<div class="pstat" title="Against pairs containing a player in today's Elo top 50"><b>${rec(q.top50)}</b><span>vs top 50</span></div>`);
+  if (q.stronger.w + q.stronger.l)
+    cells.push(`<div class="pstat" title="Against opposition whose average rating today is above this player's own"><b>${rec(q.stronger)}</b><span>vs higher-rated</span></div>`);
+  let html = `<div class="section-label">Opposition <span class="count">${q.rated} rated matches</span></div>
+    <div class="pstats">${cells.join("")}</div>`;
+  if (q.bestWin)
+    html += `<div class="toppartner"><span class="tp-lbl">Best win</span>` +
+      `<b class="pairp" data-player="${esc(q.bestWin.id)}">${esc(q.bestWin.name)}</b>` +
+      `<span class="tp-meta">Elo ${q.bestWin.rating}${q.bestWin.tournament ? " · " + esc(q.bestWin.tournament) : ""}${q.bestWin.date ? " · " + esc(monthYear(q.bestWin.date)) : ""}</span></div>`;
+  html += `<div class="elo-note">Elo figures are the opponents' ratings <b>today</b>, not on the day of the match — a player who has since improved makes an old win look better than it was.</div>`;
+  return html;
+}
+
 // Elo rating + the rank it implies. The rank matters as much as the number: a
 // bare "2053" means nothing on its own, and the pool it is ranked WITHIN is the
 // only context in which it means anything at all. Men and women are rated
@@ -1865,6 +1914,8 @@ function renderProfile() {
   const form = summary.form || [];
   if (form.length)
     html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${summary.streak > 1 ? `<span class="streak">${summary.streak} ${summary.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
+  html += shapeBlock(summary.shape);
+  html += qualityBlock(state.player.quality);
   const tp = state.player.topPartner;
   if (tp)
     html += `<div class="toppartner" ${pairAttr(player.id, tp.id)}><span class="tp-lbl">Top partner</span><b class="pairp" data-player="${esc(tp.id)}">${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span><span class="tp-go">pair →</span></div>`;

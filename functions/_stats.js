@@ -58,6 +58,69 @@ export function setsAndGames(rows) {
   };
 }
 
+// One match's score read from OUR side: [{ my, op }] per set, [] when the row
+// carries no parsable score (walkovers and retirements are stored score-less).
+function setsOf(score, side) {
+  if (!score) return [];
+  const mine = side === 1 ? 0 : 1;
+  const out = [];
+  for (const set of String(score).trim().split(/\s+/)) {
+    const p = set.split("-");
+    if (p.length !== 2) continue;
+    out.push({ my: gameOf(p[mine]), op: gameOf(p[1 - mine]) });
+  }
+  return out;
+}
+
+// HOW the wins and losses happened, not just how many. Everything here comes
+// from score strings we already hold, so it covers the whole archive rather
+// than the handful of events anyone ships point-by-point data for.
+//
+// Two deliberate conservatisms, both because a wrong stat is worse than none:
+// - a match needs at least two parsed sets before it can be called straight
+//   or a decider, so a retirement stored as "6-2" is counted in nothing;
+// - "decider" means the sets were LEVEL going into the last one, which is what
+//   makes it a decider. Reading it as "three sets were played" would count a
+//   best-of-5 2-0 lead the same way, and some club formats are not best-of-3.
+export function matchShape(rows) {
+  const z = () => ({ w: 0, l: 0 });
+  const out = {
+    scored: 0,                 // matches with a readable score (the denominator)
+    decider: z(),              // went to a level final set
+    straight: z(),             // opponent (or we) took no set
+    firstSetLost: z(),         // w = won after dropping the opener, l = lost from a set up
+    tiebreakSets: z(),         // sets that finished 7-6 / 6-7
+    bagel: { f: 0, a: 0 },     // 6-0 sets for / against
+    breadstick: { f: 0, a: 0 },// 6-1 sets for / against
+  };
+  for (const r of rows) {
+    const sets = setsOf(r.score, r.side);
+    if (!sets.length) continue;
+    out.scored++;
+    const won = r.win === 1;
+    const k = won ? "w" : "l";
+    let mine = 0, theirs = 0;
+    for (const s of sets) {
+      if (s.my > s.op) mine++; else if (s.op > s.my) theirs++;
+      if ((s.my === 7 && s.op === 6) || (s.my === 6 && s.op === 7)) out.tiebreakSets[s.my === 7 ? "w" : "l"]++;
+      if (s.my === 6 && s.op === 0) out.bagel.f++;
+      if (s.op === 6 && s.my === 0) out.bagel.a++;
+      if (s.my === 6 && s.op === 1) out.breadstick.f++;
+      if (s.op === 6 && s.my === 1) out.breadstick.a++;
+    }
+    if (sets.length < 2) continue;
+    // level going into the last set = a decider
+    let lm = 0, lt = 0;
+    for (const s of sets.slice(0, -1)) { if (s.my > s.op) lm++; else if (s.op > s.my) lt++; }
+    if (lm === lt) out.decider[k]++;
+    if (won ? theirs === 0 : mine === 0) out.straight[k]++;
+    const first = sets[0];
+    if (first.op > first.my && won) out.firstSetLost.w++;
+    if (first.my > first.op && !won) out.firstSetLost.l++;
+  }
+  return out;
+}
+
 // Recent form (newest first, capped) plus the current run of the same result.
 export function formAndStreak(rows, cap = 12) {
   const form = rows.slice(0, cap).map((r) => (r.win === 1 ? "W" : "L"));
