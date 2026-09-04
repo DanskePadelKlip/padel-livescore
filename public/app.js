@@ -1971,9 +1971,32 @@ function renderProfile() {
   app.innerHTML = html;
 }
 
+// The Elo standing of the two players and the chance it implies. Deliberately
+// spelled out as "with an equal partner each": a rating gap between two
+// individuals is not a win chance in a doubles sport until the rest of the court
+// is specified, and a bare percentage would be read as a prediction for a real
+// match that may never be played.
+function h2hElo(elo, a, b) {
+  if (!elo || !elo.a || !elo.b) return "";
+  const lead = elo.pct != null && elo.pct >= 50 ? a : b;
+  const pct = elo.pct == null ? null : (elo.pct >= 50 ? elo.pct : 100 - elo.pct);
+  let html = `<div class="section-label">Elo<span class="count">${
+    elo.a.source === "fip" ? "FIP" : "Nordic"} · ${elo.a.pool === "W" ? "women" : "men"}</span></div>
+    <div class="pstats">
+      <div class="pstat"><b>${Math.round(elo.a.rating)}</b><span>${esc(a.name)}</span></div>
+      ${pct == null ? "" : `<div class="pstat hi"><b>${pct}%</b><span>win chance</span></div>`}
+      <div class="pstat"><b>${Math.round(elo.b.rating)}</b><span>${esc(b.name)}</span></div>
+    </div>`;
+  html += `<div class="elo-note">${pct == null
+    ? "These two are rated in different pools, so their ratings cannot be compared."
+    : `With an equal partner on each side, <b>${esc(lead.name)}</b> wins about <b>${pct}%</b> of the time.`}${
+    elo.caveat ? ` <span style="color:var(--faint)">(${esc(elo.caveat)})</span>` : ""}</div>`;
+  return html;
+}
+
 function renderH2H() {
   if (state.h2h === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
-  const { a, b, asOpponents, asPartners } = state.h2h;
+  const { a, b, elo, asOpponents, asPartners } = state.h2h;
   let html = `<button class="pback" data-pback="1">← Back</button>
     <div class="phead"><h2>${esc(a.name)} <span style="color:var(--faint)">vs</span> ${esc(b.name)}</h2></div>
     <div class="section-label">As opponents · ${asOpponents.list.length} meeting${asOpponents.list.length === 1 ? "" : "s"}</div>
@@ -1982,6 +2005,7 @@ function renderH2H() {
       <span class="vs">–</span>
       <div><div class="n">${asOpponents.bWins}</div><div class="who">${esc(b.name)}</div></div>
     </div>`;
+  html += h2hElo(elo, a, b);
   html += asOpponents.list.slice(0, 30).map((m) => apiMatchRow(m)).join("");
   if (asPartners.list.length) {
     html += `<div class="section-label">As partners · ${asPartners.list.length} match${asPartners.list.length === 1 ? "" : "es"} (${asPartners.wins}W)</div>`;

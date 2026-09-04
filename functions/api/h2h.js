@@ -1,4 +1,5 @@
 // GET /api/h2h?a=<id>&b=<id> — head-to-head between two players (D1)
+import { eloOdds } from "../_stats.js";
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d), {
     status,
@@ -24,11 +25,25 @@ export async function onRequestGet({ request, env }) {
   const pb = await env.DB.prepare("SELECT id,name,country FROM players WHERE id=?1").bind(b).first();
   if (!pa || !pb) return json({ error: "player not found" }, 404);
 
+  // Elo standing for both, and the win chance it implies. Wrapped like the
+  // profile's: player_elo is loaded by a separate job, so a deploy landing
+  // before an upload must degrade to "no rating", never 500 the whole page.
+  // "rank"/"of" are quoted - both are SQLite keywords.
+  let elo = null;
+  try {
+    const { results: er } = await env.DB.prepare(
+      `SELECT id,source,pool,rating,"rank" AS rank,"of" AS of,n_matches
+       FROM player_elo WHERE id IN (?1,?2)`
+    ).bind(a, b).all();
+    const ea = er.find((r) => r.id === a), eb = er.find((r) => r.id === b);
+    if (ea && eb) elo = { a: ea, b: eb, ...(eloOdds(ea, eb) || {}) };
+  } catch { /* table not created yet */ }
+
   const { results: shared } = await env.DB.prepare(
     `SELECT match_id FROM match_players WHERE player_id=?1 INTERSECT SELECT match_id FROM match_players WHERE player_id=?2`
   ).bind(a, b).all();
   const ids = shared.map((r) => r.match_id).slice(0, 100);
-  if (!ids.length) return json({ a: pa, b: pb, asOpponents: { list: [], aWins: 0, bWins: 0 }, asPartners: { list: [], wins: 0 } });
+  if (!ids.length) return json({ a: pa, b: pb, elo, asOpponents: { list: [], aWins: 0, bWins: 0 }, asPartners: { list: [], wins: 0 } });
 
   const ph = ids.map((_, i) => `?${i + 1}`).join(",");
   const { results: mrows } = await env.DB.prepare(
@@ -56,5 +71,5 @@ export async function onRequestGet({ request, env }) {
       else if (m.winner_side === sideB) opp.bWins++;
     }
   }
-  return json({ a: pa, b: pb, asOpponents: opp, asPartners: partner });
+  return json({ a: pa, b: pb, elo, asOpponents: opp, asPartners: partner });
 }

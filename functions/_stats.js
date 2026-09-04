@@ -121,6 +121,49 @@ export function matchShape(rows) {
   return out;
 }
 
+// Elo -> a win chance, with the correction the raw formula needs.
+//
+// THE CALIBRATION. A rating is stored per player and a pair is their AVERAGE, so
+// the plain 1/(1+10^(d/400)) halves the gap between two teams on the way in and
+// comes out badly under-confident. Measured against the model's own 140,000
+// stored predictions (padel-db, player_elo_fip_match): matches it called 70-80%
+// were won 92% of the time, and everything it called >=65% came in at 90.1%
+// against a predicted 73.8%. In logits the correction is 2.1-2.2 at both tails.
+// It is not a tuning knob, it undoes the halving.
+export const ELO_CALIBRATION = 2.15;
+
+// Padel is doubles, so a rating gap between two individuals only becomes a win
+// chance once you say what the rest of the court looks like. The honest framing
+// is EQUAL PARTNERS: put the same player alongside each of them, and the pair
+// averages differ by half the gap between the two.
+//
+// Note what that does: halving for the partner and multiplying by the 2.15
+// calibration very nearly cancel (2.15/2 = 1.075), so this lands within a couple
+// of points of the plain Elo formula on the two ratings. That is a coincidence
+// of this particular framing, not a reason to drop either step -- a pair-vs-pair
+// probability needs the full factor.
+//
+// Returns null when the two are not comparable. A FIP rating and a Nordic one
+// are different scales, and men and women are rated separately, so a number
+// across those would be meaningless rather than merely uncertain.
+export function eloOdds(ea, eb) {
+  if (!ea || !eb || ea.rating == null || eb.rating == null) return null;
+  if (ea.source !== eb.source || ea.pool !== eb.pool)
+    return { pct: null, caveat: "different rating pools - not comparable" };
+  const gap = ea.rating - eb.rating;
+  const pairGap = gap / 2;                       // an equal partner on each side
+  const p = 1 / (1 + Math.pow(10, -ELO_CALIBRATION * pairGap / 400));
+  // Never render a certainty, and say so when the gap is past where the
+  // calibration was actually measured (buckets from 20% to 90%).
+  const pct = Math.min(99, Math.max(1, Math.round(p * 100)));
+  const thin = Math.min(ea.n_matches || 0, eb.n_matches || 0) < 20;
+  return {
+    pct,
+    caveat: thin ? "one of them has under 20 rated matches"
+          : Math.abs(pairGap) > 300 ? "gap beyond the calibrated range" : null,
+  };
+}
+
 // Recent form (newest first, capped) plus the current run of the same result.
 export function formAndStreak(rows, cap = 12) {
   const form = rows.slice(0, cap).map((r) => (r.win === 1 ? "W" : "L"));
