@@ -1528,14 +1528,23 @@ async function openPlayerByName(name) {
   state.query = q;
   render(); // shows the search box populated while the lookup runs
   try {
-    const players = (await (await fetch("/api/search?q=" + encodeURIComponent(q))).json()).players || [];
+    const players = (await apiJson("/api/search?q=" + encodeURIComponent(q))).players || [];
+    state.searchDown = false;
     const exact = players.filter((p) => (p.name || "").toLowerCase() === q.toLowerCase());
     if (exact.length === 1) return openPlayer(exact[0].id);
     if (players.length === 1) return openPlayer(players[0].id);
     state.playerResults = players;
     state.fipResults = players.length ? [] : await fipFallback(q);
     render();
-  } catch { state.playerResults = []; state.fipResults = []; render(); }
+  } catch (e) {
+    // Keep the ranking-file fallback: it often knows a name the database cannot
+    // be asked about right now. Clearing it here (as this used to) made clicking
+    // a name degrade WORSE than typing the same name into the search box.
+    state.searchDown = !!e.apiDown;
+    state.playerResults = [];
+    state.fipResults = await fipFallback(q);
+    render();
+  }
 }
 
 // A 5xx, or a body that will not parse, means we could not ASK - it is not an
@@ -2089,10 +2098,13 @@ async function openPair(a, b) {
   ensureRankings(); // so the pair header can show each player's ranking
 
   try {
-    const r = await fetch(`/api/pair/${encodeURIComponent(x)}/${encodeURIComponent(y)}`);
-    const d = await r.json();
+    const d = await apiJson(`/api/pair/${encodeURIComponent(x)}/${encodeURIComponent(y)}`);
     state.pair = d && !d.error ? d : null;
-  } catch { state.pair = null; }
+  } catch (e) {
+    // "error" and null mean different things: one is "we could not ask", the
+    // other is "these two have never played together".
+    state.pair = e.apiDown ? "error" : null;
+  }
   render();
   setTitle(); // now we have both names
 }
@@ -2153,6 +2165,10 @@ function bestResultChip(best) {
 
 function renderPair() {
   if (state.pair === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
+  if (state.pair === "error") {
+    app.innerHTML = `<button class="pback" data-pback="1">\u2190 Back</button>` + apiDownHtml("This partnership");
+    return;
+  }
   if (!state.pair) {
     app.innerHTML = `<button class="pback" data-pback="1">← Back</button>
       <div class="empty"><div class="big">🤝</div>No partnership found for those two players.</div>`;
