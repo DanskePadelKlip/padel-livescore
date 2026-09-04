@@ -22,7 +22,17 @@ function teams(ps) {
   return [side(1), side(2)];
 }
 
-export async function onRequestGet({ params, env }) {
+export async function onRequestGet({ params, env, request, waitUntil }) {
+  // Edge cache. A profile runs seven D1 queries, several of them whole-career
+  // scans, and the same handful of URLs are requested over and over - a crawler
+  // walking the sitemap is thousands of identical calls. Serving those from the
+  // colo keeps the free tier's 5M rows/day for readers who need fresh data.
+  // Deliberately keyed on the request URL and nothing else: this response has no
+  // per-visitor content.
+  const cache = caches.default;
+  const hit = await cache.match(request);
+  if (hit) return hit;
+
   const id = params.id;
   const player = await env.DB.prepare("SELECT id,name,country,is_nordic FROM players WHERE id=?1").bind(id).first();
   if (!player) return json({ error: "not found" }, 404);
@@ -179,7 +189,7 @@ export async function onRequestGet({ params, env }) {
   const tp = partnerList[0];
   const topPartner = tp ? { name: tp.name, id: tp.id, matches: tp.matches, wins: tp.wins } : null;
 
-  return json({
+  const res = json({
     player,
     bio,
     elo,
@@ -194,4 +204,10 @@ export async function onRequestGet({ params, env }) {
     partners: partnerList,
     matches,
   });
+  // 30 minutes: the refresh daemon updates the feed far more often than a
+  // player's CAREER record changes, and a stale W-L for half an hour is a much
+  // smaller problem than the API being down for everyone.
+  res.headers.set("cache-control", "public, max-age=1800");
+  if (waitUntil) waitUntil(cache.put(request, res.clone()));
+  return res;
 }

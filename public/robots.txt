@@ -10,6 +10,11 @@
 
 User-agent: *
 Allow: /
+# The JSON API is for the app, not for indexing. Every page's <head> is
+# server-rendered, so a crawler loses nothing by skipping these - and a crawl of
+# the 3,982 /player/ URLs in the sitemap, each firing /api/player, once spent the
+# whole daily D1 read budget and took the live site's player pages down with it.
+Disallow: /api/
 
 # --- AI training crawlers: disallowed ---
 User-agent: GPTBot
