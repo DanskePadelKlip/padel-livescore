@@ -1499,10 +1499,12 @@ async function searchPlayers(q) {
   state.query = (q || "").trim(); // the empty state names the player searched for
   if ((q || "").trim().length < 2) { state.playerResults = null; state.fipResults = []; render(); return; }
   try {
-    const d = await (await fetch("/api/search?q=" + encodeURIComponent(q.trim()))).json();
+    const d = await apiJson("/api/search?q=" + encodeURIComponent(q.trim()));
+    state.searchDown = false;
     state.playerResults = d.players || [];
     state.fipResults = state.playerResults.length ? [] : await fipFallback(q.trim());
-  } catch {
+  } catch (e) {
+    state.searchDown = !!e.apiDown;
     // Profile API unreachable — still try the ranking, so a search degrades to
     // "here they are in the world ranking" instead of "no such player".
     state.playerResults = [];
@@ -1536,6 +1538,32 @@ async function openPlayerByName(name) {
   } catch { state.playerResults = []; state.fipResults = []; render(); }
 }
 
+// A 5xx, or a body that will not parse, means we could not ASK - it is not an
+// answer of "no such player". Everything below distinguishes the two, because
+// the alternative is what the site did during the 2026-09-04 D1 outage: told
+// readers a player was not in the database.
+async function apiJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) {
+    const err = new Error("api " + r.status);
+    err.apiDown = r.status >= 500 || r.status === 429;
+    throw err;
+  }
+  return r.json();
+}
+
+// One explanation, used wherever a player view cannot be built. It names what
+// still works, because the live feed and the rankings are static files and are
+// unaffected by a database outage.
+function apiDownHtml(what) {
+  return `<div class="empty"><div class="big">\u26a0\ufe0f</div>${esc(what)} can't be loaded right now.
+    <div style="margin-top:8px;color:var(--faint);font-size:13px;line-height:1.5">
+      The player database is temporarily unavailable \u2014 this is not a missing player.
+      Live scores, results and the rankings are unaffected.
+    </div>
+    <button class="browse-all" data-retry="1" style="margin-top:12px">Try again</button></div>`;
+}
+
 async function openPlayer(id) {
   state.h2h = null; state.comparing = false; state.player = "loading"; state.playerId = id;
   state.pair = null; state.pairKey = null;   // a profile replaces any open pair
@@ -1545,7 +1573,11 @@ async function openPlayer(id) {
   syncUrl(); // /player/<id>
   ensureRankings(); // so the profile can show the player's ranking
 
-  try { state.player = await (await fetch("/api/player/" + encodeURIComponent(id))).json(); } catch { state.player = null; }
+  try {
+    state.player = await apiJson("/api/player/" + encodeURIComponent(id));
+  } catch (e) {
+    state.player = e.apiDown ? "error" : null;
+  }
   render();
   setTitle(); // now we have the player name
 }
@@ -1566,18 +1598,26 @@ function fallbackCopy(text, done) {
 
 async function openH2H(aId, bId) {
   state.comparing = false; state.h2h = "loading"; render();
-  try { state.h2h = await (await fetch(`/api/h2h?a=${encodeURIComponent(aId)}&b=${encodeURIComponent(bId)}`)).json(); } catch { state.h2h = null; }
+  try {
+    state.h2h = await apiJson(`/api/h2h?a=${encodeURIComponent(aId)}&b=${encodeURIComponent(bId)}`);
+  } catch (e) {
+    state.h2h = e.apiDown ? "error" : null;
+  }
   render();
 }
 
 function renderPlayers() {
+  if (state.h2h === "error") { app.innerHTML = apiDownHtml("This head-to-head"); return; }
   if (state.h2h) return renderH2H();
+  if (state.player === "error") { app.innerHTML = apiDownHtml("This profile"); return; }
   if (state.player) return renderProfile();
   let html;
   if (state.playerResults == null) return renderPlayersBrowse();
   if (!state.playerResults.length)
     html = (state.fipResults || []).length
       ? fipFallbackHtml()
+      : state.searchDown
+      ? apiDownHtml("Player search")
       : `<div class="empty"><div class="big">👤</div>${state.query ? `No profile yet for <b>${esc(state.query)}</b>.` : "No players found."}<div style="margin-top:8px;color:var(--faint);font-size:13px;line-height:1.5">Player profiles currently cover the Nordic (RankedIn) scene and linked pros. Many international / pro-tour players aren't in the profile database yet.</div></div>`;
   else html = state.playerResults.map(playerResultRow).join("");
   app.innerHTML = html;
@@ -3191,6 +3231,14 @@ app.addEventListener("click", (e) => {
     else if (state.pairTours.has(t)) state.pairTours.delete(t);
     else state.pairTours.add(t);
     render();
+    return;
+  }
+
+  // "Try again" on an outage notice: re-run whatever the view was asking for.
+  if (e.target.closest("[data-retry]")) {
+    if (state.playerId) openPlayer(state.playerId);
+    else if (state.query) searchPlayers(state.query);
+    else render();
     return;
   }
 
