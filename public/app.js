@@ -1495,13 +1495,73 @@ async function fipFallback(q) {
   return rows.filter((r) => { const x = normName(r.name); return x.includes(n) || n.includes(x); }).slice(0, 12);
 }
 
+// ---------- static player index ----------
+// data/players-lite.json is the whole searchable player list as a static asset:
+// [id, name, country] per row, already ordered by match count descending. It
+// exists because /api/search is both the most expensive query on the site (a
+// leading-wildcard LIKE joined to match_players and grouped) and the one with no
+// fallback - on 2026-09-04 a single crawl of the sitemap spent the D1 free tier's
+// whole daily read budget and every player feature went down for the rest of the
+// day. Searching the file costs nothing per request and survives any outage.
+// /api/search stays only as the fallback for a failed load.
+let PIDX = null, _pidxTried = false;
+async function ensurePlayerIndex() {
+  if (PIDX || _pidxTried) return PIDX;
+  _pidxTried = true; // a missing file must cost one 404, not one per keystroke
+  try {
+    const d = await (await fetch("data/players-lite.json")).json();
+    const rows = d.players || [];
+    if (!rows.length) throw new Error("empty index");
+    // The lowercased name is precomputed once: search runs on every keystroke.
+    PIDX = rows.map((r) => [r[0], r[1], r[2], String(r[1] || "").toLowerCase()]);
+  } catch { PIDX = null; }
+  return PIDX;
+}
+
+// Reproduces what /api/search returned, minus the D1 round trip:
+//   WHERE name LIKE '%q%' ORDER BY (name LIKE 'q%') DESC, matches DESC LIMIT 25
+// Match count is not in the file - the row ORDER carries it, so scanning in
+// order and stopping at 25 gives the same ranking. Case folding here is
+// JavaScript's, which unlike SQLite's ASCII-only LIKE also folds accented
+// capitals, so this matches slightly more than the API did.
+const PIDX_LIMIT = 25;
+function searchIndex(q) {
+  const n = String(q || "").toLowerCase();
+  const pre = [], sub = [];
+  for (let i = 0; i < PIDX.length; i++) {
+    const r = PIDX[i], at = r[3].indexOf(n);
+    if (at < 0) continue;
+    if (at === 0) { if (pre.length < PIDX_LIMIT) pre.push(r); }
+    else if (sub.length < PIDX_LIMIT) sub.push(r);
+    if (pre.length >= PIDX_LIMIT) break; // rows are in rank order: 25 prefix hits fill the page
+  }
+  return pre.concat(sub).slice(0, PIDX_LIMIT).map((r) => ({ id: r[0], name: r[1], country: r[2] }));
+}
+
+// The one place a player name is resolved to profiles. Throws exactly like
+// apiJson() when the index is unavailable AND the API is down, so the callers'
+// outage handling below is unchanged.
+//
+// The file is rebuilt by padel-db/export_d1.py, not by the refresh daemon, so it
+// can lag the database by days. A HIT is therefore trusted, but a MISS is not:
+// it falls through to /api/search, which is the only way a player added since
+// the last export stays findable. Misses are rare and cost one query, so this
+// keeps the D1 saving while removing the staleness footgun.
+async function lookupPlayers(q) {
+  if (await ensurePlayerIndex()) {
+    const hit = searchIndex(q);
+    if (hit.length) return hit;
+  }
+  return (await apiJson("/api/search?q=" + encodeURIComponent(q))).players || [];
+}
+
 async function searchPlayers(q) {
   state.query = (q || "").trim(); // the empty state names the player searched for
   if ((q || "").trim().length < 2) { state.playerResults = null; state.fipResults = []; render(); return; }
   try {
-    const d = await apiJson("/api/search?q=" + encodeURIComponent(q.trim()));
+    const found = await lookupPlayers(q.trim());
     state.searchDown = false;
-    state.playerResults = d.players || [];
+    state.playerResults = found;
     state.fipResults = state.playerResults.length ? [] : await fipFallback(q.trim());
   } catch (e) {
     state.searchDown = !!e.apiDown;
@@ -1528,7 +1588,7 @@ async function openPlayerByName(name) {
   state.query = q;
   render(); // shows the search box populated while the lookup runs
   try {
-    const players = (await apiJson("/api/search?q=" + encodeURIComponent(q))).players || [];
+    const players = await lookupPlayers(q);
     state.searchDown = false;
     const exact = players.filter((p) => (p.name || "").toLowerCase() === q.toLowerCase());
     if (exact.length === 1) return openPlayer(exact[0].id);
@@ -1739,7 +1799,7 @@ function playerResultRow(p) {
   return `<div class="presult" data-player="${esc(p.id)}">
     <span class="flag">${esc((p.country || "").toUpperCase())}</span>
     <span class="nm">${esc(p.name)}</span>
-    <span class="meta">${p.matches} matches</span>
+    ${p.matches == null ? "" : `<span class="meta">${p.matches} matches</span>`}
     ${star("players", p.id, p.name, p.country || "")}
   </div>`;
 }
