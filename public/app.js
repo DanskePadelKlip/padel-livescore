@@ -814,6 +814,11 @@ function shareLink(m, fallbackKey) {
 }
 
 function detail(m) {
+  // Head-to-head, Elo and records - but ONLY for the deep-linked match. That
+  // page renders its detail with no click, so nothing else would ever fetch it.
+  // Firing this for every rendered detail measured 5 fetches for one page view,
+  // and each one is a 6,000-row query; see the 2026-09-04 read-budget outage.
+  if (state.focusMatch && matchRouteKey(m) === state.focusMatch.key) loadMatchup(m);
   const sets = m.score.sets || [];
   const setGrid = sets.length
     ? `<div class="grid">${sets.map((s, i) => `<div class="setcol"><div class="lbl">Set ${i + 1}</div><div class="val">${setCellHtml(s[0])}–${setCellHtml(s[1])}</div></div>`).join("")}</div>`
@@ -905,6 +910,15 @@ async function resolvePlayerId(rawName) {
     }
   } catch { /* offline or no profile db — fall through to null */ }
 
+  // Nothing in the profile database. A FIP-abbreviated name still has a
+  // deterministic id in player_elo, built by name_id() in padel-db's
+  // export_d1.py: "fip-" + the name lowercased with ". " and " " turned into
+  // "-" and bare dots dropped. Keep that rule identical to the exporter's — it
+  // is the same one every /player/fip-... URL is built from.
+  if (!id && /^\p{L}\.\s/u.test(name)) {
+    id = "fip-" + name.replace(". ", "-").replace(/ /g, "-").replace(/\./g, "").toLowerCase();
+  }
+
   nameIdCache.set(key, id);
   return id;
 }
@@ -927,6 +941,14 @@ async function loadMatchup(m) {
     if (b1) qs.set("b1", b1);
     if (b2) qs.set("b2", b2);
     const d = await (await fetch("/api/matchup?" + qs)).json();
+    // The names as this match spells them, so a player who is rated but has no
+    // profile row still gets a readable label instead of his id.
+    if (d && !d.error) {
+      d.names = {};
+      for (const [id, p] of [[a1, t0[0]], [a2, t0[1]], [b1, t1[0]], [b2, t1[1]]]) {
+        if (id && p && p.name) d.names[id] = cleanPlayerName(p.name);
+      }
+    }
     state.matchup.set(m.id, d && !d.error ? d : null);
   } catch { state.matchup.set(m.id, null); }
   render();
@@ -957,6 +979,36 @@ function matchupHtml(m) {
   const teamLabel = (side) => (m.teams[side] && m.teams[side].players || []).map((p) => short(cleanPlayerName(p.name))).join(" / ");
 
   const bits = [];
+
+  // Elo and career record for the four players, plus the match's own win
+  // chance. Placed first: it is what the reader wants before the history.
+  if (d.elo && Object.keys(d.elo).length) {
+    const rate = (id) => {
+      const r = d.record && d.record[id];
+      return r && r.played ? `${Math.round((r.won / r.played) * 100)}% of ${r.played}` : "";
+    };
+    const line = (id) => {
+      const e = d.elo[id];
+      if (!e) return "";
+      return `<div class="h2hrow">
+        <span class="h2hlbl">${esc(short(nm(id) || (d.names && d.names[id]) || id))}</span>
+        <span class="h2hnum"><b>${Math.round(e.rating)}</b></span>
+        <span class="h2hsub">Elo${e.rank ? ` · #${e.rank}` : ""}${rate(id) ? ` · won ${rate(id)}` : ""}</span>
+      </div>`;
+    };
+    const rows = [...(d.a || []), ...(d.b || [])].map(line).filter(Boolean).join("");
+    if (rows) {
+      bits.push(`<div class="h2hsect">Elo &amp; record</div>${rows}`);
+      if (d.odds && d.odds.pct != null) {
+        // Name the side the number belongs to - a bare percentage next to two
+        // teams is ambiguous, and this one is a model output, not a result.
+        const favA = d.odds.pct >= 50;
+        const pct = favA ? d.odds.pct : 100 - d.odds.pct;
+        bits.push(`<div class="h2hlead">${esc(teamLabel(favA ? 0 : 1))} <b>${pct}%</b>
+          <span class="h2hsub">estimated${d.odds.caveat ? " · " + esc(d.odds.caveat) : ""}</span></div>`);
+      }
+    }
+  }
 
   // exact pair vs pair
   if (d.pair && d.pair.n) {

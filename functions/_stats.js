@@ -130,7 +130,38 @@ export function matchShape(rows) {
 // were won 92% of the time, and everything it called >=65% came in at 90.1%
 // against a predicted 73.8%. In logits the correction is 2.1-2.2 at both tails.
 // It is not a tuning knob, it undoes the halving.
-export const ELO_CALIBRATION = 2.15;
+// Per POOL, because they were measured separately and differ: 2.15 on the FIP
+// tour, 1.75 in the Nordic pool, each fitted to that pool's own stored
+// predictions (padel-db, player_elo_*_match). Using the FIP figure on a Nordic
+// pair overstates the favourite - which is what shipped yesterday.
+export const ELO_CALIBRATION = { fip: 2.15, rin: 1.75 };
+export const calibrationFor = (source) => ELO_CALIBRATION[source] || 1.9;
+
+// A pair is NOT the average of its two players. Fitted over 184,536 Nordic and
+// 35,329 FIP matches (padel-db/pair_shape.py), the best team function is
+// mean + 0.45 * spread/2 - the same value in both pools independently, which is
+// why it is believable. It matters most for a lopsided pair.
+export const PAIR_SKEW = 0.45;
+export const pairStrength = (a, b) => (a + b) / 2 + PAIR_SKEW * Math.abs(a - b) / 2;
+
+// Win probability for a whole pair against a whole pair. Unlike the h2h case
+// there is no imaginary shared partner here, so the full calibration applies.
+export function pairOdds(A, B) {
+  if (A.length !== 2 || B.length !== 2) return null;
+  if (A.some((p) => !p) || B.some((p) => !p)) return null;
+  const pools = [...A, ...B].map((p) => p.source + "/" + p.pool);
+  if (new Set(pools).size !== 1) return { pct: null, caveat: "different rating pools" };
+  const k = calibrationFor(A[0].source);
+  const ra = pairStrength(A[0].rating, A[1].rating);
+  const rb = pairStrength(B[0].rating, B[1].rating);
+  const p = 1 / (1 + Math.pow(10, k * (rb - ra) / 400));
+  const thin = [...A, ...B].some((x) => (x.n_matches || 0) < 20);
+  return {
+    pct: Math.min(99, Math.max(1, Math.round(p * 100))),
+    caveat: thin ? "one of them has under 20 rated matches"
+          : Math.abs(ra - rb) > 300 ? "gap beyond the calibrated range" : null,
+  };
+}
 
 // Padel is doubles, so a rating gap between two individuals only becomes a win
 // chance once you say what the rest of the court looks like. The honest framing
@@ -152,7 +183,7 @@ export function eloOdds(ea, eb) {
     return { pct: null, caveat: "different rating pools - not comparable" };
   const gap = ea.rating - eb.rating;
   const pairGap = gap / 2;                       // an equal partner on each side
-  const p = 1 / (1 + Math.pow(10, -ELO_CALIBRATION * pairGap / 400));
+  const p = 1 / (1 + Math.pow(10, -calibrationFor(ea.source) * pairGap / 400));
   // Never render a certainty, and say so when the gap is past where the
   // calibration was actually measured (buckets from 20% to 90%).
   const pct = Math.min(99, Math.max(1, Math.round(p * 100)));

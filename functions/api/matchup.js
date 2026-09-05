@@ -1,6 +1,8 @@
 // GET /api/matchup?a1=&a2=&b1=&b2= — what these two teams have already done to each
 // other (D1). Ids come from /api/search; a2 / b2 are optional, because a live-feed
 // name doesn't always resolve to a profile.
+import { pairOdds } from "../_stats.js";
+
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d), {
     status,
@@ -52,6 +54,33 @@ export async function onRequestGet({ request, env }) {
      ORDER BY m.date DESC
      LIMIT 6000`
   ).bind(...ids).all();
+
+  // Elo for the (at most four) players named. A four-row PK lookup, wrapped like
+  // every other player_elo read: the table is loaded by a separate job.
+  let elo = {};
+  try {
+    const { results: er } = await env.DB.prepare(
+      `SELECT id,source,pool,rating,"rank" AS rank,"of" AS of,n_matches
+       FROM player_elo WHERE id IN (${ph})`
+    ).bind(...ids).all();
+    elo = Object.fromEntries(er.map((e) => [e.id, e]));
+  } catch { /* table not created yet */ }
+
+  // Career record per player, derived from the rows ALREADY fetched above -
+  // deliberately not a second query. `rows` is every match these players appear
+  // in, so a win is (that match's winner_side === the side they were on).
+  const record = {};
+  for (const id of ids) record[id] = { played: 0, won: 0 };
+  const seenRow = new Set();
+  for (const r of rows) {
+    const key = r.pid + ":" + r.mid;
+    if (seenRow.has(key)) continue;
+    seenRow.add(key);
+    const rec = record[r.pid];
+    if (!rec) continue;
+    rec.played++;
+    if (r.ws === r.side) rec.won++;
+  }
 
   const byMatch = new Map();
   for (const r of rows) {
@@ -109,8 +138,12 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
+  // The match's own win probability, when all four are rated in one pool.
+  const odds = pairOdds(A.map((i) => elo[i]), B.map((i) => elo[i]));
+
   return json({
     players: Object.fromEntries(ids.map((i) => [i, byId[i] || null])),
     a: A, b: B, pair, cross: cross.filter((c) => c.n > 0 || c.together > 0), partners,
+    elo, record, odds,
   });
 }
