@@ -940,6 +940,9 @@ async function loadMatchup(m) {
     if (a2) qs.set("a2", a2);
     if (b1) qs.set("b1", b1);
     if (b2) qs.set("b2", b2);
+    // Round-aware calibration: a semi-final and a round of 16 with the same
+    // rating gap are not the same probability.
+    if (m.round) qs.set("round", m.round);
     const d = await (await fetch("/api/matchup?" + qs)).json();
     // The names as this match spells them, so a player who is rated but has no
     // profile row still gets a readable label instead of his id.

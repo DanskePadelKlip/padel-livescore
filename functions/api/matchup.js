@@ -139,7 +139,9 @@ export async function onRequestGet({ request, env }) {
   }
 
   // The match's own win probability, when all four are rated in one pool.
-  const odds = pairOdds(A.map((i) => elo[i]), B.map((i) => elo[i]));
+  // The round selects the calibration - see ROUND_CALIBRATION. Optional: an
+  // absent or unrecognised round falls back to the pool's flat multiplier.
+  const odds = pairOdds(A.map((i) => elo[i]), B.map((i) => elo[i]), u.get("round"));
 
   return json({
     players: Object.fromEntries(ids.map((i) => [i, byId[i] || null])),

@@ -135,7 +135,34 @@ export function matchShape(rows) {
 // predictions (padel-db, player_elo_*_match). Using the FIP figure on a Nordic
 // pair overstates the favourite - which is what shipped yesterday.
 export const ELO_CALIBRATION = { fip: 2.15, rin: 1.75 };
-export const calibrationFor = (source) => ELO_CALIBRATION[source] || 1.9;
+
+// One multiplier does not fit the whole draw. On the FIP tour the error is
+// U-shaped: the model is UNDER-confident in the middle rounds and OVER-confident
+// at both ends - a semi-final favourite was overstated by ~3.4 points. These are
+// fitted on every FIP match before 2026, judged only on 2026, kept only where
+// BOTH out-of-sample Brier and |bias| improved, and each shrunk halfway to 2.15
+// because a per-round fit on a few hundred matches evaporates otherwise.
+//   2026 held out, all rounds  Brier .17089 -> .17048, bias -.0012 -> -.0002
+//   2026 held out, semis+finals Brier .20606 -> .20511, bias -.0450 -> -.0287
+// Keys are the round exactly as the FIP feed spells it. MUST stay identical to
+// ROUND_CALIBRATION in padel-db/elo.py, or a match reads one number here and a
+// different one on a card.
+export const ROUND_CALIBRATION = {
+  "Round of 16": 2.38,
+  Quarterfinals: 2.20,
+  SemiFinals: 1.99,
+  Final: 1.77,
+  "Round of 64": 1.38,
+  Q1: 1.75,
+};
+
+// Only the FIP pool: the round table was measured there. The Nordic pool keeps
+// its flat 1.75 rather than inheriting an adjustment nobody has checked for it.
+export const calibrationFor = (source, round) => {
+  const base = ELO_CALIBRATION[source] || 1.9;
+  if (source !== "fip" || !round) return base;
+  return ROUND_CALIBRATION[round] || base;
+};
 
 // A pair is NOT the average of its two players. Fitted over 184,536 Nordic and
 // 35,329 FIP matches (padel-db/pair_shape.py), the best team function is
@@ -146,12 +173,12 @@ export const pairStrength = (a, b) => (a + b) / 2 + PAIR_SKEW * Math.abs(a - b) 
 
 // Win probability for a whole pair against a whole pair. Unlike the h2h case
 // there is no imaginary shared partner here, so the full calibration applies.
-export function pairOdds(A, B) {
+export function pairOdds(A, B, round) {
   if (A.length !== 2 || B.length !== 2) return null;
   if (A.some((p) => !p) || B.some((p) => !p)) return null;
   const pools = [...A, ...B].map((p) => p.source + "/" + p.pool);
   if (new Set(pools).size !== 1) return { pct: null, caveat: "different rating pools" };
-  const k = calibrationFor(A[0].source);
+  const k = calibrationFor(A[0].source, round);
   const ra = pairStrength(A[0].rating, A[1].rating);
   const rb = pairStrength(B[0].rating, B[1].rating);
   const p = 1 / (1 + Math.pow(10, k * (rb - ra) / 400));
