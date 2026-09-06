@@ -916,7 +916,12 @@ async function resolvePlayerId(rawName) {
   // "-" and bare dots dropped. Keep that rule identical to the exporter's — it
   // is the same one every /player/fip-... URL is built from.
   if (!id && /^\p{L}\.\s/u.test(name)) {
-    id = "fip-" + name.replace(". ", "-").replace(/ /g, "-").replace(/\./g, "").toLowerCase();
+    // Fold ASCII A-Z ONLY. name_id() mirrors SQLite's lower(), which leaves
+    // accented capitals alone; .toLowerCase() would fold them and miss the 69
+    // live ids carrying one. This is the THIRD copy of this rule - if it moves,
+    // it moves in export_d1.py first and the other two follow.
+    id = ("fip-" + name.replaceAll(". ", "-").replace(/ /g, "-").replace(/\./g, ""))
+      .replace(/[A-Z]/g, (c) => c.toLowerCase());
   }
 
   nameIdCache.set(key, id);

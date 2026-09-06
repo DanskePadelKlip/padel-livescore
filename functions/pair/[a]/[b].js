@@ -4,13 +4,13 @@
 // 301s anything else there. Without that, /pair/A/B and /pair/B/A are two URLs
 // serving one page — duplicate content that splits whatever ranking the page
 // earns, and two entries for one pair in anyone's index.
-import { SITE, shell, withMeta, pairMeta } from "../../_shared.js";
+import { SITE, shell, withMeta, pairMeta, decodeParam } from "../../_shared.js";
 
 const seg = (s) => encodeURIComponent(String(s));
 
 export async function onRequestGet({ request, params, env }) {
   const url = new URL(request.url);
-  const a = params.a, b = params.b;
+  const a = decodeParam(params.a), b = decodeParam(params.b);
   if (!a || !b) return shell(url.origin);
   if (a === b) return Response.redirect(`${SITE}/player/${seg(a)}`, 301);
   if (a > b) return Response.redirect(`${SITE}/pair/${seg(b)}/${seg(a)}${url.search}`, 301);

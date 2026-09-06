@@ -1,5 +1,6 @@
 // GET /og/pair/:a/:b — dynamic Open Graph image for a partnership.
 import { ogResponse, pairCardSvg, fallbackCardSvg } from "../../../_og.js";
+import { decodeParam } from "../../../_shared.js";
 
 export async function onRequestGet(ctx) {
   const { request, params } = ctx;
@@ -8,7 +9,8 @@ export async function onRequestGet(ctx) {
   let svg = null;
   try {
     const r = await fetch(
-      origin + "/api/pair/" + encodeURIComponent(params.a) + "/" + encodeURIComponent(params.b)
+      origin + "/api/pair/" + encodeURIComponent(decodeParam(params.a)) +
+        "/" + encodeURIComponent(decodeParam(params.b))
     );
     const d = r.ok ? await r.json() : null;
     if (d && d.players) {

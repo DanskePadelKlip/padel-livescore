@@ -1,5 +1,6 @@
 // GET /og/player/:id — dynamic Open Graph image for a player.
 import { ogResponse, playerCardSvg, fallbackCardSvg } from "../../_og.js";
+import { decodeParam } from "../../_shared.js";
 
 export async function onRequestGet(ctx) {
   const { request, params } = ctx;
@@ -7,7 +8,8 @@ export async function onRequestGet(ctx) {
 
   let svg = null;
   try {
-    const r = await fetch(origin + "/api/player/" + encodeURIComponent(params.id));
+    const r = await fetch(
+      origin + "/api/player/" + encodeURIComponent(decodeParam(params.id)));
     const d = r.ok ? await r.json() : null;
     if (d && d.player) {
       const p = d.player, s = d.summary || {};

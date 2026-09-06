@@ -1,14 +1,14 @@
 // GET /match/:source/:tournamentId/:round/:pair — app shell with this match's meta
 // injected. Social scrapers don't run the SPA, so without this a shared match link
 // previews as the generic homepage card (see _shared.js).
-import { SITE, shell, withMeta } from "../_shared.js";
+import { SITE, shell, withMeta, decodeParam } from "../_shared.js";
 import { findMatch, parseMatchPath, matchLabel, teamLabel, scoreLabel } from "../_matchkey.js";
 
 export async function onRequestGet({ request, params }) {
   const origin = new URL(request.url).origin;
   const base = await shell(origin);
 
-  const q = parseMatchPath(params.path || []);
+  const q = parseMatchPath((params.path || []).map(decodeParam));
   if (!q) return base;
 
   const found = await findMatch(origin, q);

@@ -1,10 +1,11 @@
 // GET /og/match/... — dynamic Open Graph image for a single match.
 import { ogResponse, matchCardSvg, fallbackCardSvg } from "../../_og.js";
 import { findMatch, parseMatchPath, teamLabel, scoreLabel } from "../../_matchkey.js";
+import { decodeParam } from "../../_shared.js";
 
 export async function onRequestGet(ctx) {
   const origin = new URL(ctx.request.url).origin;
-  const q = parseMatchPath(ctx.params.path || []);
+  const q = parseMatchPath((ctx.params.path || []).map(decodeParam));
   const found = q ? await findMatch(origin, q) : null;
 
   if (!found) return ogResponse(ctx, fallbackCardSvg());

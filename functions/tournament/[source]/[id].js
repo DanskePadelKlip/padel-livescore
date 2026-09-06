@@ -1,10 +1,10 @@
 // GET /tournament/:source/:id — app shell with this tournament's meta injected.
-import { SITE, shell, withMeta } from "../../_shared.js";
+import { SITE, shell, withMeta, decodeParam } from "../../_shared.js";
 
 export async function onRequestGet({ request, params }) {
   const origin = new URL(request.url).origin;
-  const source = params.source;
-  const id = params.id;
+  const source = decodeParam(params.source);
+  const id = decodeParam(params.id);
   const base = await shell(origin);
 
   let name = null, fed = "", start = null, end = null, venue = null, address = null;

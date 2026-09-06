@@ -11,6 +11,20 @@
 // (Filenames starting with "_" are not turned into routes by Cloudflare Pages.)
 export const SITE = "https://padelticker.com";
 
+// A Pages Function gets the RAW, still percent-encoded path segment - unlike
+// searchParams, which URL() has already decoded. Bind params.<name> straight
+// into a query and every id carrying a non-ASCII letter misses its row: 846 of
+// 24,895 live player ids, every one of them reachable from /api/search and from
+// a click in the UI. Guarded, because a stray "%" makes decodeURIComponent
+// throw a URIError, which would turn a 404 into a 500.
+export const decodeParam = (v) => {
+  try {
+    return decodeURIComponent(v);
+  } catch {
+    return v;
+  }
+};
+
 // The static app shell. index.html is a plain asset, so a same-origin fetch
 // serves it directly — no Function recursion — and _headers keeps it no-cache,
 // so we always rewrite the current shell (with the current app.js?v=<sha>).

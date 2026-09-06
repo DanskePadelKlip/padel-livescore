@@ -12,7 +12,7 @@
 // as a subquery — so a partnership with 300 matches is reported in full instead of
 // silently truncated at 100.
 import { isFinal, setsAndGames, formAndStreak, bestResult, pct, scoreFrom } from "../../../_stats.js";
-import { identifyPlayer } from "../../../_shared.js";
+import { decodeParam, identifyPlayer } from "../../../_shared.js";
 
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d), {
@@ -43,7 +43,7 @@ function combineElo(ea, eb) {
 }
 
 export async function onRequestGet({ params, env }) {
-  const a = params.a, b = params.b;
+  const a = decodeParam(params.a), b = decodeParam(params.b);
   if (!a || !b || a === b) return json({ error: "need two distinct player ids" }, 400);
 
   const [pa, pb] = await Promise.all([identifyPlayer(env, a), identifyPlayer(env, b)]);

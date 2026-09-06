@@ -4,6 +4,7 @@
 // the two pages describe overlapping runs of matches, so they must not disagree
 // about what counts as a final or how a tie-break scores.
 import { isFinal, setsAndGames, formAndStreak, matchShape } from "../../_stats.js";
+import { decodeParam } from "../../_shared.js";
 
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d), {
@@ -33,7 +34,7 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
   const hit = await cache.match(request);
   if (hit) return hit;
 
-  const id = params.id;
+  const id = decodeParam(params.id);
   const player = await env.DB.prepare("SELECT id,name,country,is_nordic FROM players WHERE id=?1").bind(id).first();
   if (!player) return json({ error: "not found" }, 404);
 

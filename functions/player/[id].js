@@ -1,9 +1,9 @@
 // GET /player/:id — app shell with this player's meta injected for scrapers.
-import { SITE, shell, withMeta, playerMeta } from "../_shared.js";
+import { SITE, shell, withMeta, playerMeta, decodeParam } from "../_shared.js";
 
 export async function onRequestGet({ request, params, env }) {
   const origin = new URL(request.url).origin;
-  const id = params.id;
+  const id = decodeParam(params.id);
   const base = await shell(origin);
   // One direct D1 read; no second Function invocation. See playerMeta in _shared.js.
   const d = await playerMeta(env, id);
