@@ -38,6 +38,12 @@ export async function onRequestGet({ request }) {
   add("/players", { changefreq: "weekly", priority: "0.6" });
   add("/national-teams", { changefreq: "monthly", priority: "0.6" });
   add("/pairs", { changefreq: "weekly", priority: "0.6" });
+  // Earnings: the hub plus one page per gender. The per-year URLs are deep-linkable
+  // too, but they are slices of the same rows — listing them would pad the sitemap
+  // with near-duplicates for no crawl benefit.
+  add("/earnings", { changefreq: "weekly", priority: "0.7", lastmod: today });
+  add("/earnings/men", { changefreq: "weekly", priority: "0.6", lastmod: today });
+  add("/earnings/women", { changefreq: "weekly", priority: "0.6", lastmod: today });
 
   // 2) One page per ranking list (fed + category).
   const lists = [...((fipRanks && fipRanks.lists) || []), ...((natRanks && natRanks.lists) || [])];

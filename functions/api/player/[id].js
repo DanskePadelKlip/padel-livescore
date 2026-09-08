@@ -64,6 +64,20 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
     ).bind(id).first();
   } catch { /* table not created yet */ }
 
+  // Prize money (padel-db/fip_prize.py -> d1/earnings.sql). Wrapped for the same
+  // reason as the bio and Elo above: a separate job loads the table, so a deploy
+  // landing first must degrade to "no earnings" rather than 500 every profile.
+  // Only players with a fip_player_links entry have a row at all — FIP results are
+  // stored under abbreviated names, not RankedIn ids — so a missing row means
+  // "not linked, or no priced results", NEVER "earned nothing". Do not render a
+  // zero on absence.
+  let earnings = null;
+  try {
+    earnings = await env.DB.prepare(
+      "SELECT gender,total,lo,hi,exact,events FROM player_earnings WHERE id=?1"
+    ).bind(id).first();
+  } catch { /* table not created yet */ }
+
   const { results: byYear } = await env.DB.prepare(
     `SELECT substr(m.date,1,4) yr, COUNT(*) played, SUM(CASE WHEN mp.is_winner=1 THEN 1 ELSE 0 END) won
      FROM match_players mp JOIN matches m ON m.id=mp.match_id
@@ -194,6 +208,7 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
     player,
     bio,
     elo,
+    earnings,
     summary: {
       total, wins, losses: total - wins, byYear,
       titles, finals: finalRows.length,

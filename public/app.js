@@ -506,6 +506,7 @@ function renderView(changed) {
   if (state.mode === "archive") return renderArchive();
   if (state.mode === "no1") return renderNo1();
   if (state.mode === "natteams") return renderNatTeams();
+  if (state.mode === "earnings") return renderEarnings();
 
   const list = filtered();
   const live = list.filter((m) => m.status === "live");
@@ -2031,6 +2032,22 @@ function eloStat(elo) {
     + `<span>Elo ${esc(elo.rating)}</span></div>`;
 }
 
+// Career prize money. Absent for most players by design — FIP stores results under
+// abbreviated names, so only players linked to a RankedIn id (fip_player_links) get
+// a figure. An absent row means "unlinked or unpriced", never "earned nothing", so
+// this renders nothing at all rather than a zero.
+function earningsStat(e) {
+  if (!e || !e.total) return "";
+  const pctExact = Math.round((e.exact / e.total) * 100);
+  const title = `Prize money across ${e.events} priced FIP / Premier Padel events · `
+    + (pctExact >= 99
+      ? `every event has a published per-player figure`
+      : `${pctExact}% from published per-player figures, the rest modelled from prize-pool ranges (band ${eur(e.lo)}–${eur(e.hi)})`)
+    + ` · a floor: unpriced tiers and uningested events count as zero`;
+  return `<div class="pstat" title="${esc(title)}"><b>${eur(e.total)}</b>`
+    + `<span>Prize money${pctExact >= 99 ? "" : " (est)"}</span></div>`;
+}
+
 // The official points ranking, shown right next to the Elo rank so the two are
 // directly comparable — that contrast is the whole point of carrying both.
 // FIP is preferred when a player holds several; otherwise the first list they
@@ -2077,6 +2094,7 @@ function renderProfile() {
         ${summary.games && summary.games.pct != null ? `<div class="pstat"><b>${summary.games.pct}%</b><span>games won</span></div>` : ""}
         ${rankStat(ranks)}
         ${eloStat(state.player.elo)}
+        ${earningsStat(state.player.earnings)}
       </div>
     </div>`;
   html += bioRow(state.player.bio);
@@ -2873,6 +2891,111 @@ function renderByDay(matches, tv) {
 }
 
 // ---------- world No.1 timeline ----------
+// ------------------------------------------------------------------ Earnings
+// Prize money per player, derived from the round each player reached
+// (padel-db/fip_prize.py). This money is NOT as solid as the ranking points it
+// sits next to, and the UI has to keep saying so: FIP fixes the points table by
+// tier, but prize money is set per event, so only Premier Padel Major and P1
+// rounds have a published per-player figure for the year concerned. Everything
+// else is a pool-range midpoint or a table carried from a neighbouring year.
+// Hence: every row exposes how much of its total is exact, and totals are framed
+// as a FLOOR — uningested events and the retired Star/Rise/Promotion tiers pay
+// nothing here, so nobody's real earnings are lower than what we show.
+async function loadEarnings() {
+  try {
+    const r = await fetch("data/earnings.json");
+    state.earnings = await r.json();
+  } catch { state.earnings = { lists: [], error: true }; }
+  render();
+}
+
+function eur(n) {
+  return "€" + Math.round(n).toLocaleString("en-US");
+}
+
+function renderEarnings() {
+  const E = state.earnings;
+  if (!E) return;
+  if (E.error || !E.lists?.length) { app.innerHTML = `<div class="empty">Earnings data unavailable.</div>`; return; }
+
+  const cats = E.lists.map((l) => l.category);
+  if (!cats.includes(state.earnCat)) state.earnCat = cats[0];
+  const list = E.lists.find((l) => l.category === state.earnCat);
+  const yr = E.years.includes(state.earnYear) ? state.earnYear : "all";
+  state.earnYear = yr;
+  const q = state.query.trim().toLowerCase();
+
+  // A year view re-ranks on that year's money; "all" keeps the career order the
+  // export already sorted by, so the two views never disagree about a tie.
+  // years[y] = [money, exact-money, events] — a year view re-derives all three so
+  // the events count and the exact/est badge describe that year, not the career.
+  let rows = (list.rows || []).map((r) => {
+    const y = yr === "all" ? null : (r.years[yr] || [0, 0, 0]);
+    return y
+      ? { ...r, shown: y[0], shownExact: y[1], shownEvents: y[2] }
+      : { ...r, shown: r.total, shownExact: r.exact, shownEvents: r.events };
+  }).filter((r) => r.shown > 0);
+  if (yr !== "all") {
+    rows.sort((a, b) => b.shown - a.shown);
+    rows = rows.map((r, i) => ({ ...r, rank: i + 1 }));
+  }
+  if (q) rows = rows.filter((r) => (r.name || "").toLowerCase().includes(q));
+
+  let html = `<div class="rank-sel" id="earnsel">
+    ${E.lists.map((l) => `<button class="rchip ${state.earnCat === l.category ? "on" : ""}" data-ecat="${esc(l.category)}">${esc(l.label)}</button>`).join("")}
+    <span class="rsep"></span>
+    <button class="rchip ${yr === "all" ? "on" : ""}" data-eyear="all">Career</button>
+    ${E.years.map((y) => `<button class="rchip ${yr === y ? "on" : ""}" data-eyear="${esc(y)}">${esc(y)}</button>`).join("")}
+  </div>`;
+
+  // The caveat is part of the feature, not a footnote — a money leaderboard that
+  // doesn't say what it cannot see is the one that gets quoted back wrongly.
+  // Coverage: only an un-fetched BACKLOG is a warning. Events we fetched that
+  // published nothing (cancelled, upcoming, mid-tournament) are stated plainly —
+  // calling those "missing" once turned a 4-event backlog into a scary "13
+  // events missing, this year is materially incomplete".
+  const backlog = E.meta?.premierEventsMissing?.[yr] || 0;
+  const ingested = E.meta?.premierEventsIngested?.[yr] || 0;
+  const nodata = E.meta?.premierEventsNoData?.[yr] || 0;
+  html += `<div class="earn-note">
+    <strong>Estimated prize money</strong>, per player, from each player's finishing round.
+    Only Premier Padel <em>Major</em> and <em>P1</em> rounds have a published per-player figure;
+    P2 and the CUPRA FIP Tour are derived from published pool ranges, so treat those as approximate.
+    Totals are a <strong>floor</strong> — the retired FIP Star / Rise / Promotion tiers are deliberately unpriced.
+    ${yr !== "all" && ingested ? `<span class="earn-cov">Counts ${ingested} Premier Padel ${yr} event${ingested > 1 ? "s" : ""}${nodata ? `; ${nodata} more published no results (cancelled, still to be played, or in progress)` : ""}.</span>` : ""}
+    ${backlog ? `<span class="earn-warn">${backlog} finished Premier Padel ${yr} event${backlog > 1 ? "s have" : " has"} not been ingested yet, so ${yr} understates by that much.</span>` : ""}
+  </div>`;
+
+  html += `<div class="section-label">${yr === "all" ? "Career" : yr} earnings · ${esc(list.label)}` +
+    `<span class="count">${rows.length.toLocaleString()} of ${(list.total || rows.length).toLocaleString()}</span></div>`;
+
+  const cap = q ? 600 : 250;
+  html += `<div class="ranktable earntable">` + rows.slice(0, cap).map(earnRow).join("") + `</div>`;
+  if (!rows.length) html += `<div class="empty">No players match.</div>`;
+  app.innerHTML = html;
+}
+
+function earnRow(r) {
+  const prof = r.id ? " has-profile" : "";
+  const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
+  const flag = countryFlag(r.country);
+  // Share of the total that comes from a published figure rather than an estimate,
+  // shown per row so a reader can tell a Premier regular (mostly exact) from a FIP
+  // Tour grinder (entirely modelled) at a glance.
+  const pctExact = r.shown ? Math.round((r.shownExact / r.shown) * 100) : 0;
+  const band = r.shown === r.total ? ` (band ${eur(r.lo)}–${eur(r.hi)})` : "";
+  const badge = pctExact >= 99
+    ? `<span class="ebadge exact" title="Every event in this total has a published per-player prize figure">exact</span>`
+    : `<span class="ebadge est" title="${pctExact}% of this total comes from published figures; the rest is estimated from prize-pool ranges${band}">est</span>`;
+  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+    <span class="rnum">${r.rank}</span>
+    <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
+    <span class="eev">${r.shownEvents} ev</span>
+    <span class="rpts">${eur(r.shown)}${badge}</span>
+    <span class="rstar">${star("players", r.id, r.name, r.country || "")}</span>
+  </div>`;
+}
+
 // The deepest history the archive holds: FIP records a year-end No.1 pair back to 1986,
 // where tournament data starts in 2006 and round-level detail in 2010. Consecutive years
 // held by the same pair are collapsed into one era — the shape of the sport's history is
@@ -3252,8 +3375,10 @@ function activateMode(mode) {
     mode === "rankings" ? "Filter this ranking…" :
     mode === "events" ? "Search competitions…" :
     mode === "archive" ? "Search tournament…" :
-    mode === "no1" ? "Find a No.1 pair…" : "Search player or tournament…";
-  if (mode === "no1" && !state.no1) loadNo1();
+    mode === "no1" ? "Find a No.1 pair…" :
+    mode === "earnings" ? "Find a player…" : "Search player or tournament…";
+  if (mode === "earnings" && !state.earnings) loadEarnings();
+  else if (mode === "no1" && !state.no1) loadNo1();
   else if (mode === "archive" && !state.archive) loadArchive();
   else if (mode === "rankings" && !state.rankings) loadRankings();
   else if (mode === "upcoming" && !state.calendar) loadCalendar();
@@ -3345,6 +3470,12 @@ app.addEventListener("click", (e) => {
   // federations, so a country selected on one is often absent from the other and
   // would silently render an empty table.
   if (rm) { state.rankMetric = rm.dataset.rmetric; state.rankNat = ""; render(); syncUrl(false); return; }
+
+  // earnings: men/women + career/year selector
+  const ec = e.target.closest("[data-ecat]");
+  if (ec) { state.earnCat = ec.dataset.ecat; render(); syncUrl(false); return; }
+  const ey = e.target.closest("[data-eyear]");
+  if (ey) { state.earnYear = ey.dataset.eyear; render(); syncUrl(false); return; }
 
   // profile: tournament filter chips (multi-select; "All" clears)
   const ptc = e.target.closest("[data-ptour]");
@@ -3605,6 +3736,11 @@ function currentPath() {
   if (state.mode === "archive") return "/results";
   if (state.mode === "no1") return "/world-no1";
   if (state.mode === "natteams") return "/national-teams";
+  if (state.mode === "earnings") {
+    const c = state.earnCat && state.earnCat !== "men" ? "/" + state.earnCat : "";
+    const y = state.earnYear && state.earnYear !== "all" ? "/" + state.earnYear : "";
+    return "/earnings" + (y && !c ? "/men" : c) + y;
+  }
   if (state.mode === "events") return "/events";
   if (state.mode === "upcoming") return "/upcoming";
   return "/";
@@ -3636,6 +3772,7 @@ function setTitle() {
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
   else if (state.mode === "pairs") t = "Padel pairs — partnership records, rivals & results · PadelTicker";
+  else if (state.mode === "earnings") t = `Padel prize money${state.earnCat === "women" ? " — women" : ""}${state.earnYear && state.earnYear !== "all" ? " " + state.earnYear : ""} — career earnings leaderboard · PadelTicker`;
   else if (state.mode === "players") t = "Padel players — profiles, results & head-to-head · PadelTicker";
   else if (state.mode === "favorites") t = "Following — your padel players & tournaments · PadelTicker";
   else if (state.mode === "events") t = "Padel tournaments & leagues — live competitions · PadelTicker";
@@ -3721,6 +3858,16 @@ function applyRoute() {
         state.rankMetric = new URLSearchParams(location.search).get("by") === "elo" ? "elo" : "points";
       } catch { state.rankMetric = "points"; }
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
+    }
+    else if (seg[0] === "earnings") {
+      activateMode("earnings");
+      // /earnings/<men|women>/<year>. Both segments are optional and the year may
+      // arrive without a category, so match on shape rather than position.
+      for (const s of seg.slice(1)) {
+        if (s === "men" || s === "women") state.earnCat = s;
+        else if (/^\d{4}$/.test(s) || s === "all") state.earnYear = s;
+      }
+      if (state.earnings) render();
     }
     else if (seg[0] === "results") activateMode("archive");
     else if (seg[0] === "world-no1") activateMode("no1");

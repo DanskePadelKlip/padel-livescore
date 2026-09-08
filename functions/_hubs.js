@@ -36,6 +36,12 @@ const HUBS = {
     description:
       "Padel ranking lists: the FIP world ranking plus national men's and women's rankings, with live points and weekly movement.",
   },
+  earnings: {
+    name: "Earnings",
+    title: "Padel prize money — career earnings leaderboard · PadelTicker",
+    description:
+      "Padel prize money by player: estimated career and per-season earnings across Premier Padel and the CUPRA FIP Tour, men's and women's.",
+  },
   events: {
     name: "Events",
     title: "Padel tournaments — live, upcoming & finished · PadelTicker",

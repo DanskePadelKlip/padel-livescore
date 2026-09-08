@@ -576,6 +576,19 @@
     .rankrow.m3 .rnum { background: #cd7f43; color: #fff; }
     .rankrow .rmove { display: none; text-align: center; }
     .ranktable.hasmove .rmove { display: block; }
+    /* earnings: rank | name | events | money+badge | star */
+    .earntable .rankrow { grid-template-columns: 34px 1fr auto auto 26px; }
+    .earntable .eev { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .earntable .rpts { font-weight: 700; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .ebadge { font-size: 9.5px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase;
+      padding: 1px 5px; border-radius: 4px; cursor: help; }
+    .ebadge.exact { background: rgba(46,165,107,.16); color: #2ea56b; }
+    .ebadge.est { background: var(--card-hi); color: var(--faint); }
+    .earn-note { font-size: 11.5px; line-height: 1.5; color: var(--muted); background: var(--card);
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+    .earn-note strong { color: var(--fg); }
+    .earn-warn { display: block; margin-top: 6px; color: #e5a23a; font-weight: 600; }
+    .earn-cov { display: block; margin-top: 6px; color: var(--faint); }
     .mv { font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .mv.up { color: #2ea56b; }
     .mv.down { color: #e5484a; }
@@ -728,6 +741,7 @@
         <button data-mode="rankings">🏆 Rankings</button>
         <button data-mode="no1">👑 World #1</button>
         <button data-mode="natteams">🇩🇰 National teams</button>
+        <button data-mode="earnings">💰 Earnings</button>
       </div>
       <div class="tabs" id="tabs">
         <button class="tab active" data-status="all">All</button>
