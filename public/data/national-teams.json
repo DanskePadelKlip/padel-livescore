@@ -13,16 +13,16 @@
     { "year": 2023, "comp": "European Championship", "body": "FEPA", "cat": "Senior", "venue": "Oeiras", "men": 3, "women": 2, "source": "Official draw" },
     { "year": 2023, "comp": "European Championship", "body": "FIP", "cat": "Veteran", "venue": "La Nucia", "men": 8, "women": 7, "source": "DPF" },
     { "year": 2023, "comp": "European Championship", "body": "FEPA", "cat": "Veteran", "venue": "Liege", "men": 3, "women": 3, "source": "Official draw" },
-    { "year": 2024, "comp": "European Championship", "body": "FIP", "cat": "Senior", "venue": "Cagliari", "men": 10, "women": 8, "source": "Final classification" },
-    { "year": 2024, "comp": "World Championship", "body": "FIP", "cat": "Senior", "venue": "", "men": null, "women": 10, "note": "Men did not qualify", "source": "DPF" },
-    { "year": 2024, "comp": "European Championship", "body": "FIP", "cat": "Junior", "venue": "Budapest", "men": 9, "women": null, "note": "Girls did not qualify", "source": "Official draw" },
-    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Senior", "venue": "Drammen", "men": 2, "women": 2, "source": "DPF" },
-    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Veteran", "venue": "Drammen", "men": 3, "women": 3, "source": "DPF" },
-    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Junior", "venue": "Drammen", "men": 3, "women": 2, "source": "DPF" },
+    { "year": 2024, "comp": "European Championship", "body": "FIP", "cat": "Senior", "venue": "Cagliari", "men": 10, "women": 8, "source": "Final classification", "tkey": "fip-137970" },
+    { "year": 2024, "comp": "World Championship", "body": "FIP", "cat": "Senior", "venue": "", "men": null, "women": 10, "note": "Men did not qualify", "source": "DPF", "tkey": "fip-135412" },
+    { "year": 2024, "comp": "European Championship", "body": "FIP", "cat": "Junior", "venue": "Budapest", "men": 9, "women": null, "note": "Girls did not qualify", "source": "Official draw", "tkey": "rin-42477" },
+    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Senior", "venue": "Drammen", "men": 2, "women": 2, "source": "DPF", "tkey": "rin-47618" },
+    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Veteran", "venue": "Drammen", "men": 3, "women": 3, "source": "DPF", "tkey": "rin-47618" },
+    { "year": 2025, "comp": "Nordic Championship", "body": "Nordic", "cat": "Junior", "venue": "Drammen", "men": 3, "women": 2, "source": "DPF", "tkey": "rin-47618" },
     { "year": 2025, "comp": "European Championship", "body": "FIP", "cat": "Veteran", "venue": "Valencia", "men": 5, "women": 7, "source": "DPF" },
-    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Senior", "venue": "Denmark", "men": 1, "women": 1, "source": "DPF" },
-    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Veteran", "venue": "Denmark", "men": 3, "women": 3, "source": "DPF" },
-    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Junior", "venue": "Denmark", "men": 2, "women": 3, "source": "DPF" },
-    { "year": 2026, "comp": "Euro Padel Cup", "body": "FIP", "cat": "Junior", "venue": "Porto", "men": 7, "women": null, "source": "DPF" }
+    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Senior", "venue": "Denmark", "men": 1, "women": 1, "source": "DPF", "tkey": "rin-63840" },
+    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Veteran", "venue": "Denmark", "men": 3, "women": 3, "source": "DPF", "tkey": "rin-63840" },
+    { "year": 2026, "comp": "Nordic Championship", "body": "Nordic", "cat": "Junior", "venue": "Denmark", "men": 2, "women": 3, "source": "DPF", "tkey": "rin-63840" },
+    { "year": 2026, "comp": "Euro Padel Cup", "body": "FIP", "cat": "Junior", "venue": "Porto", "men": 7, "women": null, "source": "DPF", "tkey": "fip-296741" }
   ]
 }

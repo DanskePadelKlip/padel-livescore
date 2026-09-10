@@ -500,6 +500,8 @@
     .nt-table th, .nt-table td { text-align: left; padding: 7px 8px; border-bottom: 1px solid rgba(128,128,128,.22); white-space: nowrap; }
     .nt-table th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .6; font-weight: 600; }
     .nt-table td.nt-pos { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .nt-table tr.nt-draw { cursor: pointer; }
+    .nt-table tr.nt-draw:hover td { background: var(--card-hi); }
     .nt-body { display: inline-block; font-size: 10px; letter-spacing: .05em; padding: 1px 5px; border-radius: 3px; border: 1px solid currentColor; opacity: .85; }
     .nt-src { font-size: 11px; opacity: .55; }
     .nt-note { font-size: 12px; opacity: .6; padding: 12px 2px 0; max-width: 70ch; line-height: 1.5; white-space: normal; }
@@ -526,6 +528,7 @@
     .no1-yrs span { font-size: 10.5px; color: var(--faint); font-weight: 700; }
     .no1-pair { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
     .no1-name { font-size: 14.5px; font-weight: 700; color: var(--text); }
+    .no1-name.pn:hover { color: var(--accent); }
     .no1-amp { color: var(--faint); font-size: 12px; }
     .no1-meta { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
       font-size: 11px; color: var(--faint); margin-top: 2px; }
@@ -634,6 +637,9 @@
     .tl-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
     .tl-item.on .tl-card { border-color: var(--live); }
     .tl-item.done .tl-card { opacity: .6; }
+    /* a current/recent event whose draw exists: the card opens it */
+    .tl-item.linkable .tl-card { cursor: pointer; }
+    .tl-item.linkable .tl-card:hover { border-color: var(--line-hi); background: var(--card-hi); }
     .tl-when { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
     .tl-when b { font-size: 13px; }
     .tl-ago { font-size: 11px; color: var(--faint); margin-left: auto; }

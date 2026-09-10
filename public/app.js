@@ -1253,7 +1253,7 @@ function liveFipEvents() {
     const d = matchDate(m);
     if (!name || !d) continue;
     let e = byT.get(name);
-    if (!e) { e = { name, start: d, end: d, live: false, tour: "FIP" }; byT.set(name, e); }
+    if (!e) { e = { name, start: d, end: d, live: false, tour: "FIP", key: m.source + ":" + m.tournament.id, fed: m.federation }; byT.set(name, e); }
     if (d < e.start) e.start = d;
     if (d > e.end) e.end = d;
     if (m.status === "live") e.live = true;
@@ -1274,7 +1274,10 @@ function renderUpcoming() {
   for (const e of state.calendar.events || []) merged.set(norm(e.name), { ...e });
   for (const e of liveFipEvents()) {
     const k = norm(e.name), ex = merged.get(k);
-    if (ex) ex.live = ex.live || e.live;
+    // Curated wins on metadata, but only the live feed knows a tournament's key - adopt
+    // it so the card opens the draw instead of being dead text. A future event has no
+    // draw anywhere yet, so it keeps no key and stays plain.
+    if (ex) { ex.live = ex.live || e.live; ex.key = ex.key || e.key; ex.fed = ex.fed || e.fed; }
     else merged.set(k, e);
   }
   const evs = [...merged.values()]
@@ -1297,7 +1300,7 @@ function renderUpcoming() {
     const when = live ? "On now" : ended ? "Finished" : d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
     const cat = (e.category || "").toLowerCase();
     const meta = [e.city, e.tour].filter(Boolean).map(esc).join(" · ");
-    html += `<div class="tl-item${live ? " on" : ""}${ended ? " done" : ""}">
+    html += `<div class="tl-item${live ? " on" : ""}${ended ? " done" : ""}${e.key ? " linkable" : ""}"${e.key ? ` data-tourney="live" data-tkey="${esc(e.key)}" data-tname="${esc(e.name)}" data-tfed="${esc(e.fed || "")}" title="Open ${esc(e.name)}"` : ""}>
       <div class="tl-dot"></div>
       <div class="tl-card">
         <div class="tl-when"><b>${fmtRange(e.start, e.end)}</b><span class="upc-cat cat-${esc(cat)}">${esc(e.category || "")}</span><span class="tl-ago">${when}</span></div>
@@ -1649,9 +1652,28 @@ async function openPlayerByName(name) {
   state.query = q;
   render(); // shows the search box populated while the lookup runs
   try {
-    const players = await lookupPlayers(q);
+    let players = [], target = q, lookupErr = null;
+    try { players = await lookupPlayers(q); } catch (e) { lookupErr = e; }
+    // A FULL name ("Arturo Coello" on the world No.1 list) finds nothing: the profile
+    // DB stores FIP's abbreviated form, "A. Coello". Retry once as initial + surname.
+    // It must still run when the full-name lookup THREW: a miss in the static index
+    // falls through to /api/search, and with that down the abbreviation - which the
+    // static index resolves on its own - would never be tried. The exact/unique rules
+    // below still apply, so an abbreviation two players share lands on the search
+    // view, never on the wrong profile.
+    if (!players.length && !/^\p{L}\.\s/u.test(q)) {
+      const m = /^(\p{L})\p{L}*\s+(.+)$/u.exec(q);
+      if (m) {
+        const ab = `${m[1].toUpperCase()}. ${m[2]}`;
+        try {
+          const alt = await lookupPlayers(ab);
+          if (alt.length) { players = alt; target = ab; lookupErr = null; }
+        } catch (e) { lookupErr = lookupErr || e; }
+      }
+    }
+    if (lookupErr && !players.length) throw lookupErr;   // the degraded-search path below
     state.searchDown = false;
-    const exact = players.filter((p) => (p.name || "").toLowerCase() === q.toLowerCase());
+    const exact = players.filter((p) => (p.name || "").toLowerCase() === target.toLowerCase());
     if (exact.length === 1) return openPlayer(exact[0].id);
     if (players.length === 1) return openPlayer(players[0].id);
     state.playerResults = players;
@@ -2976,7 +2998,11 @@ function renderEarnings() {
 }
 
 function earnRow(r) {
-  const prof = r.id ? " has-profile" : "";
+  // Same rule as rankRow: a RankedIn id opens the profile directly, every other row
+  // links by name through openPlayerByName. Only ~22 of the 1,200 rows carry an id
+  // (FIP results are keyed on abbreviated names), so id-only linking left the whole
+  // leaderboard - Coello, Tapia, Triay Pons - dead to the touch.
+  const prof = r.id || r.name ? " has-profile" : "";
   const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
   const flag = countryFlag(r.country);
   // Share of the total that comes from a published figure rather than an estimate,
@@ -2987,7 +3013,7 @@ function earnRow(r) {
   const badge = pctExact >= 99
     ? `<span class="ebadge exact" title="Every event in this total has a published per-player prize figure">exact</span>`
     : `<span class="ebadge est" title="${pctExact}% of this total comes from published figures; the rest is estimated from prize-pool ranges${band}">est</span>`;
-  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : r.name ? ` data-pname="${esc(r.name)}"` : ""}>
     <span class="rnum">${r.rank}</span>
     <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
     <span class="eev">${r.shownEvents} ev</span>
@@ -3043,7 +3069,7 @@ function renderNo1() {
     return `<div class="no1-era${cur ? " cur" : ""}">
       <div class="no1-yrs"><b>${label}</b><span>${yrs} yr${yrs === 1 ? "" : "s"}</span></div>
       <div class="no1-pair">
-        ${e.players.map((p) => `<span class="no1-name">${p.code ? countryFlag(p.code) + " " : ""}${esc(p.name)}</span>`).join('<span class="no1-amp">&amp;</span>')}
+        ${e.players.map((p) => `<span class="no1-name pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${p.code ? countryFlag(p.code) + " " : ""}${esc(p.name)}</span>`).join('<span class="no1-amp">&amp;</span>')}
         <div class="no1-meta">
           ${cur ? '<span class="no1-reign">current</span>' : ""}
           ${srcs.map((sv) => `<span class="no1-src${/historical/i.test(sv) ? " hist" : ""}">${esc(sv)}</span>`).join("")}
@@ -3164,7 +3190,7 @@ function racePanel(rows, cat) {
   const body = top.map((r) => {
     const gap = leader - r.points;
     const def = r.defending || 0;
-    return `<div class="race-row${r.id ? " has-profile" : ""}"${r.id ? ` data-player="${esc(r.id)}"` : ""}>
+    return `<div class="race-row${r.id || r.name ? " has-profile" : ""}"${r.id ? ` data-player="${esc(r.id)}"` : r.name ? ` data-pname="${esc(r.name)}"` : ""}>
       <span class="race-rk${r.rank <= 3 ? " m" + r.rank : ""}">${r.rank}</span>
       <span class="race-nm">${countryFlag(r.country)} ${esc(r.name)}</span>
       <span class="race-pt">${fmt(r.points)}</span>
@@ -3533,7 +3559,11 @@ app.addEventListener("click", (e) => {
   const pr = e.target.closest("[data-player]");
   if (pr) {
     const id = pr.dataset.player;
-    if (state.mode === "rankings") { activateMode("players"); openPlayer(id); return; }
+    // Only the players view renders a profile. From rankings, earnings, pairs, national
+    // teams, following - or from inside an open draw, which renderView checks before any
+    // mode - openPlayer alone rewrote the URL and left the old view on screen. Switch
+    // first, exactly as openPlayerByName already does; activateMode also closes the draw.
+    if (state.mode !== "players" || state.tournament) { activateMode("players"); openPlayer(id); return; }
     if (state.comparing && state.player && state.player.player) openH2H(state.player.player.id, id);
     else openPlayer(id);
     return;
@@ -3927,7 +3957,15 @@ function renderNatTeams() {
     html += `<div class="section-label">${esc(c)}</div><div class="nt-scroll"><table class="nt-table">`;
     html += `<thead><tr><th>Year</th><th>Championship</th><th>Body</th><th>Venue</th><th>Men</th><th>Women</th><th>Source</th></tr></thead><tbody>`;
     for (const r of rs) {
-      html += `<tr><td>${r.year}</td><td>${esc(r.comp)}</td>`;
+      // A row whose draw is in the archive opens it - the whole row, so a tap on a
+      // placing works as well as one on the name. `tkey` is hand-mapped in
+      // national-teams.json (date, venue and classes checked against the archive);
+      // a championship with no archived draw keeps no key and stays plain, rather
+      // than linking to a different event.
+      const draw = r.tkey
+        ? ` class="nt-draw" data-tourney="arch" data-tkey="${esc(r.tkey)}" data-tname="${esc(`${r.comp} ${r.year}`)}" data-tfed="" title="Open the ${esc(r.comp)} ${r.year} draw"`
+        : "";
+      html += `<tr${draw}><td>${r.year}</td><td>${r.tkey ? `<span class="tlink">${esc(r.comp)}</span>` : esc(r.comp)}</td>`;
       html += `<td><span class="nt-body">${esc(r.body)}</span></td>`;
       html += `<td>${esc(r.venue || "--")}</td>`;
       html += `<td class="nt-pos">${ntPos(r.men, r.note)}</td>`;
