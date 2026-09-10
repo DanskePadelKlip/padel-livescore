@@ -36,7 +36,6 @@ export async function onRequestGet({ request }) {
   add("/rankings", { changefreq: "daily", priority: "0.8", lastmod: today });
   add("/results", { changefreq: "daily", priority: "0.7", lastmod: today });
   add("/players", { changefreq: "weekly", priority: "0.6" });
-  add("/national-teams", { changefreq: "monthly", priority: "0.6" });
   add("/pairs", { changefreq: "weekly", priority: "0.6" });
   // Earnings: the hub plus one page per gender. The per-year URLs are deep-linkable
   // too, but they are slices of the same rows — listing them would pad the sitemap

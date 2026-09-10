@@ -505,7 +505,6 @@ function renderView(changed) {
   if (state.mode === "players") return renderPlayers();
   if (state.mode === "archive") return renderArchive();
   if (state.mode === "no1") return renderNo1();
-  if (state.mode === "natteams") return renderNatTeams();
   if (state.mode === "earnings") return renderEarnings();
 
   const list = filtered();
@@ -3559,8 +3558,8 @@ app.addEventListener("click", (e) => {
   const pr = e.target.closest("[data-player]");
   if (pr) {
     const id = pr.dataset.player;
-    // Only the players view renders a profile. From rankings, earnings, pairs, national
-    // teams, following - or from inside an open draw, which renderView checks before any
+    // Only the players view renders a profile. From rankings, earnings, pairs,
+    // following - or from inside an open draw, which renderView checks before any
     // mode - openPlayer alone rewrote the URL and left the old view on screen. Switch
     // first, exactly as openPlayerByName already does; activateMode also closes the draw.
     if (state.mode !== "players" || state.tournament) { activateMode("players"); openPlayer(id); return; }
@@ -3765,7 +3764,6 @@ function currentPath() {
   if (state.mode === "favorites") return "/following";
   if (state.mode === "archive") return "/results";
   if (state.mode === "no1") return "/world-no1";
-  if (state.mode === "natteams") return "/national-teams";
   if (state.mode === "earnings") {
     const c = state.earnCat && state.earnCat !== "men" ? "/" + state.earnCat : "";
     const y = state.earnYear && state.earnYear !== "all" ? "/" + state.earnYear : "";
@@ -3798,7 +3796,6 @@ function setTitle() {
   else if (state.tournament) t = `${state.tournament.name} — draw, results & schedule · PadelTicker`;
   else if (P) t = `${P.name} — padel results, ranking & head-to-head · PadelTicker`;
   else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
-  else if (state.mode === "natteams") t = "Danish national team padel results - European, World & Nordic | PadelTicker";
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
   else if (state.mode === "pairs") t = "Padel pairs — partnership records, rivals & results · PadelTicker";
@@ -3901,7 +3898,6 @@ function applyRoute() {
     }
     else if (seg[0] === "results") activateMode("archive");
     else if (seg[0] === "world-no1") activateMode("no1");
-    else if (seg[0] === "national-teams") activateMode("natteams");
     else if (seg[0] === "upcoming") activateMode("upcoming");
     else if (seg[0] === "events") activateMode("events");
     else if (seg[0] === "players") {
@@ -3925,55 +3921,3 @@ load(false).then(() => { applyRoute(); pollLoop(); });
 setInterval(renderControls, 15_000);
 // world ranks for the match rows - deferred so it never delays first paint
 setTimeout(loadRanksLite, 600);
-
-// ---- national teams ----
-// Denmark's results in international TEAM championships. Static file, loaded lazily the
-// first time the section is opened so it never delays first paint.
-async function ensureNatTeams() {
-  if (state.natTeams || state._ntLoading) return;
-  state._ntLoading = true;
-  try {
-    const r = await fetch("data/national-teams.json?_=" + Date.now());
-    state.natTeams = await r.json();
-  } catch { state.natTeams = { rows: [] }; }
-  state._ntLoading = false;
-  if (state.mode === "natteams") render();
-}
-
-function ntPos(v, note) {
-  if (v == null) return `<span class="nt-src">${esc(note || "--")}</span>`;
-  return String(v);
-}
-
-function renderNatTeams() {
-  ensureNatTeams();
-  const d = state.natTeams;
-  if (!d) { app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`; return; }
-  const rows = (d.rows || []).slice().sort((a, b) => b.year - a.year);
-  const cats = ["Senior", "Veteran", "Junior"].filter((c) => rows.some((r) => r.cat === c));
-  let html = `<div class="nt-wrap">`;
-  for (const c of cats) {
-    const rs = rows.filter((r) => r.cat === c);
-    html += `<div class="section-label">${esc(c)}</div><div class="nt-scroll"><table class="nt-table">`;
-    html += `<thead><tr><th>Year</th><th>Championship</th><th>Body</th><th>Venue</th><th>Men</th><th>Women</th><th>Source</th></tr></thead><tbody>`;
-    for (const r of rs) {
-      // A row whose draw is in the archive opens it - the whole row, so a tap on a
-      // placing works as well as one on the name. `tkey` is hand-mapped in
-      // national-teams.json (date, venue and classes checked against the archive);
-      // a championship with no archived draw keeps no key and stays plain, rather
-      // than linking to a different event.
-      const draw = r.tkey
-        ? ` class="nt-draw" data-tourney="arch" data-tkey="${esc(r.tkey)}" data-tname="${esc(`${r.comp} ${r.year}`)}" data-tfed="" title="Open the ${esc(r.comp)} ${r.year} draw"`
-        : "";
-      html += `<tr${draw}><td>${r.year}</td><td>${r.tkey ? `<span class="tlink">${esc(r.comp)}</span>` : esc(r.comp)}</td>`;
-      html += `<td><span class="nt-body">${esc(r.body)}</span></td>`;
-      html += `<td>${esc(r.venue || "--")}</td>`;
-      html += `<td class="nt-pos">${ntPos(r.men, r.note)}</td>`;
-      html += `<td class="nt-pos">${ntPos(r.women, r.note)}</td>`;
-      html += `<td class="nt-src">${esc(r.source || "")}</td></tr>`;
-    }
-    html += `</tbody></table></div>`;
-  }
-  html += `<div class="nt-note">${esc(d.note || "")}</div></div>`;
-  app.innerHTML = html;
-}
