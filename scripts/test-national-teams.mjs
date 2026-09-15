@@ -179,6 +179,19 @@ ok(dead.length === 0, `every nation click lands on a non-empty list${dead.length
 ok(unfiltered.length === 0, `no nation falls through to the unfiltered world list${unfiltered.length ? ` — ${[...new Set(unfiltered)].join(", ")}` : ""}`);
 state.mode = "natteams";
 
+// ---- the championship title opens the archived draw -------------------------
+// Nothing on the natteams page has loaded the archive index, so this is the cold
+// path: openTournament has to fetch t/<key>.json itself and backfill the name.
+sandbox.openTournament("arch", "fip-135412", "FIP WORLD PADEL CHAMPIONSHIPS 2024", "");
+await settle();
+await settle();
+ok(Array.isArray(state.tournament?.matches) && state.tournament.matches.length > 200, `the draw loads its matches (${state.tournament?.matches?.length})`);
+ok(location.pathname === "/tournament/fip/135412", `the draw sets its own URL (got ${location.pathname})`);
+state.tournament = null;
+state.mode = "natteams";
+sandbox.render();
+ok(/nt-table/.test(app.innerHTML), "closing the draw comes back to the national-teams table");
+
 // ---- the URL ----------------------------------------------------------------
 ok(sandbox.currentPath() === "/national-teams", "men + all categories is the bare /national-teams path");
 state.ntGender = "women"; state.ntCat = "Junior";
