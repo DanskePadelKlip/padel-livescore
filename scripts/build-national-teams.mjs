@@ -385,11 +385,22 @@ for (const ev of EVENTS) {
   if (meta.genders.length) events.push(meta);
 }
 
+// Every code the page can render, placed or not, so the unplaced list gets a flag
+// and a name too — and, more to the point, an ISO code, without which a click on
+// one of them could not find that country's national ranking.
+const used = new Set([...rows.map((r) => r.c), ...events.flatMap((e) => Object.values(e.unplaced).flat())]);
+const countries = {};
+for (const c of [...used].sort()) {
+  if (!COUNTRY[c]) throw new Error(`unmapped country code ${c}`);
+  countries[c] = { iso: COUNTRY[c][0], name: COUNTRY[c][1] };
+}
+
 const out = {
   updated: new Date().toISOString().slice(0, 10),
   note:
     "National-team championships, every nation. Each placing is read off the tournament's own placement bracket in the archived draw — FIP team events play every nation down to an exact position, so nothing here is estimated or inferred from a ranking. Editions whose draw does not state a result are listed as gaps rather than filled in.",
   events,
+  countries,
   rows,
   gaps: GAPS,
 };

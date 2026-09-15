@@ -36,6 +36,11 @@ export async function onRequestGet({ request }) {
   add("/rankings", { changefreq: "daily", priority: "0.8", lastmod: today });
   add("/results", { changefreq: "daily", priority: "0.7", lastmod: today });
   add("/players", { changefreq: "weekly", priority: "0.6" });
+  // National teams: the hub only. /national-teams/<gender>/<category> is
+  // deep-linkable, but every slice canonicalises to the hub, and a sitemap URL that
+  // points its canonical somewhere else is exactly what cost this site its hub pages
+  // in 2026-07 (see _hubs.js).
+  add("/national-teams", { changefreq: "monthly", priority: "0.6" });
   add("/pairs", { changefreq: "weekly", priority: "0.6" });
   // Earnings: the hub plus one page per gender. The per-year URLs are deep-linkable
   // too, but they are slices of the same rows — listing them would pad the sitemap
