@@ -87,6 +87,148 @@
    "source": "Archived draw fip-296740 — placement bracket read match by match"
   }
  ],
+ "countries": {
+  "ARG": {
+   "iso": "AR",
+   "name": "Argentina"
+  },
+  "AUT": {
+   "iso": "AT",
+   "name": "Austria"
+  },
+  "BEL": {
+   "iso": "BE",
+   "name": "Belgium"
+  },
+  "BRA": {
+   "iso": "BR",
+   "name": "Brazil"
+  },
+  "CHI": {
+   "iso": "CL",
+   "name": "Chile"
+  },
+  "CYP": {
+   "iso": "CY",
+   "name": "Cyprus"
+  },
+  "CZE": {
+   "iso": "CZ",
+   "name": "Czechia"
+  },
+  "DEN": {
+   "iso": "DK",
+   "name": "Denmark"
+  },
+  "EGY": {
+   "iso": "EG",
+   "name": "Egypt"
+  },
+  "ESP": {
+   "iso": "ES",
+   "name": "Spain"
+  },
+  "EST": {
+   "iso": "EE",
+   "name": "Estonia"
+  },
+  "FIN": {
+   "iso": "FI",
+   "name": "Finland"
+  },
+  "FRA": {
+   "iso": "FR",
+   "name": "France"
+  },
+  "GBR": {
+   "iso": "GB",
+   "name": "Great Britain"
+  },
+  "GER": {
+   "iso": "DE",
+   "name": "Germany"
+  },
+  "HUN": {
+   "iso": "HU",
+   "name": "Hungary"
+  },
+  "ITA": {
+   "iso": "IT",
+   "name": "Italy"
+  },
+  "JPN": {
+   "iso": "JP",
+   "name": "Japan"
+  },
+  "LTU": {
+   "iso": "LT",
+   "name": "Lithuania"
+  },
+  "MDA": {
+   "iso": "MD",
+   "name": "Moldova"
+  },
+  "MEX": {
+   "iso": "MX",
+   "name": "Mexico"
+  },
+  "NED": {
+   "iso": "NL",
+   "name": "Netherlands"
+  },
+  "NOR": {
+   "iso": "NO",
+   "name": "Norway"
+  },
+  "PAR": {
+   "iso": "PY",
+   "name": "Paraguay"
+  },
+  "POL": {
+   "iso": "PL",
+   "name": "Poland"
+  },
+  "POR": {
+   "iso": "PT",
+   "name": "Portugal"
+  },
+  "QAT": {
+   "iso": "QA",
+   "name": "Qatar"
+  },
+  "SEN": {
+   "iso": "SN",
+   "name": "Senegal"
+  },
+  "SUI": {
+   "iso": "CH",
+   "name": "Switzerland"
+  },
+  "SWE": {
+   "iso": "SE",
+   "name": "Sweden"
+  },
+  "TUN": {
+   "iso": "TN",
+   "name": "Tunisia"
+  },
+  "UAE": {
+   "iso": "AE",
+   "name": "United Arab Emirates"
+  },
+  "UKR": {
+   "iso": "UA",
+   "name": "Ukraine"
+  },
+  "URU": {
+   "iso": "UY",
+   "name": "Uruguay"
+  },
+  "USA": {
+   "iso": "US",
+   "name": "United States"
+  }
+ },
  "rows": [
   {
    "ev": "fip-135412",
