@@ -5,6 +5,7 @@
 import * as rankedin from "./adapters/rankedin.js";
 import * as tournamentsoftware from "./adapters/tournamentsoftware.js";
 import * as fip from "./adapters/fip.js";
+import * as puntuate from "./adapters/puntuate.js";
 import { assertMatch, STATUS } from "./schema.js";
 
 // Register adapters with a min refresh interval. All three are now plain fetch +
@@ -17,6 +18,10 @@ const ADAPTERS = [
   { mod: rankedin, minMs: 0 },                     // DK/SE/DE/CZ — every cycle
   { mod: fip, minMs: 2 * 60_000 },                 // FIP/Premier pro tour — ~2 min
   { mod: tournamentsoftware, minMs: 15 * 60_000 }, // NO/GB/AU — ~15 min
+  // FIP championships (national teams) run on Puntuate, not matchscorer. The
+  // adapter returns [] outside its events' dates, so this costs nothing the
+  // rest of the year; ~1 min while a championship is on.
+  { mod: puntuate, minMs: 60_000 },
 ];
 
 // Per-adapter cache (persists across cycles in the long-running daemon). Holds the
