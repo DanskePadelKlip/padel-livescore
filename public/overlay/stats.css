@@ -1,0 +1,196 @@
+/* Changeover stats overlay — OBS Browser Source skin.
+   Palette is lifted from public/index.html so a card sits next to the DPK
+   scoreboard without looking like a different product. Everything is sized in
+   px against a 1920x1080 source; `--scale` on <html> rescales the whole card for
+   720p or for a corner slot. */
+
+:root {
+  --bg-card: rgba(20, 23, 29, .93);
+  --bg-head: rgba(31, 37, 48, .96);
+  --line: #2b3242;
+  --text: #eef1f6;
+  --muted: #9aa3b2;
+  --faint: #6b7280;
+  --accent: #E5484A;
+  --serve: #3ecf7c;
+  --a: #4d9bff;           /* side A */
+  --b: #ffb648;           /* side B */
+  --shadow: 0 18px 48px rgba(0, 0, 0, .55);
+  --scale: 1;
+}
+
+html[data-theme="light"] {
+  --bg-card: rgba(255, 255, 255, .95);
+  --bg-head: rgba(244, 246, 250, .97);
+  --line: #dde3ec;
+  --text: #131720;
+  --muted: #5a6472;
+  --faint: #8b93a3;
+  --shadow: 0 18px 48px rgba(20, 30, 50, .28);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: transparent;      /* OBS composites this over the video */
+}
+
+body {
+  font: 500 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
+}
+
+/* ---- placement ---------------------------------------------------------- */
+
+#stage {
+  position: absolute;
+  transform: scale(var(--scale));
+}
+#stage[data-pos="bottom-left"]  { left: 64px;  bottom: 96px; transform-origin: left bottom; }
+#stage[data-pos="bottom-right"] { right: 64px; bottom: 96px; transform-origin: right bottom; }
+#stage[data-pos="top-left"]     { left: 64px;  top: 96px;    transform-origin: left top; }
+#stage[data-pos="top-right"]    { right: 64px; top: 96px;    transform-origin: right top; }
+
+/* ---- the card ----------------------------------------------------------- */
+
+.card {
+  width: 620px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .34s ease, transform .34s cubic-bezier(.2, .8, .3, 1);
+}
+.card.in { opacity: 1; transform: translateY(0); }
+
+.card header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 13px 18px 11px;
+  background: var(--bg-head);
+  border-bottom: 1px solid var(--line);
+}
+.card header h1 {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.card header .sub {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--faint);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* ---- the stat grid ------------------------------------------------------ */
+
+.grid { padding: 6px 18px 14px; }
+
+.names {
+  display: grid;
+  grid-template-columns: 1fr 92px 92px;
+  align-items: end;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--line);
+}
+.names .n {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow: hidden;
+}
+.names .n.a { color: var(--a); }
+.names .n.b { color: var(--b); }
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 92px 92px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+}
+.row:last-child { border-bottom: 0; }
+.row .label { font-size: 14px; color: var(--muted); font-weight: 600; }
+.row .v {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+}
+.row .v small { font-size: 13px; font-weight: 700; color: var(--faint); display: block; margin-top: 1px; }
+.row .v.lead-a { color: var(--a); }
+.row .v.lead-b { color: var(--b); }
+
+/* a single full-width line (set scores, momentum) */
+.row.wide { grid-template-columns: 1fr; }
+.row.wide .label { margin-bottom: 7px; }
+
+.momentum { display: flex; gap: 6px; }
+.momentum i {
+  flex: 1;
+  height: 22px;
+  border-radius: 5px;
+  background: var(--line);
+  display: block;
+}
+.momentum i.a { background: var(--a); }
+.momentum i.b { background: var(--b); }
+.momentum i.now { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.sets { display: flex; gap: 10px; flex-wrap: wrap; }
+.sets .s {
+  font-size: 19px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 11px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--line) 60%, transparent);
+}
+.sets .s em { font-style: normal; font-size: 12px; color: var(--faint); font-weight: 700; display: block; }
+
+/* ---- footers ------------------------------------------------------------ */
+
+.foot {
+  padding: 9px 18px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border-top: 1px solid var(--line);
+}
+/* Sampled numbers are never allowed on screen without this next to them. */
+.foot.approx { color: var(--accent); }
+
+/* ---- debug (never on air) ----------------------------------------------- */
+
+#debug {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  max-width: 900px;
+  font: 500 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #9aa3b2;
+  background: rgba(0, 0, 0, .72);
+  border: 1px solid #2b3242;
+  border-radius: 8px;
+  padding: 9px 12px;
+  white-space: pre-wrap;
+}
+#debug.hidden { display: none; }
+#debug b { color: #eef1f6; }
+#debug .err { color: #ff6b6b; }
