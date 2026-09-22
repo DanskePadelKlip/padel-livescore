@@ -151,6 +151,12 @@ export function parseLive(html) {
     if (!m) return;
     const [, no, gender, tieNo, groupRaw, a, sa, sb, b] = m;
     const elapsed = ELAPSED_RE.test(lines[i + 1] || "") ? lines[i + 1] : "";
+    // The sheet labels each entry Live or Finished on the line above it. That
+    // label - not the numbers - is what says whether the last column is the
+    // CURRENT POINT: a live match always carries one (even at 0), a finished
+    // one never does.
+    const label = (lines[i - 1] || "").toLowerCase();
+    const finished = label.indexOf("finished") >= 0;
     const sides = [];
     let cur = null;
     for (const x of lines.slice(i + 1, i + 20)) {
@@ -165,21 +171,20 @@ export function parseLive(html) {
     // Columns are completed sets, then the current games, then the CURRENT POINT
     // (0/15/30/40). Folding the point into `sets` produced "0-15" as if it were a
     // set score, so the last column is split off when it looks like a point.
-    const POINTS = new Set([15, 30, 40, 45]);
     const n = Math.max(A.cols.length, B.cols.length);
     const cols = [];
     for (let k = 0; k < n; k++) cols.push([A.cols[k] ?? 0, B.cols[k] ?? 0]);
     let points = null;
-    if (cols.length) {
-      const [pa, pb] = cols[cols.length - 1];
-      if (POINTS.has(pa) || POINTS.has(pb)) points = cols.pop().map(String);
-    }
+    // Live -> the last column is the point (0/15/30/40), so it must come OUT of
+    // the set list. Leaving a 0-0 point in there cost us on air: the board read
+    // the real current games as a completed set and gave Denmark a second one.
+    if (!finished && cols.length > 1) points = cols.pop().map(String);
     const sets = cols;
     out.push({
       key: `${gender}|${groupRaw || ""}|${tieNo}|${a}|${b}`,
       matchNo: Number(no), gender: gender === "Male" ? "Men" : "Women",
       group: groupRaw || "", tieNo: Number(tieNo), a, b,
-      tieScore: [Number(sa), Number(sb)], court, elapsed,
+      tieScore: [Number(sa), Number(sb)], court, elapsed, finished,
       sides: [A, B], sets, points,
     });
   });
@@ -247,7 +252,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
         round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
                         : `Tie ${lm.tieNo} · Match ${lm.matchNo}`,
         court: lm.court || null,
-        status: STATUS.LIVE,
+        status: lm.finished ? STATUS.FINAL : STATUS.LIVE,
         startTime: null,
         schedule: null,
         teams: [side(lm.sides[0]), side(lm.sides[1])],
