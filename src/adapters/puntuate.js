@@ -75,7 +75,15 @@ const WHEN_RE = /^(\d{1,2}:\d{2}|Followed by|Not before)/i;
 // above - two Austrian men rendered inside a Norwegian women's pair on the live
 // site. Title case is accepted now, which means the sheet's own vocabulary reads
 // like a nation too, so it is excluded by name rather than by shape.
-const SHEET_WORD_RE = /^(live|finished|in play|followed by|not before|walkover|retired|no matches.*)$/i;
+// "Men" and "Women" are FIP's per-block SECTION headers and sit inside the next
+// row's scan window, so title case made them look like nations in 47 of 57
+// blocks. Inert while both real nations are found first - and not inert at all
+// on a half-rendered block, where the header satisfies the sides.length < 2
+// guard and invents a side: a phantom opponent called "Men" with no players and
+// a 2-0 lead, because the missing columns default to 0. It can also teach
+// learnCodes() that "Men" is a country.
+const SHEET_WORD_RE =
+  /^(live|finished|in play|followed by|not before|walkover|retired|men|women|male|female|mixed|no matches.*)$/i;
 const isNation = (x) => NATION_RE.test(x) && !SHEET_WORD_RE.test(x) && !WHEN_RE.test(x) && !/^\d/.test(x);
 
 // The sheet serves every non-ASCII letter as a numeric entity ("M&#220;LLER"),
@@ -119,8 +127,11 @@ function textLines(html) {
 // too: "Match 1 Male HUN 1 - 0 IRL - Group Tie 1 * 12:00". Anchoring straight
 // after the gender dropped that row, and with it a whole rubber of that tie.
 const TIE_HEAD_RE = /^Match (\d+) (Male|Female)(?:\s+[A-Z]{3}\s+\d+\s*-\s*\d+\s+[A-Z]{3})?\s*-\s*Group Tie (\d+)/;
+// The group token rides AFTER "Group Tie <n>" even when the rest of the tail has
+// moved in front of it, and dropping it split one tie into two cards with two
+// different scores (keys "Male||1|HUN|IRL" and "Male|M_G|1|HUN|IRL").
 const TIE_TAIL_ALT_RE =
-  /^Match \d+ (?:Male|Female)\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*-\s*Group Tie/;
+  /^Match \d+ (?:Male|Female)\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*-\s*Group Tie \d+(?:\s*-\s*([A-Z]_[A-Z]))?/;
 const TIE_TAIL_RE =
   /^Match \d+ (?:Male|Female) - Group Tie \d+(?:\s*-\s*([A-Z]_[A-Z]))?\s*-?\s*([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})/;
 
@@ -172,7 +183,7 @@ function rowTeams(lines, i, codes) {
   }
   const alt = TIE_TAIL_ALT_RE.exec(lines[i]);
   if (alt) {
-    return { group: "", a: alt[1], b: alt[4], sa: Number(alt[2]), sb: Number(alt[3]), scored: true };
+    return { group: alt[5] || "", a: alt[1], b: alt[4], sa: Number(alt[2]), sb: Number(alt[3]), scored: true };
   }
   const names = blockNations(lines, i);
   const a = codes.get(names[0]), b = codes.get(names[1]);
@@ -331,12 +342,22 @@ const MON_FULL = "january february march april may june july august september oc
 const MON_ABBR = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split(" ");
 const WD_ABBR = "SUN MON TUE WED THU FRI SAT".split(" ");
 function sheetDay(text, from) {
-  const m = /([A-Za-z]+),?\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/.exec(text || "");
-  if (!m) return null;                       // no day line on the sheet - stay undated
+  // Every date on the line, not just the first: if FIP ever prints the event's
+  // RANGE there ("Monday, 21 September ... - Saturday, 26 September ...") the
+  // first one is a confident wrong answer for every day of the week. Two dates
+  // means we do not know which day this sheet is, so say so.
+  const all = [...String(text || "").matchAll(/([A-Za-z]+),?\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/g)];
+  if (all.length !== 1) return null;         // none, or ambiguous - stay undated
+  const m = all[0];
   const mo = MON_FULL.indexOf(m[3].toLowerCase());
   if (mo < 0) return null;
   const dom = Number(m[2]);
   const ms = Date.UTC(Number(m[4]), mo, dom);
+  // Date.UTC rolls 31 September into 1 October and the weekday would be taken
+  // from the rolled-over day while the label kept "31" - a label that parses
+  // cleanly at the other end and means a different calendar day. Refuse it.
+  const d = new Date(ms);
+  if (d.getUTCDate() !== dom || d.getUTCMonth() !== mo) return null;
   const label = `${MON_ABBR[mo]} ${dom} ${WD_ABBR[new Date(ms).getUTCDay()]}`;
   if (!from) return { n: null, label };
   const [fy, fm, fd] = from.split("-").map(Number);
