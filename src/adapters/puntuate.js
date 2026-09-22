@@ -227,12 +227,13 @@ export function parseLive(html, fallback = "live") {
   return out;
 }
 
-export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
-  const today = now.toISOString().slice(0, 10);
+// Everything one event contributes, from one read of its two views. Split out of
+// fetchMatches so the live relay can build the same rows per request, with no
+// deploy between FIP and the board. `withStandings` is off there: the group
+// table comes from a second host and a scoreboard does not use it.
+export async function eventRows(ev, { log = () => {}, withStandings = true } = {}) {
   const out = [];
-  for (const ev of EVENTS) {
-    if (ev.from && today < ev.from) continue;   // not started
-    if (ev.to && today > ev.to) continue;       // over
+  {
     let sheet, live;
     let liveHtml = "";
     let sheetMatches = [];
@@ -244,7 +245,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
       live = parseSheet(liveHtml);
     } catch (err) {
       log(`puntuate: ${ev.name} sheet unavailable (${err.message})`);
-      continue;
+      return out;
     }
     const onCourt = new Set(live.empty ? [] : live.ties.map((t) => t.key));
     const liveMatches = live.empty ? [] : parseLive(liveHtml);
@@ -254,7 +255,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
     for (const sm of sheetMatches) byKey.set(`${sm.key}:m${sm.matchNo}`, sm);
     for (const lm of liveMatches) byKey.set(`${lm.key}:m${lm.matchNo}`, lm);
     const matches = [...byKey.values()];
-    const table = await standings(ev.msid, log);
+    const table = withStandings ? await standings(ev.msid, log) : [];
 
     for (const t of sheet.ties) {
       const decided = t.a_score + t.b_score >= 2;        // best of three rubbers
@@ -317,6 +318,18 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
       });
     }
     log(`puntuate: ${ev.name} — ${sheet.ties.length} tie(s), ${matches.length} match(es), ${liveMatches.length} on court (${sheet.day || "no day"})`);
+  }
+  return out;
+}
+
+// The daemon's entry point: every event inside its dates, in one array.
+export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
+  const today = now.toISOString().slice(0, 10);
+  const out = [];
+  for (const ev of EVENTS) {
+    if (ev.from && today < ev.from) continue;   // not started
+    if (ev.to && today > ev.to) continue;       // over
+    out.push(...(await eventRows(ev, { log })));
   }
   return out;
 }
