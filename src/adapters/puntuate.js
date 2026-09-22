@@ -55,8 +55,13 @@ export const EVENTS = [
   },
 ];
 
+// The group token (F_F / M_G) was on the 21 Sep preview sheet and GONE once play
+// started on 22 Sep ("Group Tie 1 DNK 0 - 0 SRB"). Both shapes parse; the group
+// is optional and only used for labelling.
 const TIE_RE =
-  /^Match (\d+) (Male|Female) - Group Tie (\d+) - ([A-Z]_[A-Z]) - ([A-Z]{3})\s*(\d+)\s*-\s*(\d+)\s*([A-Z]{3})/;
+  /^Match (\d+) (Male|Female) - Group Tie (\d+)(?:\s+-\s+([A-Z]_[A-Z]))?\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*$/;
+// Player rows follow a tie row once the sheet goes live: NATION, two players, NATION, two.
+const PLAYER_RE = /^[A-Z]\.\s+\S/;
 const WHEN_RE = /^(\d{1,2}:\d{2}|Followed by|Not before)/i;
 
 function textLines(html) {
@@ -80,7 +85,9 @@ export function parseSheet(html) {
     if (c) court = c[1];
     const m = TIE_RE.exec(l);
     if (!m) return;
-    const [, no, gender, tieNo, group, a, sa, sb, b] = m;
+    const [, no, gender, tieNo, groupRaw, a, sa, sb, b] = m;
+    const group = groupRaw || "";
+    const players = lines.slice(i + 1, i + 7).filter((x) => PLAYER_RE.test(x)).slice(0, 4);
     let when = "";
     for (let k = Math.max(0, i - 3); k < i; k++) if (WHEN_RE.test(lines[k])) when = lines[k];
     const key = `${gender}|${group}|${tieNo}|${a}|${b}`;
@@ -95,7 +102,7 @@ export function parseSheet(html) {
     // The tie score repeats on every row; the last one read is the freshest.
     tie.a_score = Number(sa);
     tie.b_score = Number(sb);
-    tie.rows.push({ no: Number(no), court, when });
+    tie.rows.push({ no: Number(no), court, when, players });
   });
   return { day, empty, ties };
 }
@@ -154,7 +161,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
         federation: "FIP",
         tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
         className: t.gender,
-        round: `Group ${t.group.replace("_", " ")} · Tie ${t.tieNo}`,
+        round: t.group ? `Group ${t.group.replace("_", " ")} · Tie ${t.tieNo}` : `Tie ${t.tieNo}`,
         court: t.court || null,
         status,
         startTime: null,
