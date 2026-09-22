@@ -74,7 +74,12 @@ const WHEN_RE = /^(\d{1,2}:\d{2}|Followed by|Not before)/i;
 // The sheet serves every non-ASCII letter as a numeric entity ("M&#220;LLER"),
 // and Node has no HTML parser to lean on. Named entities are the handful this
 // page actually emits; the numeric forms cover the rest of Latin-1 and beyond.
-const NAMED = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+const NAMED = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+  bull: "\u2022", middot: "\u00b7", ndash: "\u2013", mdash: "\u2014",
+  lsquo: "\u2018", rsquo: "\u2019", ldquo: "\u201c", rdquo: "\u201d",
+  hellip: "\u2026", deg: "\u00b0", times: "\u00d7",
+};
 function decodeEntities(s) {
   return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, body) => {
     if (body[0] !== "#") {
@@ -165,7 +170,7 @@ const team = (code) => ({ name: code, players: [{ name: code, country: code }] }
 // championship, so it is what a scoreboard can follow.
 //   BULGARIA  Z. KISELKOVA  A. KARAMANOLEVA  3 0 0
 //   GREECE    A. MELIGALIOTI  A. PALASKA      6 1 0
-export function parseLive(html) {
+export function parseLive(html, fallback = "live") {
   const lines = textLines(html);
   const out = [];
   let court = "";
@@ -182,6 +187,12 @@ export function parseLive(html) {
     // one never does.
     const label = (lines[i - 1] || "").toLowerCase();
     const finished = label.indexOf("finished") >= 0;
+    // No label means different things in the two views: in the live view the
+    // match is on court by definition, in the order-of-play sheet it is simply
+    // not played yet. The caller knows which sheet it handed us.
+    const state = finished ? "final"
+      : label.indexOf("live") >= 0 ? "live"
+      : fallback;
     const sides = [];
     let cur = null;
     for (const x of lines.slice(i + 1, i + 20)) {
@@ -203,13 +214,13 @@ export function parseLive(html) {
     // Live -> the last column is the point (0/15/30/40), so it must come OUT of
     // the set list. Leaving a 0-0 point in there cost us on air: the board read
     // the real current games as a completed set and gave Denmark a second one.
-    if (!finished && cols.length > 1) points = cols.pop().map(String);
+    if (state === "live" && cols.length > 1) points = cols.pop().map(String);
     const sets = cols;
     out.push({
       key: `${gender}|${groupRaw || ""}|${tieNo}|${a}|${b}`,
       matchNo: Number(no), gender: gender === "Male" ? "Men" : "Women",
       group: groupRaw || "", tieNo: Number(tieNo), a, b,
-      tieScore: [Number(sa), Number(sb)], court, elapsed, finished,
+      tieScore: [Number(sa), Number(sb)], court, elapsed, finished, state,
       sides: [A, B], sets, points,
     });
   });
@@ -224,8 +235,11 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
     if (ev.to && today > ev.to) continue;       // over
     let sheet, live;
     let liveHtml = "";
+    let sheetMatches = [];
     try {
-      sheet = parseSheet(await getText(OOP(ev.tid)));
+      const oopHtml = await getText(OOP(ev.tid));
+      sheet = parseSheet(oopHtml);
+      sheetMatches = parseLive(oopHtml, "upcoming");
       liveHtml = await getText(LIVE(ev.tid));
       live = parseSheet(liveHtml);
     } catch (err) {
@@ -234,6 +248,12 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
     }
     const onCourt = new Set(live.empty ? [] : live.ties.map((t) => t.key));
     const liveMatches = live.empty ? [] : parseLive(liveHtml);
+    // Every match of the day, with the live view overriding the sheet for the
+    // ones on court. Keyed the same way the rows are, so the override is exact.
+    const byKey = new Map();
+    for (const sm of sheetMatches) byKey.set(`${sm.key}:m${sm.matchNo}`, sm);
+    for (const lm of liveMatches) byKey.set(`${lm.key}:m${lm.matchNo}`, lm);
+    const matches = [...byKey.values()];
     const table = await standings(ev.msid, log);
 
     for (const t of sheet.ties) {
@@ -263,7 +283,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
     }
     // One row per match actually on court, carrying the real set scores and the
     // player names - this is what the scoreboard follows.
-    for (const lm of liveMatches) {
+    for (const lm of matches) {
       const side = (s2) => ({
         name: s2.players.map((p) => p.replace(/^[A-Z]\.\s*/, "")).join(" / ") || s2.nation,
         players: s2.players.map((p) => ({ name: p, country: null })),
@@ -277,15 +297,26 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
         round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
                         : `Tie ${lm.tieNo} · Match ${lm.matchNo}`,
         court: lm.court || null,
-        status: lm.finished ? STATUS.FINAL : STATUS.LIVE,
+        status: lm.state === "final" ? STATUS.FINAL
+              : lm.state === "live" ? STATUS.LIVE : STATUS.UPCOMING,
         startTime: null,
         schedule: null,
         teams: [side(lm.sides[0]), side(lm.sides[1])],
-        score: { sets: lm.sets, winner: null, ...(lm.points ? { points: lm.points } : {}) },
+        score: {
+          sets: lm.sets,
+          // Only a finished rubber has a winner, and the sheet never states it:
+          // count the sets. A retirement leaves an odd-looking set list, so this
+          // stays a simple majority rather than pretending to know more.
+          winner: lm.state === "final" && lm.sets.length
+            ? (lm.sets.filter((s) => s[0] > s[1]).length >
+               lm.sets.filter((s) => s[1] > s[0]).length ? 0 : 1)
+            : null,
+          ...(lm.points ? { points: lm.points } : {}),
+        },
         raw: { elapsed: lm.elapsed, tieScore: lm.tieScore, nations: [lm.a, lm.b] },
       });
     }
-    log(`puntuate: ${ev.name} — ${sheet.ties.length} tie(s), ${liveMatches.length} match(es) on court (${sheet.day || "no day"})`);
+    log(`puntuate: ${ev.name} — ${sheet.ties.length} tie(s), ${matches.length} match(es), ${liveMatches.length} on court (${sheet.day || "no day"})`);
   }
   return out;
 }
