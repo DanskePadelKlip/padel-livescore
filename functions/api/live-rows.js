@@ -65,7 +65,8 @@ export async function onRequestGet({ request }) {
     // upstream must always beat our copy of the older result.
     const byId = new Map();
     const tids = new Set(events.map((ev) => ev.tid));
-    for (const m of archivedRows(archive)) {
+    const stored = archivedRows(archive);
+    for (const m of stored) {
       if (tids.has(String(m.id).split(":")[1])) byId.set(m.id, m);
     }
     for (const m of live) byId.set(m.id, m);
@@ -74,7 +75,13 @@ export async function onRequestGet({ request }) {
       generatedAt: new Date().toISOString(),
       count: matches.length,
       live: live.length,
+      // Rows the source no longer serves that the archive still does. Zero is
+      // the normal answer during a day; after a rollover it is how yesterday's
+      // results reach a board at all.
       archived: matches.length - live.length,
+      // How much archive we could actually read. Distinguishes a working merge
+      // from an archive fetch that quietly failed, which otherwise look alike.
+      archiveSize: stored.length,
       matches,
     });
   } catch (err) {
