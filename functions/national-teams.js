@@ -1,8 +1,13 @@
-// GET /national-teams - moved to danskepadelklip.com/landshold (removed from PadelTicker
-// 2026-09-10). The page was Denmark's results only, and DPK already carries the same
-// table, so it belongs there, not on an international scores site.
+// GET /national-teams - app shell with this section's own meta (see _hubs.js for why).
 //
-// A 301 rather than letting the SPA shell answer: without this function the route
-// falls through to the app, which no longer knows it and quietly shows the homepage -
-// an old link or search result should land on the real page instead.
-export const onRequestGet = () => Response.redirect("https://danskepadelklip.com/landshold", 301);
+// This route was a 301 to danskepadelklip.com/landshold between 2026-09-10 and this
+// commit. That was right while the page held DENMARK's results and nothing else -
+// a one-nation table does not belong on an international scores site, and DPK
+// already carried the identical rows. The section here now covers every nation in
+// each championship, which DPK's page does not and should not, so the redirect goes
+// and the hub comes back. Denmark's own table stays on DPK; nothing here duplicates
+// it. NB the old redirect only ever answered GET, so a HEAD request has been
+// getting the app shell at 200 throughout.
+import { hub } from "./_hubs.js";
+
+export const onRequestGet = hub("national-teams");

@@ -493,6 +493,30 @@
     .team.pairlink { cursor: pointer; }
     .team.pairlink:hover .nm { text-decoration: underline; text-decoration-style: dotted; }
 
+    /* ---- national teams (international) ---- */
+    .nt-sel { margin-bottom: 4px; }
+    .nt-ev { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+    .nt-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--line); }
+    .nt-title { font-size: 15px; font-weight: 700; }
+    .nt-sub { font-size: 11.5px; opacity: .65; margin-top: 3px; }
+    .nt-body { display: inline-block; font-size: 10px; letter-spacing: .05em; padding: 1px 5px; border-radius: 3px; border: 1px solid currentColor; opacity: .85; }
+    .nt-scroll { overflow-x: auto; }
+    .nt-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .nt-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid rgba(128,128,128,.16); white-space: nowrap; }
+    .nt-table tr:last-child td { border-bottom: 0; }
+    .nt-table td.nt-pos { font-variant-numeric: tabular-nums; font-weight: 700; width: 2.6em; text-align: right; opacity: .75; }
+    .nt-table td.nt-pos.gold { opacity: 1; color: #d4a017; }
+    .nt-table td.nt-pos.silver { opacity: 1; color: #9aa3ad; }
+    .nt-table td.nt-pos.bronze { opacity: 1; color: #b87333; }
+    .nt-via { font-size: 11.5px; opacity: .5; white-space: normal; }
+    .nt-country { cursor: pointer; }
+    .nt-country:hover { text-decoration: underline; text-decoration-style: dotted; }
+    .nt-unplaced, .nt-src { font-size: 11px; opacity: .55; padding: 8px 12px; border-top: 1px solid rgba(128,128,128,.16); line-height: 1.5; white-space: normal; }
+    .nt-note { font-size: 12px; opacity: .6; padding: 12px 2px 0; max-width: 70ch; line-height: 1.5; }
+    .nt-gaps { padding: 2px 0 26px; }
+    .nt-gap { padding: 8px 2px; border-bottom: 1px solid rgba(128,128,128,.16); }
+    .nt-gap-t { font-size: 13px; font-weight: 600; opacity: .8; }
+    .nt-gap-w { font-size: 11.5px; opacity: .55; line-height: 1.5; max-width: 80ch; }
     /* ---- rankings ---- */
     .rank-country-wrap { display: flex; align-items: center; gap: 10px; padding: 6px 0 8px; }
     .rank-country { flex: 1 1 auto; max-width: 340px; background: var(--card); border: 1px solid var(--line); color: var(--text);
@@ -734,6 +758,7 @@
         <button data-mode="pairs">🤝 Pairs</button>
         <button data-mode="rankings">🏆 Rankings</button>
         <button data-mode="no1">👑 World #1</button>
+        <button data-mode="natteams">🏅 National teams</button>
         <button data-mode="earnings">💰 Earnings</button>
       </div>
       <div class="tabs" id="tabs">

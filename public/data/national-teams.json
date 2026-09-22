@@ -1,0 +1,758 @@
+{
+ "updated": "2026-09-15",
+ "note": "National-team championships, every nation. Each placing is read off the tournament's own placement bracket in the archived draw — FIP team events play every nation down to an exact position, so nothing here is estimated or inferred from a ranking. Editions whose draw does not state a result are listed as gaps rather than filled in.",
+ "events": [
+  {
+   "id": "fip-135412",
+   "comp": "World Championship",
+   "body": "FIP",
+   "cat": "Senior",
+   "year": 2024,
+   "name": "FIP WORLD PADEL CHAMPIONSHIPS 2024",
+   "start": "2024-10-28",
+   "end": "2024-11-02",
+   "where": "",
+   "tkey": "fip-135412",
+   "genders": [
+    "women",
+    "men"
+   ],
+   "unplaced": {},
+   "source": "Archived draw fip-135412 — placement bracket read match by match"
+  },
+  {
+   "id": "fip-296741",
+   "comp": "Junior Euro Padel Cup",
+   "body": "FIP",
+   "cat": "Junior",
+   "year": 2026,
+   "name": "FIP JUNIOR EURO PADEL CUP 2026",
+   "start": "2026-06-27",
+   "end": "2026-07-04",
+   "where": "Portugal",
+   "tkey": "fip-296741",
+   "genders": [
+    "men",
+    "women"
+   ],
+   "unplaced": {
+    "men": [
+     "AUT",
+     "CYP",
+     "CZE",
+     "EST",
+     "FIN",
+     "GBR",
+     "GER",
+     "HUN",
+     "LTU",
+     "MDA",
+     "NOR",
+     "POL",
+     "SUI",
+     "UKR"
+    ],
+    "women": [
+     "CZE",
+     "DEN",
+     "FIN",
+     "GBR",
+     "GER",
+     "HUN",
+     "LTU",
+     "MDA",
+     "NOR",
+     "POL",
+     "SUI"
+    ]
+   },
+   "source": "Archived draw fip-296741 — placement bracket read match by match"
+  },
+  {
+   "id": "fip-296740",
+   "comp": "Junior Africa Padel Cup",
+   "body": "FIP",
+   "cat": "Junior",
+   "year": 2026,
+   "name": "FIP JUNIOR AFRICA PADEL CUP 2026",
+   "start": "2026-06-17",
+   "end": "2026-06-20",
+   "where": "Egypt",
+   "tkey": "fip-296740",
+   "genders": [
+    "men",
+    "women"
+   ],
+   "unplaced": {},
+   "source": "Archived draw fip-296740 — placement bracket read match by match"
+  }
+ ],
+ "countries": {
+  "ARG": {
+   "iso": "AR",
+   "name": "Argentina"
+  },
+  "AUT": {
+   "iso": "AT",
+   "name": "Austria"
+  },
+  "BEL": {
+   "iso": "BE",
+   "name": "Belgium"
+  },
+  "BRA": {
+   "iso": "BR",
+   "name": "Brazil"
+  },
+  "CHI": {
+   "iso": "CL",
+   "name": "Chile"
+  },
+  "CYP": {
+   "iso": "CY",
+   "name": "Cyprus"
+  },
+  "CZE": {
+   "iso": "CZ",
+   "name": "Czechia"
+  },
+  "DEN": {
+   "iso": "DK",
+   "name": "Denmark"
+  },
+  "EGY": {
+   "iso": "EG",
+   "name": "Egypt"
+  },
+  "ESP": {
+   "iso": "ES",
+   "name": "Spain"
+  },
+  "EST": {
+   "iso": "EE",
+   "name": "Estonia"
+  },
+  "FIN": {
+   "iso": "FI",
+   "name": "Finland"
+  },
+  "FRA": {
+   "iso": "FR",
+   "name": "France"
+  },
+  "GBR": {
+   "iso": "GB",
+   "name": "Great Britain"
+  },
+  "GER": {
+   "iso": "DE",
+   "name": "Germany"
+  },
+  "HUN": {
+   "iso": "HU",
+   "name": "Hungary"
+  },
+  "ITA": {
+   "iso": "IT",
+   "name": "Italy"
+  },
+  "JPN": {
+   "iso": "JP",
+   "name": "Japan"
+  },
+  "LTU": {
+   "iso": "LT",
+   "name": "Lithuania"
+  },
+  "MDA": {
+   "iso": "MD",
+   "name": "Moldova"
+  },
+  "MEX": {
+   "iso": "MX",
+   "name": "Mexico"
+  },
+  "NED": {
+   "iso": "NL",
+   "name": "Netherlands"
+  },
+  "NOR": {
+   "iso": "NO",
+   "name": "Norway"
+  },
+  "PAR": {
+   "iso": "PY",
+   "name": "Paraguay"
+  },
+  "POL": {
+   "iso": "PL",
+   "name": "Poland"
+  },
+  "POR": {
+   "iso": "PT",
+   "name": "Portugal"
+  },
+  "QAT": {
+   "iso": "QA",
+   "name": "Qatar"
+  },
+  "SEN": {
+   "iso": "SN",
+   "name": "Senegal"
+  },
+  "SUI": {
+   "iso": "CH",
+   "name": "Switzerland"
+  },
+  "SWE": {
+   "iso": "SE",
+   "name": "Sweden"
+  },
+  "TUN": {
+   "iso": "TN",
+   "name": "Tunisia"
+  },
+  "UAE": {
+   "iso": "AE",
+   "name": "United Arab Emirates"
+  },
+  "UKR": {
+   "iso": "UA",
+   "name": "Ukraine"
+  },
+  "URU": {
+   "iso": "UY",
+   "name": "Uruguay"
+  },
+  "USA": {
+   "iso": "US",
+   "name": "United States"
+  }
+ },
+ "rows": [
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "ESP",
+   "iso": "ES",
+   "name": "Spain",
+   "pos": 1,
+   "via": "beat ARG 2-0 in the final"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "ARG",
+   "iso": "AR",
+   "name": "Argentina",
+   "pos": 2,
+   "via": "lost 0-2 to ESP in the final"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "ITA",
+   "iso": "IT",
+   "name": "Italy",
+   "pos": 3,
+   "via": "beat POR 2-1 in the third-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "POR",
+   "iso": "PT",
+   "name": "Portugal",
+   "pos": 4,
+   "via": "lost 1-2 to ITA in the third-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "NED",
+   "iso": "NL",
+   "name": "Netherlands",
+   "pos": 5,
+   "via": "beat SWE 2-1 in the 5th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "SWE",
+   "iso": "SE",
+   "name": "Sweden",
+   "pos": 6,
+   "via": "lost 1-2 to NED in the 5th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "FRA",
+   "iso": "FR",
+   "name": "France",
+   "pos": 7,
+   "via": "beat BRA 2-0 in the 7th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "BRA",
+   "iso": "BR",
+   "name": "Brazil",
+   "pos": 8,
+   "via": "lost 0-2 to FRA in the 7th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "BEL",
+   "iso": "BE",
+   "name": "Belgium",
+   "pos": 9,
+   "via": "beat DEN 2-0 in the 9th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "DEN",
+   "iso": "DK",
+   "name": "Denmark",
+   "pos": 10,
+   "via": "lost 0-2 to BEL in the 9th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "JPN",
+   "iso": "JP",
+   "name": "Japan",
+   "pos": 11,
+   "via": "beat URU 2-0 in the 11th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "URU",
+   "iso": "UY",
+   "name": "Uruguay",
+   "pos": 12,
+   "via": "lost 0-2 to JPN in the 11th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "CHI",
+   "iso": "CL",
+   "name": "Chile",
+   "pos": 13,
+   "via": "beat EGY 2-1 in the 13th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "EGY",
+   "iso": "EG",
+   "name": "Egypt",
+   "pos": 14,
+   "via": "lost 1-2 to CHI in the 13th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "USA",
+   "iso": "US",
+   "name": "United States",
+   "pos": 15,
+   "via": "beat GER 2-0 in the 15th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "women",
+   "c": "GER",
+   "iso": "DE",
+   "name": "Germany",
+   "pos": 16,
+   "via": "lost 0-2 to USA in the 15th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "ARG",
+   "iso": "AR",
+   "name": "Argentina",
+   "pos": 1,
+   "via": "beat ESP 2-1 in the final"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "ESP",
+   "iso": "ES",
+   "name": "Spain",
+   "pos": 2,
+   "via": "lost 1-2 to ARG in the final"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "POR",
+   "iso": "PT",
+   "name": "Portugal",
+   "pos": 3,
+   "via": "beat ITA 2-0 in the third-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "ITA",
+   "iso": "IT",
+   "name": "Italy",
+   "pos": 4,
+   "via": "lost 0-2 to POR in the third-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "UAE",
+   "iso": "AE",
+   "name": "United Arab Emirates",
+   "pos": 5,
+   "via": "beat BRA 2-0 in the 5th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "BRA",
+   "iso": "BR",
+   "name": "Brazil",
+   "pos": 6,
+   "via": "lost 0-2 to UAE in the 5th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "FRA",
+   "iso": "FR",
+   "name": "France",
+   "pos": 7,
+   "via": "beat CHI 2-1 in the 7th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "CHI",
+   "iso": "CL",
+   "name": "Chile",
+   "pos": 8,
+   "via": "lost 1-2 to FRA in the 7th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "SWE",
+   "iso": "SE",
+   "name": "Sweden",
+   "pos": 9,
+   "via": "beat NED 2-0 in the 9th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "NED",
+   "iso": "NL",
+   "name": "Netherlands",
+   "pos": 10,
+   "via": "lost 0-2 to SWE in the 9th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "BEL",
+   "iso": "BE",
+   "name": "Belgium",
+   "pos": 11,
+   "via": "beat URU 2-1 in the 11th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "URU",
+   "iso": "UY",
+   "name": "Uruguay",
+   "pos": 12,
+   "via": "lost 1-2 to BEL in the 11th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "USA",
+   "iso": "US",
+   "name": "United States",
+   "pos": 13,
+   "via": "beat MEX 2-0 in the 13th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "MEX",
+   "iso": "MX",
+   "name": "Mexico",
+   "pos": 14,
+   "via": "lost 0-2 to USA in the 13th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "PAR",
+   "iso": "PY",
+   "name": "Paraguay",
+   "pos": 15,
+   "via": "beat QAT 2-0 in the 15th-place match"
+  },
+  {
+   "ev": "fip-135412",
+   "g": "men",
+   "c": "QAT",
+   "iso": "QA",
+   "name": "Qatar",
+   "pos": 16,
+   "via": "lost 0-2 to PAR in the 15th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "ESP",
+   "iso": "ES",
+   "name": "Spain",
+   "pos": 1,
+   "via": "beat FRA 3-0 in the final"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "FRA",
+   "iso": "FR",
+   "name": "France",
+   "pos": 2,
+   "via": "lost 0-3 to ESP in the final"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "ITA",
+   "iso": "IT",
+   "name": "Italy",
+   "pos": 3,
+   "via": "beat POR 3-0 in the third-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "POR",
+   "iso": "PT",
+   "name": "Portugal",
+   "pos": 4,
+   "via": "lost 0-3 to ITA in the third-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "SWE",
+   "iso": "SE",
+   "name": "Sweden",
+   "pos": 5,
+   "via": "beat BEL 2-1 in the 5th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "BEL",
+   "iso": "BE",
+   "name": "Belgium",
+   "pos": 6,
+   "via": "lost 1-2 to SWE in the 5th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "DEN",
+   "iso": "DK",
+   "name": "Denmark",
+   "pos": 7,
+   "via": "beat NED 3-0 in the 7th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "men",
+   "c": "NED",
+   "iso": "NL",
+   "name": "Netherlands",
+   "pos": 8,
+   "via": "lost 0-3 to DEN in the 7th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "ESP",
+   "iso": "ES",
+   "name": "Spain",
+   "pos": 1,
+   "via": "beat ITA 3-0 in the final"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "ITA",
+   "iso": "IT",
+   "name": "Italy",
+   "pos": 2,
+   "via": "lost 0-3 to ESP in the final"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "SWE",
+   "iso": "SE",
+   "name": "Sweden",
+   "pos": 3,
+   "via": "beat POR 2-1 in the third-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "POR",
+   "iso": "PT",
+   "name": "Portugal",
+   "pos": 4,
+   "via": "lost 1-2 to SWE in the third-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "FRA",
+   "iso": "FR",
+   "name": "France",
+   "pos": 5,
+   "via": "beat BEL 2-1 in the 5th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "BEL",
+   "iso": "BE",
+   "name": "Belgium",
+   "pos": 6,
+   "via": "lost 1-2 to FRA in the 5th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "NED",
+   "iso": "NL",
+   "name": "Netherlands",
+   "pos": 7,
+   "via": "beat EST 3-0 in the 7th-place match"
+  },
+  {
+   "ev": "fip-296741",
+   "g": "women",
+   "c": "EST",
+   "iso": "EE",
+   "name": "Estonia",
+   "pos": 8,
+   "via": "lost 0-3 to NED in the 7th-place match"
+  },
+  {
+   "ev": "fip-296740",
+   "g": "men",
+   "c": "EGY",
+   "iso": "EG",
+   "name": "Egypt",
+   "pos": 1,
+   "via": "beat TUN 2-0 in the final"
+  },
+  {
+   "ev": "fip-296740",
+   "g": "men",
+   "c": "TUN",
+   "iso": "TN",
+   "name": "Tunisia",
+   "pos": 2,
+   "via": "lost 0-2 to EGY in the final"
+  },
+  {
+   "ev": "fip-296740",
+   "g": "men",
+   "c": "SEN",
+   "iso": "SN",
+   "name": "Senegal",
+   "pos": 3,
+   "via": "0 of 2 group ties won; no placement match"
+  },
+  {
+   "ev": "fip-296740",
+   "g": "women",
+   "c": "EGY",
+   "iso": "EG",
+   "name": "Egypt",
+   "pos": 1,
+   "via": "beat TUN 3-0 in the final"
+  },
+  {
+   "ev": "fip-296740",
+   "g": "women",
+   "c": "TUN",
+   "iso": "TN",
+   "name": "Tunisia",
+   "pos": 2,
+   "via": "lost 0-3 to EGY in the final"
+  },
+  {
+   "ev": "fip-296740",
+   "g": "women",
+   "c": "SEN",
+   "iso": "SN",
+   "name": "Senegal",
+   "pos": 3,
+   "via": "0 of 2 group ties won; no placement match"
+  }
+ ],
+ "gaps": [
+  {
+   "key": "fip-137970",
+   "comp": "European Championship",
+   "body": "FIP",
+   "cat": "Senior",
+   "year": 2024,
+   "where": "Italy",
+   "why": "The archived draw has no round labels and no dates, so its 287 ties cannot be ordered into a bracket. FIP published a final classification; it is not in any file on this branch."
+  },
+  {
+   "key": "rin-42477",
+   "comp": "Junior European Championship (by teams)",
+   "body": "FIP",
+   "cat": "Junior",
+   "year": 2024,
+   "where": "Budapest, Hungary",
+   "why": "RankedIn team ties export with score.winner = 0 on all 76 matches and a set score that is not a result, so the file does not say who won. The position rounds (1-8, 9-12, 9-16) are labelled but empty of outcomes."
+  },
+  {
+   "key": "rin-47618",
+   "comp": "Nordic Team Championships",
+   "body": "Nordic",
+   "cat": "Senior / Veteran / Junior",
+   "year": 2025,
+   "where": "Drammen, Norway",
+   "why": "Same RankedIn export problem: winner = 0 on all 36 ties."
+  },
+  {
+   "key": "rin-63840",
+   "comp": "Nordic Team Championships",
+   "body": "Nordic",
+   "cat": "Senior / Veteran / Junior",
+   "year": 2026,
+   "where": "Denmark",
+   "why": "Same RankedIn export problem: winner = 0 on all 48 ties."
+  }
+ ]
+}

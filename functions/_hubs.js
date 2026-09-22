@@ -42,6 +42,12 @@ const HUBS = {
     description:
       "Padel prize money by player: estimated career and per-season earnings across Premier Padel and the CUPRA FIP Tour, men's and women's.",
   },
+  "national-teams": {
+    name: "National teams",
+    title: "National team padel championships — every nation's placing · PadelTicker",
+    description:
+      "World, European and continental padel championships for national TEAMS: every nation's final placing, men's and women's, read off each tournament's own placement bracket.",
+  },
   events: {
     name: "Events",
     title: "Padel tournaments — live, upcoming & finished · PadelTicker",
