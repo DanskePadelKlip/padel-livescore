@@ -59,7 +59,9 @@ export const EVENTS = [
 // started on 22 Sep ("Group Tie 1 DNK 0 - 0 SRB"). Both shapes parse; the group
 // is optional and only used for labelling.
 const TIE_RE =
-  /^Match (\d+) (Male|Female) - Group Tie (\d+)(?:\s+-\s+([A-Z]_[A-Z]))?\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*$/;
+  /^Match (\d+) (Male|Female) - Group Tie (\d+)(?:\s+-\s+([A-Z]_[A-Z]))?\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})/;
+const NATION_RE = /^[A-Z][A-Z \-]{3,}$/;      // "GREAT BRITAIN", "DENMARK"
+const ELAPSED_RE = /^\d+h \d+min$/;
 // Player rows follow a tie row once the sheet goes live: NATION, two players, NATION, two.
 const PLAYER_RE = /^[A-Z]\.\s+\S/;
 const WHEN_RE = /^(\d{1,2}:\d{2}|Followed by|Not before)/i;
@@ -132,6 +134,58 @@ async function standings(msid, log) {
 
 const team = (code) => ({ name: code, players: [{ name: code, country: code }] });
 
+// The LIVE view (enjuego=1) is a different shape to the order of play: under each
+// tie row it prints elapsed time, then each nation with its two players and one
+// number PER SET. That is the only place FIP publishes a per-match score for a
+// championship, so it is what a scoreboard can follow.
+//   BULGARIA  Z. KISELKOVA  A. KARAMANOLEVA  3 0 0
+//   GREECE    A. MELIGALIOTI  A. PALASKA      6 1 0
+export function parseLive(html) {
+  const lines = textLines(html);
+  const out = [];
+  let court = "";
+  lines.forEach((l, i) => {
+    const c = /^COURT\s+(\S+)/i.exec(l);
+    if (c) court = c[1];
+    const m = TIE_RE.exec(l);
+    if (!m) return;
+    const [, no, gender, tieNo, groupRaw, a, sa, sb, b] = m;
+    const elapsed = ELAPSED_RE.test(lines[i + 1] || "") ? lines[i + 1] : "";
+    const sides = [];
+    let cur = null;
+    for (const x of lines.slice(i + 1, i + 20)) {
+      if (TIE_RE.test(x) || /^COURT\s/i.test(x)) break;       // next match starts
+      if (NATION_RE.test(x) && !/^\d/.test(x)) { cur = { nation: x, players: [], cols: [] }; sides.push(cur); continue; }
+      if (!cur) continue;
+      if (PLAYER_RE.test(x)) cur.players.push(x);
+      else if (/^\d+$/.test(x)) cur.cols.push(Number(x));
+    }
+    if (sides.length < 2) return;
+    const [A, B] = sides;
+    // Columns are completed sets, then the current games, then the CURRENT POINT
+    // (0/15/30/40). Folding the point into `sets` produced "0-15" as if it were a
+    // set score, so the last column is split off when it looks like a point.
+    const POINTS = new Set([15, 30, 40, 45]);
+    const n = Math.max(A.cols.length, B.cols.length);
+    const cols = [];
+    for (let k = 0; k < n; k++) cols.push([A.cols[k] ?? 0, B.cols[k] ?? 0]);
+    let points = null;
+    if (cols.length) {
+      const [pa, pb] = cols[cols.length - 1];
+      if (POINTS.has(pa) || POINTS.has(pb)) points = cols.pop().map(String);
+    }
+    const sets = cols;
+    out.push({
+      key: `${gender}|${groupRaw || ""}|${tieNo}|${a}|${b}`,
+      matchNo: Number(no), gender: gender === "Male" ? "Men" : "Women",
+      group: groupRaw || "", tieNo: Number(tieNo), a, b,
+      tieScore: [Number(sa), Number(sb)], court, elapsed,
+      sides: [A, B], sets, points,
+    });
+  });
+  return out;
+}
+
 export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
   const today = now.toISOString().slice(0, 10);
   const out = [];
@@ -139,14 +193,17 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
     if (ev.from && today < ev.from) continue;   // not started
     if (ev.to && today > ev.to) continue;       // over
     let sheet, live;
+    let liveHtml = "";
     try {
       sheet = parseSheet(await getText(OOP(ev.tid)));
-      live = parseSheet(await getText(LIVE(ev.tid)));
+      liveHtml = await getText(LIVE(ev.tid));
+      live = parseSheet(liveHtml);
     } catch (err) {
       log(`puntuate: ${ev.name} sheet unavailable (${err.message})`);
       continue;
     }
     const onCourt = new Set(live.empty ? [] : live.ties.map((t) => t.key));
+    const liveMatches = live.empty ? [] : parseLive(liveHtml);
     const table = await standings(ev.msid, log);
 
     for (const t of sheet.ties) {
@@ -174,7 +231,31 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
         raw: { day: sheet.day, rubbers: t.rows.length, rows: t.rows, standings: group || null },
       });
     }
-    log(`puntuate: ${ev.name} — ${sheet.ties.length} tie(s), ${onCourt.size} on court (${sheet.day || "no day"})`);
+    // One row per match actually on court, carrying the real set scores and the
+    // player names - this is what the scoreboard follows.
+    for (const lm of liveMatches) {
+      const side = (s2) => ({
+        name: s2.players.map((p) => p.replace(/^[A-Z]\.\s*/, "")).join(" / ") || s2.nation,
+        players: s2.players.map((p) => ({ name: p, country: null })),
+      });
+      out.push({
+        id: gid(id, `${ev.tid}:${lm.key}:m${lm.matchNo}`),
+        source: id,
+        federation: "FIP",
+        tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
+        className: `${lm.gender} · ${lm.a} v ${lm.b}`,
+        round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
+                        : `Tie ${lm.tieNo} · Match ${lm.matchNo}`,
+        court: lm.court || null,
+        status: STATUS.LIVE,
+        startTime: null,
+        schedule: null,
+        teams: [side(lm.sides[0]), side(lm.sides[1])],
+        score: { sets: lm.sets, winner: null, ...(lm.points ? { points: lm.points } : {}) },
+        raw: { elapsed: lm.elapsed, tieScore: lm.tieScore, nations: [lm.a, lm.b] },
+      });
+    }
+    log(`puntuate: ${ev.name} — ${sheet.ties.length} tie(s), ${liveMatches.length} match(es) on court (${sheet.day || "no day"})`);
   }
   return out;
 }
