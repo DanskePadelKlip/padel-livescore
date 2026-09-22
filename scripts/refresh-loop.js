@@ -17,7 +17,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { aggregate } from "../src/aggregate.js";
+import { aggregate, mergeMatches } from "../src/aggregate.js";
+import { updateArchive, archivedRows } from "../src/puntuate-archive.js";
+import { EVENTS as PUNTUATE_EVENTS } from "../src/adapters/puntuate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
 import { refreshCalendar } from "../src/calendar-refresh.js";
@@ -36,6 +38,32 @@ const ERROR_MS = 5 * 60_000;
 // nothing. Every 20th cycle is still far faster than the thing it tracks.
 const WPT_SYNC_EVERY = 20;
 let cycleN = 0;
+
+// Per-request timeouts (src/http.js and each adapter) bound ONE call, but a cycle
+// makes many, so a pathological run can still creep past any sane budget. This is
+// the backstop: if the fetch phase overruns, the cycle throws, the loop logs it and
+// retries on ERROR_MS instead of stalling silently. That silent stall is exactly what
+// happened on 2026-08-28 - a 393s fetch phase (normal: 42-78s) with no output, no
+// health.json, and /api/health's dead-man's switch calling the site down.
+//
+// Promise.race does NOT cancel the loser. That is acceptable here only because every
+// underlying request now self-aborts, so the orphan winds itself down; the .catch()
+// is mandatory though - once the deadline wins, nothing awaits the original promise
+// and a late rejection would kill the daemon (node defaults to
+// --unhandled-rejections=throw).
+const FETCH_MAX_MS = 3 * 60_000;
+
+function withDeadline(promise, ms, label) {
+  promise.catch(() => {});
+  let timer;
+  const guard = new Promise((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`${label} exceeded ${Math.round(ms / 1000)}s budget`)),
+      ms
+    );
+  });
+  return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const canDeploy =
@@ -63,14 +91,44 @@ async function cycle() {
   const t0 = Date.now();
   const date = new Date().toISOString().slice(0, 10);
   await maybeRefreshCalendar(date);
-  const { matches, sources } = await aggregate({ date });
-  const counts = matches.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
-
+  const { matches, sources } = await withDeadline(aggregate({ date }), FETCH_MAX_MS, "fetch phase");
   const outDir = join(root, "public", "data");
   mkdirSync(outDir, { recursive: true });
+
+  // FIP championship results survive their day here: postafip serves the current
+  // day only, so without this every rubber played yesterday leaves the feed at
+  // midnight while a board is still pointed at it. Archived rows are merged in
+  // FIRST, so anything the source still serves overwrites them and an upstream
+  // correction can never lose to our older copy of itself.
+  const archivePath = join(outDir, "puntuate-archive.json");
+  let archive = null;
+  try {
+    archive = JSON.parse(readFileSync(archivePath, "utf8"));
+  } catch (e) {
+    // Missing is normal on a first run. A corrupt file must not take the cycle
+    // down with it, so we start a new one and say so rather than throwing.
+    if (e.code !== "ENOENT") console.error("  archive unreadable:", e.message);
+  }
+  const arch = updateArchive(archive, matches, {
+    keepTids: new Set(PUNTUATE_EVENTS.map((e) => e.tid)),
+  });
+  if (arch.added || arch.refreshed || arch.dropped) {
+    writeFileSync(archivePath, JSON.stringify(arch.archive));
+  }
+  const keptRows = archivedRows(arch.archive);
+  const feedRows = keptRows.length ? mergeMatches([keptRows, matches]) : matches;
+  if (arch.size) {
+    console.log(`  puntuate archive: ${arch.size} row(s) (+${arch.added} new, ` +
+      `${arch.refreshed} refreshed, ${arch.dropped} pruned) - ` +
+      `feed ${matches.length} -> ${feedRows.length}`);
+  }
+
+  // Counts describe what is SERVED, archive included, so the cycle line matches
+  // what a board can actually see.
+  const counts = feedRows.reduce((a, m) => ((a[m.status] = (a[m.status] || 0) + 1), a), {});
   writeFileSync(
     join(outDir, "matches.json"),
-    JSON.stringify({ generatedAt: new Date().toISOString(), date, count: matches.length, matches }, null, 2)
+    JSON.stringify({ generatedAt: new Date().toISOString(), date, count: feedRows.length, matches: feedRows }, null, 2)
   );
 
   // Rankings change ~weekly and RankedIn is heavier than the match feed, so refresh
@@ -88,7 +146,7 @@ async function cycle() {
   } catch {}
   if (!rankingsFresh) {
     try {
-      const lists = await fetchRankings({ log: () => {} });
+      const lists = await withDeadline(fetchRankings({ log: () => {} }), FETCH_MAX_MS, "rankings refresh");
       if (lists.length) {
         writeFileSync(rf, JSON.stringify({ generatedAt: new Date().toISOString(), lists }, null, 2));
         rankings = lists.length;
