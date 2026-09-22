@@ -653,6 +653,7 @@ const byClassTier = (a, b) => {
 };
 
 function renderGroups(matches, changed) {
+  matches = withoutNestedRubbers(matches);
   // group by tournament, preserve aggregate order
   const groups = new Map();
   for (const m of matches) {
@@ -777,6 +778,21 @@ function rubberIndex() {
   _rubIdx = idx;
   _rubIdxFor = state.matches;
   return idx;
+}
+
+// A rubber is already printed inside its tie's card, so it does not also need a
+// row of its own beside it - without this every rubber appears twice, and the
+// tournament page printed all 57 of them twice over. Only dropped when the tie
+// row is in the SAME list: a view that lists a rubber without its parent must
+// still show it. Live rows never reach here - renderView hoists them into LIVE
+// NOW before grouping - so a live rubber keeps its own row, and the current
+// point that only that row shows.
+function withoutNestedRubbers(list) {
+  const present = new Set(list.map((m) => m.id));
+  return list.filter((m) => {
+    const c = /^(.*):m\d+$/.exec(m.id || "");
+    return !c || !present.has(c[1]);
+  });
 }
 
 function rubbersOf(m) {
@@ -1262,6 +1278,10 @@ function renderDayStrip() {
 
   const q = state.query.trim().toLowerCase();
   const counts = {};
+  // filtered() shows an UNDATED match on every day, so every chip has to count
+  // it too, or a chip reads 14 and opens a list of 90. Undated rows create no
+  // chip of their own - the window is still derived from real dates only.
+  let undated = 0;
   for (const m of state.matches) {
     if (state.status !== "all" && m.status !== state.status) continue;
     if (state.fed !== "all" && m.federation !== state.fed) continue;
@@ -1271,6 +1291,7 @@ function renderDayStrip() {
     }
     const d = matchDate(m);
     if (d) counts[d] = (counts[d] || 0) + 1;
+    else undated++;
   }
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -1288,7 +1309,7 @@ function renderDayStrip() {
   const days = [];
   for (let t = new Date(lo + "T00:00:00"); ymd(t) <= hi; t = new Date(t - 0 + dayMs)) {
     const ds = ymd(t);
-    days.push({ ds, wd: WD3[t.getDay()], dd: `${String(t.getDate()).padStart(2, "0")}.${String(t.getMonth() + 1).padStart(2, "0")}`, n: counts[ds] || 0 });
+    days.push({ ds, wd: WD3[t.getDay()], dd: `${String(t.getDate()).padStart(2, "0")}.${String(t.getMonth() + 1).padStart(2, "0")}`, n: (counts[ds] || 0) + undated });
   }
 
   const sig = state.status + "|" + state.fed + "|" + q + "|" + days.map((d) => d.ds + ":" + d.n).join(",") + "|sel=" + state.day;
@@ -2958,7 +2979,7 @@ function renderTournament() {
     const roundList = (entries) => entries
       .sort((a, b) => roundRank(b[0]) - roundRank(a[0]))
       .map(([round, ms]) => (round ? `<div class="round-label">${esc(round)}</div>` : "") +
-        `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`)
+        `<div class="group open"><div class="group__body">${(tv.kind === "live" ? withoutNestedRubbers(ms) : ms).map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`)
       .join("");
 
     for (const [cls, rmap] of [...cats.entries()].sort(byClassTier)) {
@@ -3010,7 +3031,7 @@ function renderByDay(matches, tv) {
     const head = g.sort === Infinity ? "Date TBC" : `Day ${g.n != null ? g.n : i}${g.label ? " · " + esc(g.label) : ""}`;
     g.matches.sort(cmpByStart);
     out += `<div class="section-label region">${head}<span class="count">${g.matches.length} match${g.matches.length === 1 ? "" : "es"}</span></div>` +
-      `<div class="group open"><div class="group__body">${g.matches.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
+      `<div class="group open"><div class="group__body">${(tv.kind === "live" ? withoutNestedRubbers(g.matches) : g.matches).map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
   }
   return out;
 }
