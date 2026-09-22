@@ -190,6 +190,23 @@ export function parseLive(html) {
   });
   return out;
 }
+
+// The sheet has no date parameter - whatever it serves is TODAY's play, and no
+// row carries a date of its own. Without this every national-team match reaches
+// the UI with no calendar day, and the live feed's day strip (which defaults to
+// today) filters all of them out - the matches are in matches.json and simply
+// never render. Label shape is the one matchDate() in public/app.js parses,
+// "SEP 22 TUE"; `n` is the tournament play-day, counted from ev.from.
+const MON3 = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const WD3 = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+function playDay(now, from) {
+  const label = `${MON3[now.getMonth()]} ${now.getDate()} ${WD3[now.getDay()]}`;
+  if (!from) return { n: null, label };
+  const [y, mo, d] = from.split("-").map(Number);
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const n = Math.round((midnight - new Date(y, mo - 1, d)) / 86400000) + 1;
+  return { n: n >= 1 ? n : null, label };
+}
 
 export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
   const today = now.toISOString().slice(0, 10);
@@ -197,6 +214,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
   for (const ev of EVENTS) {
     if (ev.from && today < ev.from) continue;   // not started
     if (ev.to && today > ev.to) continue;       // over
+    const day = playDay(now, ev.from);
     let sheet, live;
     let liveHtml = "";
     try {
@@ -227,6 +245,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
         court: t.court || null,
         status,
         startTime: null,
+        day,
         schedule: t.when || null,
         teams: [team(t.a), team(t.b)],
         score: {
@@ -254,6 +273,7 @@ export async function fetchMatches({ log = () => {}, now = new Date() } = {}) {
         court: lm.court || null,
         status: lm.finished ? STATUS.FINAL : STATUS.LIVE,
         startTime: null,
+        day,
         schedule: null,
         teams: [side(lm.sides[0]), side(lm.sides[1])],
         score: { sets: lm.sets, winner: null, ...(lm.points ? { points: lm.points } : {}) },
