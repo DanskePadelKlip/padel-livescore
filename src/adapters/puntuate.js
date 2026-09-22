@@ -63,11 +63,20 @@ export const EVENTS = [
 //   "Group Tie 1 - DEU 2 - 0 HUN"        (women, 22 Sep - bare dash, no group)
 //   "Group Tie 1 - F_F - BGR 0 - 0 GRC"  (21 Sep preview - group token)
 // Both the dash and the group token are optional, independently.
-const NATION_RE = /^\p{Lu}[\p{Lu} \-]{3,}$/u;      // "GREAT BRITAIN", "DENMARK"
+const NATION_RE = /^\p{Lu}[\p{L} \-']{2,}$/u;       // "GREAT BRITAIN", "DENMARK", "Austria"
 const ELAPSED_RE = /^\d+h \d+min$/;
 // Player rows follow a tie row once the sheet goes live: NATION, two players, NATION, two.
 const PLAYER_RE = /^\p{Lu}\.\s+\S/u;
 const WHEN_RE = /^(\d{1,2}:\d{2}|Followed by|Not before)/i;
+// All-caps used to be the whole nation test, and FIP typed "Austria" in title
+// case on 22 Sep. It cost more than one label: both AUT v GBR rubbers hit the
+// `sides.length < 2` guard and vanished, so that tie showed 0 of 3 while its tie
+// row still read "AUT 0 - 3 GBR", and the unclaimed names bled UP into the match
+// above - two Austrian men rendered inside a Norwegian women's pair on the live
+// site. Title case is accepted now, which means the sheet's own vocabulary reads
+// like a nation too, so it is excluded by name rather than by shape.
+const SHEET_WORD_RE = /^(live|finished|in play|followed by|not before|walkover|retired|no matches.*)$/i;
+const isNation = (x) => NATION_RE.test(x) && !SHEET_WORD_RE.test(x) && !WHEN_RE.test(x) && !/^\d/.test(x);
 
 // The sheet serves every non-ASCII letter as a numeric entity ("M&#220;LLER"),
 // and Node has no HTML parser to lean on. Named entities are the handful this
@@ -106,7 +115,12 @@ function textLines(html) {
 // Only the head of a tie row is stable. The tail - group token, nations, tie
 // score - comes and goes between sheets, between draws on the same day, and
 // again once a tie finishes.
-const TIE_HEAD_RE = /^Match (\d+) (Male|Female) - Group Tie (\d+)/;
+// The head tolerates a tail printed in the WRONG PLACE, because FIP does that
+// too: "Match 1 Male HUN 1 - 0 IRL - Group Tie 1 * 12:00". Anchoring straight
+// after the gender dropped that row, and with it a whole rubber of that tie.
+const TIE_HEAD_RE = /^Match (\d+) (Male|Female)(?:\s+[A-Z]{3}\s+\d+\s*-\s*\d+\s+[A-Z]{3})?\s*-\s*Group Tie (\d+)/;
+const TIE_TAIL_ALT_RE =
+  /^Match \d+ (?:Male|Female)\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*-\s*Group Tie/;
 const TIE_TAIL_RE =
   /^Match \d+ (?:Male|Female) - Group Tie \d+(?:\s*-\s*([A-Z]_[A-Z]))?\s*-?\s*([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})/;
 
@@ -129,7 +143,7 @@ function blockNations(lines, i) {
   for (const x of lines.slice(i + 1, i + 20)) {
     if (TIE_HEAD_RE.test(x) || /^COURT\s/i.test(x)) break;
     if (PLAYER_RE.test(x)) continue;
-    if (NATION_RE.test(x) && !/^\d/.test(x)) out.push(x);
+    if (isNation(x)) out.push(x);
   }
   return out;
 }
@@ -155,6 +169,10 @@ function rowTeams(lines, i, codes) {
   const t = TIE_TAIL_RE.exec(lines[i]);
   if (t) {
     return { group: t[1] || "", a: t[2], b: t[5], sa: Number(t[3]), sb: Number(t[4]), scored: true };
+  }
+  const alt = TIE_TAIL_ALT_RE.exec(lines[i]);
+  if (alt) {
+    return { group: "", a: alt[1], b: alt[4], sa: Number(alt[2]), sb: Number(alt[3]), scored: true };
   }
   const names = blockNations(lines, i);
   const a = codes.get(names[0]), b = codes.get(names[1]);
@@ -261,7 +279,7 @@ export function parseLive(html, fallback = "live") {
     let cur = null;
     for (const x of lines.slice(i + 1, i + 20)) {
       if (TIE_HEAD_RE.test(x) || /^COURT\s/i.test(x)) break;   // next match starts
-      if (NATION_RE.test(x) && !/^\d/.test(x)) { cur = { nation: x, players: [], cols: [] }; sides.push(cur); continue; }
+      if (isNation(x)) { cur = { nation: x, players: [], cols: [] }; sides.push(cur); continue; }
       if (!cur) continue;
       if (PLAYER_RE.test(x)) cur.players.push(x);
       else if (/^\d+$/.test(x)) cur.cols.push(Number(x));
@@ -295,6 +313,37 @@ export function parseLive(html, fallback = "live") {
 // fetchMatches so the live relay can build the same rows per request, with no
 // deploy between FIP and the board. `withStandings` is off there: the group
 // table comes from a second host and a scoreboard does not use it.
+// The sheet states its own date ("Tuesday, 22 September 2026") and no row carries
+// one. Without a `day` the UI's matchDate() returns null, and the live feed's day
+// strip - which defaults to today - filters every national-team match out of the
+// page while it sits in matches.json, scores and all. This is the THIRD time the
+// stamp has had to be restored (73852da, 9b6f491), so if you rewrite eventRows,
+// keep it: public/app.js also fails open on undated rows, but that is the net,
+// not the fix.
+//
+// It belongs here and not in fetchMatches because functions/api/live-rows.js
+// calls eventRows() directly - a stamp added there reaches matches.json only.
+// Derived from the sheet text rather than the clock: this runs in the laptop
+// daemon (local time) and on Cloudflare (UTC), and a machine clock would label
+// the two differently either side of midnight CEST.
+// Label grammar is the one public/app.js matchDate() parses: "SEP 22 TUE".
+const MON_FULL = "january february march april may june july august september october november december".split(" ");
+const MON_ABBR = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split(" ");
+const WD_ABBR = "SUN MON TUE WED THU FRI SAT".split(" ");
+function sheetDay(text, from) {
+  const m = /([A-Za-z]+),?\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/.exec(text || "");
+  if (!m) return null;                       // no day line on the sheet - stay undated
+  const mo = MON_FULL.indexOf(m[3].toLowerCase());
+  if (mo < 0) return null;
+  const dom = Number(m[2]);
+  const ms = Date.UTC(Number(m[4]), mo, dom);
+  const label = `${MON_ABBR[mo]} ${dom} ${WD_ABBR[new Date(ms).getUTCDay()]}`;
+  if (!from) return { n: null, label };
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const n = Math.round((ms - Date.UTC(fy, fm - 1, fd)) / 86400000) + 1;
+  return { n: n >= 1 ? n : null, label };
+}
+
 export async function eventRows(ev, { log = () => {}, withStandings = true } = {}) {
   const out = [];
   {
@@ -312,6 +361,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
       return out;
     }
     const onCourt = new Set(live.empty ? [] : live.ties.map((t) => t.key));
+    const day = sheetDay(sheet.day || live.day, ev.from);
     const liveMatches = live.empty ? [] : parseLive(liveHtml);
     // Every match of the day, with the live view overriding the sheet for the
     // ones on court. Keyed the same way the rows are, so the override is exact.
@@ -338,6 +388,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         status,
         startTime: null,
         schedule: t.when || null,
+        day,
         teams: [team(t.a), team(t.b)],
         score: {
           sets: [[t.a_score, t.b_score]],
@@ -359,6 +410,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         federation: "FIP",
         tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
         className: `${lm.gender} · ${lm.a} v ${lm.b}`,
+        day,
         round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
                         : `Tie ${lm.tieNo} · Match ${lm.matchNo}`,
         court: lm.court || null,
