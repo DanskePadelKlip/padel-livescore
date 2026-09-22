@@ -231,6 +231,31 @@ export function parseLive(html, fallback = "live") {
 // fetchMatches so the live relay can build the same rows per request, with no
 // deploy between FIP and the board. `withStandings` is off there: the group
 // table comes from a second host and a scoreboard does not use it.
+// The sheet states its own date ("Tuesday, 22 September 2026") and nothing else
+// a row carries does. Without a `day` the UI's matchDate() returns null, and the
+// live feed's day strip - which defaults to today - filters every national-team
+// match out of the page while it sits in matches.json, scores and all. Derive it
+// from the sheet text rather than the clock: this runs both in the laptop daemon
+// (local time) and in functions/api/live-rows.js (UTC on Cloudflare), and a
+// machine clock would label the two differently either side of midnight CEST.
+// Label grammar is the one public/app.js matchDate() parses: "SEP 22 TUE".
+const MON_FULL = "january february march april may june july august september october november december".split(" ");
+const MON_ABBR = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split(" ");
+const WD_ABBR = "SUN MON TUE WED THU FRI SAT".split(" ");
+function sheetDay(text, from) {
+  const m = /([A-Za-z]+),?\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/.exec(text || "");
+  if (!m) return null;                       // no day line on the sheet - stay undated
+  const mo = MON_FULL.indexOf(m[3].toLowerCase());
+  if (mo < 0) return null;
+  const dom = Number(m[2]);
+  const ms = Date.UTC(Number(m[4]), mo, dom);
+  const label = `${MON_ABBR[mo]} ${dom} ${WD_ABBR[new Date(ms).getUTCDay()]}`;
+  if (!from) return { n: null, label };
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const n = Math.round((ms - Date.UTC(fy, fm - 1, fd)) / 86400000) + 1;
+  return { n: n >= 1 ? n : null, label };
+}
+
 export async function eventRows(ev, { log = () => {}, withStandings = true } = {}) {
   const out = [];
   {
@@ -248,6 +273,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
       return out;
     }
     const onCourt = new Set(live.empty ? [] : live.ties.map((t) => t.key));
+    const day = sheetDay(sheet.day || live.day, ev.from);
     const liveMatches = live.empty ? [] : parseLive(liveHtml);
     // Every match of the day, with the live view overriding the sheet for the
     // ones on court. Keyed the same way the rows are, so the override is exact.
@@ -274,6 +300,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         status,
         startTime: null,
         schedule: t.when || null,
+        day,
         teams: [team(t.a), team(t.b)],
         score: {
           sets: [[t.a_score, t.b_score]],
@@ -295,6 +322,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         federation: "FIP",
         tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
         className: `${lm.gender} · ${lm.a} v ${lm.b}`,
+        day,
         round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
                         : `Tie ${lm.tieNo} · Match ${lm.matchNo}`,
         court: lm.court || null,
