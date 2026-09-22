@@ -65,18 +65,38 @@ export const EVENTS = [
 // Both the dash and the group token are optional, independently.
 const TIE_RE =
   /^Match (\d+) (Male|Female) - Group Tie (\d+)(?:\s*-\s*([A-Z]_[A-Z]))?\s*-?\s*([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})/;
-const NATION_RE = /^[A-Z][A-Z \-]{3,}$/;      // "GREAT BRITAIN", "DENMARK"
+const NATION_RE = /^\p{Lu}[\p{Lu} \-]{3,}$/u;      // "GREAT BRITAIN", "DENMARK"
 const ELAPSED_RE = /^\d+h \d+min$/;
 // Player rows follow a tie row once the sheet goes live: NATION, two players, NATION, two.
-const PLAYER_RE = /^[A-Z]\.\s+\S/;
+const PLAYER_RE = /^\p{Lu}\.\s+\S/u;
 const WHEN_RE = /^(\d{1,2}:\d{2}|Followed by|Not before)/i;
+
+// The sheet serves every non-ASCII letter as a numeric entity ("M&#220;LLER"),
+// and Node has no HTML parser to lean on. Named entities are the handful this
+// page actually emits; the numeric forms cover the rest of Latin-1 and beyond.
+const NAMED = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+function decodeEntities(s) {
+  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, body) => {
+    if (body[0] !== "#") {
+      const hit = NAMED[body.toLowerCase()];
+      return hit === undefined ? whole : hit;      // leave anything unknown as written
+    }
+    const code = body[1] === "x" || body[1] === "X"
+      ? parseInt(body.slice(2), 16)
+      : parseInt(body.slice(1), 10);
+    // Lone surrogates and out-of-range values would throw; keep the source text.
+    if (!Number.isFinite(code) || code < 32 || code > 0x10ffff ||
+        (code >= 0xd800 && code <= 0xdfff)) return whole;
+    return String.fromCodePoint(code);
+  });
+}
 
 function textLines(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, "\n")
     .split("\n")
-    .map((l) => l.replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim())
+    .map((l) => decodeEntities(l).replace(/\s+/g, " ").trim())
     .filter(Boolean);
 }
 
