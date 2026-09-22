@@ -4,10 +4,12 @@
 //   node scripts/fetch-live.js            # today
 //   node scripts/fetch-live.js 2026-07-12 # a specific day
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { aggregate } from "../src/aggregate.js";
+import { aggregate, mergeMatches } from "../src/aggregate.js";
+import { updateArchive, archivedRows } from "../src/puntuate-archive.js";
+import { EVENTS as PUNTUATE_EVENTS } from "../src/adapters/puntuate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
 import { newlyLive, newlySoon, sendAlerts, sendSoonAlerts } from "../src/alerts.js";
@@ -70,7 +72,37 @@ if (process.env.ALERT_WEBHOOK_URL || process.env.VAPID_PRIVATE_KEY) {
   }
 }
 
-const payload = { generatedAt: new Date().toISOString(), date, count: matches.length, matches };
+// FIP championship results survive their day here: postafip serves the current
+// day only, so without this every rubber played yesterday leaves the feed at
+// midnight while a board is still being asked to show it. Archived rows are
+// merged in FIRST, so anything the source still serves overwrites them and an
+// upstream correction can never lose to our older copy of itself.
+const archivePath = join(outDir, "puntuate-archive.json");
+let archive = null;
+try {
+  archive = JSON.parse(readFileSync(archivePath, "utf8"));
+} catch (e) {
+  // Missing is normal on a first run. A corrupt file must not take the refresh
+  // down with it, so we start a new one and say so rather than throwing.
+  if (e.code !== "ENOENT") {
+    console.log(`archive unreadable (${e.message}) - starting a new one`);
+  }
+}
+const arch = updateArchive(archive, matches, {
+  keepTids: new Set(PUNTUATE_EVENTS.map((e) => e.tid)),
+});
+if (arch.added || arch.refreshed || arch.dropped) {
+  writeFileSync(archivePath, JSON.stringify(arch.archive));
+}
+const keptRows = archivedRows(arch.archive);
+const withArchive = keptRows.length ? mergeMatches([keptRows, matches]) : matches;
+console.log(
+  `\npuntuate archive: ${arch.size} row(s) (+${arch.added} new, ` +
+  `${arch.refreshed} refreshed, ${arch.dropped} pruned) - ` +
+  `feed ${matches.length} -> ${withArchive.length}`,
+);
+
+const payload = { generatedAt: new Date().toISOString(), date, count: withArchive.length, matches: withArchive };
 writeFileSync(join(outDir, "matches.json"), JSON.stringify(payload, null, 2));
 console.log(`\n✅ Wrote public/data/matches.json`);
 

@@ -18,6 +18,7 @@
 // from live-detail.js so that endpoint keeps serving the stats overlay
 // untouched while this one changes.
 import { EVENTS, eventRows } from "../../src/adapters/puntuate.js";
+import { archivedRows } from "../../src/puntuate-archive.js";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -51,11 +52,31 @@ export async function onRequestGet({ request }) {
   try {
     // Standings come from a second host and a scoreboard never reads them, so
     // they stay out: this path is judged on latency.
-    const rows = await Promise.all(
-      events.map((ev) => eventRows(ev, { withStandings: false })),
-    );
-    const matches = rows.flat();
-    return json({ generatedAt: new Date().toISOString(), count: matches.length, matches });
+    const [rows, archive] = await Promise.all([
+      Promise.all(events.map((ev) => eventRows(ev, { withStandings: false }))),
+      // Deployed beside matches.json by the daemon. Its own origin, so this is
+      // an edge read, and a failure only costs the archived rows.
+      fetch(new URL("/data/puntuate-archive.json", request.url), { cf: { cacheTtl: 30 } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ]);
+    const live = rows.flat();
+    // Archived first so anything FIP still serves overwrites it: a correction
+    // upstream must always beat our copy of the older result.
+    const byId = new Map();
+    const tids = new Set(events.map((ev) => ev.tid));
+    for (const m of archivedRows(archive)) {
+      if (tids.has(String(m.id).split(":")[1])) byId.set(m.id, m);
+    }
+    for (const m of live) byId.set(m.id, m);
+    const matches = [...byId.values()];
+    return json({
+      generatedAt: new Date().toISOString(),
+      count: matches.length,
+      live: live.length,
+      archived: matches.length - live.length,
+      matches,
+    });
   } catch (err) {
     // A board holds its last good render, so an error here costs a poll, not the
     // graphic. Say what failed rather than serving an empty list, which a board
