@@ -14,7 +14,12 @@ const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ:
 // (national rankings/matches: "dk") and 3-letter IOC/FIP codes (FIP world: "ESP").
 // Map the 3-letter ones to ISO alpha-2, then build the flag from regional-indicator
 // letters. Unknown codes render no flag (better than a wrong one).
-const IOC2 = { ESP:"ES", ARG:"AR", BRA:"BR", UAE:"AE", ITA:"IT", PAR:"PY", POR:"PT", CHI:"CL", CHL:"CL", BEL:"BE", FRA:"FR", NED:"NL", NLD:"NL", SWE:"SE", MEX:"MX", GER:"DE", DEU:"DE", GBR:"GB", ENG:"GB", EGY:"EG", CHN:"CN", USA:"US", URU:"UY", DEN:"DK", TUN:"TN", JPN:"JP", HUN:"HU", GRE:"GR", INA:"ID", IDN:"ID", VEN:"VE", NOR:"NO", FIN:"FI", POL:"PL", AUT:"AT", SUI:"CH", CHE:"CH", CZE:"CZ", SVK:"SK", CRO:"HR", HRV:"HR", SRB:"RS", ROU:"RO", RUS:"RU", UKR:"UA", TUR:"TR", ISR:"IL", IND:"IN", AUS:"AU", CAN:"CA", COL:"CO", PER:"PE", ECU:"EC", BOL:"BO", QAT:"QA", KSA:"SA", SAU:"SA", KUW:"KW", BHR:"BH", MAR:"MA", RSA:"ZA", ZAF:"ZA", GEO:"GE", EST:"EE", LAT:"LV", LTU:"LT", SLO:"SI", SVN:"SI", KOS:"XK", BIH:"BA", MNE:"ME", LUX:"LU", IRL:"IE", ISL:"IS", PHI:"PH", PHL:"PH", THA:"TH", SGP:"SG", MAS:"MY", HKG:"HK", TPE:"TW", KOR:"KR", NZL:"NZ", CRC:"CR", GUA:"GT", DOM:"DO", PUR:"PR", PAN:"PA", PRY:"PY", CHN2:"CN" };
+const IOC2 = { ESP:"ES", ARG:"AR", BRA:"BR", UAE:"AE", ITA:"IT", PAR:"PY", POR:"PT", CHI:"CL", CHL:"CL", BEL:"BE", FRA:"FR", NED:"NL", NLD:"NL", SWE:"SE", MEX:"MX", GER:"DE", DEU:"DE", GBR:"GB", ENG:"GB", EGY:"EG", CHN:"CN", USA:"US", URU:"UY", DEN:"DK", TUN:"TN", JPN:"JP", HUN:"HU", GRE:"GR", INA:"ID", IDN:"ID", VEN:"VE", NOR:"NO", FIN:"FI", POL:"PL", AUT:"AT", SUI:"CH", CHE:"CH", CZE:"CZ", SVK:"SK", CRO:"HR", HRV:"HR", SRB:"RS", ROU:"RO", RUS:"RU", UKR:"UA", TUR:"TR", ISR:"IL", IND:"IN", AUS:"AU", CAN:"CA", COL:"CO", PER:"PE", ECU:"EC", BOL:"BO", QAT:"QA", KSA:"SA", SAU:"SA", KUW:"KW", BHR:"BH", MAR:"MA", RSA:"ZA", ZAF:"ZA", GEO:"GE", EST:"EE", LAT:"LV", LTU:"LT", SLO:"SI", SVN:"SI", KOS:"XK", BIH:"BA", MNE:"ME", LUX:"LU", IRL:"IE", ISL:"IS", PHI:"PH", PHL:"PH", THA:"TH", SGP:"SG", MAS:"MY", HKG:"HK", TPE:"TW", KOR:"KR", NZL:"NZ", CRC:"CR", GUA:"GT", DOM:"DO", PUR:"PR", PAN:"PA", PRY:"PY", CHN2:"CN",
+  // FIP's national-team sheet writes ISO-3166 alpha-3, not IOC, so a handful of
+  // its codes are not the ones the tour uses: DEN is IOC, DNK is ISO, and only
+  // the first was here - Denmark was the one nation on its own qualifier board
+  // rendering without a flag. Measured against the live feed on 22 Sep.
+  DNK:"DK", GRC:"GR", BGR:"BG", CYP:"CY", AZE:"AZ", MDA:"MD" };
 const iso2ToFlag = (cc) => cc.toUpperCase().replace(/./g, (c) => String.fromCodePoint(0x1f1e6 - 65 + c.charCodeAt(0)));
 function countryFlag(code) {
   if (!code) return "";
@@ -462,7 +467,13 @@ function filtered() {
   return state.matches.filter((m) => {
     if (state.status !== "all" && m.status !== state.status) return false;
     if (state.fed !== "all" && m.federation !== state.fed) return false;
-    if (state.day !== "all" && matchDate(m) !== state.day) return false;
+    // An UNDATED match is never hidden by the day strip. A source that states no
+    // calendar date at all (FIP's national-team sheet) would otherwise be absent
+    // from every day chip including today's - sitting in matches.json, scores and
+    // all, invisible on the page. That regressed twice on 22 Sep during a live tie,
+    // so the filter fails OPEN: date it if you can, show it either way.
+    const md = matchDate(m);
+    if (state.day !== "all" && md !== null && md !== state.day) return false;
     if (q) {
       const hay = (m.tournament.name + " " + m.teams.map((t) => t.name).join(" ") + " " + (m.className || "")).toLowerCase();
       if (!hay.includes(q)) return false;
@@ -624,6 +635,23 @@ function groupTier(name, matches) {
 // Bigger first: tier dominates, match count breaks ties (and orders nationals).
 const tournamentRank = (g) => groupTier(g.t.name, g.matches) * 1000 + g.matches.length;
 
+// Class sections, highest tier first. One Danish tournament runs DPF500 next to DPF10,
+// and the feed hands the classes over in draw-creation order, so on the 2026-09-12
+// Aarhus event the headline DPF500 rendered SIXTH — under "Herrer DPF25 først til
+// mølle". nationalTier() already reads the points out of a class name.
+// Array.prototype.sort is stable, so a tour whose classes carry no tier at all
+// ("Men", "Women", "Herren") keeps exactly the order it arrived in.
+const classTier = (cls) => nationalTier(String(cls || "").toLowerCase());
+const byClassTier = (a, b) => {
+  const ta = classTier(a[0]), tb = classTier(b[0]);
+  if (ta !== tb) return tb - ta;
+  // Equal tier: feed order is stable WITHIN one render but not ACROSS refreshes — "Herrer
+  // DPF60 A" and "DPF60 B" swapped between two loads of the same page. Break the tie by
+  // name, but ONLY for classes that carry a tier at all, so a tour whose classes are
+  // "Men"/"Women" keeps the order the source intends rather than being alphabetised.
+  return ta > 0 ? String(a[0]).localeCompare(String(b[0]), "da") : 0;
+};
+
 function renderGroups(matches, changed) {
   // group by tournament, preserve aggregate order
   const groups = new Map();
@@ -656,8 +684,14 @@ function renderGroups(matches, changed) {
   // event the aggregator happened to emit first, so on a day with no live
   // matches an FIP Bronze could sit expanded under a collapsed FIP Gold.
   if (!state._touched) {
+    // renderGroups is only ever handed the NON-live rows - renderView hoists the
+    // live ones into their own section first - so g.matches.some(live) was dead:
+    // always false, and an event that was actually on court never opened itself.
+    // Ask the feed which tournaments are live instead of the slice we were given.
+    const liveTours = new Set(
+      state.matches.filter((m) => m.status === "live").map((m) => m.source + ":" + m.tournament.id));
     ordered.flatMap(([, gs]) => gs).forEach((g, i) => {
-      const hasLive = g.matches.some((m) => m.status === "live");
+      const hasLive = g.matches.some((m) => m.status === "live") || liveTours.has(g.key);
       if (hasLive || i === 0) state.expandedGroups.add(g.key);
     });
   }
@@ -718,6 +752,74 @@ function schedLabel(m) {
   return /follow/i.test(sched) ? "next" : null;
 }
 
+// ---------- national-team ties: the lineup under the country row ----------
+//
+// A tie is three rubbers between the same two countries, so the row for it can
+// only ever say "DNK 3 - 0 SRB" - true, and useless if you want to know who
+// played. The rubbers are already in the feed as matches of their own: the
+// puntuate adapter ids them "<tie id>:m<n>". So the lineup is a join on that id
+// prefix, not new data and not a new request.
+//
+// Indexed once per feed load rather than scanned per row: matchRow() runs for
+// every match on the page, and a scan of state.matches inside it is quadratic
+// on a 2000-match feed.
+let _rubIdx = null, _rubIdxFor = null;
+function rubberIndex() {
+  if (_rubIdxFor === state.matches && _rubIdx) return _rubIdx;
+  const idx = new Map();
+  for (const x of state.matches) {
+    const c = /^(.*):m(\d+)$/.exec(x.id || "");
+    if (!c) continue;
+    if (!idx.has(c[1])) idx.set(c[1], []);
+    idx.get(c[1]).push([Number(c[2]), x]);
+  }
+  for (const v of idx.values()) v.sort((a, b) => a[0] - b[0]);
+  _rubIdx = idx;
+  _rubIdxFor = state.matches;
+  return idx;
+}
+
+function rubbersOf(m) {
+  if (!m || !m.id) return [];
+  return (rubberIndex().get(m.id) || []).map((e) => e[1]);
+}
+
+// Inline styles on purpose: public/index.html is a shared file that the deploy
+// loop rewrites on every cycle, and this block has to be self-contained.
+const RUB_CSS = {
+  wrap: "margin:3px 0 1px;display:flex;flex-direction:column;gap:2px",
+  row: "display:grid;grid-template-columns:12px minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:baseline;font-size:12px;line-height:1.35",
+  no: "color:var(--muted);text-align:center",
+  sets: "color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums",
+  side: "min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+};
+
+function rubberLines(m) {
+  const rs = rubbersOf(m);
+  if (!rs.length) return "";
+  const pair = (t) =>
+    ((t && t.players) || [])
+      .map((p) =>
+        p.name && p.name !== "TBD"
+          ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(p.name)}</span>`
+          : esc((p && p.name) || ""))
+      .join(" / ") || esc((t && t.name) || "");
+  const line = (r, i) => {
+    const no = (/:m(\d+)$/.exec(r.id) || [])[1] || String(i + 1);
+    const sets = (r.score.sets || []).map((x) => `${setCellHtml(x[0])}-${setCellHtml(x[1])}`).join(" ");
+    const pts = r.status === "live" && r.score.points ? ` <b>${esc(r.score.points.join("-"))}</b>` : "";
+    const mid = sets || (r.status === "live" ? "live" : "·");
+    const w = r.score.winner;
+    return `<div style="${RUB_CSS.row}">`
+      + `<span style="${RUB_CSS.no}">${esc(no)}</span>`
+      + `<span style="${RUB_CSS.side}${w === 0 ? ";font-weight:600" : ""}">${pair(r.teams[0])}</span>`
+      + `<span style="${RUB_CSS.sets}">${mid}${pts}</span>`
+      + `<span style="${RUB_CSS.side}${w === 1 ? ";font-weight:600" : ""}">${pair(r.teams[1])}</span>`
+      + `</div>`;
+  };
+  return `<div style="${RUB_CSS.wrap}">${rs.map(line).join("")}</div>`;
+}
+
 function matchRow(m, changed, showTournament) {
   const focus = !!state.focusMatch && matchRouteKey(m) === state.focusMatch.key;
   const open = state.openMatches.has(m.id) || focus; // a deep link opens what it points at
@@ -743,6 +845,7 @@ function matchRow(m, changed, showTournament) {
           ${m.court ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
+          ${rubberLines(m)}
         </div>
       </div>
       ${detail(m)}
@@ -1519,6 +1622,7 @@ function archiveMatches(t) {
     byClass.get(k).push(m);
   }
   return [...byClass.entries()]
+    .sort(byClassTier)
     .map(([cls, ms]) => (cls && cls !== "—" ? `<div class="arch-class">${esc(cls)}</div>` : "") + ms.map(archiveMatchRow).join(""))
     .join("");
 }
@@ -2857,7 +2961,7 @@ function renderTournament() {
         `<div class="group open"><div class="group__body">${ms.map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`)
       .join("");
 
-    for (const [cls, rmap] of cats) {
+    for (const [cls, rmap] of [...cats.entries()].sort(byClassTier)) {
       if (cls) html += `<div class="section-label region">${esc(cls)}</div>`;
       // WPT rounds are news-sourced and partial, so a bracket would be full of gap
       // "BYE" slots — show a clean round-grouped list instead. Complete draws
