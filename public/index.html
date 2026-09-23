@@ -528,6 +528,17 @@
     .ntc-table td.ntc-year { font-variant-numeric: tabular-nums; opacity: .6; width: 3.4em; }
     .ntc-table td.nt-pos { font-size: 15px; }
     .ntc-sub { font-size: 11px; opacity: .55; margin-top: 2px; white-space: normal; }
+    /* Phone: the "via" line ("beat NED 3-0 in the final") is the first thing a
+       nowrap table clips, and it is the only cell that says HOW a nation finished
+       there. Give it its own full-width row under the placing instead of leaving it
+       behind a sideways swipe. */
+    @media (max-width: 560px) {
+      .nt-table tr { display: grid; grid-template-columns: 2.6em 1fr; border-bottom: 1px solid rgba(128,128,128,.16); padding: 4px 0; }
+      .nt-table tr:last-child { border-bottom: 0; }
+      .nt-table td { border-bottom: 0; padding: 2px 10px; white-space: normal; }
+      .nt-table td.nt-via { grid-column: 1 / -1; padding-top: 1px; }
+      .ntc-table tr { grid-template-columns: 3.4em 2.2em 1fr; }
+    }
     /* ---- rankings ---- */
     .rank-country-wrap { display: flex; align-items: center; gap: 10px; padding: 6px 0 8px; }
     .rank-country { flex: 1 1 auto; max-width: 340px; background: var(--card); border: 1px solid var(--line); color: var(--text);
