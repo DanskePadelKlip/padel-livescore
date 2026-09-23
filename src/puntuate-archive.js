@@ -26,9 +26,25 @@ export function archivable(m) {
   if (!m || m.source !== "puntuate" || m.status !== "final") return false;
   const sets = (m.score && m.score.sets) || [];
   if (!sets.length) return false;
-  // A tie row's "sets" is its rubber count ([[3, 0]]); a rubber's is real sets.
-  // Both are meaningful, so the only thing rejected here is an empty one.
-  return true;
+
+  // A tie row's "sets" is its rubber count ([[3, 0]]).
+  if (!/:m\d+$/.test(String(m.id))) {
+    const a = Number((sets[0] || [])[0]) || 0;
+    const b = Number((sets[0] || [])[1]) || 0;
+    // Best of three: a tie is decided when one side has TWO rubbers, not when
+    // two have been played. 1-1 is the gap between rubbers, and archiving it
+    // froze "the other side won" onto a tie that was still being played.
+    if (Math.max(a, b) < 2 || a === b) return false;
+    // The emitter reaches the same conclusion; if the two ever disagree, the
+    // row is not something to keep for the rest of the week.
+    return m.score.winner === 0 || m.score.winner === 1;
+  }
+
+  // A rubber read from a half-rendered block can end up with one side holding
+  // no players and a column default of zero. It looks like a completed match
+  // and is not one, so both sides must actually be named.
+  const named = (m.teams || []).filter((t) => t && (t.players || []).length > 0).length;
+  return named >= 2;
 }
 
 // The event id a row belongs to: "puntuate:2309:Male||1|DNK|SRB" -> "2309".
@@ -51,6 +67,12 @@ export function updateArchive(archive, matches, { keepTids = null, max = 5000 } 
   // the daemon no longer polls it, so its rows can never be refreshed and only
   // grow the file. A hard ceiling underneath that guards against a runaway id.
   let dropped = 0;
+  // Re-judge what we already hold. The predicate is the same one incoming rows
+  // face, so tightening it retires the rows it would now reject rather than
+  // leaving them on air for the rest of the event.
+  for (const id of Object.keys(kept)) {
+    if (!archivable(kept[id])) { delete kept[id]; dropped++; }
+  }
   if (keepTids) {
     for (const id of Object.keys(kept)) {
       if (!keepTids.has(tidOf(id))) { delete kept[id]; dropped++; }
@@ -64,6 +86,19 @@ export function updateArchive(archive, matches, { keepTids = null, max = 5000 } 
     archive: { version: ARCHIVE_VERSION, matches: kept },
     added, refreshed, dropped, size: Object.keys(kept).length,
   };
+}
+
+// Whether a row the source is serving now should replace what we have kept.
+//
+// Live normally wins: a correction upstream must reach the board. The exception
+// is a row that states NOTHING - FIP strips the nations and the tie score off a
+// finished row hours later, and that row is newer but emptier. Replacing a
+// result with it is how a decided tie regressed to "not started" on air.
+export function supersedes(incoming, archived) {
+  if (!archived) return true;
+  const now = ((incoming && incoming.score && incoming.score.sets) || []).length;
+  const kept = ((archived.score && archived.score.sets) || []).length;
+  return now > 0 || kept === 0;
 }
 
 // Archived rows FIRST so that anything the source serves now overwrites them.

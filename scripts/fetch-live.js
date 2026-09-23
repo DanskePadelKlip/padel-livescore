@@ -8,7 +8,8 @@ import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { aggregate, mergeMatches } from "../src/aggregate.js";
-import { updateArchive, archivedRows } from "../src/puntuate-archive.js";
+import { updateArchive, archivedRows, supersedes } from "../src/puntuate-archive.js";
+import { loadArchive, saveArchive } from "../src/puntuate-archive-node.js";
 import { EVENTS as PUNTUATE_EVENTS } from "../src/adapters/puntuate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
@@ -78,24 +79,19 @@ if (process.env.ALERT_WEBHOOK_URL || process.env.VAPID_PRIVATE_KEY) {
 // merged in FIRST, so anything the source still serves overwrites them and an
 // upstream correction can never lose to our older copy of itself.
 const archivePath = join(outDir, "puntuate-archive.json");
-let archive = null;
-try {
-  archive = JSON.parse(readFileSync(archivePath, "utf8"));
-} catch (e) {
-  // Missing is normal on a first run. A corrupt file must not take the refresh
-  // down with it, so we start a new one and say so rather than throwing.
-  if (e.code !== "ENOENT") {
-    console.log(`archive unreadable (${e.message}) - starting a new one`);
-  }
-}
+const { archive, writable } = await loadArchive(archivePath, { log: (m) => console.log(m) });
 const arch = updateArchive(archive, matches, {
   keepTids: new Set(PUNTUATE_EVENTS.map((e) => e.tid)),
 });
-if (arch.added || arch.refreshed || arch.dropped) {
-  writeFileSync(archivePath, JSON.stringify(arch.archive));
+if (writable && (arch.added || arch.refreshed || arch.dropped)) {
+  saveArchive(archivePath, arch.archive);
 }
 const keptRows = archivedRows(arch.archive);
-const withArchive = keptRows.length ? mergeMatches([keptRows, matches]) : matches;
+// A source row that states no score is FIP mid-edit, not a correction, and must
+// not replace a result we already have.
+const archById = new Map(keptRows.map((m) => [m.id, m]));
+const freshRows = matches.filter((m) => supersedes(m, archById.get(m.id)));
+const withArchive = keptRows.length ? mergeMatches([keptRows, freshRows]) : matches;
 console.log(
   `\npuntuate archive: ${arch.size} row(s) (+${arch.added} new, ` +
   `${arch.refreshed} refreshed, ${arch.dropped} pruned) - ` +

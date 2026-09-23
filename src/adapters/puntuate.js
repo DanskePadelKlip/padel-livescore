@@ -211,18 +211,23 @@ export function parseSheet(html) {
     const players = lines.slice(i + 1, i + 7).filter((x) => PLAYER_RE.test(x)).slice(0, 4);
     let when = "";
     for (let k = Math.max(0, i - 3); k < i; k++) if (WHEN_RE.test(lines[k])) when = lines[k];
-    const key = `${gender}|${group}|${tieNo}|${a}|${b}`;
+    // The group token is NOT part of the identity: FIP adds and removes it
+    // mid-event, and an id that changes shape mid-event splits one tie into two
+    // - a board following the old id goes quiet and the archived row is
+    // orphaned. The empty slot is kept so links already in use stay valid.
+    const key = `${gender}||${tieNo}|${a}|${b}`;
     let tie = ties.find((t) => t.key === key);
     if (!tie) {
       tie = {
         key, gender: gender === "Male" ? "Men" : "Women", group, tieNo: Number(tieNo),
-        a, b, a_score: sa || 0, b_score: sb || 0, court, when, rows: [],
+        a, b, a_score: sa || 0, b_score: sb || 0, scored: t.scored,
+        court, when, rows: [],
       };
       ties.push(tie);
     }
     // The tie score repeats on every row; the last one read is the freshest.
     // A row that has lost its tail states no score, so it must not zero one.
-    if (t.scored) { tie.a_score = sa; tie.b_score = sb; }
+    if (t.scored) { tie.a_score = sa; tie.b_score = sb; tie.scored = true; }
     tie.rows.push({ no: Number(no), court, when, players });
   });
   return { day, empty, ties };
@@ -310,7 +315,7 @@ export function parseLive(html, fallback = "live") {
     if (state === "live" && cols.length > 1) points = cols.pop().map(String);
     const sets = cols;
     out.push({
-      key: `${gender}|${groupRaw || ""}|${tieNo}|${a}|${b}`,
+      key: `${gender}||${tieNo}|${a}|${b}`,        // see parseSheet: no group token
       matchNo: Number(no), gender: gender === "Male" ? "Men" : "Women",
       group: groupRaw || "", tieNo: Number(tieNo), a, b,
       tieScore: t.scored ? [sa, sb] : null, court, elapsed, finished, state,
@@ -393,8 +398,18 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
     const table = withStandings ? await standings(ev.msid, log) : [];
 
     for (const t of sheet.ties) {
-      const decided = t.a_score + t.b_score >= 2;        // best of three rubbers
-      const status = onCourt.has(t.key) ? STATUS.LIVE : decided ? STATUS.FINAL : STATUS.UPCOMING;
+      // No row of this tie stated a score - FIP strips the nations and the tie
+      // score off a row hours after it was played. Publishing 0-0 for it would
+      // overwrite a real result with zeroes, so the row is left out and whatever
+      // already knows the score (the archive, or the last good read) stands. A
+      // tie actually on court is still published, because a board needs it.
+      const live = onCourt.has(t.key);
+      if (!t.scored && !live) continue;
+      // Best of three: two rubbers WON, not two rubbers played. Summing them
+      // called a tie decided at 1-1 - a changeover between rubbers - and then
+      // handed the win to side B, because `a > b` is false when they are level.
+      const decided = t.scored && Math.max(t.a_score, t.b_score) >= 2;
+      const status = live ? STATUS.LIVE : decided ? STATUS.FINAL : STATUS.UPCOMING;
       const group = table.find(
         (g) => g.draw === (t.gender === "Men" ? "men" : "women") &&
                g.teams.some((x) => x.code === t.a) && g.teams.some((x) => x.code === t.b));
@@ -412,8 +427,10 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         day,
         teams: [team(t.a), team(t.b)],
         score: {
-          sets: [[t.a_score, t.b_score]],
-          winner: decided ? (t.a_score > t.b_score ? 0 : 1) : null,
+          // An unscored row states no rubber count; [] says "unknown", where
+          // [[0, 0]] would say "nobody has won one", which is a different claim.
+          sets: t.scored ? [[t.a_score, t.b_score]] : [],
+          winner: decided && t.a_score !== t.b_score ? (t.a_score > t.b_score ? 0 : 1) : null,
         },
         raw: { day: sheet.day, rubbers: t.rows.length, rows: t.rows, standings: group || null },
       });

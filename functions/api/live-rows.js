@@ -18,7 +18,17 @@
 // from live-detail.js so that endpoint keeps serving the stats overlay
 // untouched while this one changes.
 import { EVENTS, eventRows } from "../../src/adapters/puntuate.js";
-import { archivedRows } from "../../src/puntuate-archive.js";
+import { archivedRows, supersedes } from "../../src/puntuate-archive.js";
+
+// Deployed beside matches.json by the daemon, so this is a read from our own
+// edge. A failure costs the archived rows and nothing else: the live rows are
+// the point, and a board mid-broadcast would rather have today's score than a
+// 502 about yesterday's.
+function fetchArchive(request) {
+  return fetch(new URL("/data/puntuate-archive.json", request.url), { cf: { cacheTtl: 30 } })
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+}
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -47,29 +57,36 @@ export async function onRequestGet({ request }) {
 
   let events = EVENTS.filter((ev) => (!ev.from || today >= ev.from) && (!ev.to || today <= ev.to));
   if (tid) events = EVENTS.filter((ev) => ev.tid === tid);   // an explicit id overrides the dates
-  if (!events.length) return json({ generatedAt: new Date().toISOString(), count: 0, matches: [] });
 
   try {
+    // Read the archive even with no event in its window. `today` is UTC while
+    // the event dates are local, so for the first two hours of a Danish morning
+    // the window can already have closed - and a board still up on the finals
+    // must not be told "the match is gone" because of a timezone edge.
+    const archive = await fetchArchive(request);
+    const stored = archivedRows(archive).filter(
+      (m) => !tid || String(m.id).split(":")[1] === tid,
+    );
+    if (!events.length) {
+      return json({
+        generatedAt: new Date().toISOString(),
+        count: stored.length, live: 0, archived: stored.length,
+        archiveSize: stored.length, matches: stored,
+      });
+    }
     // Standings come from a second host and a scoreboard never reads them, so
     // they stay out: this path is judged on latency.
-    const [rows, archive] = await Promise.all([
-      Promise.all(events.map((ev) => eventRows(ev, { withStandings: false }))),
-      // Deployed beside matches.json by the daemon. Its own origin, so this is
-      // an edge read, and a failure only costs the archived rows.
-      fetch(new URL("/data/puntuate-archive.json", request.url), { cf: { cacheTtl: 30 } })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-    ]);
+    const rows = await Promise.all(events.map((ev) => eventRows(ev, { withStandings: false })));
     const live = rows.flat();
     // Archived first so anything FIP still serves overwrites it: a correction
-    // upstream must always beat our copy of the older result.
+    // upstream must always beat our copy of the older result - unless the row
+    // it is serving now states no score at all, which is FIP mid-edit.
     const byId = new Map();
     const tids = new Set(events.map((ev) => ev.tid));
-    const stored = archivedRows(archive);
     for (const m of stored) {
       if (tids.has(String(m.id).split(":")[1])) byId.set(m.id, m);
     }
-    for (const m of live) byId.set(m.id, m);
+    for (const m of live) if (supersedes(m, byId.get(m.id))) byId.set(m.id, m);
     const matches = [...byId.values()];
     return json({
       generatedAt: new Date().toISOString(),
