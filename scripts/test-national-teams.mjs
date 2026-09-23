@@ -198,5 +198,66 @@ state.ntGender = "women"; state.ntCat = "Junior";
 ok(sandbox.currentPath() === "/national-teams/women/junior", `women + Junior deep-links (got ${sandbox.currentPath()})`);
 state.ntGender = "men"; state.ntCat = "all";
 
+// ---- one nation's own page (Kim, 2026-09-23: a country click opens this, not a ranking)
+state.ntCountry = "DEN";
+sandbox.render();
+let page = app.innerHTML;
+ok(/ntc-name/.test(page) && /Denmark/.test(page), "clicking a nation renders its own page");
+ok(/2024/.test(page) && /2026/.test(page), "the country page spans every edition it placed in");
+ok(/Junior Euro Padel Cup/.test(page) && /World Championship/.test(page), "both of Denmark's championships are listed");
+ok(/data-ntrank="DEN"/.test(page), "the ranking is still reachable, from the header button");
+ok(/data-ntback/.test(page), "the country page offers a way back");
+ok(sandbox.currentPath() === "/national-teams/country/den", `the country page has its own URL (got ${sandbox.currentPath()})`);
+sandbox.setTitle();
+ok(/Denmark/.test(document.title), `the tab names the nation (got "${document.title}")`);
+
+// Both genders on one page: Denmark's record is 10th (women, 2024) and 7th (men, 2026),
+// and the men-only default must not hide half of it.
+ok(/Women/.test(page) && /Men/.test(page), "a nation's men's and women's placings share the page");
+
+// Deep link, cold: the path alone must reach the same page.
+state.ntCountry = null;
+loc.href = new URL("http://localhost/national-teams/country/arg").href;
+sandbox.applyRoute();
+await settle();
+ok(state.mode === "natteams" && state.ntCountry === "ARG", `/national-teams/country/arg deep-links (mode ${state.mode}, country ${state.ntCountry})`);
+ok(/Argentina/.test(app.innerHTML), "the deep-linked page renders that nation");
+
+// Every nation that is clickable anywhere must have a page with something on it —
+// the empty state is for typed URLs, not for nations we actually link to.
+const empties = [];
+for (const c of new Set(clickable.map((r) => r.c))) {
+  state.ntCountry = c;
+  sandbox.render();
+  if (/No sourced championship placing/.test(app.innerHTML)) empties.push(c);
+}
+ok(empties.length === 0, `every clickable nation has a page with content${empties.length ? ` — empty for ${empties.join(", ")}` : ""}`);
+
+// A code nobody played under says so, rather than rendering an empty table that
+// reads as "this nation has never placed".
+state.ntCountry = "ZZZ";
+sandbox.render();
+ok(/No sourced championship placing/.test(app.innerHTML), "an unknown country code gets an honest empty state");
+ok(!/ntc-table/.test(app.innerHTML), "...and no empty table");
+
+// Back to the tables.
+state.ntCountry = null;
+sandbox.render();
+ok(/nt-gap/.test(app.innerHTML) && !/ntc-name/.test(app.innerHTML), "back returns to the championship tables");
+ok(sandbox.currentPath() === "/national-teams", "...and to the section URL");
+
+// Searching is a search of the tables, so it must leave a country page rather than
+// filtering nothing. The listener debounces at 200 ms.
+state.ntCountry = "DEN";
+sandbox.render();
+const qbox = document.getElementById("q");
+qbox.value = "spain";
+qbox.dispatchEvent(new window.Event("input"));
+await new Promise((r) => setTimeout(r, 400));
+ok(state.ntCountry === null, "typing in the search box leaves the country page");
+ok(sandbox.currentPath() === "/national-teams", "...and the URL follows");
+state.query = ""; qbox.value = "";
+sandbox.render();
+
 console.log(fail.length ? `\n${fail.length} FAILED` : "\nall headless checks passed");
 process.exit(fail.length ? 1 : 0);
