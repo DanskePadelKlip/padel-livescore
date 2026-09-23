@@ -392,6 +392,7 @@ const state = {
   natTeams: null,            // loaded national-teams.json
   ntCat: "all",              // "all" | a category from the data ("Senior"/"Junior"/…)
   ntGender: "men",           // which half of each championship is on screen
+  ntCountry: null,           // IOC code: one nation's own page, or null for the championship tables
   // ---- favorites ----
   favs: loadFavs(),
   pushState: "unknown", // unknown|unsupported|default|denied|subscribed
@@ -3586,6 +3587,9 @@ document.getElementById("q").addEventListener("input", (e) => {
     if (state.mode === "players") return searchPlayers(v);
     state.query = v;
     if (state.mode === "archive") state.archiveCap = 40;
+    // Searching is a search of the championship tables; staying on one nation's page
+    // while the box filters nothing would look broken.
+    if (state.mode === "natteams" && state.ntCountry && v.trim()) { state.ntCountry = null; render(); return syncUrl(false); }
     render();
   }, 200);
 });
@@ -3616,7 +3620,13 @@ app.addEventListener("click", (e) => {
   const ntg = e.target.closest("[data-ntgender]");
   if (ntg) { state.ntGender = ntg.dataset.ntgender; render(); syncUrl(false); return; }
   const ntn = e.target.closest("[data-ntcountry]");
-  if (ntn) { openCountryRanking(ntn.dataset.ntcountry, ntn.dataset.ntiso); return; }
+  if (ntn) { state.ntCountry = ntn.dataset.ntcountry; render(); syncUrl(); window.scrollTo(0, 0); return; }
+  const ntb = e.target.closest("[data-ntback]");
+  if (ntb) { state.ntCountry = null; render(); syncUrl(); return; }
+  // The ranking is still one click away, just no longer THE click: "Denmark" now
+  // answers "how has Denmark done" rather than "who is Danish".
+  const ntr = e.target.closest("[data-ntrank]");
+  if (ntr) { openCountryRanking(ntr.dataset.ntrank, ntr.dataset.ntiso); return; }
   const tvw = e.target.closest("[data-tview]");
   if (tvw) { state.tView = tvw.dataset.tview; render(); return; }
 
@@ -3904,6 +3914,9 @@ function currentPath() {
   if (state.mode === "archive") return "/results";
   if (state.mode === "no1") return "/world-no1";
   if (state.mode === "natteams") {
+    // One nation's record is a page of its own, not a filter of the tables, so it
+    // gets its own path (and its own canonical at the edge) rather than a slice URL.
+    if (state.ntCountry) return "/national-teams/country/" + encodeURIComponent(state.ntCountry.toLowerCase());
     const g = state.ntGender === "women" ? "/women" : "";
     const c = state.ntCat && state.ntCat !== "all" ? "/" + state.ntCat.toLowerCase() : "";
     return "/national-teams" + g + c;
@@ -3942,6 +3955,10 @@ function setTitle() {
   else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
+  else if (state.mode === "natteams" && state.ntCountry) {
+    const c = (state.natTeams?.countries || {})[state.ntCountry];
+    t = `${c?.name || state.ntCountry} national padel team — championship placings · PadelTicker`;
+  }
   else if (state.mode === "natteams") t = "National team padel championships — every nation's placing · PadelTicker";
   else if (state.mode === "pairs") t = "Padel pairs — partnership records, rivals & results · PadelTicker";
   else if (state.mode === "earnings") t = `Padel prize money${state.earnCat === "women" ? " — women" : ""}${state.earnYear && state.earnYear !== "all" ? " " + state.earnYear : ""} — career earnings leaderboard · PadelTicker`;
@@ -4047,7 +4064,9 @@ function applyRoute() {
     // first in a hand-typed link, so match on shape rather than position.
     else if (seg[0] === "national-teams") {
       activateMode("natteams");
-      for (const sg of seg.slice(1)) {
+      state.ntCountry = null;
+      if (seg[1] === "country" && seg[2]) state.ntCountry = decodeURIComponent(seg[2]).toUpperCase();
+      else for (const sg of seg.slice(1)) {
         if (sg === "men" || sg === "women") state.ntGender = sg;
         else if (sg) state.ntCat = sg;
       }
@@ -4130,10 +4149,93 @@ async function openCountryRanking(ioc, iso) {
 }
 
 const NT_MEDAL = { 1: "gold", 2: "silver", 3: "bronze" };
+const NT_MEDAL_LABEL = { 1: "🥇", 2: "🥈", 3: "🥉" };
+
+// One nation's whole record, across every sourced championship and both genders —
+// the page a country name should open. Kim chose this over the old destination (the
+// nation's RANKING) on 2026-09-23: a ranking answers "who plays for this country",
+// which is a different question from the one a placings table invites. The ranking is
+// still one click away, from the button in the header.
+//
+// Everything here is a re-slice of the same sourced rows — no new claim is made about
+// any nation — so the "not sourced" count travels with it: a thin record must not read
+// as a complete one.
+function renderNatCountry(code) {
+  const d = state.natTeams;
+  const meta = (d.countries || {})[code] || {};
+  const rows = (d.rows || []).filter((r) => r.c === code);
+  const evById = new Map((d.events || []).map((e) => [e.id, e]));
+
+  // A nation that never appears is a typed or stale URL, not a nation with no record:
+  // say so rather than rendering an empty table that looks like a real answer.
+  const entered = (d.events || []).flatMap((e) =>
+    Object.entries(e.unplaced || {})
+      .filter(([, list]) => (list || []).includes(code))
+      .map(([g]) => ({ e, g }))
+  );
+  if (!rows.length && !entered.length) {
+    app.innerHTML = `<div class="empty"><div class="big">🏅</div>No sourced championship placing for “${esc(meta.name || code)}”.
+      <div class="empty-hint"><span class="tlink" data-ntback="1">← All championships</span></div></div>`;
+    return;
+  }
+
+  const byYear = rows.slice().sort((a, b) => {
+    const A = evById.get(a.ev) || {}, B = evById.get(b.ev) || {};
+    return (B.year || 0) - (A.year || 0) || String(A.comp).localeCompare(String(B.comp)) || a.g.localeCompare(b.g);
+  });
+  const medals = [1, 2, 3].map((n) => byYear.filter((r) => r.pos === n).length);
+  const best = byYear.length ? Math.min(...byYear.map((r) => r.pos)) : null;
+  const stat = (v, l) => `<div class="ntc-stat"><div class="ntc-stat-v">${v}</div><div class="ntc-stat-l">${esc(l)}</div></div>`;
+
+  let html = `<div class="ntc-head">
+    <div class="ntc-back"><span class="tlink" data-ntback="1">← All championships</span></div>
+    <h2 class="ntc-name">${countryFlag(meta.iso || code)} ${esc(meta.name || code)}</h2>
+    <div class="ntc-stats">
+      ${stat(byYear.length, byYear.length === 1 ? "placing" : "placings")}
+      ${best ? stat(best, "best finish") : ""}
+      ${medals[0] + medals[1] + medals[2] ? stat(`${medals[0]}·${medals[1]}·${medals[2]}`, "gold · silver · bronze") : ""}
+    </div>
+    <div class="ntc-actions"><button class="rchip" data-ntrank="${esc(code)}" data-ntiso="${esc(meta.iso || "")}">Players ranked for ${esc(meta.name || code)} →</button></div>
+  </div>`;
+
+  let card = "";
+  if (byYear.length) {
+    card += `<div class="nt-scroll"><table class="nt-table ntc-table"><tbody>` +
+      byYear.map((r) => {
+        const e = evById.get(r.ev) || {};
+        const title = e.tkey
+          ? `<span class="tlink" data-tourney="arch" data-tkey="${esc(e.tkey)}" data-tname="${esc(e.name)}" data-tfed="" title="Open the ${esc(e.name)} draw">${esc(e.comp)}</span>`
+          : esc(e.comp || r.ev);
+        return `<tr>
+          <td class="ntc-year">${esc(e.year || "")}</td>
+          <td class="nt-pos ${NT_MEDAL[r.pos] || ""}">${NT_MEDAL_LABEL[r.pos] || r.pos}</td>
+          <td>${title}<div class="ntc-sub">${esc(e.body || "")} ${esc(e.cat || "")} · ${r.g === "women" ? "Women" : "Men"}${e.where ? ` · ${esc(e.where)}` : ""}</div></td>
+          <td class="nt-via">${esc(r.via)}</td>
+        </tr>`;
+      }).join("") + `</tbody></table></div>`;
+  }
+
+  if (entered.length) {
+    card += `<div class="nt-unplaced">Entered, no placing stated by the draw: ` +
+      entered
+        .sort((a, b) => (b.e.year || 0) - (a.e.year || 0))
+        .map(({ e, g }) => `${esc(e.comp)} ${e.year} (${g === "women" ? "women" : "men"})`)
+        .join(", ") + `</div>`;
+  }
+  html += `<div class="nt-ev">${card}</div>`;
+
+  const gaps = (d.gaps || []).length;
+  html += `<div class="nt-note">Only editions whose draw states a final classification are listed${
+    gaps ? `; ${gaps} championship${gaps === 1 ? " is" : "s are"} not sourced yet and could add to this record` : ""
+  }. ${esc(d.note || "")}</div>`;
+  app.innerHTML = html;
+}
+
 
 function renderNatTeams() {
   const d = state.natTeams;
   if (!d) { app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`; return; }
+  if (state.ntCountry) return renderNatCountry(state.ntCountry);
   const evs = (d.events || []).slice().sort((a, b) => b.year - a.year || a.comp.localeCompare(b.comp));
   const cats = [...new Set(evs.map((e) => e.cat))];
   const genders = [...new Set(evs.flatMap((e) => e.genders))].sort().reverse(); // men, women

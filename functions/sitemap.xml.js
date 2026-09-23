@@ -19,11 +19,12 @@ export async function onRequestGet({ request }) {
   const origin = new URL(request.url).origin;
   const today = new Date().toISOString().slice(0, 10);
 
-  const [matches, archive, natRanks, fipRanks] = await Promise.all([
+  const [matches, archive, natRanks, fipRanks, natTeams] = await Promise.all([
     grab(origin, "/data/matches.json"),
     grab(origin, "/data/archive/index.json"),
     grab(origin, "/data/rankings.json"),
     grab(origin, "/data/rankings-fip.json"),
+    grab(origin, "/data/national-teams.json"),
   ]);
 
   const urls = [];
@@ -41,6 +42,12 @@ export async function onRequestGet({ request }) {
   // points its canonical somewhere else is exactly what cost this site its hub pages
   // in 2026-07 (see _hubs.js).
   add("/national-teams", { changefreq: "monthly", priority: "0.6" });
+  // One page per nation IS listed: unlike the gender/category slices, a country page is
+  // its own content (that nation's record across every championship) and carries its own
+  // canonical, so it is a page a crawler should hold rather than a filtered view.
+  for (const code of new Set(((natTeams && natTeams.rows) || []).map((r) => r.c).filter(Boolean))) {
+    add(`/national-teams/country/${seg(String(code).toLowerCase())}`, { changefreq: "monthly", priority: "0.5" });
+  }
   add("/pairs", { changefreq: "weekly", priority: "0.6" });
   // Earnings: the hub plus one page per gender. The per-year URLs are deep-linkable
   // too, but they are slices of the same rows — listing them would pad the sitemap
