@@ -175,7 +175,11 @@ function teamNameWithFlags(t) {
       // Only the DISPLAY is shortened. data-pname keeps the full name because that is
       // what /api/search resolves a click against, and the title still spells it out.
       const shown = shortenSurname(p.name, p.country) || p.name;
-      const nm = p.name && p.name !== "TBD"
+      // A national-team tie and a club team-league row carry ONE pseudo-player whose
+      // name IS the team ("DNK", "TK Sparta Praha"). Linking it sent the reader to an
+      // empty player search for a country code. Only link a real person.
+      const pseudo = t.players.length === 1 && p.name === t.name;
+      const nm = p.name && p.name !== "TBD" && p.name !== "Bye" && !pseudo
         ? `<span class="pn" data-pname="${esc(p.name)}" title="View ${esc(p.name)}">${esc(shown)}</span>`
         : esc(p.name);
       const rk = rankFor(p.name, p.country);
@@ -364,6 +368,7 @@ const state = {
   h2h: null,                 // loaded head-to-head
   comparing: false,          // in "pick an opponent" mode
   partnersAll: false,        // profile: partnership list expanded past the first 8
+  onCourtAll: false,         // /players: "on court today" expanded past the first 40
   // ---- pairs (partnership profiles) ----
   // A pair is two players who play on the SAME SIDE. pairKey is kept in canonical
   // (sorted) id order, which is the order the /pair/:a/:b URL uses — the same
@@ -863,7 +868,7 @@ function matchRow(m, changed, showTournament) {
       <div class="match__main${m.status === "final" ? " ended" : ""}" data-open="${esc(m.id)}">
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
-          ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${fedFlag(m.federation)} ${m.federation}</span><span class="nm" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
+          ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${fedFlag(m.federation)} ${m.federation}</span><span class="nm tlink" data-tourney="live" data-tkey="${esc(m.source + ":" + m.tournament.id)}" data-tname="${esc(m.tournament.name)}" data-tfed="${esc(m.federation)}" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
           ${m.court ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
@@ -1124,7 +1129,7 @@ function matchupHtml(m) {
       const e = d.elo[id];
       if (!e) return "";
       return `<div class="h2hrow">
-        <span class="h2hlbl">${esc(short(nm(id) || (d.names && d.names[id]) || id))}</span>
+        <span class="h2hlbl pn" data-player="${esc(id)}" title="View profile">${esc(short(nm(id) || (d.names && d.names[id]) || id))}</span>
         <span class="h2hnum"><b>${Math.round(e.rating)}</b></span>
         <span class="h2hsub">Elo${e.rank ? ` · #${e.rank}` : ""}${rate(id) ? ` · won ${rate(id)}` : ""}</span>
       </div>`;
@@ -1175,7 +1180,7 @@ function matchupHtml(m) {
     bits.push(`<div class="h2hsect">Used to partner</div>`);
     for (const c of exes)
       bits.push(`<div class="h2hrow">
-        <span class="h2hlbl">${esc(short(nm(c.a)))} &amp; ${esc(short(nm(c.b)))}</span>
+        <span class="h2hlbl"><span class="pn" data-player="${esc(c.a)}">${esc(short(nm(c.a)))}</span> &amp; <span class="pn" data-player="${esc(c.b)}">${esc(short(nm(c.b)))}</span></span>
         <span class="h2hnum"><b>${c.together}</b></span>
         <span class="h2hsub">together · won ${c.togetherWins}</span>
       </div>`);
@@ -1776,7 +1781,7 @@ async function openPlayerByName(name) {
   // entry, not the person, and /api/search finds nothing with it attached.
   const q = String(name || "").replace(DRAW_MARKER, "").trim();
   if (!q) return;
-  activateMode("players");
+  activateMode("players", "skip");   // openPlayer below pushes the single entry
   const el = document.getElementById("q");
   if (el) el.value = q;
   state.query = q;
@@ -1794,10 +1799,23 @@ async function openPlayerByName(name) {
     if (!players.length && !/^\p{L}\.\s/u.test(q)) {
       const m = /^(\p{L})\p{L}*\s+(.+)$/u.exec(q);
       if (m) {
-        const ab = `${m[1].toUpperCase()}. ${m[2]}`;
+        // The profile index stores FIP's DE-ACCENTED spelling ("A. Galan"), so an
+        // accented full name ("Alejandro Galan" with the accent) missed even after
+        // abbreviating. Fold the diacritics before looking it up.
+        const ab = `${m[1].toUpperCase()}. ${m[2]}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         try {
+          // This abbreviation was DERIVED, not typed, so an exact string match on it is
+          // NOT on its own evidence the reader meant that person. "Ariana Sanchez"
+          // abbreviates to "A. Sanchez": 13 players prefix-match it, one is literally
+          // called that, and it is NOT her (she is "A. Sanchez Fallada") — so the exact
+          // rule below would name the wrong player with full confidence. Only hand a
+          // derived abbreviation to those rules when the name is distinctive enough that
+          // the pool is tiny: "A. Galan" returns 2 (the No.1 plus "A. Galan Faya") and
+          // resolves correctly, while the Sanchez crowds fall through to the search view,
+          // which is exactly what the reader gets today. A common surname needs the id
+          // carried in the source file; it cannot be recovered from the name alone.
           const alt = await lookupPlayers(ab);
-          if (alt.length) { players = alt; target = ab; lookupErr = null; }
+          if (alt.length && alt.length <= 2) { players = alt; target = ab; lookupErr = null; }
         } catch (e) { lookupErr = lookupErr || e; }
       }
     }
@@ -1809,6 +1827,7 @@ async function openPlayerByName(name) {
     state.playerResults = players;
     state.fipResults = players.length ? [] : await fipFallback(q);
     render();
+    syncUrl();   // ended on the search view, so /players IS the destination
   } catch (e) {
     // Keep the ranking-file fallback: it often knows a name the database cannot
     // be asked about right now. Clearing it here (as this used to) made clicking
@@ -1817,6 +1836,7 @@ async function openPlayerByName(name) {
     state.playerResults = [];
     state.fipResults = await fipFallback(q);
     render();
+    syncUrl();
   }
 }
 
@@ -1886,6 +1906,17 @@ async function openH2H(aId, bId) {
     state.h2h = e.apiDown ? "error" : null;
   }
   render();
+}
+
+// An open profile / pair / h2h / draw is drawn BEFORE the mode (see renderView), so
+// typing in the header search box while one was open changed nothing on screen.
+// Searching means "leave this".
+function leaveOverlayForSearch() {
+  if (!(state.player || state.pair || state.h2h || state.tournament)) return false;
+  state.player = null; state.playerId = null; state.h2h = null; state.comparing = false;
+  state.pair = null; state.pairKey = null;
+  state.tournament = null; state.focusMatch = null;
+  return true;
 }
 
 function renderPlayers() {
@@ -1977,10 +2008,10 @@ function browseOnCourt() {
   const rows = [...seen.values()].sort((a, b) => (b.live - a.live) || a.name.localeCompare(b.name));
   if (!rows.length) return "";
   const nLive = rows.filter((r) => r.live).length;
-  const shown = rows.slice(0, 40);
+  const shown = state.onCourtAll ? rows : rows.slice(0, 40);
   return `<div class="section-label${nLive ? " live" : ""}">${nLive ? '<span class="lampe"></span>' : "🎾 "}On court today · ${rows.length}</div>
     <div class="tplayers">${shown.map((r) => `<span class="pchip pn${r.live ? " onlive" : ""}" data-pname="${esc(r.name)}" title="View ${esc(r.name)}">${countryFlag(r.country)} ${esc(r.name)}</span>`).join("")}${
-      rows.length > shown.length ? `<span class="pchip">+${rows.length - shown.length} more</span>` : ""}</div>`;
+      rows.length > shown.length ? `<span class="pchip pn" data-oncourtall="1">+${rows.length - shown.length} more</span>` : ""}</div>`;
 }
 
 // Top of one federation's lists (men + women), five rows each. FIP world rows
@@ -2615,7 +2646,12 @@ function apiMatchRow(m) {
   const line = (s) => {
     const ps = t[s].players || [];
     const attr = ps.length === 2 && ps[0].id && ps[1].id ? pairAttr(ps[0].id, ps[1].id) : "";
-    return `<div class="team ${t[s].won ? "win" : ""}${attr ? " pairlink" : ""}" ${attr}><span class="nm">${esc(t[s].name)}</span></div>`;
+    // The ROW opens the pair; each NAME inside opens that player. The [data-pair]
+    // handler explicitly yields to an inner [data-player], so both work from one row.
+    const names = ps.length && ps.every((p) => p.id && p.name)
+      ? ps.map((p) => `<span class="pn" data-player="${esc(p.id)}" title="View ${esc(p.name)}">${esc(p.name)}</span>`).join(" / ")
+      : esc(t[s].name);
+    return `<div class="team ${t[s].won ? "win" : ""}${attr ? " pairlink" : ""}" ${attr}><span class="nm">${names}</span></div>`;
   };
   const meta = [m.tournament, m.round].filter(Boolean).join(" · ");
   return `<div class="match"><div class="match__main archm pmatch">
@@ -2996,13 +3032,16 @@ function renderTournament() {
       const bracket = tv.tour === "WPT" ? null : buildBracket([...rmap.values()].flat(), tv.kind === "live");
       if (bracket) {
         html += renderBracket(bracket);
-        html += roundList([...rmap.entries()].filter(([r]) => !isKO(r))); // groups/qualifying as list
+        // A live event has the "By day" toggle as its escape hatch from the bracket; an
+        // archived one has none, so its KO rounds were reachable nowhere as rows and 63% of
+        // FIP archive matches had no clickable player name at all. List every round there.
+        html += roundList(tv.kind === "live" ? [...rmap.entries()].filter(([r]) => !isKO(r)) : [...rmap.entries()]);
       } else {
         html += roundList([...rmap.entries()]);
       }
     }
   }
-  if (players.size) html += `<div class="section-label">Players · ${players.size}</div><div class="tplayers">${[...players].sort().map((p) => `<span class="pchip">${esc(p)}</span>`).join("")}</div>`;
+  if (players.size) html += `<div class="section-label">Players · ${players.size}</div><div class="tplayers">${[...players].sort().map((p) => `<span class="pchip pn" data-pname="${esc(p)}" title="View ${esc(p)}">${esc(p)}</span>`).join("")}</div>`;
   app.innerHTML = html;
 }
 
@@ -3504,7 +3543,7 @@ app.addEventListener("click", (e) => {
 });
 
 // mode switch: Live / Results / Players / Rankings
-function activateMode(mode) {
+function activateMode(mode, urlMode = "push") {
   state.mode = mode;
   state.fed = "all";
   state.day = mode === "live" ? todayYmd() : "all";   // live feed defaults to today; other modes span all
@@ -3541,7 +3580,10 @@ function activateMode(mode) {
   else if (mode === "rankings" && !state.rankings) loadRankings();
   else if (mode === "upcoming" && !state.calendar) loadCalendar();
   else render();
-  syncUrl();
+  // "skip": the caller is about to open an entity (profile/pair) that pushes its own
+  // URL. Pushing here too cost TWO history entries per click, so Back landed the reader
+  // on an empty /players instead of the ranking or board they came from.
+  if (urlMode !== "skip") syncUrl(urlMode === "push");
 }
 
 document.getElementById("modes").addEventListener("click", (e) => {
@@ -3584,6 +3626,7 @@ document.getElementById("q").addEventListener("input", (e) => {
   clearTimeout(qTimer);
   const v = e.target.value;
   qTimer = setTimeout(() => {
+    if (leaveOverlayForSearch()) syncUrl();
     if (state.mode === "players") return searchPlayers(v);
     state.query = v;
     if (state.mode === "archive") state.archiveCap = 40;
@@ -3663,6 +3706,7 @@ app.addEventListener("click", (e) => {
   }
 
   if (e.target.closest("[data-partnersall]")) { state.partnersAll = true; render(); return; }
+  if (e.target.closest("[data-oncourtall]")) { state.onCourtAll = true; render(); return; }
 
   // pair: tournament filter chips (the pair page's own copy of the profile's)
   const ptp = e.target.closest("[data-pairtour]");
@@ -3711,7 +3755,7 @@ app.addEventListener("click", (e) => {
     // following - or from inside an open draw, which renderView checks before any
     // mode - openPlayer alone rewrote the URL and left the old view on screen. Switch
     // first, exactly as openPlayerByName already does; activateMode also closes the draw.
-    if (state.mode !== "players" || state.tournament) { activateMode("players"); openPlayer(id); return; }
+    if (state.mode !== "players" || state.tournament) { activateMode("players", "skip"); openPlayer(id); return; }
     if (state.comparing && state.player && state.player.player) openH2H(state.player.player.id, id);
     else openPlayer(id);
     return;
