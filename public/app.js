@@ -1711,10 +1711,37 @@ async function ensurePlayerIndex() {
     const d = await (await fetch("data/players-lite.json")).json();
     const rows = d.players || [];
     if (!rows.length) throw new Error("empty index");
-    // The lowercased name is precomputed once: search runs on every keystroke.
-    PIDX = rows.map((r) => [r[0], r[1], r[2], String(r[1] || "").toLowerCase()]);
+    // Lowercased and folded names are precomputed once: search runs on every
+    // keystroke, and searchFold() is far too expensive to run 25k times per key.
+    PIDX = rows.map((r) => [r[0], r[1], r[2], String(r[1] || "").toLowerCase(), searchFold(r[1])]);
   } catch { PIDX = null; }
   return PIDX;
+}
+
+// Fold a name to what someone would type on a keyboard without the diacritics.
+// Measured against the live index on 2026-09-25: "Plumer" returned 0 results for
+// L. Plümer, "Gormsen" 0 for a player FIP prints as O. Gormsen, and "Hoefer" and
+// "Höfer" each found one of the two records for the same woman while neither
+// found the other. A search box that answers "no such player" about someone it
+// holds is worse than a slow one.
+//
+// This is deliberately MORE aggressive than the identity rule in padel-db's
+// export_d1.canon_resolver(), and the asymmetry is the point: collapsing ue/oe/ae
+// there would merge A. Anderson with A. Andersson, two different people, into one
+// profile. Here the same collapse only means a search for "Anderson" also offers
+// Andersson - extra candidates to choose from, not a claim that they are one
+// person. Folding is safe wherever the reader still picks.
+const FOLD_PAIRS = [["ß", "ss"], ["ø", "o"], ["æ", "ae"], ["đ", "d"], ["ð", "d"], ["þ", "th"], ["ł", "l"]];
+function searchFold(s) {
+  let x = String(s || "").toLowerCase();
+  for (const [from, to] of FOLD_PAIRS) x = x.split(from).join(to);
+  // NFD splits "ü" into u + combining diaeresis; dropping the marks leaves "u".
+  // It never yields "ue", which is why the digraph pass below has to exist.
+  x = x.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  x = x.replace(/ue/g, "u").replace(/oe/g, "o").replace(/ae/g, "a");
+  // Punctuation out too, so "O'Brien", "O Brien" and "OBrien" are one query, and
+  // FIP's "V. Kurz" is reachable by typing "v kurz".
+  return x.replace(/[^a-z0-9]/g, "");
 }
 
 // Reproduces what /api/search returned, minus the D1 round trip:
@@ -1726,9 +1753,16 @@ async function ensurePlayerIndex() {
 const PIDX_LIMIT = 25;
 function searchIndex(q) {
   const n = String(q || "").toLowerCase();
+  // The folded query is a FALLBACK, not a replacement: the exact spelling is
+  // tried first so someone who types the umlaut still ranks that row as a prefix
+  // hit. Empty is guarded because "".indexOf("") is 0 - a fold that reduced to
+  // nothing would otherwise match all 25k rows and present them as results.
+  const f = searchFold(q);
   const pre = [], sub = [];
   for (let i = 0; i < PIDX.length; i++) {
-    const r = PIDX[i], at = r[3].indexOf(n);
+    const r = PIDX[i];
+    let at = r[3].indexOf(n);
+    if (at < 0 && f) at = r[4].indexOf(f);
     if (at < 0) continue;
     if (at === 0) { if (pre.length < PIDX_LIMIT) pre.push(r); }
     else if (sub.length < PIDX_LIMIT) sub.push(r);
@@ -2335,8 +2369,21 @@ function renderProfile() {
       tours.map(([t, n]) => `<span class="chip ${sel.has(t) ? "active" : ""}" data-ptour="${esc(t)}" title="${esc(t)}">${esc(t)}<span class="cn">${n}</span></span>`).join("") +
       `</div>`;
   }
-  const label = sel.size ? `Matches · ${shown.length} of ${matches.length}` : `Recent matches (${matches.length})`;
+  const partial = state.player.partnersComplete === false;
+  const label = sel.size
+    ? `Matches · ${shown.length} of ${matches.length}`
+    : partial
+    ? `Recent matches (${matches.length} of ${summary.total})`
+    : `Recent matches (${matches.length})`;
   html += `<div class="section-label">${label}</div>` +
+    // The career totals come from padel-db's precomputed row and cover every
+    // source; the rows below are only the matches PadelTicker holds in full. Left
+    // unsaid, a profile reading "254 matches" over a list of 14 looks broken.
+    (partial && !sel.size
+      ? `<div style="color:var(--faint);font-size:12px;margin:-2px 0 10px;line-height:1.5">` +
+        `Totals above cover all ${summary.total} matches on record. Full detail ` +
+        `(scores, partners, opponents) is available for the ${matches.length} most recent.</div>`
+      : "") +
     (shown.length ? shown.map((m) => apiMatchRow(m)).join("") : `<div class="empty" style="padding:24px">No matches for the selected tournament${sel.size === 1 ? "" : "s"}.</div>`);
   app.innerHTML = html;
 }

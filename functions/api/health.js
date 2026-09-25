@@ -11,6 +11,9 @@ const FRESH_MIN = 60; // refresh runs every 15 min; >60 (GH-cron jitter margin) 
 // before: a browser source dying on a Playwright bump sat at "warn" indefinitely
 // while RankedIn alone kept the site "up" at ~1/4 coverage (2026-07-19).
 const SOURCE_STALE_HOURS = 3;
+// Sources where zero matches is a normal state, not a symptom. puntuate carries FIP
+// national-team championships only and is correctly empty between events.
+const MAY_BE_EMPTY = new Set(["puntuate"]);
 
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d, null, 2), {
@@ -43,12 +46,23 @@ export async function onRequestGet({ request }) {
   let sourceOutage = false;                                                                           // a source dark past the threshold -> down
   for (const s of h.sources || []) {                                                                  // per-adapter (warn, or down if persistent)
     const failing = s.ok === false;
-    let detail = failing ? (s.error || "adapter error") : `${s.count} matches`;
-    if (failing && s.lastOkAt) {
-      const staleH = (Date.now() - Date.parse(s.lastOkAt)) / 3_600_000;
-      if (staleH > SOURCE_STALE_HOURS) { sourceOutage = true; detail = `no data for ${staleH.toFixed(1)}h — ${s.error || "adapter down"}`; }
+    // A source that returns ZERO matches without throwing used to pass this check:
+    // every adapter turns a discovery failure into `return []`, so "upstream is quiet"
+    // and "we could not look" arrived here identically, and whole tournaments could
+    // (and did) vanish with every check green. Treat empty as a failure for the
+    // sources that always have something, and escalate on the same staleness rule as
+    // an erroring one. MAY_BE_EMPTY names the sources where nothing is the norm:
+    // puntuate only carries FIP championships and is correctly empty between them.
+    const empty = !failing && (s.count || 0) === 0 && !MAY_BE_EMPTY.has(s.id);
+    let detail = failing ? (s.error || "adapter error")
+      : empty ? "returned 0 matches — cannot distinguish an empty upstream from a silent discovery failure"
+      : `${s.count} matches`;
+    const since = failing ? s.lastOkAt : empty ? s.lastDataAt : null;
+    if ((failing || empty) && since) {
+      const staleH = (Date.now() - Date.parse(since)) / 3_600_000;
+      if (staleH > SOURCE_STALE_HOURS) { sourceOutage = true; detail = `no data for ${staleH.toFixed(1)}h — ${s.error || (empty ? "0 matches" : "adapter down")}`; }
     }
-    add(`src:${s.id}`, `Source: ${s.id}`, !failing, detail);
+    add(`src:${s.id}`, `Source: ${s.id}`, !failing && !empty, detail);
   }
   add("rankings", "Rankings", (h.rankings || 0) > 0, `${h.rankings || 0} lists`);                     // warn
 

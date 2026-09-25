@@ -11,6 +11,14 @@ const HEADERS = {
   Accept: "application/json",
 };
 
+// Every attempt is bounded. Without this a hung RankedIn connection stalled the
+// whole refresh cycle indefinitely: retries=2 means 3 attempts, and with no timeout
+// each one could hang forever, so the daemon sat mid-fetch producing no output and
+// no health.json while /api/health's dead-man's switch reported the site down.
+// Observed 2026-08-28 as a single 393s fetch phase against a normal 42-78s.
+// Worst case is now ~3 x REQ_TIMEOUT_MS + backoff.
+const REQ_TIMEOUT_MS = 20_000;
+
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function rankedinGet(path, { retries = 2 } = {}) {
@@ -18,7 +26,7 @@ export async function rankedinGet(path, { retries = 2 } = {}) {
   let lastErr;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, { headers: HEADERS });
+      const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
       return await res.json();
     } catch (err) {

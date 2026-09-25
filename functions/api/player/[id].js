@@ -12,6 +12,13 @@ const json = (d, status = 200) =>
     headers: { "content-type": "application/json", "cache-control": "public, max-age=300" },
   });
 
+// A malformed precomputed blob must not take the profile down; every caller
+// treats null as "not available" and falls back or omits the block.
+function safeJson(v) {
+  if (!v) return null;
+  try { return typeof v === "string" ? JSON.parse(v) : v; } catch { return null; }
+}
+
 function teams(ps) {
   const by = { 1: [], 2: [] };
   for (const p of ps) (by[p.side] || by[1]).push(p);
@@ -78,7 +85,33 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
     ).bind(id).first();
   } catch { /* table not created yet */ }
 
-  const { results: byYear } = await env.DB.prepare(
+  // Career aggregates, precomputed by padel-db/export_d1_stats.py.
+  //
+  // WHY THIS ROW EXISTS. D1's `matches` table only ever held FIP + rin_matches;
+  // it has never carried dpf_matches (the authoritative Danish set) or the team
+  // league. So the queries below see a fraction of most players' careers -- of
+  // the 9,259 men with an Elo rating, 6,761 had ZERO matches here and the median
+  // player saw 0% of their own record, while the Elo panel right next to it was
+  // built from all of them. Loading every missing match as raw rows costs ~40
+  // days of the D1 free tier's write budget and multiplies the cost of exactly
+  // the whole-career scans that took this API down on 2026-09-04; one aggregate
+  // row per player costs ~27% of ONE day and lets three of those scans go away.
+  //
+  // Wrapped and optional for the same reason as bio/elo/earnings above: a deploy
+  // landing before the first load must degrade to the live queries, never 500.
+  // When it IS present we skip the byYear and whole-career queries entirely.
+  let stats = null;
+  try {
+    stats = await env.DB.prepare(
+      `SELECT played,won,titles,finals,sets_won,sets_lost,games_won,games_lost,
+              scored,form,streak,streak_type,partner_id,partner_name,partner_n,
+              partner_won,by_year,shape
+       FROM player_stats WHERE id=?1`
+    ).bind(id).first();
+  } catch { /* table not created yet */ }
+
+  // Only queried when there is no precomputed row to read it from.
+  const { results: byYear } = stats ? { results: [] } : await env.DB.prepare(
     `SELECT substr(m.date,1,4) yr, COUNT(*) played, SUM(CASE WHEN mp.is_winner=1 THEN 1 ELSE 0 END) won
      FROM match_players mp JOIN matches m ON m.id=mp.match_id
      WHERE mp.player_id=?1 AND m.date IS NOT NULL GROUP BY yr ORDER BY yr DESC`
@@ -105,29 +138,56 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
     teams: teams(byMatch[m.id] || []),
   }));
 
-  const total = byYear.reduce((s, y) => s + y.played, 0);
-  const wins = byYear.reduce((s, y) => s + (y.won || 0), 0);
+  // `played` counts every decided match from every source. It is deliberately
+  // NOT Elo's n_matches, which excludes mixed doubles and anyone whose gender it
+  // cannot resolve -- for R000120413 that is 254 played against 244 rated. Both
+  // are right; the UI must label them differently or the difference reads as a
+  // bug. See the docstring in padel-db/export_d1_stats.py.
+  const total = stats ? stats.played : byYear.reduce((s, y) => s + y.played, 0);
+  const wins = stats ? stats.won : byYear.reduce((s, y) => s + (y.won || 0), 0);
 
   // ---- deeper aggregate stats over the player's WHOLE history ----
-  const { results: allRows } = await env.DB.prepare(
+  // Skipped entirely when the precomputed row is present: this is the query the
+  // 2026-09-04 crawl multiplied into a read-budget exhaustion, and it is the one
+  // that could only ever see the matches D1 happens to hold.
+  const { results: allRows } = stats ? { results: [] } : await env.DB.prepare(
     `SELECT m.round round, m.score score, mp.side side, mp.is_winner win
      FROM match_players mp JOIN matches m ON m.id=mp.match_id
      WHERE mp.player_id=?1 ORDER BY m.date DESC`
   ).bind(id).all();
 
-  // titles & finals ("final" as a whole word, excluding semi/quarter)
+  // titles & finals. STILL FIP-ONLY, in the precomputed row exactly as here:
+  // RankedIn's `round` is a DRAW name ("Elimination", "Monrad", "Pulje A"), never
+  // a round, so this has always returned 0 for domestic players and the
+  // precomputed row reproduces that rather than inventing a number. National
+  // titles need padel-db's dpf_achievements and belong in their own change.
   const finalRows = allRows.filter((r) => isFinal(r.round));
-  const titles = finalRows.filter((r) => r.win === 1).length;
+  const titles = stats ? stats.titles : finalRows.filter((r) => r.win === 1).length;
+  const finals = stats ? stats.finals : finalRows.length;
 
   // current form (newest first) + streak
-  const { form, streak, streakType } = formAndStreak(allRows);
+  const live = !stats ? formAndStreak(allRows) : null;
+  const form = stats ? String(stats.form || "").split("") : live.form;
+  const streak = stats ? stats.streak : live.streak;
+  const streakType = stats ? stats.streak_type : live.streakType;
 
-  // sets & games from the score strings
-  const { sets, games } = setsAndGames(allRows);
+  // sets & games from the score strings. `scored` is how many matches actually
+  // carried a readable score -- walkovers, retirements and every team-league
+  // match (that table has no score column at all) are excluded, so the
+  // percentages must not be presented as covering all `played` matches.
+  const liveSG = !stats ? setsAndGames(allRows) : null;
+  const pctOf = (w, l) => (w + l ? Math.round((w / (w + l)) * 100) : null);
+  const sets = stats
+    ? { won: stats.sets_won, lost: stats.sets_lost, pct: pctOf(stats.sets_won, stats.sets_lost) }
+    : liveSG.sets;
+  const games = stats
+    ? { won: stats.games_won, lost: stats.games_lost, pct: pctOf(stats.games_won, stats.games_lost) }
+    : liveSG.games;
 
   // how those matches were won and lost (deciders, straight sets, tie-breaks).
-  // Same rows, no extra query.
-  const shape = matchShape(allRows);
+  // The precomputed copy comes from match_shape() in export_d1_stats.py, a port
+  // of matchShape() below; tools/shape_parity.mjs checks the two agree.
+  const shape = stats ? safeJson(stats.shape) : matchShape(allRows);
 
   // ---- opponent quality, from the Elo table ----
   // Only meaningful inside ONE (source, pool): a FIP rating and a Nordic one are
@@ -201,8 +261,16 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
   }));
   // Kept as its own field: the profile has rendered a single "Top partner" row
   // since before the pair pages existed, and other callers read this shape.
+  // The partner LIST can only cover the matches D1 holds as rows, but "who do you
+  // play with most" is a career fact, and the precomputed row knows it over the
+  // whole history -- 63 matches with one partner where the visible rows show 9.
+  // Prefer the precomputed answer; `partnersComplete` tells the page the list
+  // underneath is a subset so it can say so instead of contradicting the totals.
   const tp = partnerList[0];
-  const topPartner = tp ? { name: tp.name, id: tp.id, matches: tp.matches, wins: tp.wins } : null;
+  const topPartner = stats && stats.partner_id
+    ? { name: stats.partner_name, id: stats.partner_id,
+        matches: stats.partner_n, wins: stats.partner_won }
+    : (tp ? { name: tp.name, id: tp.id, matches: tp.matches, wins: tp.wins } : null);
 
   const res = json({
     player,
@@ -210,14 +278,21 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
     elo,
     earnings,
     summary: {
-      total, wins, losses: total - wins, byYear,
-      titles, finals: finalRows.length,
+      total, wins, losses: total - wins,
+      byYear: stats ? (safeJson(stats.by_year) || []) : byYear,
+      titles, finals,
       form, streak, streakType,
-      sets, games, shape,
+      sets, games, shape, scored: stats ? stats.scored : (shape && shape.scored),
+      // Tells the page (and anyone reading the JSON) whether the numbers above
+      // cover the whole career or only the matches D1 holds as rows.
+      complete: !!stats,
     },
     quality,
     topPartner,
     partners: partnerList,
+    // The partner and match lists are limited to the matches D1 holds as rows;
+    // the summary above is not. False whenever the two disagree.
+    partnersComplete: !stats || total <= matches.length,
     matches,
   });
   // 30 minutes: the refresh daemon updates the feed far more often than a

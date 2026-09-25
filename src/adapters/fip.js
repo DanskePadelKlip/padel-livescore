@@ -14,6 +14,7 @@
 import { parseHTML } from "linkedom";
 import { STATUS, gid } from "../schema.js";
 import * as sporteaser from "./sporteaser.js";
+import * as scorebug from "./scorebug.js";
 
 export const id = "fip";
 
@@ -23,6 +24,10 @@ const FIP_HEADERS = {
   Referer: "https://www.padelfip.com/",
   Accept: "text/html,application/json",
 };
+// Bounded on purpose: an unbounded fetch here stalled the whole refresh cycle
+// (see src/http.js). A timed-out request throws, the adapter is marked failed for
+// /api/health, last-good matches are kept, and the next cycle retries.
+const REQ_TIMEOUT_MS = 20_000;
 const WIDGET = "https://widget.matchscorerlive.com/screen";
 const WP = "https://www.padelfip.com/wp-json/wp/v2";
 // The order-of-play widget above carries SET games only. The live board is a
@@ -65,6 +70,10 @@ export async function fetchMatches({ date = todayISO(), maxTournaments = Infinit
       // Never fails the event: a missing/HTML-changed board just leaves the OOP
       // set scores exactly as they were.
       let enriched = await applyLiveDetail(evMatches, msId, log);
+      // An organiser's own broadcast scorebug (Bucharest 2026) beats Crionet's board
+      // for the one court it covers: real points, current games and serve, where the
+      // board publishes a permanent "0". See adapters/scorebug.js.
+      enriched += await applyScorebugDetail(evMatches, ev, log);
       // Crionet's live board is EMPTY for events scored on Sporteaser instead, and
       // its order-of-play leaves an in-progress match blank until it completes - so
       // without this those events show every on-court match as upcoming with no
@@ -84,13 +93,16 @@ export async function fetchMatches({ date = todayISO(), maxTournaments = Infinit
 async function discoverActiveEvents(date, log) {
   let events;
   try {
-    const res = await fetch(`${WP}/events?orderby=modified&order=desc&per_page=40`, { headers: FIP_HEADERS });
+    const res = await fetch(`${WP}/events?orderby=modified&order=desc&per_page=100`, { headers: FIP_HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
     events = await res.json();
   } catch (err) {
     log(`  FIP: event discovery failed — ${err.message}`);
     return [];
   }
-  const cutoff = shiftISO(date, -2); // "in play" = updated within ~2 days of target
+  const cutoff = shiftISO(date, -5); // "in play" = updated within ~5 days of target.
+  // NOT the play date: this is WP `modified`, so a finished event stops being touched
+  // and ages out. Until the archive is unfrozen, that age-out is permanent data loss,
+  // so the window is the only thing keeping last weekend's results on the site.
   return (Array.isArray(events) ? events : [])
     .filter((e) => (e.modified || "").slice(0, 10) >= cutoff)
     .filter((e) => !/promis|promos/i.test(e.slug)) // FIP Promises (youth) have no widget feed
@@ -103,7 +115,7 @@ async function discoverActiveEvents(date, log) {
 }
 
 async function matchscorerId(ev) {
-  const res = await fetch(ev.link, { headers: FIP_HEADERS });
+  const res = await fetch(ev.link, { headers: FIP_HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
   const html = await res.text();
   const m = html.match(/idEvent[_-](\d+)/i);
   return m ? `FIP-${ev.year}-${m[1]}` : null;
@@ -114,12 +126,14 @@ async function matchscorerId(ev) {
 async function recentDays(msId, maxDay, windowN = 2) {
   const days = [];
   for (let day = 1; day <= maxDay; day++) {
-    const res = await fetch(`${WIDGET}/oopbyday/${msId}/${day}?t=tol`, { headers: FIP_HEADERS });
+    const res = await fetch(`${WIDGET}/oopbyday/${msId}/${day}?t=tol`, { headers: FIP_HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
     if (!res.ok) break;
     const { document } = parseHTML(await res.text());
     const parsed = parseWidget(document);
     if (parsed.matches.length) days.push({ day, now: parsed.now, dayDate: parsed.dayDate, matches: parsed.matches });
-    else if (days.length) break; // first empty day after data -> stop
+    else break; // first empty day -> stop. Day 1 empty means a future event with no
+    // widget data at all: 18 of 38 discovered events on 2026-09-23, none of which had
+    // data on a later day, at 9 wasted fetches each. Scanning on cost 144 fetches/cycle.
   }
   return days.slice(-windowN);
 }
@@ -199,7 +213,7 @@ const boardKey = (sides) => sides.map(pkey).sort().join("~");
 async function applyLiveDetail(matches, msId, log) {
   let boards;
   try {
-    const res = await fetch(`${LIVE_BOARD}/${msId}?t=tol`, { headers: FIP_HEADERS });
+    const res = await fetch(`${LIVE_BOARD}/${msId}?t=tol`, { headers: FIP_HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
     if (!res.ok) return 0;
     const { document } = parseHTML(await res.text());
     boards = parseLiveBoard(document);
@@ -230,6 +244,18 @@ async function applyLiveDetail(matches, msId, log) {
     }
     n++;
   }
+  return n;
+}
+
+// Point-level detail for the broadcast court, where the event's Live Score tab embeds an
+// organiser scorebug. Costs nothing unless the event has a live match; discovery is
+// cached per event.
+async function applyScorebugDetail(matches, ev, log) {
+  if (!matches.some((m) => m.status === STATUS.LIVE)) return 0;
+  const base = await scorebug.discoverBase(ev.link, log);
+  if (!base) return 0;
+  const n = scorebug.attach(matches, await scorebug.fetchState(base, log), log);
+  if (n) log(`    scorebug: ${n} match live-detailed (${base})`);
   return n;
 }
 

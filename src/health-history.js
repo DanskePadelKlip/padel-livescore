@@ -19,8 +19,12 @@ import { join } from "node:path";
 // exists, else fetched from `liveUrl` so a fresh CI checkout still has history.
 export async function attachSourceHistory(sources, { prev, outDir, liveUrl } = {}) {
   const prevOk = {};
+  const prevData = {};   // last time the source returned ANY matches
   const seed = (snap) => {
-    for (const s of snap?.sources || []) if (s.lastOkAt) prevOk[s.id] = s.lastOkAt;
+    for (const s of snap?.sources || []) {
+      if (s.lastOkAt) prevOk[s.id] = s.lastOkAt;
+      if (s.lastDataAt) prevData[s.id] = s.lastDataAt;
+    }
   };
   try {
     const local = outDir && join(outDir, "health.json");
@@ -34,5 +38,13 @@ export async function attachSourceHistory(sources, { prev, outDir, liveUrl } = {
     }
   } catch {}
   const nowIso = new Date().toISOString();
-  return sources.map((s) => ({ ...s, lastOkAt: s.ok !== false ? nowIso : prevOk[s.id] || null }));
+  // lastOkAt answers "did the adapter return without throwing"; lastDataAt answers
+  // "did it actually come back with anything". They diverge exactly in the case that
+  // used to be invisible: discovery fails, the adapter swallows it and returns [],
+  // and the source reports ok with zero matches for hours.
+  return sources.map((s) => ({
+    ...s,
+    lastOkAt: s.ok !== false ? nowIso : prevOk[s.id] || null,
+    lastDataAt: s.ok !== false && (s.count || 0) > 0 ? nowIso : prevData[s.id] || null,
+  }));
 }

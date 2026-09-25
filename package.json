@@ -10,7 +10,8 @@
   "scripts": {
     "fetch": "node scripts/fetch-live.js",
     "serve": "node scripts/serve.js",
-    "dev": "node scripts/fetch-live.js && node scripts/serve.js"
+    "dev": "node scripts/fetch-live.js && node scripts/serve.js",
+    "test:racketscore": "node scripts/test-racketscore.mjs"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",

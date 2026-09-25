@@ -126,14 +126,21 @@ function textLines(html) {
 // The head tolerates a tail printed in the WRONG PLACE, because FIP does that
 // too: "Match 1 Male HUN 1 - 0 IRL - Group Tie 1 * 12:00". Anchoring straight
 // after the gender dropped that row, and with it a whole rubber of that tie.
-const TIE_HEAD_RE = /^Match (\d+) (Male|Female)(?:\s+[A-Z]{3}\s+\d+\s*-\s*\d+\s+[A-Z]{3})?\s*-\s*Group Tie (\d+)/;
+// KNOCKOUT ROWS SAY "QF"/"SF"/"F", NOT "Group Tie <n>". On 25 Sep 2026 the FIP
+// World Cup qualifiers moved from groups to play-offs and EVERY row that day
+// failed this regex, so the whole event vanished from live-rows: the DPK intro
+// card, the three-rubber panel and room vmdk all sat on the PREVIOUS day's tie
+// through a live broadcast. Accept both shapes; group rows parse exactly as
+// before and keep capture group 3 as the tie number, knockout rows put the round
+// token there instead.
+const TIE_HEAD_RE = /^Match (\d+) (Male|Female)(?:\s+[A-Z]{3}\s+\d+\s*-\s*\d+\s+[A-Z]{3})?\s*-\s*(?:Group Tie )?(\d+|QF|SF|F)\b/;
 // The group token rides AFTER "Group Tie <n>" even when the rest of the tail has
 // moved in front of it, and dropping it split one tie into two cards with two
 // different scores (keys "Male||1|HUN|IRL" and "Male|M_G|1|HUN|IRL").
 const TIE_TAIL_ALT_RE =
-  /^Match \d+ (?:Male|Female)\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*-\s*Group Tie \d+(?:\s*-\s*([A-Z]_[A-Z]))?/;
+  /^Match \d+ (?:Male|Female)\s+([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\s*-\s*(?:Group Tie )?(?:\d+|QF|SF|F)\b(?:\s*-\s*([A-Z]_[A-Z]))?/;
 const TIE_TAIL_RE =
-  /^Match \d+ (?:Male|Female) - Group Tie \d+(?:\s*-\s*([A-Z]_[A-Z]))?\s*-?\s*([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})/;
+  /^Match \d+ (?:Male|Female) - (?:Group Tie )?(?:\d+|QF|SF|F)\b(?:\s*-\s*([A-Z]_[A-Z]))?\s*-?\s*([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})/;
 
 // A floor, not the source of truth: enough of the qualifier field that a sheet
 // which has lost every code still parses. Anything else is learned below.

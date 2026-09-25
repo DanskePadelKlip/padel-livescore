@@ -27,6 +27,11 @@
 
 import { STATUS } from "../schema.js";
 
+// Bounded on purpose: an unbounded fetch here stalled the whole refresh cycle
+// (see src/http.js). A timed-out request throws, the adapter is marked failed for
+// /api/health, last-good matches are kept, and the next cycle retries.
+const REQ_TIMEOUT_MS = 20_000;
+
 export const id = "sporteaser";
 
 const API = "https://v0.sporteaser.app/api/public";
@@ -56,7 +61,7 @@ export async function discoverTournamentId(eventLink, log = () => {}) {
 
   let tid = null;
   try {
-    const html = await (await fetch(eventLink, { headers: HEADERS })).text();
+    const html = await (await fetch(eventLink, { headers: HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) })).text();
     const postId = (html.match(/postid-(\d+)/) || [])[1];
     // The nonce is per-page and short-lived; it lives in the inline
     // `padelfip_ajax = {...}` blob alongside the ajax url.
@@ -72,6 +77,7 @@ export async function discoverTournamentId(eventLink, log = () => {}) {
         "X-Requested-With": "XMLHttpRequest",
       },
       body,
+      signal: AbortSignal.timeout(REQ_TIMEOUT_MS),
     });
     const json = await res.json();
     // `html: ""` = no live scoring for this event. Not an error.
@@ -91,7 +97,7 @@ export async function discoverTournamentId(eventLink, log = () => {}) {
  */
 export async function fetchDay(tid, day, log = () => {}) {
   try {
-    const res = await fetch(`${API}/tournament/${tid}/matches/day/${day}/sort/fieldname/0`, { headers: HEADERS });
+    const res = await fetch(`${API}/tournament/${tid}/matches/day/${day}/sort/fieldname/0`, { headers: HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
     if (!res.ok) return [];
     const json = await res.json();
     if (Array.isArray(json?.days) && !json.days.includes(Number(day))) return [];
