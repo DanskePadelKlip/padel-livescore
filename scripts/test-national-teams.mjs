@@ -284,6 +284,47 @@ ok(wrongWay < wonRows / 2, `won matches print the nation's score first (${wonRow
 ok(sandbox.ntScore({ a: "SWE", b: "DEN", s: "4-6 1-6" }, "DEN") === "6-4 6-1", "a second-side score is turned around");
 ok(sandbox.ntScore({ a: "DEN", b: "SWE", s: "6-4 6-1" }, "DEN") === "6-4 6-1", "...and a first-side score is left alone");
 
+// ---- the name join ----------------------------------------------------------
+// The rules live in scripts/nt-resolve-players.mjs; these assert the OUTCOME, because
+// a wrong link here puts the wrong person in a national team.
+const links = mm.players || {};
+ok(Object.keys(links).length > 500, `${Object.keys(links).length} printed names resolve to a profile`);
+
+// Every key must be a name that is actually printed somewhere, and every value a
+// plausible player id — a stale key would render a link on nothing.
+const printed = new Set();
+for (const x of mm.matches) {
+  for (const n of x.pa) printed.add(`${n}|${x.a}`);
+  for (const n of x.pb) printed.add(`${n}|${x.b}`);
+}
+ok(Object.keys(links).every((k) => printed.has(k)), "every link belongs to a name the draws print");
+ok(Object.values(links).every((v) => /^(fip-|R\d)/.test(v)), "every link is a FIP or RankedIn player id");
+
+// The two refusals that matter, asserted by name. "P. Hansen" plays in Denmark's
+// MEN's junior team; the only Danish P. Hansen with a full name in the index is
+// Pernille Hansen, so an initial-and-surname join alone would link the wrong person.
+ok(!links["P. Hansen|DEN"], "P. Hansen (men) is NOT linked to a Danish women's player");
+ok(!links["V. Persson|SWE"], "a name printed in both men's and women's matches is not linked");
+
+// A name that appears in both genders can never be linked, whichever pass found it.
+const genders = new Map();
+for (const x of mm.matches) {
+  for (const [n, c] of [...x.pa.map((v) => [v, x.a]), ...x.pb.map((v) => [v, x.b])]) {
+    const k = `${n}|${c}`;
+    genders.set(k, (genders.get(k) || new Set()).add(x.g));
+  }
+}
+ok([...genders].filter(([k, g]) => g.size > 1).every(([k]) => !links[k]), "no linked name is printed in both genders");
+
+// Two different printed names may share an id (one person, two spellings), but a
+// name must never carry two ids — the map shape guarantees it, so assert the risk
+// that is real: a link rendered for a name the page does not show.
+state.ntCountry = "DEN";
+sandbox.render();
+const linkedOnPage = [...(app.innerHTML.match(/data-player="[^"]+"/g) || [])];
+ok(linkedOnPage.length > 10, `Denmark's page renders ${linkedOnPage.length} player links`);
+ok(!/data-player="undefined"/.test(app.innerHTML), "...and none of them is an undefined id");
+
 // The point of the match pass: an edition whose bracket states NO placing is still
 // published at match level. Croatia played only the 2024 Europeans.
 ok((mm.events || []).some((e) => e.id === "fip-137970" && e.unordered), "the unplaceable 2024 Europeans are in the match file");

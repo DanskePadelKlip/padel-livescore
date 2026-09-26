@@ -4459,6 +4459,16 @@ const ntScore = (x, code) =>
  * them and are deliberately NOT linked to profiles — resolving "P. Hansen" to a player
  * id is a name join, and a wrong join here would put the wrong person in a national team.
  */
+// A printed name becomes a profile link only where the build resolved it — see
+// scripts/nt-resolve-players.mjs for the two passes and the gender witness that
+// rejects, for instance, "P. Hansen" in a men's team resolving to Pernille Hansen.
+// Everything unresolved stays plain text, which is the honest half of the feature:
+// about a third of these players have no profile anywhere on the site.
+const ntPlayer = (m, name, code) => {
+  const id = (m.players || {})[`${name}|${code}`];
+  return id ? `<span class="has-profile ntm-pl" data-player="${esc(id)}">${esc(name)}</span>` : esc(name);
+};
+
 function natCountryMatches(code, mine, m) {
   if (!m || !mine.length) return "";
   const evById = new Map((m.events || []).map((e) => [e.id, e]));
@@ -4496,7 +4506,7 @@ function natCountryMatches(code, mine, m) {
           <td class="ntm-res">${x.w === code ? "W" : "L"}</td>
           <td class="ntm-rd">${esc(ntRoundLabel(x.rd))}<div class="ntc-sub">${x.g === "women" ? "Women" : "Men"}</div></td>
           <td class="ntm-opp"><span class="nt-country has-profile" data-ntcountry="${esc(opp)}" data-ntiso="${esc(o.iso || "")}">${countryFlag(o.iso || "")} ${esc(o.name || opp)}</span></td>
-          <td class="ntm-p">${esc(us.join(" / "))}<div class="ntc-sub">v ${esc(them.join(" / "))}</div></td>
+          <td class="ntm-p">${us.map((n) => ntPlayer(m, n, code)).join(" / ")}<div class="ntc-sub">v ${them.map((n) => ntPlayer(m, n, opp)).join(" / ")}</div></td>
           <td class="ntm-sc">${esc(ntScore(x, code) || "—")}</td>
         </tr>`;
       }).join("") +
@@ -4516,10 +4526,11 @@ function natCountryMatches(code, mine, m) {
   const squad = new Map();
   for (const x of mine) for (const p of x.a === code ? x.pa : x.pb) squad.set(p, (squad.get(p) || 0) + 1);
   const names = [...squad.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const linked = names.filter(([n]) => (m.players || {})[`${n}|${code}`]).length;
   html += `<div class="section-label">Players<span class="count">${names.length}</span></div>
     <div class="nt-ev"><div class="ntm-squad">` +
-    names.map(([n, c]) => `<span class="ntm-sq">${esc(n)}<span class="ntm-sqn">${c}</span></span>`).join("") +
-    `</div><div class="nt-src">Names as the draw abbreviates them — ${names.length} player${names.length === 1 ? "" : "s"} across ${mine.length} match${mine.length === 1 ? "" : "es"}.</div></div>`;
+    names.map(([n, c]) => `<span class="ntm-sq">${ntPlayer(m, n, code)}<span class="ntm-sqn">${c}</span></span>`).join("") +
+    `</div><div class="nt-src">Names as the draw abbreviates them — ${names.length} player${names.length === 1 ? "" : "s"} across ${mine.length} match${mine.length === 1 ? "" : "es"}. ${linked} open a profile; the rest could not be matched to one player with enough certainty to link.</div></div>`;
   return html;
 }
 

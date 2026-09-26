@@ -35,6 +35,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolvePlayers } from "./nt-resolve-players.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARCH = path.join(ROOT, "public", "data", "archive", "t");
@@ -682,6 +683,15 @@ for (const ev of [...EVENTS, ...MATCH_ONLY, ...teamDrawEvents]) {
   mStats[ev.key] = { matches: r.matches.length, ties: r.ties.length, skipped: r.skipped, merged: r.merged, undecided: r.undecided, unplayed: r.unplayed };
 }
 
+// Profile links for the names in those matches — the rules, and why the index is a
+// static file rather than /api/search, are in scripts/nt-resolve-players.mjs.
+const { players: mPlayers, stats: pStats } = resolvePlayers(
+  mMatches,
+  Object.fromEntries([...new Set(mMatches.flatMap((m) => [m.a, m.b]))].map((c) => [c, { iso: COUNTRY[c][0] }])),
+  path.join(ROOT, "public", "data", "players-lite.json"),
+  path.join(ROOT, "public", "data", "rankings.json")
+);
+
 const mCountries = {};
 for (const c of [...new Set(mMatches.flatMap((m) => [m.a, m.b]))].sort()) {
   if (!COUNTRY[c]) throw new Error(`unmapped country code ${c} in the matches pass`);
@@ -697,6 +707,7 @@ fs.writeFileSync(
         "Every nation-vs-nation match played at the national-team championships in the archive — the rubbers behind the placings table, read off the same archived draws. A match is listed only when both pairs are one nation; the score is the draw's own. Rounds are shown where the draw labels them.",
       events: mEvents,
       countries: mCountries,
+      players: mPlayers,
       ties: mTies,
       matches: mMatches,
       stats: mStats,
@@ -725,6 +736,11 @@ for (const k of Object.keys(byEv).sort()) console.log(`  ${k}: ${byEv[k]} nation
 for (const p of problems) console.log(`  GAP ${p}`);
 
 console.log(`wrote ${path.relative(ROOT, OUT_M)} — ${mEvents.length} editions, ${mMatches.length} matches, ${mTies.length} ties`);
+console.log(`  player links: ${pStats.exact + pStats.initial} of ${pStats.exact + pStats.initial + pStats.unresolved} printed names` +
+  ` (${pStats.exact} exact, ${pStats.initial} initial+surname with a gender witness)` +
+  `${pStats.index ? "" : " — NO players-lite.json, nothing linked"}` +
+  `${pStats.index && !pStats.witness ? " — no rankings.json, pass 2 skipped" : ""}`);
+console.log(`  refused: ${pStats.genderClash} on gender, ${pStats.bothGenders} printed in both genders, ${pStats.noWitness} with no ranking entry`);
 for (const [k, s] of Object.entries(mStats)) {
   console.log(`  ${k}: ${s.matches} matches, ${s.ties} ties` +
     `${s.skipped ? `, ${s.skipped} not nation-vs-nation` : ""}` +

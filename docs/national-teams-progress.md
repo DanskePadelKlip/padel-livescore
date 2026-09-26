@@ -412,3 +412,48 @@ DRAW LINK appeared in the rendered html — and a team-widget edition has no arc
 link to, so the hub said "3 championships" above five cards. It counts the cards it builds now.
 
 Spain's page is the visible difference: 6 placings, **5 golds and a silver**, 56-1 in ties.
+
+---
+
+## 11. The name join — player links, 2026-09-26
+
+2,510 printed names, none of them clickable. **1,332 now open a profile** (1,259 + 73);
+the rest stay plain text, which is the honest half: a third of these people have no
+profile anywhere on the site, and several more cannot be told apart.
+
+**The index is static, and that is a capacity decision, not a style one.**
+`/api/search` costs **~6,200 D1 row-reads per query**. Resolving 2,510 names through it
+would be ~15.5M reads against a 5M daily free-tier cap — i.e. it would take every
+D1-backed route on padelticker down until midnight UTC, which is exactly the 2026-09-04
+outage. `data/players-lite.json` (24,895 players, id/name/country) does it for zero reads.
+
+**Two passes, the second needs a second witness** (`scripts/nt-resolve-players.mjs`):
+
+1. **Exact** — printed name + nation match a FIP-namespace row. Barely a join: a FIP id
+   IS the slug of that abbreviated name. **1,259 names.**
+2. **Initial + surname** against the full names in the RankedIn namespace, where the
+   Nordic juniors and veterans live. A real inference, so it links only when the country
+   leaves exactly ONE candidate **and** that candidate's gender — read from the national
+   ranking lists — matches the gender of the matches the name played in. **73 names.**
+
+Refused: **2 on gender, 2 printed in both genders, 60 with no ranking entry**, 1,178
+with no unique candidate at all.
+
+**The gender witness is why pass 2 ships.** `P. Hansen (DEN)` in the men's junior team
+resolves, by initial and surname alone, to **Pernille Hansen** — a real Danish player,
+the wrong person, in the exact place a Danish reader would notice. Rejected, and asserted
+by name in the test suite so it cannot come back. `M. Nielsen (DEN)` never links either.
+
+**The trap that cost the first run: one column, two conventions.** In `players-lite.json`
+the FIP rows carry IOC-3 (`BEL`) and the RankedIn rows ISO-2 (`SE`). Keying on the wrong
+one matches *nothing at all* — 0 of 2,510 — which reads like a broken file rather than a
+wrong key.
+
+Verified end to end against the live API: `D. Appelgren -> Daniel Appelgren`,
+`D. Rutgersson -> Douglas Rutgersson`, `S. Alipieva -> Simone Alipieva`,
+`A. Coello -> A. Coello`, `D. Cuypers -> D. Cuypers`. Clicking a squad chip routes to
+`/player/<id>`. Suite is at **72 checks**, including that no linked name is printed in
+both genders and that no rendered link carries an undefined id.
+
+Denmark's page: **23 of 67 players link**, and the page says so rather than leaving a
+reader to wonder why some names are dotted and some are not.
