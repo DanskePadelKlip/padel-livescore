@@ -547,6 +547,23 @@ for (const c of [...used].sort()) {
   countries[c] = { iso: COUNTRY[c][0], name: COUNTRY[c][1] };
 }
 
+/**
+ * Write only when the content actually changed, with the date stamp masked out of
+ * the comparison. A build that runs weekly and rewrites `updated` every time makes
+ * a commit and a deploy that carry nothing, and teaches a reader that the date on
+ * the page means nothing either. This way it means "when this last changed".
+ */
+function writeIfChanged(file, body) {
+  // Two masks, not one. git checks these files out as CRLF (core.autocrlf) while
+  // the generator writes LF, so a byte comparison says "changed" on every single
+  // run and the weekly job would commit eight untouched files every Monday.
+  const mask = (s) => s.replace(/\r\n/g, "\n").replace(/"updated": "[^"]*"/, '"updated": "*"');
+  const prev = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+  if (prev !== null && mask(prev) === mask(body)) return false;
+  fs.writeFileSync(file, body);
+  return true;
+}
+
 const out = {
   updated: new Date().toISOString().slice(0, 10),
   note:
@@ -698,7 +715,7 @@ for (const c of [...new Set(mMatches.flatMap((m) => [m.a, m.b]))].sort()) {
   mCountries[c] = { iso: COUNTRY[c][0], name: COUNTRY[c][1] };
 }
 
-fs.writeFileSync(
+const wroteM = writeIfChanged(
   OUT_M,
   jsonLines(
     {
@@ -730,12 +747,12 @@ for (const g of GAPS) {
 // tail makes every future rebuild diff in a place nothing changed.
 out.countries = Object.fromEntries(Object.keys(countries).sort().map((c) => [c, countries[c]]));
 
-fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + "\n");
-console.log(`wrote ${path.relative(ROOT, OUT)} — ${events.length} editions, ${rows.length} rows`);
+const wroteOut = writeIfChanged(OUT, JSON.stringify(out, null, 1) + "\n");
+console.log(`${wroteOut ? "wrote" : "unchanged:"} ${path.relative(ROOT, OUT)} — ${events.length} editions, ${rows.length} rows`);
 for (const k of Object.keys(byEv).sort()) console.log(`  ${k}: ${byEv[k]} nations`);
 for (const p of problems) console.log(`  GAP ${p}`);
 
-console.log(`wrote ${path.relative(ROOT, OUT_M)} — ${mEvents.length} editions, ${mMatches.length} matches, ${mTies.length} ties`);
+console.log(`${wroteM ? "wrote" : "unchanged:"} ${path.relative(ROOT, OUT_M)} — ${mEvents.length} editions, ${mMatches.length} matches, ${mTies.length} ties`);
 console.log(`  player links: ${pStats.exact + pStats.initial} of ${pStats.exact + pStats.initial + pStats.unresolved} printed names` +
   ` (${pStats.exact} exact, ${pStats.initial} initial+surname with a gender witness)` +
   `${pStats.index ? "" : " — NO players-lite.json, nothing linked"}` +
@@ -747,6 +764,18 @@ for (const [k, s] of Object.entries(mStats)) {
     `${s.merged ? `, ${s.merged} tie group(s) merged — rubbers kept, tie dropped` : ""}` +
     `${s.undecided ? `, ${s.undecided} tie(s) undecided` : ""}` +
     `${s.unplayed ? `, ${s.unplayed} rubber(s) never played` : ""}`);
+}
+
+// A draw can be fetched and still not published — the World Cup qualifier that was
+// running when this shipped is fetched every week and held back deliberately. Say so
+// on every build, or the day it finishes nothing tells anyone it is ready to promote.
+// The weekly job turns this line into an action only when that draw actually changed.
+for (const f of fs.existsSync(NT_DRAWS) ? fs.readdirSync(NT_DRAWS) : []) {
+  const key = f.replace(/\.json$/, "");
+  if (TEAM_DRAWS.some((e) => e.key === key)) continue;
+  const d = JSON.parse(fs.readFileSync(path.join(NT_DRAWS, f), "utf8"));
+  const played = d.matches.filter((m) => m.status === "final").length;
+  console.log(`  HELD BACK ${key}: fetched (${played} played matches, to ${d.end || "?"}), not published`);
 }
 
 // ------------------------------------------------------- --check: Denmark, 1:1

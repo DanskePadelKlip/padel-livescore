@@ -228,10 +228,69 @@ async function fetchEvent(ev) {
   return { ...ev, lastDay, matches, ties, genders: genderOf, title, year, start: played[0] || "", end: played[played.length - 1] || "" };
 }
 
+
+// ------------------------------------------------------------------- discovery
+// The reason a new championship does not appear here on its own: EVENTS above is
+// hand-written, because the label cannot be read off the title. "FIP SENIOR WORLD
+// CUP" is the VETERANS event, not the senior national team, and publishing it as
+// the latter would put a veterans result in a nation's national-team record. So
+// discovery REPORTS what it finds and never adds it.
+//
+//   node scripts/fetch-fip-team-draws.mjs --discover [year ...]
+//
+// It walks padelfip's championships calendar, pulls each event's widget id out of
+// the iframe src (the `idEvent_` class is a `#1001` placeholder on these pages) and
+// says which ones carry a TEAM widget and are not already known.
+// Editions already published from an ARCHIVED draw, under the archive's own key.
+// Discovery would otherwise flag them as new every single week — an alert that
+// never clears is an alert nobody reads.
+const KNOWN_ELSEWHERE = {
+  "FIP-2026-2811": "fip-296741 (Junior Euro Padel Cup 2026, from the archive)",
+  "FIP-2024-4403": "fip-135412 (World Championships 2024, from the archive)",
+};
+
+async function discover(years) {
+  const known = new Set(EVENTS.map((e) => e.id));
+  const found = [];
+  for (const y of years) {
+    const cal = await get(`https://www.padelfip.com/calendar-fip-championships/?events-year=${y}`);
+    if (!cal) { console.log(`${y}: calendar did not serve`); continue; }
+    const slugs = [...new Set([...cal.matchAll(/https:\/\/www\.padelfip\.com\/events\/([a-z0-9-]+)\//g)].map((m) => m[1]))];
+    for (const slug of slugs) {
+      const html = await get(`https://www.padelfip.com/events/${slug}/`);
+      if (!html) continue;
+      const frames = [...new Set([...html.matchAll(/widget\.matchscorerlive\.com\/screen\/([a-z]+)\/(FIP-\d{4}-\d+)/g)].map((m) => `${m[1]}|${m[2]}`))];
+      const team = frames.filter((f) => f.startsWith("teamresults|") || f.startsWith("groups|"));
+      if (!team.length) continue;
+      const id = team[0].split("|")[1];
+      found.push({ y, slug, id, known: known.has(id) || !!KNOWN_ELSEWHERE[id], screens: [...new Set(frames.map((f) => f.split("|")[0]))].join("+") });
+    }
+  }
+  const fresh = found.filter((f) => !f.known);
+  console.log(`discover: ${found.length} team events across ${years.join(", ")}, ${fresh.length} not in EVENTS`);
+  for (const f of found.filter((x) => KNOWN_ELSEWHERE[x.id])) console.log(`  (${f.id} already published as ${KNOWN_ELSEWHERE[f.id]})`);
+  for (const f of fresh) {
+    console.log(`  NEW ${f.id}  ${f.slug}  (${f.screens})`);
+    console.log(`      https://www.padelfip.com/events/${f.slug}/`);
+  }
+  if (fresh.length) {
+    console.log("  -> add to EVENTS here and to TEAM_DRAWS in build-national-teams.mjs WITH A LABEL");
+    console.log("     CHECKED AGAINST THE SQUADS: FIP calls its veterans events \"Senior\".");
+  }
+  return fresh;
+}
+
 const args = process.argv.slice(2);
+if (args.includes("--discover")) {
+  const now = new Date().getFullYear();
+  const years = args.filter((a) => /^\d{4}$/.test(a)).map(Number);
+  const fresh = await discover(years.length ? years : [now, now + 1]);
+  process.exit(fresh.length ? 3 : 0); // 3 = something new to label, by hand
+}
+
 const wanted = args.includes("--all") ? EVENTS : EVENTS.filter((e) => args.includes(e.id) || args.includes(e.key));
 if (!wanted.length) {
-  console.error("usage: fetch-fip-team-draws.mjs <FIP-YYYY-N | key | --all>");
+  console.error("usage: fetch-fip-team-draws.mjs <FIP-YYYY-N | key | --all | --discover [year ...]>");
   process.exit(2);
 }
 
@@ -241,7 +300,7 @@ for (const ev of wanted) {
   if (r.error) { console.log(`${ev.id} ${ev.key}: ${r.error}`); continue; }
   const undecided = r.matches.filter((m) => m.score.winner === null).length;
   const file = path.join(OUT_DIR, `${ev.key}.json`);
-  fs.writeFileSync(file, JSON.stringify({
+  const body = JSON.stringify({
     key: ev.key,
     name: r.title,
     year: r.year,
@@ -252,9 +311,20 @@ for (const ev of wanted) {
     sourceUrl: `https://www.padelfip.com/events/${ev.wp}/`,
     fetched: new Date().toISOString().slice(0, 10),
     matches: r.matches,
-  }, null, 1) + "\n");
+  }, null, 1) + "\n";
+  // Rewriting a file whose only difference is today's date turns a weekly refresh
+  // into a weekly commit and a weekly deploy that carry nothing. Compare with the
+  // stamp masked out, so `fetched` means "when this draw last changed" rather than
+  // "when we last looked" - which is the more useful of the two anyway.
+  // Two masks, not one. git checks these files out as CRLF (core.autocrlf) while
+  // the generator writes LF, so a byte comparison says "changed" on every single
+  // run and the weekly job would commit eight untouched files every Monday.
+  const mask = (s) => s.replace(/\r\n/g, "\n").replace(/"fetched": "[^"]*"/, '"fetched": "*"');
+  const prev = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+  const same = prev !== null && mask(prev) === mask(body);
+  if (!same) fs.writeFileSync(file, body);
   const rounds = [...new Set(r.matches.map((m) => m.round))];
-  console.log(`${ev.id} ${ev.key}: ${r.ties.length} ties, ${r.matches.length} matches, days 1-${r.lastDay}` +
+  console.log(`${ev.id} ${ev.key}: ${same ? "unchanged, " : ""}${r.ties.length} ties, ${r.matches.length} matches, days 1-${r.lastDay}` +
     `${undecided ? `, ${undecided} with no winner marked` : ""}`);
   console.log(`   genders: ${[...new Set(Object.values(r.genders))].join("/") || "NONE"} | rounds: ${rounds.join(" | ")}`);
 }

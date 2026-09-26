@@ -457,3 +457,51 @@ both genders and that no rendered link carries an undefined id.
 
 Denmark's page: **23 of 67 players link**, and the page says so rather than leaving a
 reader to wonder why some names are dotted and some are not.
+
+---
+
+## 12. Refresh cadence, 2026-09-26
+
+Everything above was a one-off build. `PadelTicker-NationalTeams-Weekly` (Mondays 05:00,
+on the laptop) is what keeps it true:
+
+1. `fetch-fip-team-draws.mjs --all` — re-fetches every known edition. This is what picks
+   up an event that has FINISHED since the last run.
+2. `build-national-teams.mjs --check` — rebuilds both files. **If a check fails the data
+   files are restored from HEAD and nothing ships**; a stale placing beats a wrong one.
+3. `--discover` — walks padelfip's championships calendar for this year and next and
+   REPORTS any new team event. It never adds one: the label cannot be read off the title
+   (`FIP SENIOR WORLD CUP` is the veterans event), so a human checks the squads.
+4. Commits and pushes, but only the national-teams paths and only when they moved.
+
+**It runs on the laptop because that is the only box that may deploy**, and because
+`refresh-loop.js` ships the working tree every cycle — rewriting these files IS the
+deploy. Nothing else to trigger.
+
+**The churn problem, which is the reason this took a second pass.** The fetcher stamped
+`fetched:` and the build stamped `updated:` on every run, so a weekly job would commit
+eight untouched files and redeploy the site every Monday forever. Both now compare with
+the stamp masked out and skip the write — so the dates mean "when this last changed",
+which is the more useful thing to print anyway. **And the comparison has to normalise
+line endings**: git checks these out as CRLF while the generators write LF, so a byte
+comparison says "changed" on every single run. Verified idempotent — a second run in a
+row writes nothing and leaves `git status` clean.
+
+**Exit codes are the signal** (the scheduled task's LastTaskResult, which the watcher
+brief reads): `0` fine, `2` the build refused and nothing shipped, `3` something needs a
+person, `4` committed but the push failed.
+
+**`3` has two causes, and both are quiet until they are real.** A new championship on the
+calendar; or a **held-back draw that changed** — the build prints `HELD BACK <key>` for
+every draw fetched but not published, and the job only raises it when that file actually
+moved. That is exactly the World Cup Europe qualifier: fetched weekly, published never,
+until the week it finishes and says so.
+
+Install (on the laptop, elevated): `scripts\install-national-teams-task.ps1`. It
+registers the task, runs it once and tails the log, because a task can report 0x0 having
+done nothing.
+
+**Still no cadence: `players-lite.json`.** It comes from `padel-db\export_d1.py`, **no
+scheduled task runs that**, and it is dated 2026-09-05 — which is part of why 1,178 names
+do not link. Refreshing it also writes D1 SQL, so it belongs to whoever owns that job,
+not to this one.
