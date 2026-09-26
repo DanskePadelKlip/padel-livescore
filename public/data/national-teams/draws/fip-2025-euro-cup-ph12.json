@@ -7,6 +7,7 @@
  "widgetId": "FIP-2025-123",
  "source": "matchscorerlive teamresults FIP-2025-123, days 1-6",
  "sourceUrl": "https://www.padelfip.com/events/fip-euro-padel-cup-phase-1-2/",
+ "pending": 1,
  "fetched": "2026-09-26",
  "matches": [
   {

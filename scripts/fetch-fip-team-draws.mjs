@@ -89,10 +89,15 @@ function blocks(html, marker) {
  */
 function parseDay(html, genderOf) {
   const out = [];
+  let pending = 0;
   for (const card of blocks(html, '<div class="col-12 col-lg-6 col-xl-4 mb-3"')) {
     const draw = (card.match(/data-draw="(\d+)"/) || [])[1];
     const view = (card.match(/data-view="([FLU])"/) || [])[1];
-    if (view !== "F") continue;
+    // Live and upcoming ties are counted, not parsed. That count is how the
+    // build knows whether an edition is FINISHED: a tournament still in progress
+    // must not publish a half record as a whole one, and the widget itself is
+    // the only honest source for 'is there anything left to play'.
+    if (view !== "F") { if (genderOf[draw]) pending++; continue; }
     const gender = genderOf[draw];
     if (!gender) continue;
 
@@ -134,7 +139,7 @@ function parseDay(html, genderOf) {
     }
     out.push({ gender, group, phase, nations: nations.slice(0, 2), names: names.slice(0, 2), rubbers });
   }
-  return out;
+  return { ties: out, pending };
 }
 
 /**
@@ -200,10 +205,13 @@ async function fetchEvent(ev) {
   const lastDay = Math.min(days.length ? Math.max(...days) : 1, MAX_DAYS);
 
   const matches = [], ties = [];
+  let pending = 0;
   for (let day = 1; day <= lastDay; day++) {
     const html = day === 1 ? first : await get(`${WIDGET}/teamresults/${ev.id}/${day}?t=tol`);
     if (!html) continue;
-    for (const t of parseDay(html, genderOf)) {
+    const parsed = parseDay(html, genderOf);
+    pending += parsed.pending;
+    for (const t of parsed.ties) {
       const [a, b] = t.nations;
       ties.push({ day, gender: t.gender, group: t.group, phase: t.phase, a, b, n: t.rubbers.length });
       for (const r of t.rubbers) {
@@ -225,7 +233,7 @@ async function fetchEvent(ev) {
     }
   }
   const played = [...new Set(matches.filter((m) => m.status === "final").map((m) => dates[m.day]).filter(Boolean))].sort();
-  return { ...ev, lastDay, matches, ties, genders: genderOf, title, year, start: played[0] || "", end: played[played.length - 1] || "" };
+  return { ...ev, lastDay, matches, ties, pending, genders: genderOf, title, year, start: played[0] || "", end: played[played.length - 1] || "" };
 }
 
 
@@ -309,6 +317,9 @@ for (const ev of wanted) {
     widgetId: ev.id,
     source: `matchscorerlive teamresults ${ev.id}, days 1-${r.lastDay}`,
     sourceUrl: `https://www.padelfip.com/events/${ev.wp}/`,
+    // 0 = the widget has nothing left to play. Anything above 0 and this edition
+    // is still running, whatever its dates say.
+    pending: r.pending,
     fetched: new Date().toISOString().slice(0, 10),
     matches: r.matches,
   }, null, 1) + "\n";
@@ -324,7 +335,7 @@ for (const ev of wanted) {
   const same = prev !== null && mask(prev) === mask(body);
   if (!same) fs.writeFileSync(file, body);
   const rounds = [...new Set(r.matches.map((m) => m.round))];
-  console.log(`${ev.id} ${ev.key}: ${same ? "unchanged, " : ""}${r.ties.length} ties, ${r.matches.length} matches, days 1-${r.lastDay}` +
+  console.log(`${ev.id} ${ev.key}: ${same ? "unchanged, " : ""}${r.pending ? `${r.pending} STILL TO PLAY, ` : ""}${r.ties.length} ties, ${r.matches.length} matches, days 1-${r.lastDay}` +
     `${undecided ? `, ${undecided} with no winner marked` : ""}`);
   console.log(`   genders: ${[...new Set(Object.values(r.genders))].join("/") || "NONE"} | rounds: ${rounds.join(" | ")}`);
 }

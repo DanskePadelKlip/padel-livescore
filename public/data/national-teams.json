@@ -1044,7 +1044,7 @@
    "cat": "Senior",
    "year": 2026,
    "where": "Europe",
-   "why": "Still being played as this was built (22-26 September 2026). Its matches are re-fetchable the same way as the rest, but a rolling event in a static history publishes half a record as a whole one, so it waits until it has finished."
+   "why": "The team widget for this event serves only Groups G and H - four ties - while the qualifier's own group tables list many more nations. It is a partial source rather than an unfinished one: the widget reports nothing left to play, so waiting will not fill it. Publishing it would present a twelve-match fragment as a qualifier."
   },
   {
    "key": "rin-42477",

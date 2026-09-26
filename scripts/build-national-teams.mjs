@@ -96,7 +96,7 @@ const GAPS = [
     cat: "Senior",
     year: 2026,
     where: "Europe",
-    why: "Still being played as this was built (22-26 September 2026). Its matches are re-fetchable the same way as the rest, but a rolling event in a static history publishes half a record as a whole one, so it waits until it has finished.",
+    why: "The team widget for this event serves only Groups G and H - four ties - while the qualifier's own group tables list many more nations. It is a partial source rather than an unfinished one: the widget reports nothing left to play, so waiting will not fill it. Publishing it would present a twelve-match fragment as a qualifier.",
   },
   {
     key: "rin-42477",
@@ -430,6 +430,7 @@ const TEAM_DRAWS = [
   { key: "fip-2025-asia-cup", comp: "Asia Padel Cup", body: "FIP", cat: "Senior" },
   { key: "fip-2026-wc-q-noram", comp: "World Cup Qualifiers — North & Central America", body: "FIP", cat: "Senior" },
   { key: "fip-2026-wc-q-souam", comp: "World Cup Qualifiers — South America", body: "FIP", cat: "Senior" },
+
   // The source itself stops after the position quarter-finals: day 4 still holds four
   // UPCOMING cards that never got a result, so the semis and finals are not in the
   // widget. Published with that said out loud rather than held back whole.
@@ -438,7 +439,7 @@ const TEAM_DRAWS = [
   // internationals among them. Labelled Senior it would have published a veterans
   // result as the national team's World Cup record. It is also the first veteran
   // edition this section has ever had, which was listed as a flat gap.
-  { key: "fip-2026-senior-world-cup", comp: "Seniors World Cup", body: "FIP", cat: "Veteran", partial: "The widget's own day 4 still lists the last ties as upcoming, so this edition stops after the position quarter-finals." },
+  { key: "fip-2026-senior-world-cup", comp: "Seniors World Cup", body: "FIP", cat: "Veteran" },
 ];
 
 // The team-widget editions carry their own name, year and dates, and their gender is
@@ -447,7 +448,15 @@ const teamDrawEvents = TEAM_DRAWS.map((ev) => {
   const file = path.join(NT_DRAWS, `${ev.key}.json`);
   if (!fs.existsSync(file)) { problems.push(`${ev.key}: team draw not fetched`); return null; }
   const d = JSON.parse(fs.readFileSync(file, "utf8"));
-  return { ...ev, year: d.year, dir: NT_DRAWS, classes: { Men: "men", Women: "women" } };
+  // `pending` is the widget's own count of ties it still lists as live or upcoming.
+  // Above zero, this edition is not over - or, as at the 2026 Seniors World Cup, its
+  // last rounds were never entered - and a record that stops early must say so on
+  // the card rather than read as a nation going out there. Derived, not hand-written,
+  // so the day FIP fills those ties in, the caveat disappears by itself.
+  const partial = d.pending > 0
+    ? `The source still lists ${d.pending} tie${d.pending === 1 ? "" : "s"} as unplayed, so this edition stops short of its last rounds.`
+    : "";
+  return { ...ev, year: d.year, dir: NT_DRAWS, partial, classes: { Men: "men", Women: "women" } };
 }).filter(Boolean);
 
 // ------------------------------------------- placings the team widget STATES
@@ -747,6 +756,11 @@ for (const g of GAPS) {
 // tail makes every future rebuild diff in a place nothing changed.
 out.countries = Object.fromEntries(Object.keys(countries).sort().map((c) => [c, countries[c]]));
 
+// A gap that has since been PLACED must stop being listed as a gap - and the test is
+// placings, not matches. Filtering on the match editions instead would have dropped the
+// 2024 Europeans from the list, which is exactly the entry that exists to say its 287
+// matches are published while its placings are not.
+out.gaps = GAPS.filter((g) => !events.some((e) => e.id === g.key));
 const wroteOut = writeIfChanged(OUT, JSON.stringify(out, null, 1) + "\n");
 console.log(`${wroteOut ? "wrote" : "unchanged:"} ${path.relative(ROOT, OUT)} — ${events.length} editions, ${rows.length} rows`);
 for (const k of Object.keys(byEv).sort()) console.log(`  ${k}: ${byEv[k]} nations`);

@@ -92,7 +92,7 @@
    "start": "2025-07-08",
    "end": "2025-07-13",
    "where": "",
-   "partial": "",
+   "partial": "The source still lists 1 tie as unplayed, so this edition stops short of its last rounds.",
    "tkey": "fip-2025-euro-cup-ph12",
    "genders": [
     "men",
@@ -132,7 +132,7 @@
    "start": "2025-09-26",
    "end": "2025-10-01",
    "where": "",
-   "partial": "",
+   "partial": "The source still lists 1 tie as unplayed, so this edition stops short of its last rounds.",
    "tkey": "fip-2025-junior-world-cup",
    "genders": [
     "men",
@@ -212,7 +212,7 @@
    "start": "2026-09-14",
    "end": "2026-09-17",
    "where": "",
-   "partial": "The widget's own day 4 still lists the last ties as upcoming, so this edition stops after the position quarter-finals.",
+   "partial": "The source still lists 4 ties as unplayed, so this edition stops short of its last rounds.",
    "tkey": "fip-2026-senior-world-cup",
    "genders": [
     "men",

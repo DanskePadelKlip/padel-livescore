@@ -7,6 +7,7 @@
  "widgetId": "FIP-2025-126",
  "source": "matchscorerlive teamresults FIP-2025-126, days 1-9",
  "sourceUrl": "https://www.padelfip.com/events/fip-junior-world-cup-by-teams-2025/",
+ "pending": 1,
  "fetched": "2026-09-26",
  "matches": [
   {

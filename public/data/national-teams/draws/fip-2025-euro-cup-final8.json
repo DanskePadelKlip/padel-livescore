@@ -7,6 +7,7 @@
  "widgetId": "FIP-2025-127",
  "source": "matchscorerlive teamresults FIP-2025-127, days 1-5",
  "sourceUrl": "https://www.padelfip.com/events/fip-euro-padel-cup-2025-final-8/",
+ "pending": 0,
  "fetched": "2026-09-26",
  "matches": [
   {
