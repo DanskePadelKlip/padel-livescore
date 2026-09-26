@@ -4468,6 +4468,10 @@ function natCountryMatches(code, mine, m) {
       (e.unordered
         ? `<div class="nt-src">This draw carries no round labels, so its matches are listed in draw order and no placing is derived from them.</div>`
         : "") +
+      // An edition the SOURCE stops short of has to say so on the card rather than in
+      // a footnote: a record that ends at the quarter-finals otherwise reads as a
+      // nation that went out there.
+      (e.partial ? `<div class="nt-src">${esc(e.partial)}</div>` : "") +
       `</div>`;
   }
 

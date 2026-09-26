@@ -1,0 +1,2327 @@
+{
+ "key": "fip-2026-wc-q-souam",
+ "name": "FIP WORLD CUP 2026 QUALIFIERS – SOUTH AMERICA",
+ "year": 2026,
+ "start": "2026-08-20",
+ "end": "2026-08-22",
+ "widgetId": "FIP-2026-3416",
+ "source": "matchscorerlive teamresults FIP-2026-3416, days 1-3",
+ "sourceUrl": "https://www.padelfip.com/events/fip-world-cup-2026-qualifiers-south-america/",
+ "fetched": "2026-09-26",
+ "matches": [
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "D. Sebastian Ramos / M. Araujo De Lizarza",
+     "players": [
+      {
+       "name": "D. Sebastian Ramos",
+       "country": "URU"
+      },
+      {
+       "name": "M. Araujo De Lizarza",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "D. Del Castillo / A. Devletian",
+     "players": [
+      {
+       "name": "D. Del Castillo",
+       "country": "VEN"
+      },
+      {
+       "name": "A. Devletian",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "H. Ensslin Alves / J. Ignacio Artia",
+     "players": [
+      {
+       "name": "H. Ensslin Alves",
+       "country": "URU"
+      },
+      {
+       "name": "J. Ignacio Artia",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "R. Rodriguez Alonso / D. Gonzalez Almedo",
+     "players": [
+      {
+       "name": "R. Rodriguez Alonso",
+       "country": "VEN"
+      },
+      {
+       "name": "D. Gonzalez Almedo",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "F. Soria / L. Lopez",
+     "players": [
+      {
+       "name": "F. Soria",
+       "country": "URU"
+      },
+      {
+       "name": "L. Lopez",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "E. A. Lopez Figuera / S. A. Soto Sanchez",
+     "players": [
+      {
+       "name": "E. A. Lopez Figuera",
+       "country": "VEN"
+      },
+      {
+       "name": "S. A. Soto Sanchez",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "5"
+     ],
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. Abud / S. N. Rodriguez",
+     "players": [
+      {
+       "name": "M. Abud",
+       "country": "PAR"
+      },
+      {
+       "name": "S. N. Rodriguez",
+       "country": "PAR"
+      }
+     ]
+    },
+    {
+     "name": "M. E. Proaño Enriquez / E. M. Montoya Pinchao",
+     "players": [
+      {
+       "name": "M. E. Proaño Enriquez",
+       "country": "ECU"
+      },
+      {
+       "name": "E. M. Montoya Pinchao",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. N. Popovich Fernández / S. Miltos",
+     "players": [
+      {
+       "name": "M. N. Popovich Fernández",
+       "country": "PAR"
+      },
+      {
+       "name": "S. Miltos",
+       "country": "PAR"
+      }
+     ]
+    },
+    {
+     "name": "J. A. Chamba Gomez / S. Armijos",
+     "players": [
+      {
+       "name": "J. A. Chamba Gomez",
+       "country": "ECU"
+      },
+      {
+       "name": "S. Armijos",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "A. M. Miranda / S. Rodriguez",
+     "players": [
+      {
+       "name": "A. M. Miranda",
+       "country": "PAR"
+      },
+      {
+       "name": "S. Rodriguez",
+       "country": "PAR"
+      }
+     ]
+    },
+    {
+     "name": "C. A. García Campoverde / A. Alvarez Puente",
+     "players": [
+      {
+       "name": "C. A. García Campoverde",
+       "country": "ECU"
+      },
+      {
+       "name": "A. Alvarez Puente",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "C. David De Lima González / C. Belassi",
+     "players": [
+      {
+       "name": "C. David De Lima González",
+       "country": "URU"
+      },
+      {
+       "name": "C. Belassi",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Piñate Acosta / A. Hernandez",
+     "players": [
+      {
+       "name": "M. A. Piñate Acosta",
+       "country": "VEN"
+      },
+      {
+       "name": "A. Hernandez",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "C. J. Fernandez Garcia / M. Morales Mauri",
+     "players": [
+      {
+       "name": "C. J. Fernandez Garcia",
+       "country": "URU"
+      },
+      {
+       "name": "M. Morales Mauri",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "V. A. Rothe / O. Meza",
+     "players": [
+      {
+       "name": "V. A. Rothe",
+       "country": "VEN"
+      },
+      {
+       "name": "O. Meza",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. J. Pintos Moleda / V. S. Gaetan Monza",
+     "players": [
+      {
+       "name": "M. J. Pintos Moleda",
+       "country": "URU"
+      },
+      {
+       "name": "V. S. Gaetan Monza",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "M. E. Turrillo Briquet / S. Martinez",
+     "players": [
+      {
+       "name": "M. E. Turrillo Briquet",
+       "country": "VEN"
+      },
+      {
+       "name": "S. Martinez",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "C. Belassi / C. David De Lima González",
+     "players": [
+      {
+       "name": "C. Belassi",
+       "country": "URU"
+      },
+      {
+       "name": "C. David De Lima González",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "J. Perez Castillo / C. Miranda",
+     "players": [
+      {
+       "name": "J. Perez Castillo",
+       "country": "PAR"
+      },
+      {
+       "name": "C. Miranda",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "C. N. Gasdia Ichazo / M. J. Pintos Moleda",
+     "players": [
+      {
+       "name": "C. N. Gasdia Ichazo",
+       "country": "URU"
+      },
+      {
+       "name": "M. J. Pintos Moleda",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "O. Bareiro / V. Cepede Royg",
+     "players": [
+      {
+       "name": "O. Bareiro",
+       "country": "PAR"
+      },
+      {
+       "name": "V. Cepede Royg",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "V. S. Gaetan Monza / C. J. Fernandez Garcia",
+     "players": [
+      {
+       "name": "V. S. Gaetan Monza",
+       "country": "URU"
+      },
+      {
+       "name": "C. J. Fernandez Garcia",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Garcia Vera / M. L. Salsamendi Guggiari",
+     "players": [
+      {
+       "name": "M. A. Garcia Vera",
+       "country": "PAR"
+      },
+      {
+       "name": "M. L. Salsamendi Guggiari",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "C. Arancibia / J. A. Escalona Díaz",
+     "players": [
+      {
+       "name": "C. Arancibia",
+       "country": "CHI"
+      },
+      {
+       "name": "J. A. Escalona Díaz",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "A. Alvarez / S. Alvarez",
+     "players": [
+      {
+       "name": "A. Alvarez",
+       "country": "ECU"
+      },
+      {
+       "name": "S. Alvarez",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "D. Chahuan / E. Lamatta Vidal",
+     "players": [
+      {
+       "name": "D. Chahuan",
+       "country": "CHI"
+      },
+      {
+       "name": "E. Lamatta Vidal",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "A. V. Cepeda Stoudennikova / E. Herdoiza",
+     "players": [
+      {
+       "name": "A. V. Cepeda Stoudennikova",
+       "country": "ECU"
+      },
+      {
+       "name": "E. Herdoiza",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. Lobo Ramirez / A. Bentjerodt Burgos",
+     "players": [
+      {
+       "name": "M. Lobo Ramirez",
+       "country": "CHI"
+      },
+      {
+       "name": "A. Bentjerodt Burgos",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "M. J. Mayorga Cruz / M. Holguín Reyes",
+     "players": [
+      {
+       "name": "M. J. Mayorga Cruz",
+       "country": "ECU"
+      },
+      {
+       "name": "M. Holguín Reyes",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. E. Turrillo Briquet / S. Martinez",
+     "players": [
+      {
+       "name": "M. E. Turrillo Briquet",
+       "country": "VEN"
+      },
+      {
+       "name": "S. Martinez",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "V. E. Navia Flores / S. Alvarez",
+     "players": [
+      {
+       "name": "V. E. Navia Flores",
+       "country": "ECU"
+      },
+      {
+       "name": "S. Alvarez",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "K. Osso / S. A. Leone Marquez",
+     "players": [
+      {
+       "name": "K. Osso",
+       "country": "VEN"
+      },
+      {
+       "name": "S. A. Leone Marquez",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "A. Alvarez / E. Herdoiza",
+     "players": [
+      {
+       "name": "A. Alvarez",
+       "country": "ECU"
+      },
+      {
+       "name": "E. Herdoiza",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "O. Meza / V. A. Rothe",
+     "players": [
+      {
+       "name": "O. Meza",
+       "country": "VEN"
+      },
+      {
+       "name": "V. A. Rothe",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "M. Holguín Reyes / M. J. Mayorga Cruz",
+     "players": [
+      {
+       "name": "M. Holguín Reyes",
+       "country": "ECU"
+      },
+      {
+       "name": "M. J. Mayorga Cruz",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "H. Ensslin Alves / J. Ignacio Artia",
+     "players": [
+      {
+       "name": "H. Ensslin Alves",
+       "country": "URU"
+      },
+      {
+       "name": "J. Ignacio Artia",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "S. A. Gómez De La Torre Espinosa / R. C. Pinargote Palma",
+     "players": [
+      {
+       "name": "S. A. Gómez De La Torre Espinosa",
+       "country": "ECU"
+      },
+      {
+       "name": "R. C. Pinargote Palma",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "D. Sebastian Ramos / M. Araujo De Lizarza",
+     "players": [
+      {
+       "name": "D. Sebastian Ramos",
+       "country": "URU"
+      },
+      {
+       "name": "M. Araujo De Lizarza",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "C. A. García Campoverde / S. Armijos",
+     "players": [
+      {
+       "name": "C. A. García Campoverde",
+       "country": "ECU"
+      },
+      {
+       "name": "S. Armijos",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "R. Senattore Baumbach / N. Rosas",
+     "players": [
+      {
+       "name": "R. Senattore Baumbach",
+       "country": "URU"
+      },
+      {
+       "name": "N. Rosas",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "M. E. Proaño Enriquez / E. M. Montoya Pinchao",
+     "players": [
+      {
+       "name": "M. E. Proaño Enriquez",
+       "country": "ECU"
+      },
+      {
+       "name": "E. M. Montoya Pinchao",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "F. Dehnike / A. M. Miranda",
+     "players": [
+      {
+       "name": "F. Dehnike",
+       "country": "PAR"
+      },
+      {
+       "name": "A. M. Miranda",
+       "country": "PAR"
+      }
+     ]
+    },
+    {
+     "name": "A. Vargas Couri / J. A. Mendez Carvallo",
+     "players": [
+      {
+       "name": "A. Vargas Couri",
+       "country": "VEN"
+      },
+      {
+       "name": "J. A. Mendez Carvallo",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. N. Popovich Fernández / M. Abud",
+     "players": [
+      {
+       "name": "M. N. Popovich Fernández",
+       "country": "PAR"
+      },
+      {
+       "name": "M. Abud",
+       "country": "PAR"
+      }
+     ]
+    },
+    {
+     "name": "R. Rodriguez Alonso / D. Gonzalez Almedo",
+     "players": [
+      {
+       "name": "R. Rodriguez Alonso",
+       "country": "VEN"
+      },
+      {
+       "name": "D. Gonzalez Almedo",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "S. N. Rodriguez / P. Petit Fernandez",
+     "players": [
+      {
+       "name": "S. N. Rodriguez",
+       "country": "PAR"
+      },
+      {
+       "name": "P. Petit Fernandez",
+       "country": "PAR"
+      }
+     ]
+    },
+    {
+     "name": "S. A. Soto Sanchez / E. A. Lopez Figuera",
+     "players": [
+      {
+       "name": "S. A. Soto Sanchez",
+       "country": "VEN"
+      },
+      {
+       "name": "E. A. Lopez Figuera",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "C. N. Gasdia Ichazo / M. Morales Mauri",
+     "players": [
+      {
+       "name": "C. N. Gasdia Ichazo",
+       "country": "URU"
+      },
+      {
+       "name": "M. Morales Mauri",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "V. E. Navia Flores / A. P. Gamarra Baquerizo",
+     "players": [
+      {
+       "name": "V. E. Navia Flores",
+       "country": "ECU"
+      },
+      {
+       "name": "A. P. Gamarra Baquerizo",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "C. David De Lima González / M. J. Pintos Moleda",
+     "players": [
+      {
+       "name": "C. David De Lima González",
+       "country": "URU"
+      },
+      {
+       "name": "M. J. Pintos Moleda",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "M. Holguín Reyes / M. J. Mayorga Cruz",
+     "players": [
+      {
+       "name": "M. Holguín Reyes",
+       "country": "ECU"
+      },
+      {
+       "name": "M. J. Mayorga Cruz",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "1",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "C. Belassi / V. S. Gaetan Monza",
+     "players": [
+      {
+       "name": "C. Belassi",
+       "country": "URU"
+      },
+      {
+       "name": "V. S. Gaetan Monza",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "A. Alvarez / E. Herdoiza",
+     "players": [
+      {
+       "name": "A. Alvarez",
+       "country": "ECU"
+      },
+      {
+       "name": "E. Herdoiza",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "5"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "C. Arancibia / T. Del Real Bobadilla",
+     "players": [
+      {
+       "name": "C. Arancibia",
+       "country": "CHI"
+      },
+      {
+       "name": "T. Del Real Bobadilla",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "F. Y. Kudo Ykkatai / N. A. Heyn Acosta",
+     "players": [
+      {
+       "name": "F. Y. Kudo Ykkatai",
+       "country": "PAR"
+      },
+      {
+       "name": "N. A. Heyn Acosta",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "E. Lamatta Vidal / J. A. Escalona Díaz",
+     "players": [
+      {
+       "name": "E. Lamatta Vidal",
+       "country": "CHI"
+      },
+      {
+       "name": "J. A. Escalona Díaz",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "V. Cepede Royg / O. Bareiro",
+     "players": [
+      {
+       "name": "V. Cepede Royg",
+       "country": "PAR"
+      },
+      {
+       "name": "O. Bareiro",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. Lobo Ramirez / A. Bentjerodt Burgos",
+     "players": [
+      {
+       "name": "M. Lobo Ramirez",
+       "country": "CHI"
+      },
+      {
+       "name": "A. Bentjerodt Burgos",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "M. L. Salsamendi Guggiari / M. A. Garcia Vera",
+     "players": [
+      {
+       "name": "M. L. Salsamendi Guggiari",
+       "country": "PAR"
+      },
+      {
+       "name": "M. A. Garcia Vera",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "1",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Center Court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "D. Sebastian Ramos / M. Araujo De Lizarza",
+     "players": [
+      {
+       "name": "D. Sebastian Ramos",
+       "country": "URU"
+      },
+      {
+       "name": "M. Araujo De Lizarza",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "S. N. Rodriguez / P. Petit Fernandez",
+     "players": [
+      {
+       "name": "S. N. Rodriguez",
+       "country": "PAR"
+      },
+      {
+       "name": "P. Petit Fernandez",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Center Court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "F. Soria / N. Rosas",
+     "players": [
+      {
+       "name": "F. Soria",
+       "country": "URU"
+      },
+      {
+       "name": "N. Rosas",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "M. Abud / S. Miltos",
+     "players": [
+      {
+       "name": "M. Abud",
+       "country": "PAR"
+      },
+      {
+       "name": "S. Miltos",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Center Court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "H. Ensslin Alves / J. Ignacio Artia",
+     "players": [
+      {
+       "name": "H. Ensslin Alves",
+       "country": "URU"
+      },
+      {
+       "name": "J. Ignacio Artia",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "F. Dehnike / M. N. Popovich Fernández",
+     "players": [
+      {
+       "name": "F. Dehnike",
+       "country": "PAR"
+      },
+      {
+       "name": "M. N. Popovich Fernández",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Devletian / S. A. Soto Sanchez",
+     "players": [
+      {
+       "name": "A. Devletian",
+       "country": "VEN"
+      },
+      {
+       "name": "S. A. Soto Sanchez",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "J. A. Chamba Gomez / E. M. Montoya Pinchao",
+     "players": [
+      {
+       "name": "J. A. Chamba Gomez",
+       "country": "ECU"
+      },
+      {
+       "name": "E. M. Montoya Pinchao",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "R. Rodriguez Alonso / D. Del Castillo",
+     "players": [
+      {
+       "name": "R. Rodriguez Alonso",
+       "country": "VEN"
+      },
+      {
+       "name": "D. Del Castillo",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "C. A. García Campoverde / S. Armijos",
+     "players": [
+      {
+       "name": "C. A. García Campoverde",
+       "country": "ECU"
+      },
+      {
+       "name": "S. Armijos",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "D. Gonzalez Almedo / J. A. Mendez Carvallo",
+     "players": [
+      {
+       "name": "D. Gonzalez Almedo",
+       "country": "VEN"
+      },
+      {
+       "name": "J. A. Mendez Carvallo",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "S. A. Gómez De La Torre Espinosa / A. Alvarez Puente",
+     "players": [
+      {
+       "name": "S. A. Gómez De La Torre Espinosa",
+       "country": "ECU"
+      },
+      {
+       "name": "A. Alvarez Puente",
+       "country": "ECU"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "C. N. Gasdia Ichazo / M. Morales Mauri",
+     "players": [
+      {
+       "name": "C. N. Gasdia Ichazo",
+       "country": "URU"
+      },
+      {
+       "name": "M. Morales Mauri",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "A. P. Candia Gonzalez / M. Lobo Ramirez",
+     "players": [
+      {
+       "name": "A. P. Candia Gonzalez",
+       "country": "CHI"
+      },
+      {
+       "name": "M. Lobo Ramirez",
+       "country": "CHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "C. David De Lima González / M. J. Pintos Moleda",
+     "players": [
+      {
+       "name": "C. David De Lima González",
+       "country": "URU"
+      },
+      {
+       "name": "M. J. Pintos Moleda",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "C. Arancibia / J. A. Escalona Díaz",
+     "players": [
+      {
+       "name": "C. Arancibia",
+       "country": "CHI"
+      },
+      {
+       "name": "J. A. Escalona Díaz",
+       "country": "CHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "C. Belassi / V. S. Gaetan Monza",
+     "players": [
+      {
+       "name": "C. Belassi",
+       "country": "URU"
+      },
+      {
+       "name": "V. S. Gaetan Monza",
+       "country": "URU"
+      }
+     ]
+    },
+    {
+     "name": "A. Bentjerodt Burgos / T. Del Real Bobadilla",
+     "players": [
+      {
+       "name": "A. Bentjerodt Burgos",
+       "country": "CHI"
+      },
+      {
+       "name": "T. Del Real Bobadilla",
+       "country": "CHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. P. Candia Gonzalez / M. Lobo Ramirez",
+     "players": [
+      {
+       "name": "A. P. Candia Gonzalez",
+       "country": "CHI"
+      },
+      {
+       "name": "M. Lobo Ramirez",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "S. A. Leone Marquez / K. Osso",
+     "players": [
+      {
+       "name": "S. A. Leone Marquez",
+       "country": "VEN"
+      },
+      {
+       "name": "K. Osso",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "C. Arancibia / J. A. Escalona Díaz",
+     "players": [
+      {
+       "name": "C. Arancibia",
+       "country": "CHI"
+      },
+      {
+       "name": "J. A. Escalona Díaz",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "M. E. Turrillo Briquet / S. Martinez",
+     "players": [
+      {
+       "name": "M. E. Turrillo Briquet",
+       "country": "VEN"
+      },
+      {
+       "name": "S. Martinez",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 11",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "T. Del Real Bobadilla / A. Bentjerodt Burgos",
+     "players": [
+      {
+       "name": "T. Del Real Bobadilla",
+       "country": "CHI"
+      },
+      {
+       "name": "A. Bentjerodt Burgos",
+       "country": "CHI"
+      }
+     ]
+    },
+    {
+     "name": "O. Meza / V. A. Rothe",
+     "players": [
+      {
+       "name": "O. Meza",
+       "country": "VEN"
+      },
+      {
+       "name": "V. A. Rothe",
+       "country": "VEN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Center Court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "M. E. Turrillo Briquet / S. Martinez",
+     "players": [
+      {
+       "name": "M. E. Turrillo Briquet",
+       "country": "VEN"
+      },
+      {
+       "name": "S. Martinez",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "O. Bareiro / V. Cepede Royg",
+     "players": [
+      {
+       "name": "O. Bareiro",
+       "country": "PAR"
+      },
+      {
+       "name": "V. Cepede Royg",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Center Court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "S. A. Leone Marquez / V. A. Rothe",
+     "players": [
+      {
+       "name": "S. A. Leone Marquez",
+       "country": "VEN"
+      },
+      {
+       "name": "V. A. Rothe",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Garcia Vera / M. L. Salsamendi Guggiari",
+     "players": [
+      {
+       "name": "M. A. Garcia Vera",
+       "country": "PAR"
+      },
+      {
+       "name": "M. L. Salsamendi Guggiari",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Center Court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "O. Meza / M. A. Piñate Acosta",
+     "players": [
+      {
+       "name": "O. Meza",
+       "country": "VEN"
+      },
+      {
+       "name": "M. A. Piñate Acosta",
+       "country": "VEN"
+      }
+     ]
+    },
+    {
+     "name": "F. Y. Kudo Ykkatai / N. A. Heyn Acosta",
+     "players": [
+      {
+       "name": "F. Y. Kudo Ykkatai",
+       "country": "PAR"
+      },
+      {
+       "name": "N. A. Heyn Acosta",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "M. Holguín Reyes / M. J. Mayorga Cruz",
+     "players": [
+      {
+       "name": "M. Holguín Reyes",
+       "country": "ECU"
+      },
+      {
+       "name": "M. J. Mayorga Cruz",
+       "country": "ECU"
+      }
+     ]
+    },
+    {
+     "name": "J. Perez Castillo / C. Miranda",
+     "players": [
+      {
+       "name": "J. Perez Castillo",
+       "country": "PAR"
+      },
+      {
+       "name": "C. Miranda",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "S. Alvarez / A. Alvarez",
+     "players": [
+      {
+       "name": "S. Alvarez",
+       "country": "ECU"
+      },
+      {
+       "name": "A. Alvarez",
+       "country": "ECU"
+      }
+     ]
+    },
+    {
+     "name": "O. Bareiro / V. Cepede Royg",
+     "players": [
+      {
+       "name": "O. Bareiro",
+       "country": "PAR"
+      },
+      {
+       "name": "V. Cepede Royg",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Court 12",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. P. Gamarra Baquerizo / A. V. Cepeda Stoudennikova",
+     "players": [
+      {
+       "name": "A. P. Gamarra Baquerizo",
+       "country": "ECU"
+      },
+      {
+       "name": "A. V. Cepeda Stoudennikova",
+       "country": "ECU"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Garcia Vera / M. L. Salsamendi Guggiari",
+     "players": [
+      {
+       "name": "M. A. Garcia Vera",
+       "country": "PAR"
+      },
+      {
+       "name": "M. L. Salsamendi Guggiari",
+       "country": "PAR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  }
+ ]
+}

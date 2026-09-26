@@ -12,6 +12,7 @@
    "start": "2024-10-28",
    "end": "2024-11-02",
    "where": "",
+   "partial": "",
    "tkey": "fip-135412",
    "genders": [
     "women",
@@ -30,6 +31,7 @@
    "start": "2026-06-27",
    "end": "2026-07-04",
    "where": "Portugal",
+   "partial": "",
    "tkey": "fip-296741",
    "genders": [
     "men",
@@ -78,6 +80,7 @@
    "start": "2026-06-17",
    "end": "2026-06-20",
    "where": "Egypt",
+   "partial": "",
    "tkey": "fip-296740",
    "genders": [
     "men",
@@ -756,6 +759,15 @@
     "SUI",
     "SWE"
    ]
+  },
+  {
+   "key": "fip-2026-wc-q-europe",
+   "comp": "World Cup 2026 Qualifiers — Europe",
+   "body": "FIP",
+   "cat": "Senior",
+   "year": 2026,
+   "where": "Europe",
+   "why": "Still being played as this was built (22-26 September 2026). Its matches are re-fetchable the same way as the rest, but a rolling event in a static history publishes half a record as a whole one, so it waits until it has finished."
   },
   {
    "key": "rin-42477",

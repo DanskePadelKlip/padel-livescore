@@ -1,0 +1,605 @@
+{
+ "key": "fip-2026-wc-q-europe",
+ "name": "FIP WORLD CUP 2026 QUALIFIERS – EUROPE",
+ "year": 2026,
+ "start": "2026-09-22",
+ "end": "2026-09-24",
+ "widgetId": "FIP-2026-3918",
+ "source": "matchscorerlive teamresults FIP-2026-3918, days 1-5",
+ "sourceUrl": "https://www.padelfip.com/events/fip-world-cup-2026-qualifiers-europe-2026/",
+ "fetched": "2026-09-26",
+ "matches": [
+  {
+   "className": "Men",
+   "round": "Group G",
+   "court": "",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "O. Sebber Gormsen / M. Nielsen",
+     "players": [
+      {
+       "name": "O. Sebber Gormsen",
+       "country": "DEN"
+      },
+      {
+       "name": "M. Nielsen",
+       "country": "DEN"
+      }
+     ]
+    },
+    {
+     "name": "L. Nikolić / K. Bogićević",
+     "players": [
+      {
+       "name": "L. Nikolić",
+       "country": "SRB"
+      },
+      {
+       "name": "K. Bogićević",
+       "country": "SRB"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group G",
+   "court": "",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "E. O. Jensen / E. Lilleøre madsen",
+     "players": [
+      {
+       "name": "E. O. Jensen",
+       "country": "DEN"
+      },
+      {
+       "name": "E. Lilleøre madsen",
+       "country": "DEN"
+      }
+     ]
+    },
+    {
+     "name": "D. Kostic / L. Polovina",
+     "players": [
+      {
+       "name": "D. Kostic",
+       "country": "SRB"
+      },
+      {
+       "name": "L. Polovina",
+       "country": "SRB"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group G",
+   "court": "",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "N. Ferrigno Olsen / V. Topholm",
+     "players": [
+      {
+       "name": "N. Ferrigno Olsen",
+       "country": "DEN"
+      },
+      {
+       "name": "V. Topholm",
+       "country": "DEN"
+      }
+     ]
+    },
+    {
+     "name": "L. Sucevic / L. Vitosevic",
+     "players": [
+      {
+       "name": "L. Sucevic",
+       "country": "SRB"
+      },
+      {
+       "name": "L. Vitosevic",
+       "country": "SRB"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "5",
+      "7"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group H",
+   "court": "",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "B. Repanšek / A. Šušteršič",
+     "players": [
+      {
+       "name": "B. Repanšek",
+       "country": "SLO"
+      },
+      {
+       "name": "A. Šušteršič",
+       "country": "SLO"
+      }
+     ]
+    },
+    {
+     "name": "G. Biliński / M. Naduk",
+     "players": [
+      {
+       "name": "G. Biliński",
+       "country": "POL"
+      },
+      {
+       "name": "M. Naduk",
+       "country": "POL"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group H",
+   "court": "",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "Ž. L. Konjar / S. Javoršek",
+     "players": [
+      {
+       "name": "Ž. L. Konjar",
+       "country": "SLO"
+      },
+      {
+       "name": "S. Javoršek",
+       "country": "SLO"
+      }
+     ]
+    },
+    {
+     "name": "R. Rymarczyk / K. Krawczyński",
+     "players": [
+      {
+       "name": "R. Rymarczyk",
+       "country": "POL"
+      },
+      {
+       "name": "K. Krawczyński",
+       "country": "POL"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group H",
+   "court": "",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "T. Zalar / Z. Kovacic",
+     "players": [
+      {
+       "name": "T. Zalar",
+       "country": "SLO"
+      },
+      {
+       "name": "Z. Kovacic",
+       "country": "SLO"
+      }
+     ]
+    },
+    {
+     "name": "M. Lipinski / F. Olech",
+     "players": [
+      {
+       "name": "M. Lipinski",
+       "country": "POL"
+      },
+      {
+       "name": "F. Olech",
+       "country": "POL"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "1",
+      "0"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group G",
+   "court": "",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "G. Dujmovic / J. Brkic",
+     "players": [
+      {
+       "name": "G. Dujmovic",
+       "country": "CRO"
+      },
+      {
+       "name": "J. Brkic",
+       "country": "CRO"
+      }
+     ]
+    },
+    {
+     "name": "L. Polovina / D. Kostic",
+     "players": [
+      {
+       "name": "L. Polovina",
+       "country": "SRB"
+      },
+      {
+       "name": "D. Kostic",
+       "country": "SRB"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group G",
+   "court": "",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "B. Poljancic / M. Selak",
+     "players": [
+      {
+       "name": "B. Poljancic",
+       "country": "CRO"
+      },
+      {
+       "name": "M. Selak",
+       "country": "CRO"
+      }
+     ]
+    },
+    {
+     "name": "L. Sucevic / A. Graovac",
+     "players": [
+      {
+       "name": "L. Sucevic",
+       "country": "SRB"
+      },
+      {
+       "name": "A. Graovac",
+       "country": "SRB"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group G",
+   "court": "",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "F. Mandić / R. Glasnovic",
+     "players": [
+      {
+       "name": "F. Mandić",
+       "country": "CRO"
+      },
+      {
+       "name": "R. Glasnovic",
+       "country": "CRO"
+      }
+     ]
+    },
+    {
+     "name": "L. Nikolić / K. Bogićević",
+     "players": [
+      {
+       "name": "L. Nikolić",
+       "country": "SRB"
+      },
+      {
+       "name": "K. Bogićević",
+       "country": "SRB"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group H",
+   "court": "",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "C. Toth / G. Rendek",
+     "players": [
+      {
+       "name": "C. Toth",
+       "country": "HUN"
+      },
+      {
+       "name": "G. Rendek",
+       "country": "HUN"
+      }
+     ]
+    },
+    {
+     "name": "K. Krawczyński / G. Biliński",
+     "players": [
+      {
+       "name": "K. Krawczyński",
+       "country": "POL"
+      },
+      {
+       "name": "G. Biliński",
+       "country": "POL"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "7",
+      "5"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group H",
+   "court": "",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Biro / O. Geresi",
+     "players": [
+      {
+       "name": "A. Biro",
+       "country": "HUN"
+      },
+      {
+       "name": "O. Geresi",
+       "country": "HUN"
+      }
+     ]
+    },
+    {
+     "name": "J. Janowicz / M. Naduk",
+     "players": [
+      {
+       "name": "J. Janowicz",
+       "country": "POL"
+      },
+      {
+       "name": "M. Naduk",
+       "country": "POL"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group H",
+   "court": "",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "M. Urvolgyi / Z. Schmidt-Bohn",
+     "players": [
+      {
+       "name": "M. Urvolgyi",
+       "country": "HUN"
+      },
+      {
+       "name": "Z. Schmidt-Bohn",
+       "country": "HUN"
+      }
+     ]
+    },
+    {
+     "name": "R. Rymarczyk / M. Lipinski",
+     "players": [
+      {
+       "name": "R. Rymarczyk",
+       "country": "POL"
+      },
+      {
+       "name": "M. Lipinski",
+       "country": "POL"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  }
+ ]
+}

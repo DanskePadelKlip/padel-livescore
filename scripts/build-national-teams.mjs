@@ -38,6 +38,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARCH = path.join(ROOT, "public", "data", "archive", "t");
+const NT_DRAWS = path.join(ROOT, "public", "data", "national-teams", "draws");
 const OUT = path.join(ROOT, "public", "data", "national-teams.json");
 const OUT_M = path.join(ROOT, "public", "data", "national-teams-matches.json");
 
@@ -88,6 +89,15 @@ const GAPS = [
     why: "The archived draw has no round labels and no dates, so its 287 ties cannot be ordered into a bracket. FIP published a final classification; it is not in any file on this branch.",
   },
   {
+    key: "fip-2026-wc-q-europe",
+    comp: "World Cup 2026 Qualifiers — Europe",
+    body: "FIP",
+    cat: "Senior",
+    year: 2026,
+    where: "Europe",
+    why: "Still being played as this was built (22-26 September 2026). Its matches are re-fetchable the same way as the rest, but a rolling event in a static history publishes half a record as a whole one, so it waits until it has finished.",
+  },
+  {
     key: "rin-42477",
     comp: "Junior European Championship (by teams)",
     body: "FIP",
@@ -133,6 +143,20 @@ const COUNTRY = {
   SEN: ["SN", "Senegal"], SUI: ["CH", "Switzerland"], SWE: ["SE", "Sweden"],
   TUN: ["TN", "Tunisia"], UAE: ["AE", "United Arab Emirates"],
   UKR: ["UA", "Ukraine"], URU: ["UY", "Uruguay"], USA: ["US", "United States"],
+  // Added 2026-09-26 with the team-widget editions, which reach five continents.
+  // FIP is not consistent with itself: Lebanon appears as LBN at the 2025 Asia Cup
+  // and LIB at the 2025 junior world cup, so both map to the same nation.
+  AND: ["AD", "Andorra"], AUS: ["AU", "Australia"], BRN: ["BH", "Bahrain"],
+  BUL: ["BG", "Bulgaria"], CAN: ["CA", "Canada"], CHN: ["CN", "China"],
+  ECU: ["EC", "Ecuador"], GEO: ["GE", "Georgia"], GIB: ["GI", "Gibraltar"],
+  GRE: ["GR", "Greece"], INA: ["ID", "Indonesia"], IRI: ["IR", "Iran"],
+  IRL: ["IE", "Ireland"], JOR: ["JO", "Jordan"], KAZ: ["KZ", "Kazakhstan"],
+  KOR: ["KR", "South Korea"], KOS: ["XK", "Kosovo"], KSA: ["SA", "Saudi Arabia"],
+  KUW: ["KW", "Kuwait"], LBN: ["LB", "Lebanon"], LIB: ["LB", "Lebanon"],
+  LUX: ["LU", "Luxembourg"], MNE: ["ME", "Montenegro"], PAK: ["PK", "Pakistan"],
+  PHI: ["PH", "Philippines"], ROU: ["RO", "Romania"], SLO: ["SI", "Slovenia"],
+  SMR: ["SM", "San Marino"], SRB: ["RS", "Serbia"], SVK: ["SK", "Slovakia"],
+  THA: ["TH", "Thailand"], TUR: ["TR", "Türkiye"], VEN: ["VE", "Venezuela"],
 };
 
 const GROUP_ROUND = "Group stage";
@@ -363,6 +387,7 @@ for (const ev of EVENTS) {
     start: draw.start,
     end: draw.end,
     where: draw.address || draw.venue || "",
+    partial: ev.partial || "",
     tkey: ev.key,
     genders: [],
     unplaced: {},
@@ -432,6 +457,33 @@ for (const r of rows) byEv[`${r.ev} ${r.g}`] = (byEv[`${r.ev} ${r.g}`] || 0) + 1
 //     `merged`, rather than being published as one tie with an invented score.
 const TIE_RUBBERS = 5;
 
+// Editions re-fetched from the matchscorerlive TEAM widget by
+// `scripts/fetch-fip-team-draws.mjs` — see that file for why an old FIP draw turned
+// out to be re-fetchable after all. They live in `public/data/national-teams/draws/`
+// because `public/data/archive/t/` belongs to padel-db's exporter.
+//
+// Every one of these was previously invisible to this section. They are matches-only
+// for now: the widget labels its placement ties "Position 1-2 Final", which STATES a
+// position and is a better source than the 2024 bracket walk — but reading it is a
+// second derivation path and it is not written yet, so nothing here emits a placing.
+const TEAM_DRAWS = [
+  { key: "fip-2025-euro-cup-ph12", comp: "Euro Padel Cup — Phase 1/2", body: "FIP", cat: "Senior" },
+  { key: "fip-2025-euro-cup-final8", comp: "Euro Padel Cup — Final 8", body: "FIP", cat: "Senior" },
+  { key: "fip-2025-junior-world-cup", comp: "Junior World Cup by Teams", body: "FIP", cat: "Junior" },
+  { key: "fip-2025-asia-cup", comp: "Asia Padel Cup", body: "FIP", cat: "Senior" },
+  { key: "fip-2026-wc-q-noram", comp: "World Cup Qualifiers — North & Central America", body: "FIP", cat: "Senior" },
+  { key: "fip-2026-wc-q-souam", comp: "World Cup Qualifiers — South America", body: "FIP", cat: "Senior" },
+  // The source itself stops after the position quarter-finals: day 4 still holds four
+  // UPCOMING cards that never got a result, so the semis and finals are not in the
+  // widget. Published with that said out loud rather than held back whole.
+  // FIP's "Senior" means VETERANS, not the senior national team — the giveaway is the
+  // squads: 22-30 players a nation and not one of Denmark's, Sweden's or Spain's
+  // internationals among them. Labelled Senior it would have published a veterans
+  // result as the national team's World Cup record. It is also the first veteran
+  // edition this section has ever had, which was listed as a flat gap.
+  { key: "fip-2026-senior-world-cup", comp: "Seniors World Cup", body: "FIP", cat: "Veteran", partial: "The widget's own day 4 still lists the last ties as upcoming, so this edition stops after the position quarter-finals." },
+];
+
 // Editions with no derivable placing but perfectly good matches.
 const MATCH_ONLY = [
   {
@@ -455,14 +507,18 @@ const scoreText = (sc) =>
  */
 function collectMatches(ev, draw) {
   const matches = [], ties = new Map();
-  let skipped = 0, merged = 0, undecided = 0;
+  let skipped = 0, merged = 0, undecided = 0, unplayed = 0;
   for (const m of draw.matches) {
     const g = ev.classes[m.className ?? ""];
     if (!g) continue;
+    // A decided tie leaves its remaining rubbers on the schedule unplayed; the team
+    // widget prints them with no score and no winner. A fixture is not a match.
+    if (m.status && m.status !== "final") { unplayed++; continue; }
     const a = sideNation(m.teams?.[0]);
     const b = sideNation(m.teams?.[1]);
     if (!a || !b || a === b) { skipped++; continue; }
     const w = m.score?.winner === 0 ? a : m.score?.winner === 1 ? b : null;
+    if (!w) { unplayed++; continue; }
     const rd = ev.unordered ? "" : m.round || "";
     matches.push({
       ev: ev.key, g, rd, a, b, w,
@@ -484,7 +540,7 @@ function collectMatches(ev, draw) {
     if (t.wa === t.wb) { undecided++; continue; }
     out.push({ ...t, w: t.wa > t.wb ? t.a : t.b });
   }
-  return { matches, ties: out, skipped, merged, undecided };
+  return { matches, ties: out, skipped, merged, undecided, unplayed };
 }
 
 /**
@@ -501,9 +557,18 @@ function jsonLines(obj, lineKeys) {
   return `{\n${parts.join(",\n")}\n}\n`;
 }
 
+// The team-widget editions carry their own name, year and dates, and their gender is
+// already normalised to men/women in the file — so `classes` is the identity map.
+const teamDrawEvents = TEAM_DRAWS.map((ev) => {
+  const file = path.join(NT_DRAWS, `${ev.key}.json`);
+  if (!fs.existsSync(file)) { problems.push(`${ev.key}: team draw not fetched`); return null; }
+  const d = JSON.parse(fs.readFileSync(file, "utf8"));
+  return { ...ev, year: d.year, dir: NT_DRAWS, classes: { Men: "men", Women: "women" } };
+}).filter(Boolean);
+
 const mEvents = [], mMatches = [], mTies = [], mStats = {};
-for (const ev of [...EVENTS, ...MATCH_ONLY]) {
-  const file = path.join(ARCH, `${ev.key}.json`);
+for (const ev of [...EVENTS, ...MATCH_ONLY, ...teamDrawEvents]) {
+  const file = path.join(ev.dir || ARCH, `${ev.key}.json`);
   if (!fs.existsSync(file)) { problems.push(`${ev.key}: archive file missing (matches)`); continue; }
   const draw = JSON.parse(fs.readFileSync(file, "utf8"));
   const r = collectMatches(ev, draw);
@@ -518,6 +583,7 @@ for (const ev of [...EVENTS, ...MATCH_ONLY]) {
     start: draw.start,
     end: draw.end,
     where: draw.address || draw.venue || "",
+    partial: ev.partial || "",
     tkey: ev.key,
     genders: [...new Set(r.matches.map((m) => m.g))],
     placed: events.some((e) => e.id === ev.key),
@@ -526,7 +592,7 @@ for (const ev of [...EVENTS, ...MATCH_ONLY]) {
   });
   mMatches.push(...r.matches);
   mTies.push(...r.ties);
-  mStats[ev.key] = { matches: r.matches.length, ties: r.ties.length, skipped: r.skipped, merged: r.merged, undecided: r.undecided };
+  mStats[ev.key] = { matches: r.matches.length, ties: r.ties.length, skipped: r.skipped, merged: r.merged, undecided: r.undecided, unplayed: r.unplayed };
 }
 
 const mCountries = {};
@@ -576,7 +642,8 @@ for (const [k, s] of Object.entries(mStats)) {
   console.log(`  ${k}: ${s.matches} matches, ${s.ties} ties` +
     `${s.skipped ? `, ${s.skipped} not nation-vs-nation` : ""}` +
     `${s.merged ? `, ${s.merged} tie group(s) merged — rubbers kept, tie dropped` : ""}` +
-    `${s.undecided ? `, ${s.undecided} tie(s) undecided` : ""}`);
+    `${s.undecided ? `, ${s.undecided} tie(s) undecided` : ""}` +
+    `${s.unplayed ? `, ${s.unplayed} rubber(s) never played` : ""}`);
 }
 
 // ------------------------------------------------------- --check: Denmark, 1:1

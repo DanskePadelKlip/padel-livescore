@@ -1,0 +1,8569 @@
+{
+ "key": "fip-2025-asia-cup",
+ "name": "FIP ASIA PADEL CUP",
+ "year": 2025,
+ "start": "2025-10-17",
+ "end": "2025-10-24",
+ "widgetId": "FIP-2025-128",
+ "source": "matchscorerlive teamresults FIP-2025-128, days 1-8",
+ "sourceUrl": "https://www.padelfip.com/events/fip-asia-padel-cup-2025/",
+ "fetched": "2026-09-26",
+ "matches": [
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "I. P. A. Adi Guna / E. Revilla",
+     "players": [
+      {
+       "name": "I. P. A. Adi Guna",
+       "country": "INA"
+      },
+      {
+       "name": "E. Revilla",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "H. Dawani / A. Dawani",
+     "players": [
+      {
+       "name": "H. Dawani",
+       "country": "BRN"
+      },
+      {
+       "name": "A. Dawani",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. Y. Prayanto / V. Wibawa",
+     "players": [
+      {
+       "name": "M. Y. Prayanto",
+       "country": "INA"
+      },
+      {
+       "name": "V. Wibawa",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "R. AlObaidli / Y. Qaed",
+     "players": [
+      {
+       "name": "R. AlObaidli",
+       "country": "BRN"
+      },
+      {
+       "name": "Y. Qaed",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "Z. Lasahido / S. W. Trijati",
+     "players": [
+      {
+       "name": "Z. Lasahido",
+       "country": "INA"
+      },
+      {
+       "name": "S. W. Trijati",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "H. Alqattan / A. Khalid",
+     "players": [
+      {
+       "name": "H. Alqattan",
+       "country": "BRN"
+      },
+      {
+       "name": "A. Khalid",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "C. Kaewsuto / W. Iamla-Or",
+     "players": [
+      {
+       "name": "C. Kaewsuto",
+       "country": "THA"
+      },
+      {
+       "name": "W. Iamla-Or",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "S. Yang / S. Ye",
+     "players": [
+      {
+       "name": "S. Yang",
+       "country": "CHN"
+      },
+      {
+       "name": "S. Ye",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "S. Mocciola / W. Swangchot",
+     "players": [
+      {
+       "name": "S. Mocciola",
+       "country": "THA"
+      },
+      {
+       "name": "W. Swangchot",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "K. Zhao / X. Zongnan",
+     "players": [
+      {
+       "name": "K. Zhao",
+       "country": "CHN"
+      },
+      {
+       "name": "X. Zongnan",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "S. Sae-Oui / A. Rawal",
+     "players": [
+      {
+       "name": "S. Sae-Oui",
+       "country": "THA"
+      },
+      {
+       "name": "A. Rawal",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "X. Wang / C. He",
+     "players": [
+      {
+       "name": "X. Wang",
+       "country": "CHN"
+      },
+      {
+       "name": "C. He",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "S. R. Lee / K. Han",
+     "players": [
+      {
+       "name": "S. R. Lee",
+       "country": "KOR"
+      },
+      {
+       "name": "K. Han",
+       "country": "KOR"
+      }
+     ]
+    },
+    {
+     "name": "S. Alshahrani / H. Almuraj",
+     "players": [
+      {
+       "name": "S. Alshahrani",
+       "country": "KSA"
+      },
+      {
+       "name": "H. Almuraj",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "K. Y. Kim / J. H. Yoo",
+     "players": [
+      {
+       "name": "K. Y. Kim",
+       "country": "KOR"
+      },
+      {
+       "name": "J. H. Yoo",
+       "country": "KOR"
+      }
+     ]
+    },
+    {
+     "name": "F. Alrebdi / A. Alazzam",
+     "players": [
+      {
+       "name": "F. Alrebdi",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Alazzam",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "G. Park / J. H. Oh",
+     "players": [
+      {
+       "name": "G. Park",
+       "country": "KOR"
+      },
+      {
+       "name": "J. H. Oh",
+       "country": "KOR"
+      }
+     ]
+    },
+    {
+     "name": "M. Almulhim / M. Alsulaiman",
+     "players": [
+      {
+       "name": "M. Almulhim",
+       "country": "KSA"
+      },
+      {
+       "name": "M. Alsulaiman",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "N. Hatakeyama / K. Tomita",
+     "players": [
+      {
+       "name": "N. Hatakeyama",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Tomita",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "R. Tabet / R. A. Tohme",
+     "players": [
+      {
+       "name": "R. Tabet",
+       "country": "LBN"
+      },
+      {
+       "name": "R. A. Tohme",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "K. Hisatome / K. Shimizu",
+     "players": [
+      {
+       "name": "K. Hisatome",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Shimizu",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "T. El Hallak / F. Stephan",
+     "players": [
+      {
+       "name": "T. El Hallak",
+       "country": "LBN"
+      },
+      {
+       "name": "F. Stephan",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "T. Ando / S. Nakamura",
+     "players": [
+      {
+       "name": "T. Ando",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Nakamura",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "F. Najib / A. Boustany",
+     "players": [
+      {
+       "name": "F. Najib",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Boustany",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "J. M. Tamayo / D. Talatayod",
+     "players": [
+      {
+       "name": "J. M. Tamayo",
+       "country": "PHI"
+      },
+      {
+       "name": "D. Talatayod",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "Z. Umbetov / K. Kolganov",
+     "players": [
+      {
+       "name": "Z. Umbetov",
+       "country": "KAZ"
+      },
+      {
+       "name": "K. Kolganov",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "T. Berry / J. R. Amondoron",
+     "players": [
+      {
+       "name": "T. Berry",
+       "country": "PHI"
+      },
+      {
+       "name": "J. R. Amondoron",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "Y. Danilov / T. Khabibulin",
+     "players": [
+      {
+       "name": "Y. Danilov",
+       "country": "KAZ"
+      },
+      {
+       "name": "T. Khabibulin",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "F. E. Parangan / R. P. Quizon",
+     "players": [
+      {
+       "name": "F. E. Parangan",
+       "country": "PHI"
+      },
+      {
+       "name": "R. P. Quizon",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "R. Pak / Z. Kozbak",
+     "players": [
+      {
+       "name": "R. Pak",
+       "country": "KAZ"
+      },
+      {
+       "name": "Z. Kozbak",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "L. Messaike / A. Youssef",
+     "players": [
+      {
+       "name": "L. Messaike",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Youssef",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "M. Faramarzi / H. Al-Abdulrahman",
+     "players": [
+      {
+       "name": "M. Faramarzi",
+       "country": "QAT"
+      },
+      {
+       "name": "H. Al-Abdulrahman",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "Y. Yamin / M. Massoud",
+     "players": [
+      {
+       "name": "Y. Yamin",
+       "country": "LBN"
+      },
+      {
+       "name": "M. Massoud",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "H. Al-Mutawah / S. Waly",
+     "players": [
+      {
+       "name": "H. Al-Mutawah",
+       "country": "QAT"
+      },
+      {
+       "name": "S. Waly",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "S. Abdallah / T. Sioufi",
+     "players": [
+      {
+       "name": "S. Abdallah",
+       "country": "LBN"
+      },
+      {
+       "name": "T. Sioufi",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "M. Al-Sultan / D. M. A. A. Al Mudahka",
+     "players": [
+      {
+       "name": "M. Al-Sultan",
+       "country": "QAT"
+      },
+      {
+       "name": "D. M. A. A. Al Mudahka",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "3",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "D. Al Jazzaf / S. Behbehani",
+     "players": [
+      {
+       "name": "D. Al Jazzaf",
+       "country": "KUW"
+      },
+      {
+       "name": "S. Behbehani",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "N. N. S. M. Sri Maryati / N. P. Armini",
+     "players": [
+      {
+       "name": "N. N. S. M. Sri Maryati",
+       "country": "INA"
+      },
+      {
+       "name": "N. P. Armini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "M. Alsarraj / D. Al Qenaei",
+     "players": [
+      {
+       "name": "M. Alsarraj",
+       "country": "KUW"
+      },
+      {
+       "name": "D. Al Qenaei",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "N. Putria / J. Rompies",
+     "players": [
+      {
+       "name": "N. Putria",
+       "country": "INA"
+      },
+      {
+       "name": "J. Rompies",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "Z. Sarkhoo / D. Alfares",
+     "players": [
+      {
+       "name": "Z. Sarkhoo",
+       "country": "KUW"
+      },
+      {
+       "name": "D. Alfares",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "F. Sabrina / F. Sabatini",
+     "players": [
+      {
+       "name": "F. Sabrina",
+       "country": "INA"
+      },
+      {
+       "name": "F. Sabatini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "S. Mohammed Salhab / S. AlKurdi",
+     "players": [
+      {
+       "name": "S. Mohammed Salhab",
+       "country": "KSA"
+      },
+      {
+       "name": "S. AlKurdi",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "B. Chun / X. Zhang",
+     "players": [
+      {
+       "name": "B. Chun",
+       "country": "CHN"
+      },
+      {
+       "name": "X. Zhang",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "1",
+      "6"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "A. Khalil Fareh / A. Yamani",
+     "players": [
+      {
+       "name": "A. Khalil Fareh",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Yamani",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "M. Wu / A. Liu",
+     "players": [
+      {
+       "name": "M. Wu",
+       "country": "CHN"
+      },
+      {
+       "name": "A. Liu",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "B. Alhowaish / F. Fahad Alharbi",
+     "players": [
+      {
+       "name": "B. Alhowaish",
+       "country": "KSA"
+      },
+      {
+       "name": "F. Fahad Alharbi",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "D. Liu / F. Xie",
+     "players": [
+      {
+       "name": "D. Liu",
+       "country": "CHN"
+      },
+      {
+       "name": "F. Xie",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "F. A. Janahi / A. Alawadhi",
+     "players": [
+      {
+       "name": "F. A. Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alawadhi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Taherani / A. Khalid",
+     "players": [
+      {
+       "name": "M. Taherani",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Khalid",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "F. Hassan / A. Taher",
+     "players": [
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Taher",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "D. Elahi / N. Z. Khan",
+     "players": [
+      {
+       "name": "D. Elahi",
+       "country": "PAK"
+      },
+      {
+       "name": "N. Z. Khan",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "N. Omar / M. Alhashimi",
+     "players": [
+      {
+       "name": "N. Omar",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Alhashimi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "A. Shahbaz / S. Sajid",
+     "players": [
+      {
+       "name": "A. Shahbaz",
+       "country": "PAK"
+      },
+      {
+       "name": "S. Sajid",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "7"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Alawadhi / Y. Saleh",
+     "players": [
+      {
+       "name": "A. Alawadhi",
+       "country": "KUW"
+      },
+      {
+       "name": "Y. Saleh",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "R. AlObaidli / Y. Qaed",
+     "players": [
+      {
+       "name": "R. AlObaidli",
+       "country": "BRN"
+      },
+      {
+       "name": "Y. Qaed",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "3",
+      "6"
+     ],
+     [
+      "5",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Redha / F. Behbehani",
+     "players": [
+      {
+       "name": "A. Redha",
+       "country": "KUW"
+      },
+      {
+       "name": "F. Behbehani",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "A. Mohamed / A. Dawani",
+     "players": [
+      {
+       "name": "A. Mohamed",
+       "country": "BRN"
+      },
+      {
+       "name": "A. Dawani",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "H. Shams / H. Aljenaidel",
+     "players": [
+      {
+       "name": "H. Shams",
+       "country": "KUW"
+      },
+      {
+       "name": "H. Aljenaidel",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "H. Alqattan / A. Khalid",
+     "players": [
+      {
+       "name": "H. Alqattan",
+       "country": "BRN"
+      },
+      {
+       "name": "A. Khalid",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. Salar / A. Adnan",
+     "players": [
+      {
+       "name": "M. Salar",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Adnan",
+       "country": "PAK"
+      }
+     ]
+    },
+    {
+     "name": "X. Wang / C. He",
+     "players": [
+      {
+       "name": "X. Wang",
+       "country": "CHN"
+      },
+      {
+       "name": "C. He",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "7"
+     ],
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. A. Kamil / H. Kumar",
+     "players": [
+      {
+       "name": "M. A. Kamil",
+       "country": "PAK"
+      },
+      {
+       "name": "H. Kumar",
+       "country": "PAK"
+      }
+     ]
+    },
+    {
+     "name": "S. Yang / S. Ye",
+     "players": [
+      {
+       "name": "S. Yang",
+       "country": "CHN"
+      },
+      {
+       "name": "S. Ye",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "5"
+     ],
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. Azhar / D. Ahmad",
+     "players": [
+      {
+       "name": "M. Azhar",
+       "country": "PAK"
+      },
+      {
+       "name": "D. Ahmad",
+       "country": "PAK"
+      }
+     ]
+    },
+    {
+     "name": "K. Zhao / X. Zongnan",
+     "players": [
+      {
+       "name": "K. Zhao",
+       "country": "CHN"
+      },
+      {
+       "name": "X. Zongnan",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Hazem Adas / K. Hatamleh",
+     "players": [
+      {
+       "name": "A. Hazem Adas",
+       "country": "JOR"
+      },
+      {
+       "name": "K. Hatamleh",
+       "country": "JOR"
+      }
+     ]
+    },
+    {
+     "name": "M. Alsulaiman / N. Alkhaldi",
+     "players": [
+      {
+       "name": "M. Alsulaiman",
+       "country": "KSA"
+      },
+      {
+       "name": "N. Alkhaldi",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "R. Omar Shalan / M. Abdallah Alkotop",
+     "players": [
+      {
+       "name": "R. Omar Shalan",
+       "country": "JOR"
+      },
+      {
+       "name": "M. Abdallah Alkotop",
+       "country": "JOR"
+      }
+     ]
+    },
+    {
+     "name": "S. Alshahrani / H. Almuraj",
+     "players": [
+      {
+       "name": "S. Alshahrani",
+       "country": "KSA"
+      },
+      {
+       "name": "H. Almuraj",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "5"
+     ],
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Subhi Aqel / O. Haitham Fakhoury",
+     "players": [
+      {
+       "name": "A. Subhi Aqel",
+       "country": "JOR"
+      },
+      {
+       "name": "O. Haitham Fakhoury",
+       "country": "JOR"
+      }
+     ]
+    },
+    {
+     "name": "F. Alrebdi / A. Alazzam",
+     "players": [
+      {
+       "name": "F. Alrebdi",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Alazzam",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "N. Hatakeyama / T. Kato",
+     "players": [
+      {
+       "name": "N. Hatakeyama",
+       "country": "JPN"
+      },
+      {
+       "name": "T. Kato",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "Y. Danilov / T. Khabibulin",
+     "players": [
+      {
+       "name": "Y. Danilov",
+       "country": "KAZ"
+      },
+      {
+       "name": "T. Khabibulin",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "7"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "T. Ando / S. Nakamura",
+     "players": [
+      {
+       "name": "T. Ando",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Nakamura",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "Z. Umbetov / K. Kolganov",
+     "players": [
+      {
+       "name": "Z. Umbetov",
+       "country": "KAZ"
+      },
+      {
+       "name": "K. Kolganov",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Maeda / K. Tomita",
+     "players": [
+      {
+       "name": "A. Maeda",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Tomita",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "R. Pak / Z. Kozbak",
+     "players": [
+      {
+       "name": "R. Pak",
+       "country": "KAZ"
+      },
+      {
+       "name": "Z. Kozbak",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "D. Talatayod / R. P. Quizon",
+     "players": [
+      {
+       "name": "D. Talatayod",
+       "country": "PHI"
+      },
+      {
+       "name": "R. P. Quizon",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "R. Tabet / R. A. Tohme",
+     "players": [
+      {
+       "name": "R. Tabet",
+       "country": "LBN"
+      },
+      {
+       "name": "R. A. Tohme",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "F. E. Parangan / T. Berry",
+     "players": [
+      {
+       "name": "F. E. Parangan",
+       "country": "PHI"
+      },
+      {
+       "name": "T. Berry",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "F. Najib / A. Hyjazi",
+     "players": [
+      {
+       "name": "F. Najib",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Hyjazi",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "J. R. Amondoron / J. M. Tamayo",
+     "players": [
+      {
+       "name": "J. R. Amondoron",
+       "country": "PHI"
+      },
+      {
+       "name": "J. M. Tamayo",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "T. El Hallak / F. Stephan",
+     "players": [
+      {
+       "name": "T. El Hallak",
+       "country": "LBN"
+      },
+      {
+       "name": "F. Stephan",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "T. Vitayaviroj / J. A. Vichithong",
+     "players": [
+      {
+       "name": "T. Vitayaviroj",
+       "country": "THA"
+      },
+      {
+       "name": "J. A. Vichithong",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "H. Al-Mutawah / A. Alabdulrahman",
+     "players": [
+      {
+       "name": "H. Al-Mutawah",
+       "country": "QAT"
+      },
+      {
+       "name": "A. Alabdulrahman",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "N. Narkprasert / D. Srirungraeng",
+     "players": [
+      {
+       "name": "N. Narkprasert",
+       "country": "THA"
+      },
+      {
+       "name": "D. Srirungraeng",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "M. Faramarzi / H. Al-Abdulrahman",
+     "players": [
+      {
+       "name": "M. Faramarzi",
+       "country": "QAT"
+      },
+      {
+       "name": "H. Al-Abdulrahman",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "S. L. Rotrakarn / N. Der",
+     "players": [
+      {
+       "name": "S. L. Rotrakarn",
+       "country": "THA"
+      },
+      {
+       "name": "N. Der",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "M. Al-Sultan / D. M. A. A. Al Mudahka",
+     "players": [
+      {
+       "name": "M. Al-Sultan",
+       "country": "QAT"
+      },
+      {
+       "name": "D. M. A. A. Al Mudahka",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "6",
+      "3"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. Alaali / E. Nuruddin",
+     "players": [
+      {
+       "name": "M. Alaali",
+       "country": "BRN"
+      },
+      {
+       "name": "E. Nuruddin",
+       "country": "BRN"
+      }
+     ]
+    },
+    {
+     "name": "V. Silfany / K. Emeralda",
+     "players": [
+      {
+       "name": "V. Silfany",
+       "country": "INA"
+      },
+      {
+       "name": "K. Emeralda",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. Alammadi / S. A. A. M. Alaseeri",
+     "players": [
+      {
+       "name": "M. Alammadi",
+       "country": "BRN"
+      },
+      {
+       "name": "S. A. A. M. Alaseeri",
+       "country": "BRN"
+      }
+     ]
+    },
+    {
+     "name": "N. Putria / J. Rompies",
+     "players": [
+      {
+       "name": "N. Putria",
+       "country": "INA"
+      },
+      {
+       "name": "J. Rompies",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "L. Najaf / H. Aboumoustafa",
+     "players": [
+      {
+       "name": "L. Najaf",
+       "country": "BRN"
+      },
+      {
+       "name": "H. Aboumoustafa",
+       "country": "BRN"
+      }
+     ]
+    },
+    {
+     "name": "N. N. S. M. Sri Maryati / N. P. Armini",
+     "players": [
+      {
+       "name": "N. N. S. M. Sri Maryati",
+       "country": "INA"
+      },
+      {
+       "name": "N. P. Armini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "S. Mohammed Salhab / S. AlKurdi",
+     "players": [
+      {
+       "name": "S. Mohammed Salhab",
+       "country": "KSA"
+      },
+      {
+       "name": "S. AlKurdi",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "M. Taherani / A. Khalid",
+     "players": [
+      {
+       "name": "M. Taherani",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Khalid",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Khalil Fareh / A. Yamani",
+     "players": [
+      {
+       "name": "A. Khalil Fareh",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Yamani",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "S. Sajid / A. Shahbaz",
+     "players": [
+      {
+       "name": "S. Sajid",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Shahbaz",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "F. Fahad Alharbi / B. Alhowaish",
+     "players": [
+      {
+       "name": "F. Fahad Alharbi",
+       "country": "KSA"
+      },
+      {
+       "name": "B. Alhowaish",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "N. Z. Khan / S. S. Beg",
+     "players": [
+      {
+       "name": "N. Z. Khan",
+       "country": "PAK"
+      },
+      {
+       "name": "S. S. Beg",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "F. A. Janahi / A. Alawadhi",
+     "players": [
+      {
+       "name": "F. A. Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alawadhi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Wu / A. Liu",
+     "players": [
+      {
+       "name": "M. Wu",
+       "country": "CHN"
+      },
+      {
+       "name": "A. Liu",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "M. Alhashimi / N. Omar",
+     "players": [
+      {
+       "name": "M. Alhashimi",
+       "country": "UAE"
+      },
+      {
+       "name": "N. Omar",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "X. Zhang / Y. Wang",
+     "players": [
+      {
+       "name": "X. Zhang",
+       "country": "CHN"
+      },
+      {
+       "name": "Y. Wang",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "5",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Taher / F. Hassan",
+     "players": [
+      {
+       "name": "A. Taher",
+       "country": "UAE"
+      },
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "D. Liu / F. Xie",
+     "players": [
+      {
+       "name": "D. Liu",
+       "country": "CHN"
+      },
+      {
+       "name": "F. Xie",
+       "country": "CHN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "Z. Lasahido / T. Tri Wahyuda",
+     "players": [
+      {
+       "name": "Z. Lasahido",
+       "country": "INA"
+      },
+      {
+       "name": "T. Tri Wahyuda",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "A. Alawadhi / Y. Saleh",
+     "players": [
+      {
+       "name": "A. Alawadhi",
+       "country": "KUW"
+      },
+      {
+       "name": "Y. Saleh",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "V. Wibawa / M. Al Furqan",
+     "players": [
+      {
+       "name": "V. Wibawa",
+       "country": "INA"
+      },
+      {
+       "name": "M. Al Furqan",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "H. Shams / H. Aljenaidel",
+     "players": [
+      {
+       "name": "H. Shams",
+       "country": "KUW"
+      },
+      {
+       "name": "H. Aljenaidel",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "I. P. A. Adi Guna / E. Revilla",
+     "players": [
+      {
+       "name": "I. P. A. Adi Guna",
+       "country": "INA"
+      },
+      {
+       "name": "E. Revilla",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "A. Redha / A. Al Roudan",
+     "players": [
+      {
+       "name": "A. Redha",
+       "country": "KUW"
+      },
+      {
+       "name": "A. Al Roudan",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ],
+     [
+      "0",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "N. Veerathammasorn / S. Sae-Oui",
+     "players": [
+      {
+       "name": "N. Veerathammasorn",
+       "country": "THA"
+      },
+      {
+       "name": "S. Sae-Oui",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "M. Salar / A. Adnan",
+     "players": [
+      {
+       "name": "M. Salar",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Adnan",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "S. Mocciola / C. Kaewsuto",
+     "players": [
+      {
+       "name": "S. Mocciola",
+       "country": "THA"
+      },
+      {
+       "name": "C. Kaewsuto",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Kamil / H. Kumar",
+     "players": [
+      {
+       "name": "M. A. Kamil",
+       "country": "PAK"
+      },
+      {
+       "name": "H. Kumar",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "5",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group B",
+   "court": "COURT 8",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Rawal / P. Ngamkiatkhajorn",
+     "players": [
+      {
+       "name": "A. Rawal",
+       "country": "THA"
+      },
+      {
+       "name": "P. Ngamkiatkhajorn",
+       "country": "THA"
+      }
+     ]
+    },
+    {
+     "name": "M. Azhar / S. Mahmood",
+     "players": [
+      {
+       "name": "M. Azhar",
+       "country": "PAK"
+      },
+      {
+       "name": "S. Mahmood",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "K. Y. Kim / J. H. Yoo",
+     "players": [
+      {
+       "name": "K. Y. Kim",
+       "country": "KOR"
+      },
+      {
+       "name": "J. H. Yoo",
+       "country": "KOR"
+      }
+     ]
+    },
+    {
+     "name": "M. Nigemeddin Alnobani / M. Abdallah Alkotop",
+     "players": [
+      {
+       "name": "M. Nigemeddin Alnobani",
+       "country": "JOR"
+      },
+      {
+       "name": "M. Abdallah Alkotop",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "J. H. Oh / S. R. Lee",
+     "players": [
+      {
+       "name": "J. H. Oh",
+       "country": "KOR"
+      },
+      {
+       "name": "S. R. Lee",
+       "country": "KOR"
+      }
+     ]
+    },
+    {
+     "name": "A. Subhi Aqel / O. Haitham Fakhoury",
+     "players": [
+      {
+       "name": "A. Subhi Aqel",
+       "country": "JOR"
+      },
+      {
+       "name": "O. Haitham Fakhoury",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group C",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "K. Han / G. Park",
+     "players": [
+      {
+       "name": "K. Han",
+       "country": "KOR"
+      },
+      {
+       "name": "G. Park",
+       "country": "KOR"
+      }
+     ]
+    },
+    {
+     "name": "A. Hazem Adas / K. Hatamleh",
+     "players": [
+      {
+       "name": "A. Hazem Adas",
+       "country": "JOR"
+      },
+      {
+       "name": "K. Hatamleh",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "T. Ando / K. Shimizu",
+     "players": [
+      {
+       "name": "T. Ando",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Shimizu",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "D. Talatayod / R. P. Quizon",
+     "players": [
+      {
+       "name": "D. Talatayod",
+       "country": "PHI"
+      },
+      {
+       "name": "R. P. Quizon",
+       "country": "PHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "S. Nakamura / K. Hisatome",
+     "players": [
+      {
+       "name": "S. Nakamura",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Hisatome",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "J. M. Tamayo / T. Berry",
+     "players": [
+      {
+       "name": "J. M. Tamayo",
+       "country": "PHI"
+      },
+      {
+       "name": "T. Berry",
+       "country": "PHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 6",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Maeda / T. Kato",
+     "players": [
+      {
+       "name": "A. Maeda",
+       "country": "JPN"
+      },
+      {
+       "name": "T. Kato",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "J. R. Amondoron / F. E. Parangan",
+     "players": [
+      {
+       "name": "J. R. Amondoron",
+       "country": "PHI"
+      },
+      {
+       "name": "F. E. Parangan",
+       "country": "PHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "R. Tabet / R. A. Tohme",
+     "players": [
+      {
+       "name": "R. Tabet",
+       "country": "LBN"
+      },
+      {
+       "name": "R. A. Tohme",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "Z. Umbetov / K. Kolganov",
+     "players": [
+      {
+       "name": "Z. Umbetov",
+       "country": "KAZ"
+      },
+      {
+       "name": "K. Kolganov",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "T. El Hallak / F. Stephan",
+     "players": [
+      {
+       "name": "T. El Hallak",
+       "country": "LBN"
+      },
+      {
+       "name": "F. Stephan",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "Y. Danilov / T. Khabibulin",
+     "players": [
+      {
+       "name": "Y. Danilov",
+       "country": "KAZ"
+      },
+      {
+       "name": "T. Khabibulin",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group D",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "F. Najib / A. Hyjazi",
+     "players": [
+      {
+       "name": "F. Najib",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Hyjazi",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "R. Pak / Z. Kozbak",
+     "players": [
+      {
+       "name": "R. Pak",
+       "country": "KAZ"
+      },
+      {
+       "name": "Z. Kozbak",
+       "country": "KAZ"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "L. Messaike / A. Youssef",
+     "players": [
+      {
+       "name": "L. Messaike",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Youssef",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "S. L. Rotrakarn / N. Der",
+     "players": [
+      {
+       "name": "S. L. Rotrakarn",
+       "country": "THA"
+      },
+      {
+       "name": "N. Der",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "Y. Yamin / M. Massoud",
+     "players": [
+      {
+       "name": "Y. Yamin",
+       "country": "LBN"
+      },
+      {
+       "name": "M. Massoud",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "T. Vitayaviroj / J. A. Vichithong",
+     "players": [
+      {
+       "name": "T. Vitayaviroj",
+       "country": "THA"
+      },
+      {
+       "name": "J. A. Vichithong",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 10",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "R. Rahouli / T. Sioufi",
+     "players": [
+      {
+       "name": "R. Rahouli",
+       "country": "LBN"
+      },
+      {
+       "name": "T. Sioufi",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "N. Narkprasert / D. Srirungraeng",
+     "players": [
+      {
+       "name": "N. Narkprasert",
+       "country": "THA"
+      },
+      {
+       "name": "D. Srirungraeng",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "R. AlBehbehani / N. Hassan",
+     "players": [
+      {
+       "name": "R. AlBehbehani",
+       "country": "KUW"
+      },
+      {
+       "name": "N. Hassan",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "L. Najaf / S. Khonji",
+     "players": [
+      {
+       "name": "L. Najaf",
+       "country": "BRN"
+      },
+      {
+       "name": "S. Khonji",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "M. Alsarraj / D. Al Qenaei",
+     "players": [
+      {
+       "name": "M. Alsarraj",
+       "country": "KUW"
+      },
+      {
+       "name": "D. Al Qenaei",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "M. Alaali / S. A. A. M. Alaseeri",
+     "players": [
+      {
+       "name": "M. Alaali",
+       "country": "BRN"
+      },
+      {
+       "name": "S. A. A. M. Alaseeri",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "D. Al Jazzaf / D. Alfares",
+     "players": [
+      {
+       "name": "D. Al Jazzaf",
+       "country": "KUW"
+      },
+      {
+       "name": "D. Alfares",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "E. Nuruddin / H. Aboumoustafa",
+     "players": [
+      {
+       "name": "E. Nuruddin",
+       "country": "BRN"
+      },
+      {
+       "name": "H. Aboumoustafa",
+       "country": "BRN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "S. Mohammed Salhab / A. Khalil Fareh",
+     "players": [
+      {
+       "name": "S. Mohammed Salhab",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Khalil Fareh",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "F. Hassan / A. Taher",
+     "players": [
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Taher",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Alblehed / L. Alabdullatif",
+     "players": [
+      {
+       "name": "A. Alblehed",
+       "country": "KSA"
+      },
+      {
+       "name": "L. Alabdullatif",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "A. Shahdoor / M. Shahdoor",
+     "players": [
+      {
+       "name": "A. Shahdoor",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Shahdoor",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 5",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "F. Fahad Alharbi / B. Alhowaish",
+     "players": [
+      {
+       "name": "F. Fahad Alharbi",
+       "country": "KSA"
+      },
+      {
+       "name": "B. Alhowaish",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "F. Hassan / A. Alawadhi",
+     "players": [
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alawadhi",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "M. Wu / Y. Wang",
+     "players": [
+      {
+       "name": "M. Wu",
+       "country": "CHN"
+      },
+      {
+       "name": "Y. Wang",
+       "country": "CHN"
+      }
+     ]
+    },
+    {
+     "name": "M. Taherani / S. Sajid",
+     "players": [
+      {
+       "name": "M. Taherani",
+       "country": "PAK"
+      },
+      {
+       "name": "S. Sajid",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "X. Zhang / A. Liu",
+     "players": [
+      {
+       "name": "X. Zhang",
+       "country": "CHN"
+      },
+      {
+       "name": "A. Liu",
+       "country": "CHN"
+      }
+     ]
+    },
+    {
+     "name": "A. Khalid / A. Shahbaz",
+     "players": [
+      {
+       "name": "A. Khalid",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Shahbaz",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group C",
+   "court": "COURT 9",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "R. Li / B. Chun",
+     "players": [
+      {
+       "name": "R. Li",
+       "country": "CHN"
+      },
+      {
+       "name": "B. Chun",
+       "country": "CHN"
+      }
+     ]
+    },
+    {
+     "name": "D. Elahi / N. Z. Khan",
+     "players": [
+      {
+       "name": "D. Elahi",
+       "country": "PAK"
+      },
+      {
+       "name": "N. Z. Khan",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "E. Goenaga / A. A. A. I. Alabdulla",
+     "players": [
+      {
+       "name": "E. Goenaga",
+       "country": "UAE"
+      },
+      {
+       "name": "A. A. A. I. Alabdulla",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "R. Tabet / A. Boustany",
+     "players": [
+      {
+       "name": "R. Tabet",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Boustany",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "I. Vilariño Gestoso / M. Al Janahi",
+     "players": [
+      {
+       "name": "I. Vilariño Gestoso",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "R. A. Tohme / F. Stephan",
+     "players": [
+      {
+       "name": "R. A. Tohme",
+       "country": "LBN"
+      },
+      {
+       "name": "F. Stephan",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "F. Al Janahi / M. Al Janahi",
+     "players": [
+      {
+       "name": "F. Al Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "A. Hyjazi / F. Najib",
+     "players": [
+      {
+       "name": "A. Hyjazi",
+       "country": "LBN"
+      },
+      {
+       "name": "F. Najib",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "7"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "F. Shahi / A. Roghani",
+     "players": [
+      {
+       "name": "F. Shahi",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Roghani",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "A. Hazem Adas / K. Hatamleh",
+     "players": [
+      {
+       "name": "A. Hazem Adas",
+       "country": "JOR"
+      },
+      {
+       "name": "K. Hatamleh",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "K. Souri / S. Zareianjahromi",
+     "players": [
+      {
+       "name": "K. Souri",
+       "country": "IRI"
+      },
+      {
+       "name": "S. Zareianjahromi",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "R. Omar Shalan / M. Abdallah Alkotop",
+     "players": [
+      {
+       "name": "R. Omar Shalan",
+       "country": "JOR"
+      },
+      {
+       "name": "M. Abdallah Alkotop",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "H. Golestan / A. M. Nejad Marian",
+     "players": [
+      {
+       "name": "H. Golestan",
+       "country": "IRI"
+      },
+      {
+       "name": "A. M. Nejad Marian",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "A. Subhi Aqel / O. Haitham Fakhoury",
+     "players": [
+      {
+       "name": "A. Subhi Aqel",
+       "country": "JOR"
+      },
+      {
+       "name": "O. Haitham Fakhoury",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "M. Saadon Alkuwari / H. A. Waly",
+     "players": [
+      {
+       "name": "M. Saadon Alkuwari",
+       "country": "QAT"
+      },
+      {
+       "name": "H. A. Waly",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "H. Shams / H. Aljenaidel",
+     "players": [
+      {
+       "name": "H. Shams",
+       "country": "KUW"
+      },
+      {
+       "name": "H. Aljenaidel",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "R. Naif / M. Naif",
+     "players": [
+      {
+       "name": "R. Naif",
+       "country": "QAT"
+      },
+      {
+       "name": "M. Naif",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "A. Redha / F. Behbehani",
+     "players": [
+      {
+       "name": "A. Redha",
+       "country": "KUW"
+      },
+      {
+       "name": "F. Behbehani",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "A. Alhijji / K. Saadon Alkuwari",
+     "players": [
+      {
+       "name": "A. Alhijji",
+       "country": "QAT"
+      },
+      {
+       "name": "K. Saadon Alkuwari",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "A. Alawadhi / Y. Saleh",
+     "players": [
+      {
+       "name": "A. Alawadhi",
+       "country": "KUW"
+      },
+      {
+       "name": "Y. Saleh",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "1"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "R. Taylor / T. Brown",
+     "players": [
+      {
+       "name": "R. Taylor",
+       "country": "AUS"
+      },
+      {
+       "name": "T. Brown",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "M. Salar / A. Adnan",
+     "players": [
+      {
+       "name": "M. Salar",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Adnan",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "V. Velickovic / P. Rafter",
+     "players": [
+      {
+       "name": "V. Velickovic",
+       "country": "AUS"
+      },
+      {
+       "name": "P. Rafter",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Kamil / H. Kumar",
+     "players": [
+      {
+       "name": "M. A. Kamil",
+       "country": "PAK"
+      },
+      {
+       "name": "H. Kumar",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "M. Zelba / D. Bechard",
+     "players": [
+      {
+       "name": "M. Zelba",
+       "country": "AUS"
+      },
+      {
+       "name": "D. Bechard",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "M. Azhar / S. Mahmood",
+     "players": [
+      {
+       "name": "M. Azhar",
+       "country": "PAK"
+      },
+      {
+       "name": "S. Mahmood",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "C. Sato / S. Yoshimoto",
+     "players": [
+      {
+       "name": "C. Sato",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Yoshimoto",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "S. Mohammed Salhab / S. AlKurdi",
+     "players": [
+      {
+       "name": "S. Mohammed Salhab",
+       "country": "KSA"
+      },
+      {
+       "name": "S. AlKurdi",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "M. Mizunuma / S. Tsukamoto",
+     "players": [
+      {
+       "name": "M. Mizunuma",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Tsukamoto",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "A. Khalil Fareh / A. Yamani",
+     "players": [
+      {
+       "name": "A. Khalil Fareh",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Yamani",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "K. Tokumoto / Y. Kushima",
+     "players": [
+      {
+       "name": "K. Tokumoto",
+       "country": "JPN"
+      },
+      {
+       "name": "Y. Kushima",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "B. Alhowaish / F. Fahad Alharbi",
+     "players": [
+      {
+       "name": "B. Alhowaish",
+       "country": "KSA"
+      },
+      {
+       "name": "F. Fahad Alharbi",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "S. Fard / H. Y. Hana",
+     "players": [
+      {
+       "name": "S. Fard",
+       "country": "IRI"
+      },
+      {
+       "name": "H. Y. Hana",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "F. A. Janahi / A. Alawadhi",
+     "players": [
+      {
+       "name": "F. A. Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alawadhi",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "N. Mohammad Taghipour / Z. Kahrizi",
+     "players": [
+      {
+       "name": "N. Mohammad Taghipour",
+       "country": "IRI"
+      },
+      {
+       "name": "Z. Kahrizi",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "M. Alhashimi / N. Omar",
+     "players": [
+      {
+       "name": "M. Alhashimi",
+       "country": "UAE"
+      },
+      {
+       "name": "N. Omar",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "S. Najafi Dehaghi / S. Komasi",
+     "players": [
+      {
+       "name": "S. Najafi Dehaghi",
+       "country": "IRI"
+      },
+      {
+       "name": "S. Komasi",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "F. Hassan / A. Taher",
+     "players": [
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Taher",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "A. M. Dangond Villamizar / J. Isabelle Brycki",
+     "players": [
+      {
+       "name": "A. M. Dangond Villamizar",
+       "country": "AUS"
+      },
+      {
+       "name": "J. Isabelle Brycki",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "N. N. S. M. Sri Maryati / N. P. Armini",
+     "players": [
+      {
+       "name": "N. N. S. M. Sri Maryati",
+       "country": "INA"
+      },
+      {
+       "name": "N. P. Armini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "S. Alexander / M. Polo Cancio",
+     "players": [
+      {
+       "name": "S. Alexander",
+       "country": "AUS"
+      },
+      {
+       "name": "M. Polo Cancio",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "J. Rompies / N. Putria",
+     "players": [
+      {
+       "name": "J. Rompies",
+       "country": "INA"
+      },
+      {
+       "name": "N. Putria",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "J. Peterswald / A. Dalley",
+     "players": [
+      {
+       "name": "J. Peterswald",
+       "country": "AUS"
+      },
+      {
+       "name": "A. Dalley",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "F. Sabrina / F. Sabatini",
+     "players": [
+      {
+       "name": "F. Sabrina",
+       "country": "INA"
+      },
+      {
+       "name": "F. Sabatini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "R. Conle Castillo / J. Lucas",
+     "players": [
+      {
+       "name": "R. Conle Castillo",
+       "country": "PHI"
+      },
+      {
+       "name": "J. Lucas",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "N. Wattanapraneekul / S. L. Rotrakarn",
+     "players": [
+      {
+       "name": "N. Wattanapraneekul",
+       "country": "THA"
+      },
+      {
+       "name": "S. L. Rotrakarn",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "J. M. Agra / N. N. C. Zoleta",
+     "players": [
+      {
+       "name": "J. M. Agra",
+       "country": "PHI"
+      },
+      {
+       "name": "N. N. C. Zoleta",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "J. A. Vichithong / T. Vitayaviroj",
+     "players": [
+      {
+       "name": "J. A. Vichithong",
+       "country": "THA"
+      },
+      {
+       "name": "T. Vitayaviroj",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 4,
+   "teams": [
+    {
+     "name": "A. R. Singer / P. J. Naquila",
+     "players": [
+      {
+       "name": "A. R. Singer",
+       "country": "PHI"
+      },
+      {
+       "name": "P. J. Naquila",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "N. Narkprasert / D. Srirungraeng",
+     "players": [
+      {
+       "name": "N. Narkprasert",
+       "country": "THA"
+      },
+      {
+       "name": "D. Srirungraeng",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "E. Goenaga / F. Al Janahi",
+     "players": [
+      {
+       "name": "E. Goenaga",
+       "country": "UAE"
+      },
+      {
+       "name": "F. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Abdallah Alkotop / K. Hatamleh",
+     "players": [
+      {
+       "name": "M. Abdallah Alkotop",
+       "country": "JOR"
+      },
+      {
+       "name": "K. Hatamleh",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "I. Vilariño Gestoso / M. Al Janahi",
+     "players": [
+      {
+       "name": "I. Vilariño Gestoso",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Nigemeddin Alnobani / O. Haitham Fakhoury",
+     "players": [
+      {
+       "name": "M. Nigemeddin Alnobani",
+       "country": "JOR"
+      },
+      {
+       "name": "O. Haitham Fakhoury",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "M. Al Janahi / F. Alhooli",
+     "players": [
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "F. Alhooli",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "A. Hazem Adas / A. Subhi Aqel",
+     "players": [
+      {
+       "name": "A. Hazem Adas",
+       "country": "JOR"
+      },
+      {
+       "name": "A. Subhi Aqel",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "F. Shahi / A. Roghani",
+     "players": [
+      {
+       "name": "F. Shahi",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Roghani",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "F. Stephan / T. El Hallak",
+     "players": [
+      {
+       "name": "F. Stephan",
+       "country": "LBN"
+      },
+      {
+       "name": "T. El Hallak",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "H. Golestan / A. M. Nejad Marian",
+     "players": [
+      {
+       "name": "H. Golestan",
+       "country": "IRI"
+      },
+      {
+       "name": "A. M. Nejad Marian",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "R. Tabet / R. A. Tohme",
+     "players": [
+      {
+       "name": "R. Tabet",
+       "country": "LBN"
+      },
+      {
+       "name": "R. A. Tohme",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "A. Mohamad Jamshidi / A. Saleh",
+     "players": [
+      {
+       "name": "A. Mohamad Jamshidi",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Saleh",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "F. Najib / A. Hyjazi",
+     "players": [
+      {
+       "name": "F. Najib",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Hyjazi",
+       "country": "LBN"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "M. Naif / M. Saadon Alkuwari",
+     "players": [
+      {
+       "name": "M. Naif",
+       "country": "QAT"
+      },
+      {
+       "name": "M. Saadon Alkuwari",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "H. Kumar / M. Azhar",
+     "players": [
+      {
+       "name": "H. Kumar",
+       "country": "PAK"
+      },
+      {
+       "name": "M. Azhar",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "H. A. Waly / R. Naif",
+     "players": [
+      {
+       "name": "H. A. Waly",
+       "country": "QAT"
+      },
+      {
+       "name": "R. Naif",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "D. Ahmad / M. A. Kamil",
+     "players": [
+      {
+       "name": "D. Ahmad",
+       "country": "PAK"
+      },
+      {
+       "name": "M. A. Kamil",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "M. Al Khanji / R. Abdulla",
+     "players": [
+      {
+       "name": "M. Al Khanji",
+       "country": "QAT"
+      },
+      {
+       "name": "R. Abdulla",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "M. Salar / A. Adnan",
+     "players": [
+      {
+       "name": "M. Salar",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Adnan",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "7"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "E. Navarro / V. Velickovic",
+     "players": [
+      {
+       "name": "E. Navarro",
+       "country": "AUS"
+      },
+      {
+       "name": "V. Velickovic",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "A. Alawadhi / Y. Saleh",
+     "players": [
+      {
+       "name": "A. Alawadhi",
+       "country": "KUW"
+      },
+      {
+       "name": "Y. Saleh",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "D. Bechard / M. Zelba",
+     "players": [
+      {
+       "name": "D. Bechard",
+       "country": "AUS"
+      },
+      {
+       "name": "M. Zelba",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "A. Redha / F. Behbehani",
+     "players": [
+      {
+       "name": "A. Redha",
+       "country": "KUW"
+      },
+      {
+       "name": "F. Behbehani",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "6",
+      "3"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "J. Benzal / T. Brown",
+     "players": [
+      {
+       "name": "J. Benzal",
+       "country": "AUS"
+      },
+      {
+       "name": "T. Brown",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "H. Shams / H. Aljenaidel",
+     "players": [
+      {
+       "name": "H. Shams",
+       "country": "KUW"
+      },
+      {
+       "name": "H. Aljenaidel",
+       "country": "KUW"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "S. Tsukamoto / M. Mizunuma",
+     "players": [
+      {
+       "name": "S. Tsukamoto",
+       "country": "JPN"
+      },
+      {
+       "name": "M. Mizunuma",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "N. Omar / A. Shahdoor",
+     "players": [
+      {
+       "name": "N. Omar",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Shahdoor",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "U. Nagomi / K. Ozawa",
+     "players": [
+      {
+       "name": "U. Nagomi",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Ozawa",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "F. Hassan / A. Taher",
+     "players": [
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Taher",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "Y. Kushima / K. Tokumoto",
+     "players": [
+      {
+       "name": "Y. Kushima",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Tokumoto",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "F. A. Janahi / A. Alawadhi",
+     "players": [
+      {
+       "name": "F. A. Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alawadhi",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "Z. Kahrizi / N. Mohammad Taghipour",
+     "players": [
+      {
+       "name": "Z. Kahrizi",
+       "country": "IRI"
+      },
+      {
+       "name": "N. Mohammad Taghipour",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "B. Alhowaish / F. Fahad Alharbi",
+     "players": [
+      {
+       "name": "B. Alhowaish",
+       "country": "KSA"
+      },
+      {
+       "name": "F. Fahad Alharbi",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "S. Fard / H. Y. Hana",
+     "players": [
+      {
+       "name": "S. Fard",
+       "country": "IRI"
+      },
+      {
+       "name": "H. Y. Hana",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "S. AlKurdi / S. Mohammed Salhab",
+     "players": [
+      {
+       "name": "S. AlKurdi",
+       "country": "KSA"
+      },
+      {
+       "name": "S. Mohammed Salhab",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "S. Komasi / S. Najafi Dehaghi",
+     "players": [
+      {
+       "name": "S. Komasi",
+       "country": "IRI"
+      },
+      {
+       "name": "S. Najafi Dehaghi",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "A. Yamani / A. Khalil Fareh",
+     "players": [
+      {
+       "name": "A. Yamani",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Khalil Fareh",
+       "country": "KSA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "5"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "J. Peterswald / A. Renda",
+     "players": [
+      {
+       "name": "J. Peterswald",
+       "country": "AUS"
+      },
+      {
+       "name": "A. Renda",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "J. A. Vichithong / T. Vitayaviroj",
+     "players": [
+      {
+       "name": "J. A. Vichithong",
+       "country": "THA"
+      },
+      {
+       "name": "T. Vitayaviroj",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "J. Isabelle Brycki / A. M. Dangond Villamizar",
+     "players": [
+      {
+       "name": "J. Isabelle Brycki",
+       "country": "AUS"
+      },
+      {
+       "name": "A. M. Dangond Villamizar",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "S. L. Rotrakarn / N. Der",
+     "players": [
+      {
+       "name": "S. L. Rotrakarn",
+       "country": "THA"
+      },
+      {
+       "name": "N. Der",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "S. Alexander / M. Polo Cancio",
+     "players": [
+      {
+       "name": "S. Alexander",
+       "country": "AUS"
+      },
+      {
+       "name": "M. Polo Cancio",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "N. Narkprasert / D. Srirungraeng",
+     "players": [
+      {
+       "name": "N. Narkprasert",
+       "country": "THA"
+      },
+      {
+       "name": "D. Srirungraeng",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "R. Conle Castillo / J. M. Agra",
+     "players": [
+      {
+       "name": "R. Conle Castillo",
+       "country": "PHI"
+      },
+      {
+       "name": "J. M. Agra",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "F. Sabrina / F. Sabatini",
+     "players": [
+      {
+       "name": "F. Sabrina",
+       "country": "INA"
+      },
+      {
+       "name": "F. Sabatini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "N. N. C. Zoleta / J. Lucas",
+     "players": [
+      {
+       "name": "N. N. C. Zoleta",
+       "country": "PHI"
+      },
+      {
+       "name": "J. Lucas",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "N. P. Armini / N. N. S. M. Sri Maryati",
+     "players": [
+      {
+       "name": "N. P. Armini",
+       "country": "INA"
+      },
+      {
+       "name": "N. N. S. M. Sri Maryati",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 5,
+   "teams": [
+    {
+     "name": "A. R. Singer / P. J. Naquila",
+     "players": [
+      {
+       "name": "A. R. Singer",
+       "country": "PHI"
+      },
+      {
+       "name": "P. J. Naquila",
+       "country": "PHI"
+      }
+     ]
+    },
+    {
+     "name": "K. Emeralda / V. Silfany",
+     "players": [
+      {
+       "name": "K. Emeralda",
+       "country": "INA"
+      },
+      {
+       "name": "V. Silfany",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "I. Vilariño Gestoso / M. Al Janahi",
+     "players": [
+      {
+       "name": "I. Vilariño Gestoso",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "F. Shahi / A. Roghani",
+     "players": [
+      {
+       "name": "F. Shahi",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Roghani",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "A. Alabdulla / M. Al Janahi",
+     "players": [
+      {
+       "name": "A. Alabdulla",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "H. Golestan / A. M. Nejad Marian",
+     "players": [
+      {
+       "name": "H. Golestan",
+       "country": "IRI"
+      },
+      {
+       "name": "A. M. Nejad Marian",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "E. Goenaga / F. Al Janahi",
+     "players": [
+      {
+       "name": "E. Goenaga",
+       "country": "UAE"
+      },
+      {
+       "name": "F. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "A. Saleh / A. Mohamad Jamshidi",
+     "players": [
+      {
+       "name": "A. Saleh",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Mohamad Jamshidi",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "R. A. Tohme / R. Tabet",
+     "players": [
+      {
+       "name": "R. A. Tohme",
+       "country": "LBN"
+      },
+      {
+       "name": "R. Tabet",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "M. Abdallah Alkotop / K. Hatamleh",
+     "players": [
+      {
+       "name": "M. Abdallah Alkotop",
+       "country": "JOR"
+      },
+      {
+       "name": "K. Hatamleh",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "A. Hyjazi / F. Stephan",
+     "players": [
+      {
+       "name": "A. Hyjazi",
+       "country": "LBN"
+      },
+      {
+       "name": "F. Stephan",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "A. Hazem Adas / A. Subhi Aqel",
+     "players": [
+      {
+       "name": "A. Hazem Adas",
+       "country": "JOR"
+      },
+      {
+       "name": "A. Subhi Aqel",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "T. El Hallak / A. Boustany",
+     "players": [
+      {
+       "name": "T. El Hallak",
+       "country": "LBN"
+      },
+      {
+       "name": "A. Boustany",
+       "country": "LBN"
+      }
+     ]
+    },
+    {
+     "name": "M. Nigemeddin Alnobani / R. Omar Shalan",
+     "players": [
+      {
+       "name": "M. Nigemeddin Alnobani",
+       "country": "JOR"
+      },
+      {
+       "name": "R. Omar Shalan",
+       "country": "JOR"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "K. Saadon Alkuwari / A. Alhijji",
+     "players": [
+      {
+       "name": "K. Saadon Alkuwari",
+       "country": "QAT"
+      },
+      {
+       "name": "A. Alhijji",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "P. Rafter / J. Benzal",
+     "players": [
+      {
+       "name": "P. Rafter",
+       "country": "AUS"
+      },
+      {
+       "name": "J. Benzal",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "R. Naif / M. Naif",
+     "players": [
+      {
+       "name": "R. Naif",
+       "country": "QAT"
+      },
+      {
+       "name": "M. Naif",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "E. Navarro / M. Zelba",
+     "players": [
+      {
+       "name": "E. Navarro",
+       "country": "AUS"
+      },
+      {
+       "name": "M. Zelba",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "M. Saadon Alkuwari / H. A. Waly",
+     "players": [
+      {
+       "name": "M. Saadon Alkuwari",
+       "country": "QAT"
+      },
+      {
+       "name": "H. A. Waly",
+       "country": "QAT"
+      }
+     ]
+    },
+    {
+     "name": "R. Taylor / T. Brown",
+     "players": [
+      {
+       "name": "R. Taylor",
+       "country": "AUS"
+      },
+      {
+       "name": "T. Brown",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "H. Shams / M. Alqatnn",
+     "players": [
+      {
+       "name": "H. Shams",
+       "country": "KUW"
+      },
+      {
+       "name": "M. Alqatnn",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "M. Azhar / S. Mahmood",
+     "players": [
+      {
+       "name": "M. Azhar",
+       "country": "PAK"
+      },
+      {
+       "name": "S. Mahmood",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "A. Alawadhi / A. Al Roudan",
+     "players": [
+      {
+       "name": "A. Alawadhi",
+       "country": "KUW"
+      },
+      {
+       "name": "A. Al Roudan",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "M. A. Kamil / H. Kumar",
+     "players": [
+      {
+       "name": "M. A. Kamil",
+       "country": "PAK"
+      },
+      {
+       "name": "H. Kumar",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 2",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "A. Redha / F. Behbehani",
+     "players": [
+      {
+       "name": "A. Redha",
+       "country": "KUW"
+      },
+      {
+       "name": "F. Behbehani",
+       "country": "KUW"
+      }
+     ]
+    },
+    {
+     "name": "M. Salar / A. Adnan",
+     "players": [
+      {
+       "name": "M. Salar",
+       "country": "PAK"
+      },
+      {
+       "name": "A. Adnan",
+       "country": "PAK"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "1"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "U. Nagomi / K. Ozawa",
+     "players": [
+      {
+       "name": "U. Nagomi",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Ozawa",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "S. Najafi Dehaghi / S. Komasi",
+     "players": [
+      {
+       "name": "S. Najafi Dehaghi",
+       "country": "IRI"
+      },
+      {
+       "name": "S. Komasi",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "K. Tokumoto / Y. Kushima",
+     "players": [
+      {
+       "name": "K. Tokumoto",
+       "country": "JPN"
+      },
+      {
+       "name": "Y. Kushima",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "S. Fard / H. Y. Hana",
+     "players": [
+      {
+       "name": "S. Fard",
+       "country": "IRI"
+      },
+      {
+       "name": "H. Y. Hana",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "S. Yoshimoto / S. Tsukamoto",
+     "players": [
+      {
+       "name": "S. Yoshimoto",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Tsukamoto",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "Z. Kahrizi / N. Mohammad Taghipour",
+     "players": [
+      {
+       "name": "Z. Kahrizi",
+       "country": "IRI"
+      },
+      {
+       "name": "N. Mohammad Taghipour",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "A. Yamani / A. Khalil Fareh",
+     "players": [
+      {
+       "name": "A. Yamani",
+       "country": "KSA"
+      },
+      {
+       "name": "A. Khalil Fareh",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "F. A. Janahi / A. Alawadhi",
+     "players": [
+      {
+       "name": "F. A. Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alawadhi",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "3",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "B. Alhowaish / F. Fahad Alharbi",
+     "players": [
+      {
+       "name": "B. Alhowaish",
+       "country": "KSA"
+      },
+      {
+       "name": "F. Fahad Alharbi",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "F. Hassan / A. Taher",
+     "players": [
+      {
+       "name": "F. Hassan",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Taher",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group A",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "S. Mohammed Salhab / S. AlKurdi",
+     "players": [
+      {
+       "name": "S. Mohammed Salhab",
+       "country": "KSA"
+      },
+      {
+       "name": "S. AlKurdi",
+       "country": "KSA"
+      }
+     ]
+    },
+    {
+     "name": "M. Alhashimi / N. Omar",
+     "players": [
+      {
+       "name": "M. Alhashimi",
+       "country": "UAE"
+      },
+      {
+       "name": "N. Omar",
+       "country": "UAE"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "S. Alexander / A. Dalley",
+     "players": [
+      {
+       "name": "S. Alexander",
+       "country": "AUS"
+      },
+      {
+       "name": "A. Dalley",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "A. R. Singer / P. J. Naquila",
+     "players": [
+      {
+       "name": "A. R. Singer",
+       "country": "PHI"
+      },
+      {
+       "name": "P. J. Naquila",
+       "country": "PHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "J. Isabelle Brycki / A. M. Dangond Villamizar",
+     "players": [
+      {
+       "name": "J. Isabelle Brycki",
+       "country": "AUS"
+      },
+      {
+       "name": "A. M. Dangond Villamizar",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "R. Conle Castillo / J. Lucas",
+     "players": [
+      {
+       "name": "R. Conle Castillo",
+       "country": "PHI"
+      },
+      {
+       "name": "J. Lucas",
+       "country": "PHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "J. Peterswald / A. Renda",
+     "players": [
+      {
+       "name": "J. Peterswald",
+       "country": "AUS"
+      },
+      {
+       "name": "A. Renda",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "J. M. Agra / N. N. C. Zoleta",
+     "players": [
+      {
+       "name": "J. M. Agra",
+       "country": "PHI"
+      },
+      {
+       "name": "N. N. C. Zoleta",
+       "country": "PHI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "J. Rompies / N. Putria",
+     "players": [
+      {
+       "name": "J. Rompies",
+       "country": "INA"
+      },
+      {
+       "name": "N. Putria",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "K. Tupanan / N. Wattanapraneekul",
+     "players": [
+      {
+       "name": "K. Tupanan",
+       "country": "THA"
+      },
+      {
+       "name": "N. Wattanapraneekul",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "0"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "F. Sabrina / F. Sabatini",
+     "players": [
+      {
+       "name": "F. Sabrina",
+       "country": "INA"
+      },
+      {
+       "name": "F. Sabatini",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "J. A. Vichithong / T. Vitayaviroj",
+     "players": [
+      {
+       "name": "J. A. Vichithong",
+       "country": "THA"
+      },
+      {
+       "name": "T. Vitayaviroj",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group B",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 6,
+   "teams": [
+    {
+     "name": "K. Emeralda / V. Silfany",
+     "players": [
+      {
+       "name": "K. Emeralda",
+       "country": "INA"
+      },
+      {
+       "name": "V. Silfany",
+       "country": "INA"
+      }
+     ]
+    },
+    {
+     "name": "N. Narkprasert / D. Srirungraeng",
+     "players": [
+      {
+       "name": "N. Narkprasert",
+       "country": "THA"
+      },
+      {
+       "name": "D. Srirungraeng",
+       "country": "THA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "0"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-4 Semifinals",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "M. Al Janahi / A. Alabdulla",
+     "players": [
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "A. Alabdulla",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "V. Velickovic / J. Benzal",
+     "players": [
+      {
+       "name": "V. Velickovic",
+       "country": "AUS"
+      },
+      {
+       "name": "J. Benzal",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-4 Semifinals",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "I. Vilariño Gestoso / M. Al Janahi",
+     "players": [
+      {
+       "name": "I. Vilariño Gestoso",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "E. Navarro / T. Brown",
+     "players": [
+      {
+       "name": "E. Navarro",
+       "country": "AUS"
+      },
+      {
+       "name": "T. Brown",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-4 Semifinals",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "E. Goenaga / F. Al Janahi",
+     "players": [
+      {
+       "name": "E. Goenaga",
+       "country": "UAE"
+      },
+      {
+       "name": "F. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Zelba / D. Bechard",
+     "players": [
+      {
+       "name": "M. Zelba",
+       "country": "AUS"
+      },
+      {
+       "name": "D. Bechard",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "7",
+      "5"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-4 Semifinals",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "A. Mohamad Jamshidi / S. Zareianjahromi",
+     "players": [
+      {
+       "name": "A. Mohamad Jamshidi",
+       "country": "IRI"
+      },
+      {
+       "name": "S. Zareianjahromi",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "M. Al Khanji / R. A. Aljufairi",
+     "players": [
+      {
+       "name": "M. Al Khanji",
+       "country": "QAT"
+      },
+      {
+       "name": "R. A. Aljufairi",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-4 Semifinals",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "F. Shahi / A. Roghani",
+     "players": [
+      {
+       "name": "F. Shahi",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Roghani",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "R. Naif / M. Naif",
+     "players": [
+      {
+       "name": "R. Naif",
+       "country": "QAT"
+      },
+      {
+       "name": "M. Naif",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-4 Semifinals",
+   "court": "GRANDSTAND 1",
+   "status": "notplayed",
+   "day": 7,
+   "teams": [
+    {
+     "name": "H. Golestan / A. M. Nejad Marian",
+     "players": [
+      {
+       "name": "H. Golestan",
+       "country": "IRI"
+      },
+      {
+       "name": "A. M. Nejad Marian",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "M. Saadon Alkuwari / H. A. Waly",
+     "players": [
+      {
+       "name": "M. Saadon Alkuwari",
+       "country": "QAT"
+      },
+      {
+       "name": "H. A. Waly",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [],
+    "winner": null
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-4 Semifinals",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "C. Sato / M. Mizunuma",
+     "players": [
+      {
+       "name": "C. Sato",
+       "country": "JPN"
+      },
+      {
+       "name": "M. Mizunuma",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "M. Polo Cancio / S. Alexander",
+     "players": [
+      {
+       "name": "M. Polo Cancio",
+       "country": "AUS"
+      },
+      {
+       "name": "S. Alexander",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-4 Semifinals",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "K. Ozawa / S. Tsukamoto",
+     "players": [
+      {
+       "name": "K. Ozawa",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Tsukamoto",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "A. M. Dangond Villamizar / J. Isabelle Brycki",
+     "players": [
+      {
+       "name": "A. M. Dangond Villamizar",
+       "country": "AUS"
+      },
+      {
+       "name": "J. Isabelle Brycki",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "1"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-4 Semifinals",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "K. Tokumoto / Y. Kushima",
+     "players": [
+      {
+       "name": "K. Tokumoto",
+       "country": "JPN"
+      },
+      {
+       "name": "Y. Kushima",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "J. Peterswald / A. Dalley",
+     "players": [
+      {
+       "name": "J. Peterswald",
+       "country": "AUS"
+      },
+      {
+       "name": "A. Dalley",
+       "country": "AUS"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-4 Semifinals",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "S. Najafi Dehaghi / H. Y. Hana",
+     "players": [
+      {
+       "name": "S. Najafi Dehaghi",
+       "country": "IRI"
+      },
+      {
+       "name": "H. Y. Hana",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "K. Emeralda / V. Silfany",
+     "players": [
+      {
+       "name": "K. Emeralda",
+       "country": "INA"
+      },
+      {
+       "name": "V. Silfany",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "2"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-4 Semifinals",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 7,
+   "teams": [
+    {
+     "name": "Z. Kahrizi / S. Fard",
+     "players": [
+      {
+       "name": "Z. Kahrizi",
+       "country": "IRI"
+      },
+      {
+       "name": "S. Fard",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "J. Rompies / N. Putria",
+     "players": [
+      {
+       "name": "J. Rompies",
+       "country": "INA"
+      },
+      {
+       "name": "N. Putria",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-4 Semifinals",
+   "court": "COURT 3",
+   "status": "notplayed",
+   "day": 7,
+   "teams": [
+    {
+     "name": "S. Komasi / N. Mohammad Taghipour",
+     "players": [
+      {
+       "name": "S. Komasi",
+       "country": "IRI"
+      },
+      {
+       "name": "N. Mohammad Taghipour",
+       "country": "IRI"
+      }
+     ]
+    },
+    {
+     "name": "N. P. Armini / N. N. S. M. Sri Maryati",
+     "players": [
+      {
+       "name": "N. P. Armini",
+       "country": "INA"
+      },
+      {
+       "name": "N. N. S. M. Sri Maryati",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [],
+    "winner": null
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-2 Final",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "I. Vilariño Gestoso / M. Al Janahi",
+     "players": [
+      {
+       "name": "I. Vilariño Gestoso",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Saadon Alkuwari / H. A. Waly",
+     "players": [
+      {
+       "name": "M. Saadon Alkuwari",
+       "country": "QAT"
+      },
+      {
+       "name": "H. A. Waly",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "2"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-2 Final",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "A. Alabdulla / M. Al Janahi",
+     "players": [
+      {
+       "name": "A. Alabdulla",
+       "country": "UAE"
+      },
+      {
+       "name": "M. Al Janahi",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "R. Naif / M. Naif",
+     "players": [
+      {
+       "name": "R. Naif",
+       "country": "QAT"
+      },
+      {
+       "name": "M. Naif",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 1-2 Final",
+   "court": "GRANDSTAND 1",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "F. Al Janahi / E. Goenaga",
+     "players": [
+      {
+       "name": "F. Al Janahi",
+       "country": "UAE"
+      },
+      {
+       "name": "E. Goenaga",
+       "country": "UAE"
+      }
+     ]
+    },
+    {
+     "name": "M. Al Khanji / R. A. Aljufairi",
+     "players": [
+      {
+       "name": "M. Al Khanji",
+       "country": "QAT"
+      },
+      {
+       "name": "R. A. Aljufairi",
+       "country": "QAT"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 3-4 Final",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "D. Bechard / P. Rafter",
+     "players": [
+      {
+       "name": "D. Bechard",
+       "country": "AUS"
+      },
+      {
+       "name": "P. Rafter",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "H. Golestan / A. M. Nejad Marian",
+     "players": [
+      {
+       "name": "H. Golestan",
+       "country": "IRI"
+      },
+      {
+       "name": "A. M. Nejad Marian",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "3"
+     ],
+     [
+      "6",
+      "3"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 3-4 Final",
+   "court": "COURT 4",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "V. Velickovic / E. Navarro",
+     "players": [
+      {
+       "name": "V. Velickovic",
+       "country": "AUS"
+      },
+      {
+       "name": "E. Navarro",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "F. Shahi / A. Roghani",
+     "players": [
+      {
+       "name": "F. Shahi",
+       "country": "IRI"
+      },
+      {
+       "name": "A. Roghani",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "6",
+      "3"
+     ],
+     [
+      "7",
+      "6"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Position 3-4 Final",
+   "court": "COURT 4",
+   "status": "notplayed",
+   "day": 8,
+   "teams": [
+    {
+     "name": "T. Brown / M. Zelba",
+     "players": [
+      {
+       "name": "T. Brown",
+       "country": "AUS"
+      },
+      {
+       "name": "M. Zelba",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "A. Saleh / K. Souri",
+     "players": [
+      {
+       "name": "A. Saleh",
+       "country": "IRI"
+      },
+      {
+       "name": "K. Souri",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [],
+    "winner": null
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-2 Final",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "U. Nagomi / K. Ozawa",
+     "players": [
+      {
+       "name": "U. Nagomi",
+       "country": "JPN"
+      },
+      {
+       "name": "K. Ozawa",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "S. Najafi Dehaghi / H. Y. Hana",
+     "players": [
+      {
+       "name": "S. Najafi Dehaghi",
+       "country": "IRI"
+      },
+      {
+       "name": "H. Y. Hana",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ],
+     [
+      "6",
+      "1"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-2 Final",
+   "court": "GRANDSTAND 2",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "M. Mizunuma / S. Tsukamoto",
+     "players": [
+      {
+       "name": "M. Mizunuma",
+       "country": "JPN"
+      },
+      {
+       "name": "S. Tsukamoto",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "S. Fard / Z. Kahrizi",
+     "players": [
+      {
+       "name": "S. Fard",
+       "country": "IRI"
+      },
+      {
+       "name": "Z. Kahrizi",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "7",
+      "5"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 1-2 Final",
+   "court": "GRANDSTAND 2",
+   "status": "notplayed",
+   "day": 8,
+   "teams": [
+    {
+     "name": "K. Tokumoto / Y. Kushima",
+     "players": [
+      {
+       "name": "K. Tokumoto",
+       "country": "JPN"
+      },
+      {
+       "name": "Y. Kushima",
+       "country": "JPN"
+      }
+     ]
+    },
+    {
+     "name": "S. Komasi / N. Mohammad Taghipour",
+     "players": [
+      {
+       "name": "S. Komasi",
+       "country": "IRI"
+      },
+      {
+       "name": "N. Mohammad Taghipour",
+       "country": "IRI"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [],
+    "winner": null
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 3-4 Final",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "J. Isabelle Brycki / A. Dalley",
+     "players": [
+      {
+       "name": "J. Isabelle Brycki",
+       "country": "AUS"
+      },
+      {
+       "name": "A. Dalley",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "F. Sabrina / F. Sabatini",
+     "players": [
+      {
+       "name": "F. Sabrina",
+       "country": "INA"
+      },
+      {
+       "name": "F. Sabatini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 3-4 Final",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "S. Alexander / M. Polo Cancio",
+     "players": [
+      {
+       "name": "S. Alexander",
+       "country": "AUS"
+      },
+      {
+       "name": "M. Polo Cancio",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "N. Putria / J. Rompies",
+     "players": [
+      {
+       "name": "N. Putria",
+       "country": "INA"
+      },
+      {
+       "name": "J. Rompies",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "2",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Position 3-4 Final",
+   "court": "COURT 3",
+   "status": "final",
+   "day": 8,
+   "teams": [
+    {
+     "name": "A. Renda / J. Peterswald",
+     "players": [
+      {
+       "name": "A. Renda",
+       "country": "AUS"
+      },
+      {
+       "name": "J. Peterswald",
+       "country": "AUS"
+      }
+     ]
+    },
+    {
+     "name": "N. N. S. M. Sri Maryati / N. P. Armini",
+     "players": [
+      {
+       "name": "N. N. S. M. Sri Maryati",
+       "country": "INA"
+      },
+      {
+       "name": "N. P. Armini",
+       "country": "INA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  }
+ ]
+}

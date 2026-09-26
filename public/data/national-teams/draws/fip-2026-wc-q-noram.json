@@ -1,0 +1,893 @@
+{
+ "key": "fip-2026-wc-q-noram",
+ "name": "FIP WORLD CUP 2026 QUALIFIERS – NORTH & CENTRAL AMERICA",
+ "year": 2026,
+ "start": "2026-07-31",
+ "end": "2026-08-02",
+ "widgetId": "FIP-2026-3111",
+ "source": "matchscorerlive teamresults FIP-2026-3111, days 1-3",
+ "sourceUrl": "https://www.padelfip.com/events/fip-world-cup-2026-qualifiers-north-central-america/",
+ "fetched": "2026-09-26",
+ "matches": [
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "V. Krustev / C. West",
+     "players": [
+      {
+       "name": "V. Krustev",
+       "country": "CAN"
+      },
+      {
+       "name": "C. West",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "V. N. Di Francesco / C. S. Humphreys",
+     "players": [
+      {
+       "name": "V. N. Di Francesco",
+       "country": "USA"
+      },
+      {
+       "name": "C. S. Humphreys",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "A. Bourne / I. Tiraspolsky",
+     "players": [
+      {
+       "name": "A. Bourne",
+       "country": "CAN"
+      },
+      {
+       "name": "I. Tiraspolsky",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "M. Segura / N. Agritelley",
+     "players": [
+      {
+       "name": "M. Segura",
+       "country": "USA"
+      },
+      {
+       "name": "N. Agritelley",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "T. Robinson / G. Bergeron",
+     "players": [
+      {
+       "name": "T. Robinson",
+       "country": "CAN"
+      },
+      {
+       "name": "G. Bergeron",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "R. Ruiz Alvarez / J. A. De Armas",
+     "players": [
+      {
+       "name": "R. Ruiz Alvarez",
+       "country": "USA"
+      },
+      {
+       "name": "J. A. De Armas",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "S. Sales Cavalcante / P. Ojeda",
+     "players": [
+      {
+       "name": "S. Sales Cavalcante",
+       "country": "CAN"
+      },
+      {
+       "name": "P. Ojeda",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "R. Martinez Becerra / A. P. De La Peña Rosas",
+     "players": [
+      {
+       "name": "R. Martinez Becerra",
+       "country": "MEX"
+      },
+      {
+       "name": "A. P. De La Peña Rosas",
+       "country": "MEX"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "6",
+      "4"
+     ],
+     [
+      "2",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "E. Indjin / R. Mackie",
+     "players": [
+      {
+       "name": "E. Indjin",
+       "country": "CAN"
+      },
+      {
+       "name": "R. Mackie",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "J. E. Snaider / I. Perches Arredondo",
+     "players": [
+      {
+       "name": "J. E. Snaider",
+       "country": "MEX"
+      },
+      {
+       "name": "I. Perches Arredondo",
+       "country": "MEX"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 1,
+   "teams": [
+    {
+     "name": "A. Berriri / C. Lilley",
+     "players": [
+      {
+       "name": "A. Berriri",
+       "country": "CAN"
+      },
+      {
+       "name": "C. Lilley",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "C. Ramme Coellar / E. Fuentes Szymanski",
+     "players": [
+      {
+       "name": "C. Ramme Coellar",
+       "country": "MEX"
+      },
+      {
+       "name": "E. Fuentes Szymanski",
+       "country": "MEX"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "C. West / G. Bergeron",
+     "players": [
+      {
+       "name": "C. West",
+       "country": "CAN"
+      },
+      {
+       "name": "G. Bergeron",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "P. F. Amora Hernandez / J. Pablo Padilla",
+     "players": [
+      {
+       "name": "P. F. Amora Hernandez",
+       "country": "MEX"
+      },
+      {
+       "name": "J. Pablo Padilla",
+       "country": "MEX"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. Bourne / T. Robinson",
+     "players": [
+      {
+       "name": "A. Bourne",
+       "country": "CAN"
+      },
+      {
+       "name": "T. Robinson",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "M. Rafael Rivero / A. Gaston Bejarano",
+     "players": [
+      {
+       "name": "M. Rafael Rivero",
+       "country": "MEX"
+      },
+      {
+       "name": "A. Gaston Bejarano",
+       "country": "MEX"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "1",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "V. Krustev / I. Tiraspolsky",
+     "players": [
+      {
+       "name": "V. Krustev",
+       "country": "CAN"
+      },
+      {
+       "name": "I. Tiraspolsky",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "J. Pablo Castillo / L. E. Barrientos Garcia",
+     "players": [
+      {
+       "name": "J. Pablo Castillo",
+       "country": "MEX"
+      },
+      {
+       "name": "L. E. Barrientos Garcia",
+       "country": "MEX"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "A. P. De La Peña Rosas / C. Ramme Coellar",
+     "players": [
+      {
+       "name": "A. P. De La Peña Rosas",
+       "country": "MEX"
+      },
+      {
+       "name": "C. Ramme Coellar",
+       "country": "MEX"
+      }
+     ]
+    },
+    {
+     "name": "M. Morga Alonso / B. Dubins",
+     "players": [
+      {
+       "name": "M. Morga Alonso",
+       "country": "USA"
+      },
+      {
+       "name": "B. Dubins",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "3",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "N. Blanco / R. Martinez Becerra",
+     "players": [
+      {
+       "name": "N. Blanco",
+       "country": "MEX"
+      },
+      {
+       "name": "R. Martinez Becerra",
+       "country": "MEX"
+      }
+     ]
+    },
+    {
+     "name": "D. Ruiz Alvarez / S. V. Adamowich Lebron",
+     "players": [
+      {
+       "name": "D. Ruiz Alvarez",
+       "country": "USA"
+      },
+      {
+       "name": "S. V. Adamowich Lebron",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "6",
+      "1"
+     ],
+     [
+      "3",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 2,
+   "teams": [
+    {
+     "name": "E. K. Reyes Baca / E. Fuentes Szymanski",
+     "players": [
+      {
+       "name": "E. K. Reyes Baca",
+       "country": "MEX"
+      },
+      {
+       "name": "E. Fuentes Szymanski",
+       "country": "MEX"
+      }
+     ]
+    },
+    {
+     "name": "C. Rodriguez Sanchez / E. Petrauskaite",
+     "players": [
+      {
+       "name": "C. Rodriguez Sanchez",
+       "country": "USA"
+      },
+      {
+       "name": "E. Petrauskaite",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "2",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Gaston Bejarano / J. Pablo Padilla",
+     "players": [
+      {
+       "name": "A. Gaston Bejarano",
+       "country": "MEX"
+      },
+      {
+       "name": "J. Pablo Padilla",
+       "country": "MEX"
+      }
+     ]
+    },
+    {
+     "name": "V. N. Di Francesco / C. S. Humphreys",
+     "players": [
+      {
+       "name": "V. N. Di Francesco",
+       "country": "USA"
+      },
+      {
+       "name": "C. S. Humphreys",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "4"
+     ]
+    ],
+    "winner": 0
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "M. Rafael Rivero / J. Angel Montoya",
+     "players": [
+      {
+       "name": "M. Rafael Rivero",
+       "country": "MEX"
+      },
+      {
+       "name": "J. Angel Montoya",
+       "country": "MEX"
+      }
+     ]
+    },
+    {
+     "name": "M. Segura / N. Agritelley",
+     "players": [
+      {
+       "name": "M. Segura",
+       "country": "USA"
+      },
+      {
+       "name": "N. Agritelley",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "7",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Men",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "J. Pablo Castillo / L. E. Barrientos Garcia",
+     "players": [
+      {
+       "name": "J. Pablo Castillo",
+       "country": "MEX"
+      },
+      {
+       "name": "L. E. Barrientos Garcia",
+       "country": "MEX"
+      }
+     ]
+    },
+    {
+     "name": "R. Ruiz Alvarez / J. A. De Armas",
+     "players": [
+      {
+       "name": "R. Ruiz Alvarez",
+       "country": "USA"
+      },
+      {
+       "name": "J. A. De Armas",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "4",
+      "6"
+     ],
+     [
+      "7",
+      "6"
+     ],
+     [
+      "6",
+      "7"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "E. Indjin / R. Mackie",
+     "players": [
+      {
+       "name": "E. Indjin",
+       "country": "CAN"
+      },
+      {
+       "name": "R. Mackie",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "B. Dubins / M. Morga Alonso",
+     "players": [
+      {
+       "name": "B. Dubins",
+       "country": "USA"
+      },
+      {
+       "name": "M. Morga Alonso",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "2",
+      "6"
+     ],
+     [
+      "1",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "S. Sales Cavalcante / P. Ojeda",
+     "players": [
+      {
+       "name": "S. Sales Cavalcante",
+       "country": "CAN"
+      },
+      {
+       "name": "P. Ojeda",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "C. E. Riobueno / D. Quevedo",
+     "players": [
+      {
+       "name": "C. E. Riobueno",
+       "country": "USA"
+      },
+      {
+       "name": "D. Quevedo",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "5",
+      "7"
+     ],
+     [
+      "4",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  },
+  {
+   "className": "Women",
+   "round": "Group 1",
+   "court": "Central court",
+   "status": "final",
+   "day": 3,
+   "teams": [
+    {
+     "name": "A. Berriri / C. Lilley",
+     "players": [
+      {
+       "name": "A. Berriri",
+       "country": "CAN"
+      },
+      {
+       "name": "C. Lilley",
+       "country": "CAN"
+      }
+     ]
+    },
+    {
+     "name": "C. Rodriguez Sanchez / D. Ruiz Alvarez",
+     "players": [
+      {
+       "name": "C. Rodriguez Sanchez",
+       "country": "USA"
+      },
+      {
+       "name": "D. Ruiz Alvarez",
+       "country": "USA"
+      }
+     ]
+    }
+   ],
+   "score": {
+    "sets": [
+     [
+      "0",
+      "6"
+     ],
+     [
+      "0",
+      "6"
+     ]
+    ],
+    "winner": 1
+   }
+  }
+ ]
+}

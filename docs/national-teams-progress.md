@@ -321,3 +321,57 @@ country page only.
 
 To ship, §6 applies unchanged; the new `public/data/national-teams-matches.json` is tracked, so
 the fast-forward carries it.
+
+---
+
+## 9. The widget is not dead — 8 more editions, 2026-09-26
+
+Kim, on being told the 2025 European season was unsourceable: *"wdym"*, with two links. He
+was right and section 8's premise was wrong in two places at once.
+
+**Wrong #1 — the id.** A championship event page carries its widget id inside the iframe src
+as `FIP-<year>-<n>`; its `idEvent_` class is a literal `idEvent_#1001` placeholder. The FIP
+tour adapter greps `idEvent[_-](\d+)`, finds nothing, and the page looks widget-less. It is not.
+
+**Wrong #2 — the endpoint.** `/screen/oopbyday/<id>/<day>` really does 404 for a finished
+tournament, which is what "re-fetching an old FIP draw is not an option" was built on. But
+**`/screen/teamresults/<id>/<day>` and `/screen/groups/<id>` still serve years later**, and
+teamresults is *better* than oopbyday: it states the TIE score and the round label, so a
+placement round arrives already labelled `Position 1-2 Final`.
+
+`scripts/fetch-fip-team-draws.mjs` walks the day strip and writes each edition into
+`public/data/national-teams/draws/` (not `archive/t/`, which padel-db's exporter owns).
+Eight editions off the padelfip championships calendar 2023-2026:
+
+| edition | played | note |
+|---|---|---|
+| Euro Padel Cup 2025 — Phase 1/2 | 306 | 33 nations, DEN/SWE/NOR/FIN |
+| Euro Padel Cup 2025 — Final 8 | 89 | placement rounds labelled by position |
+| Junior World Cup by Teams 2025 | 266 | 35 nations |
+| Asia Padel Cup 2025 | 173 | 17 nations, a continent the section had never held |
+| World Cup 2026 Qualifiers — N & C America | 18 | |
+| World Cup 2026 Qualifiers — South America | 48 | |
+| **FIP Seniors World Cup 2026** | 456 | **the first VETERAN edition ever covered** |
+| World Cup 2026 Qualifiers — Europe | — | **excluded: still being played** |
+
+**`Senior` in FIP's vocabulary means VETERANS.** Labelled from the title it would have
+published a veterans result as Denmark's national-team World Cup record. The squads settle
+it: 22-30 players a nation, and not Windahl, Olsson, Appelgren or Rutgersson for Sweden, no
+Lilleore or Malthe Nielsen for Denmark, no Coello or Tapia for Spain — while the *Euro Padel
+Cup* squads contain exactly those names. Check the players, not the title. (`Euro Padel Cup`
+= elite; `Senior Euro Padel Cup` = veterans, same trap.)
+
+**Two things are deliberately not published.** The Europe qualifier is live as this ships
+(22-26 Sep), and a rolling event in a static history publishes half a record as a whole one —
+it is carried as a gap and picked up when it ends. And the 2026 Seniors World Cup stops after
+the position quarter-finals because *the widget does*: its own day 4 still lists the last ties
+as upcoming. The card says so rather than letting a nation look like it went out there.
+
+**A decided tie leaves its last rubber unplayed** — the widget prints the pairs, no score,
+nobody bolded. 17 of those across three editions are dropped as fixtures, not matches.
+
+Totals: **4 editions → 11, 855 matches → 2,211, 37 nations → 69, Denmark 87 → 155.**
+Still no placings from the new editions: the `Position 1-2 Final` labels state one directly
+and are a better source than the 2024 bracket walk, but that is a second derivation path and
+it is not written yet.
+
