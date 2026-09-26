@@ -65,6 +65,16 @@ if ((Test-Path $log) -and ((Get-Item $log).Length -gt 512KB)) {
 # child runs, not after.
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# NEVER let git ask a human anything. The laptop has no stored GitHub credential -
+# every push in this estate has come from the 3090 - so the first run of this job
+# launched Git Credential Manager, which sat waiting on a sign-in dialog in Dansk's
+# session and hung the task for four minutes until it was killed. A weekly job that
+# hangs is worse than one that skips a push: the push is optional (refresh-loop.js
+# deploys the working tree, so the site updates either way), the hang is not.
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE = 'never'
+$env:GIT_ASKPASS = ''
+
 Set-Location $repo
 # Every git call goes through here, and the reason is a trap that a -NoGit dry run
 # cannot reach: git writes ordinary progress to STDERR ("From https://github.com/..."
@@ -178,8 +188,14 @@ try {
     $msg = "National teams: weekly refresh $(Get-Date -Format yyyy-MM-dd)"
     Invoke-Git -c user.name=PadelTicker -c user.email=danskepadelklip@gmail.com commit -m $msg -m 'Automated by PadelTicker-NationalTeams-Weekly (scripts/refresh-national-teams.ps1).' | Out-Null
     if ($canPush) {
-      $p = Invoke-Git push origin HEAD:main
-      if ($script:gitExit -ne 0) { Write-Log "WARN push failed: $($p -join '; ')" ; $exit = 4 }
+      # -c credential.helper= disables the helper for this call alone, so a missing
+      # credential is an immediate failure rather than a prompt. The commit stays
+      # local and the log says so; nothing is lost but the sync.
+      $p = Invoke-Git -c credential.helper= push origin HEAD:main
+      if ($script:gitExit -ne 0) {
+        Write-Log "WARN push failed (commit is local, the site still deploys): $($p -join '; ')"
+        $exit = 4
+      }
       else { Write-Log "committed and pushed" }
     } else { Write-Log "committed locally; push skipped (main had diverged)" }
   } else {
