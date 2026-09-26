@@ -10,6 +10,13 @@
 // NODE_PATH or run from a tree that has it:
 //   NODE_PATH="../padel-livescore/node_modules" node scripts/test-national-teams.mjs
 //
+// TWO FIXTURES IT NEEDS, both gitignored because the laptop generates them:
+//   public/data/matches.json   and   public/data/rankings.json
+// curl them from padelticker.com into public/data/ before believing a red run. Since
+// 5a45ea2 a MISSING matches.json does not just fail the board checks — the app never
+// finishes routing, so /national-teams reports mode "live" and 21 unrelated checks
+// fail at once, which looks exactly like a national-teams regression and is not one.
+//
 // What it cannot see: layout, CSS, and whether a click LOOKS right. Those stay on
 // the manual list in docs/national-teams-progress.md.
 
@@ -35,6 +42,14 @@ const ok = (cond, what) => { console.log(`${cond ? "  ok  " : "  FAIL"} ${what}`
 // ---- a browser, roughly -----------------------------------------------------
 const html = fs.readFileSync(path.join(PUB, "index.html"), "utf8");
 const { window, document } = parseHTML(html);
+
+// linkedom has no layout, so it implements no scrolling. The live board calls
+// scrollIntoView on the day strip, which is nothing to do with this section but
+// runs on every render and kills the whole suite with a TypeError. Stub it rather
+// than let an unrelated upstream commit look like a national-teams failure.
+for (const proto of [window.Element && window.Element.prototype, window.HTMLElement && window.HTMLElement.prototype]) {
+  if (proto && !proto.scrollIntoView) proto.scrollIntoView = () => {};
+}
 
 // linkedom has no layout and no visibility, and the app only ever reads .style /
 // classList on these, so the defaults are enough.
