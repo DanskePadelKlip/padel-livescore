@@ -7,9 +7,13 @@
 //   ordenJuegoFip.aspx?idTorneo=<id>&rf=0             today's order of play
 //   ordenJuegoFip.aspx?idTorneo=<id>&rf=0&enjuego=1   only what is on court now
 //
-// `rf=<seconds>` is that page's own auto-refresh interval, NOT a tab, and there
-// is no date parameter: the server always serves the current day. So this
-// adapter can only ever see today, which is all a livescore needs.
+// `rf=<seconds>` is that page's own auto-refresh interval, NOT a tab. There is
+// no date parameter because the page ships EVERY day of the event at once: a
+// tab strip over one `data-ojf-panel='<n>'` div per day, all but the selected
+// one `hidden`. Only the header (`ojf-tourDate`) names a date, and it names the
+// SELECTED day - so taking the date off the flattened text stamped all five
+// days with day 5 and put the event's whole 224-row back catalogue on today's
+// page. The day is per PANEL; see markPanelDays(). Measured 26 Sep 2026.
 //
 // THE UNIT IS THE TIE, not the match. A national tie is three matches between
 // the same two countries and the sheet repeats the nations on every row with the
@@ -111,8 +115,26 @@ function decodeEntities(s) {
   });
 }
 
+// The sheet carries all five days at once - one `ojf-panel` div per day - and
+// the dates live only in the tab strip above them, so flattening the document
+// to text loses which day a row was played on. The panel's own date is injected
+// as a line ahead of its rows, and the parsers below track it exactly the way
+// they track COURT. The marker opens with a guillemet so it can never satisfy
+// NATION_RE, PLAYER_RE or the tie-row heads. A page with no panels (the older
+// single-day sheet, and the enjuego=1 live view) is returned untouched and
+// falls back to the header date.
+const DAY_MARK_RE = /^«OJFDAY» (.+)$/;
+function markPanelDays(html) {
+  const dates = new Map();
+  const strip = /data-ojf-tab=['"](\d+)['"][^>]*data-ojf-label=['"]([^'"]+)['"]/g;
+  for (const m of html.matchAll(strip)) dates.set(m[1], m[2]);
+  if (!dates.size) return html;
+  return html.replace(/<div\b[^>]*\bdata-ojf-panel=['"](\d+)['"][^>]*>/g,
+    (tag, n) => (dates.has(n) ? `${tag}«OJFDAY» ${dates.get(n)}` : tag));
+}
+
 function textLines(html) {
-  return html
+  return markPanelDays(html)
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, "\n")
     .split("\n")
@@ -198,7 +220,7 @@ function rowTeams(lines, i, codes) {
   return { group: "", a, b, sa: null, sb: null, scored: false };
 }
 
-// -> { day, empty, ties: [{ gender, group, tieNo, a, b, a_score, b_score, court, when, rows }] }
+// -> { day, empty, ties: [{ gender, group, tieNo, tieTag, a, b, a_score, b_score, court, when, rows }] }
 export function parseSheet(html) {
   const lines = textLines(html);
   const day = lines.find((l) => /^[A-Z][a-z]+day, \d/.test(l)) || "";
@@ -206,7 +228,12 @@ export function parseSheet(html) {
   const codes = learnCodes(lines);
   const ties = [];
   let court = "";
+  let panelDay = "";
   lines.forEach((l, i) => {
+    // A panel boundary also ends the previous day's court: its last COURT header
+    // would otherwise be inherited by the first rows of the next day.
+    const pd = DAY_MARK_RE.exec(l);
+    if (pd) { panelDay = pd[1]; court = ""; }
     const c = /^COURT\s+(\S+)/i.exec(l);
     if (c) court = c[1];
     const head = TIE_HEAD_RE.exec(l);
@@ -226,18 +253,23 @@ export function parseSheet(html) {
     let tie = ties.find((t) => t.key === key);
     if (!tie) {
       tie = {
-        key, gender: gender === "Male" ? "Men" : "Women", group, tieNo: Number(tieNo),
+        key, gender: gender === "Male" ? "Men" : "Women", group, tieNo: Number(tieNo), tieTag: tieNo,
         a, b, a_score: sa || 0, b_score: sb || 0, scored: t.scored,
-        court, when, rows: [],
+        court, when, dayLabel: panelDay, rows: [],
       };
       ties.push(tie);
     }
     // The tie score repeats on every row; the last one read is the freshest.
     // A row that has lost its tail states no score, so it must not zero one.
     if (t.scored) { tie.a_score = sa; tie.b_score = sb; tie.scored = true; }
+    // A tie is printed under the day it was played. If FIP reprints one under a
+    // later day too, the later panel is the freshest statement of when it ran -
+    // and the tie stays ONE card, because splitting it by day would give the
+    // same tie two rows with two different scores.
+    if (panelDay) tie.dayLabel = panelDay;
     tie.rows.push({ no: Number(no), court, when, players });
   });
-  return { day, empty, ties };
+  return { day, empty, ties, nations: nationNames(codes) };
 }
 
 // Group tables, best-effort: context only, never a reason to fail the adapter.
@@ -263,7 +295,37 @@ async function standings(msid, log) {
   }
 }
 
-const team = (code) => ({ name: code, players: [{ name: code, country: code }] });
+// A tie's one "player" IS the nation, and printing the bare code left every
+// national-team row reading "DNK 0 - 0 HRV" while every other row on the site
+// names its side. There is no code->name table anywhere in the client (IOC2
+// resolves codes to FLAGS only), but the sheet names its own nations in every
+// block - which is why learnCodes() exists - so the map is inverted here rather
+// than hand-kept, and a nation FIP adds next season translates itself.
+// `country` stays the CODE: that is what draws the flag.
+// Both name fields carry the nation because app.js only treats a one-player side
+// as a pseudo-player when `players[0].name === teams[].name`. Diverge them and
+// "Denmark" becomes a player link into an empty search.
+const titleCase = (s) =>
+  s === s.toUpperCase()
+    ? s.toLowerCase().replace(/(^|[\s\-'])(\p{Ll})/gu, (_, sep, c) => sep + c.toUpperCase())
+    : s;
+function nationNames(codes) {
+  const out = new Map();
+  // STATIC_CODES is seeded first in `codes`, so its canonical spelling wins over
+  // whatever the sheet happened to print for the same country.
+  for (const [name, code] of codes) if (!out.has(code)) out.set(code, titleCase(name));
+  return out;
+}
+const team = (code, name) => ({ name: name || code, players: [{ name: name || code, country: code }] });
+
+// Group rows carry a tie NUMBER, play-off rows carry a round TOKEN, and
+// `Tie ${Number("QF")}` labelled every knockout row "Tie NaN" - invisible while
+// the whole event sat on one day chip, and on four of them once the rows are
+// dated properly. The token is spelled out instead; anything unrecognised is
+// printed as FIP wrote it rather than guessed at.
+const KO_ROUND = { QF: "Quarterfinal", SF: "Semifinal", F: "Final" };
+const tieLabel = (tieNo, tieTag) =>
+  Number.isFinite(tieNo) ? `Tie ${tieNo}` : KO_ROUND[tieTag] || String(tieTag || "");
 
 // The LIVE view (enjuego=1) is a different shape to the order of play: under each
 // tie row it prints elapsed time, then each nation with its two players and one
@@ -276,7 +338,10 @@ export function parseLive(html, fallback = "live") {
   const codes = learnCodes(lines);
   const out = [];
   let court = "";
+  let panelDay = "";
   lines.forEach((l, i) => {
+    const pd = DAY_MARK_RE.exec(l);
+    if (pd) { panelDay = pd[1]; court = ""; }
     const c = /^COURT\s+(\S+)/i.exec(l);
     if (c) court = c[1];
     const head = TIE_HEAD_RE.exec(l);
@@ -324,9 +389,9 @@ export function parseLive(html, fallback = "live") {
     out.push({
       key: `${gender}||${tieNo}|${a}|${b}`,        // see parseSheet: no group token
       matchNo: Number(no), gender: gender === "Male" ? "Men" : "Women",
-      group: groupRaw || "", tieNo: Number(tieNo), a, b,
+      group: groupRaw || "", tieNo: Number(tieNo), tieTag: tieNo, a, b,
       tieScore: t.scored ? [sa, sb] : null, court, elapsed, finished, state,
-      sides: [A, B], sets, points,
+      dayLabel: panelDay, sides: [A, B], sets, points,
     });
   });
   return out;
@@ -394,7 +459,17 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
       return out;
     }
     const onCourt = new Set(live.empty ? [] : live.ties.map((t) => t.key));
-    const day = sheetDay(sheet.day || live.day, ev.from);
+    // The header names the SELECTED day only, so it is the fallback - for a page
+    // with no panels, and for a row printed outside one. Every row that sits in a
+    // panel states its own date and is stamped with that.
+    const headerDay = sheetDay(sheet.day || live.day, ev.from);
+    const dayCache = new Map();
+    const dayOf = (label) => {
+      if (!label) return headerDay;
+      if (!dayCache.has(label)) dayCache.set(label, sheetDay(label, ev.from) || headerDay);
+      return dayCache.get(label);
+    };
+    const nations = sheet.nations || new Map();
     const liveMatches = live.empty ? [] : parseLive(liveHtml);
     // Every match of the day, with the live view overriding the sheet for the
     // ones on court. Keyed the same way the rows are, so the override is exact.
@@ -426,27 +501,28 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         federation: "FIP",
         tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
         className: t.gender,
-        round: t.group ? `Group ${t.group.replace("_", " ")} · Tie ${t.tieNo}` : `Tie ${t.tieNo}`,
+        round: t.group ? `Group ${t.group.replace("_", " ")} · ${tieLabel(t.tieNo, t.tieTag)}`
+                       : tieLabel(t.tieNo, t.tieTag),
         court: t.court || null,
         status,
         startTime: null,
         schedule: t.when || null,
-        day,
-        teams: [team(t.a), team(t.b)],
+        day: dayOf(t.dayLabel),
+        teams: [team(t.a, nations.get(t.a)), team(t.b, nations.get(t.b))],
         score: {
           // An unscored row states no rubber count; [] says "unknown", where
           // [[0, 0]] would say "nobody has won one", which is a different claim.
           sets: t.scored ? [[t.a_score, t.b_score]] : [],
           winner: decided && t.a_score !== t.b_score ? (t.a_score > t.b_score ? 0 : 1) : null,
         },
-        raw: { day: sheet.day, rubbers: t.rows.length, rows: t.rows, standings: group || null },
+        raw: { day: t.dayLabel || sheet.day, rubbers: t.rows.length, rows: t.rows, standings: group || null },
       });
     }
     // One row per match actually on court, carrying the real set scores and the
     // player names - this is what the scoreboard follows.
     for (const lm of matches) {
       const side = (s2) => ({
-        name: s2.players.map((p) => p.replace(/^[A-Z]\.\s*/, "")).join(" / ") || s2.nation,
+        name: s2.players.map((p) => p.replace(/^[A-Z]\.\s*/, "")).join(" / ") || titleCase(s2.nation),
         players: s2.players.map((p) => ({ name: p, country: null })),
       });
       out.push({
@@ -455,9 +531,9 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         federation: "FIP",
         tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
         className: `${lm.gender} · ${lm.a} v ${lm.b}`,
-        day,
+        day: dayOf(lm.dayLabel),
         round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
-                        : `Tie ${lm.tieNo} · Match ${lm.matchNo}`,
+                        : `${tieLabel(lm.tieNo, lm.tieTag)} · Match ${lm.matchNo}`,
         court: lm.court || null,
         status: lm.state === "final" ? STATUS.FINAL
               : lm.state === "live" ? STATUS.LIVE : STATUS.UPCOMING,

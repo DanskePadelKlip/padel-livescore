@@ -570,6 +570,32 @@ const REGION_LABEL = {
   ES: "Spain", TH: "Thailand", TR: "Türkiye", CY: "Cyprus", MT: "Malta", LU: "Luxembourg",
 };
 
+// REGION_LABEL is hand-kept and RankedIn's calendar surfaces a new federation
+// whenever padel reaches one, so every miss printed the bare code as a section
+// heading - "🇷🇺 RU" sitting between Romania and Serbia on 26 Sep 2026, with
+// every other section spelled out. The browser already knows every region name,
+// so the table above is now only the wordings we deliberately differ on (GB is
+// "Great Britain" here, not "United Kingdom") plus the non-ISO ones it has to
+// carry (FIP, XK). Everything else resolves itself and cannot fall behind.
+// Intl.DisplayNames is cached because this runs per row in the group sort.
+let REGION_NAMES;
+function regionLabel(fed) {
+  if (!fed) return "";
+  const known = REGION_LABEL[fed];
+  if (known) return known;
+  if (REGION_NAMES === undefined) {
+    // Old WebViews have no Intl.DisplayNames; false means "asked, not available".
+    try { REGION_NAMES = new Intl.DisplayNames(["en"], { type: "region" }); }
+    catch { REGION_NAMES = false; }
+  }
+  if (REGION_NAMES && /^[A-Z]{2}$/.test(fed)) {
+    // .of() throws on a malformed code and echoes an unassigned one straight
+    // back; neither is a name, and the code itself is the honest fallback.
+    try { const n = REGION_NAMES.of(fed); if (n && n !== fed) return n; } catch { /* not a region */ }
+  }
+  return fed;
+}
+
 // minutes-of-day start key for ordering upcoming matches chronologically.
 // Uses the estimate (FIP), then an explicit RankedIn time, then the OOP phrase.
 function startMin(m) {
@@ -682,8 +708,8 @@ function renderGroups(matches, changed) {
     sections.get(g.fed).push(g);
   }
   const ordered = [...sections.entries()].sort((a, b) => {
-    const ka = a[0] === "FIP" ? "" : REGION_LABEL[a[0]] || a[0];
-    const kb = b[0] === "FIP" ? "" : REGION_LABEL[b[0]] || b[0];
+    const ka = a[0] === "FIP" ? "" : regionLabel(a[0]);
+    const kb = b[0] === "FIP" ? "" : regionLabel(b[0]);
     return ka.localeCompare(kb);
   });
 
@@ -712,7 +738,7 @@ function renderGroups(matches, changed) {
     .map(([fed, gs]) => {
       const n = gs.reduce((s, g) => s + g.matches.length, 0);
       const header =
-        `<div class="section-label region"><span class="rflag">${fedFlag(fed)}</span>${esc(REGION_LABEL[fed] || fed)}` +
+        `<div class="section-label region"><span class="rflag">${fedFlag(fed)}</span>${esc(regionLabel(fed))}` +
         `<span class="count">${gs.length} ${gs.length === 1 ? "event" : "events"} · ${n} matches</span></div>`;
       return header + gs.map((g) => groupHtml(g, changed)).join("");
     })
@@ -1604,7 +1630,7 @@ function renderArchive() {
   const scope = [
     yearView ? state.archiveYear : null,
     state.archiveMonth !== "all" ? MONTHS3[+state.archiveMonth] : null,
-    state.fed !== "all" ? (state.fed === "FIP" ? "FIP international" : REGION_LABEL[state.fed] || state.fed) : null,
+    state.fed !== "all" ? (state.fed === "FIP" ? "FIP international" : regionLabel(state.fed)) : null,
     state.archiveTour !== "all" ? ({ WPT: "World Padel Tour", PPT: "Padel Pro Tour" }[state.archiveTour] || "FIP / Premier") : null,
   ].filter(Boolean).join(" · ");
   let html =
@@ -2274,7 +2300,7 @@ function rankStat(ranks) {
   if (!ranks || !ranks.length) return "";
   const r = ranks.find((x) => x.fed === "FIP") || ranks[0];
   if (r.rank == null) return "";
-  const label = r.fed === "FIP" ? "FIP" : (REGION_LABEL[r.fed] || r.fed);
+  const label = r.fed === "FIP" ? "FIP" : (regionLabel(r.fed));
   const pts = r.points != null ? Math.round(r.points).toLocaleString() : null;
   const title = `${r.fed === "FIP" ? "FIP world" : label} ranking — #${r.rank}`
     + (pts ? ` · ${pts} pts` : "");
@@ -2342,7 +2368,7 @@ function renderProfile() {
   if (ranks.length)
     html += `<div class="section-label">Ranking</div><div class="rankcards">` +
       ranks.map((r) => `<div class="rankcard">
-        <span class="rc-fed">${FLAGS[r.fed] || ""} ${r.fed === "FIP" ? "FIP world" : (REGION_LABEL[r.fed] || r.fed)}</span>
+        <span class="rc-fed">${FLAGS[r.fed] || ""} ${r.fed === "FIP" ? "FIP world" : (regionLabel(r.fed))}</span>
         <span class="rc-rank">#${r.rank}</span>
         <span class="rc-pts">${r.points != null ? Math.round(r.points).toLocaleString() : ""} pts</span>
         <span class="rc-move">${moveCell(r, r.movement)}</span>
@@ -2591,7 +2617,7 @@ function renderPair() {
       return `<div class="pairpcard" data-player="${esc(p.id)}">
         <span class="flag">${esc((p.country || "").toUpperCase())}</span>
         <b>${esc(p.name)}</b>
-        <span class="pp-meta">${r && r.rank != null ? `#${r.rank} ${r.fed === "FIP" ? "FIP" : (REGION_LABEL[r.fed] || r.fed)}` : "profile →"}</span>
+        <span class="pp-meta">${r && r.rank != null ? `#${r.rank} ${r.fed === "FIP" ? "FIP" : (regionLabel(r.fed))}` : "profile →"}</span>
       </div>`;
     }).join("") + `</div>`;
 
@@ -3449,7 +3475,7 @@ function renderRankings() {
     <span class="rank-nomatch" hidden>No country matches</span>
   </div>
   <div class="rank-sel" id="ranksel">
-    ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}" title="${esc(REGION_LABEL[f] || f)}">${FLAGS[f] || ""} ${f}</button>`).join("")}
+    ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}" title="${esc(regionLabel(f))}">${FLAGS[f] || ""} ${f}</button>`).join("")}
     <span class="rsep"></span>
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
     ${hasElo ? `<span class="rsep"></span>
@@ -3497,7 +3523,7 @@ function applyCountryFilter() {
   let visible = 0;
   document.querySelectorAll("#ranksel .rchip[data-rfed]").forEach((el) => {
     const f = el.dataset.rfed;
-    const hay = (f + " " + (REGION_LABEL[f] || "") + (f === "FIP" ? " world international" : "")).toLowerCase();
+    const hay = (f + " " + (regionLabel(f)) + (f === "FIP" ? " world international" : "")).toLowerCase();
     const hide = !!q && !hay.includes(q);
     el.classList.toggle("chip-hidden", hide);
     if (!hide) visible++;
@@ -4043,7 +4069,7 @@ function setTitle() {
   }
   else if (state.tournament) t = `${state.tournament.name} — draw, results & schedule · PadelTicker`;
   else if (P) t = `${P.name} — padel results, ranking & head-to-head · PadelTicker`;
-  else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : REGION_LABEL[state.rankFed] || state.rankFed} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
+  else if (state.mode === "rankings" && state.rankFed) t = `${state.rankFed === "FIP" ? "FIP world" : regionLabel(state.rankFed)} padel ranking${state.rankCat === "women" ? " — women" : ""} · PadelTicker`;
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
   else if (state.mode === "natteams" && state.ntCountry) {
