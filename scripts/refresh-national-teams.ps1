@@ -30,7 +30,8 @@
 # what WOULD be committed, touching no git state at all.
 param(
   [string]$Repo = "C:\Users\Dansk\AI Projects\padel-livescore",
-  [switch]$NoGit
+  [switch]$NoGit,
+  [switch]$NoPlayerIndex
 )
 
 $ErrorActionPreference = "Stop"
@@ -79,7 +80,9 @@ try {
   $canPush = $false
   if (-not $NoGit) {
   & $git @('fetch','origin','main') | Out-Null
-  & $git @('checkout','--','public/index.html') | Out-Null
+  # index.html carries the daemon's app.js?v= stamp and players-lite.json is
+  # regenerated below, so neither may block the fast-forward.
+  & $git @('checkout','--','public/index.html','public/data/players-lite.json') | Out-Null
   $before = (& $git @('rev-parse','HEAD')).Trim()
   & $git @('merge','--ff-only','origin/main') | Out-Null
   $canPush = ($LASTEXITCODE -eq 0)
@@ -87,6 +90,31 @@ try {
   if (-not $canPush) { Write-Log "WARN merge --ff-only refused; will not push this run" }
   elseif ($before -ne $after) { Write-Log "fast-forwarded $($before.Substring(0,7)) -> $($after.Substring(0,7))" }
   } else { Write-Log "-NoGit: skipping fetch/merge" }
+
+  # 0. the player index the name join reads. It comes from padel-db's export_d1.py
+  #    and NOT from a script of our own: the fip-<slug> id rule lives in that file
+  #    and is load-bearing - a second implementation would drift and orphan every
+  #    live /player/fip-... URL. Nothing else schedules it, so it sat three weeks
+  #    stale (24,895 players against 29,552 actual) and that staleness is directly
+  #    names that do not link. It writes gitignored SQL chunks too; harmless.
+  #    It runs BEFORE the build, because the build resolves names against it.
+  if (-not $NoPlayerIndex) {
+    $pdb = "C:\Users\Dansk\AI Projects\padel-db"
+    $py  = Join-Path $pdb ".venv\Scripts\python.exe"
+    # Explicit paths and the venv interpreter: a scheduled task gets a reduced PATH,
+    # and export_d1.py defaults to ~ which expands per USER - as svc-remote it cannot
+    # even find padel.db.
+    if ((Test-Path $py) -and (Test-Path (Join-Path $pdb "padel.db"))) {
+      $env:PYTHONUTF8 = "1"
+      $env:PADEL_DB = Join-Path $pdb "padel.db"
+      $env:PADEL_D1_OUT = Join-Path $repo "d1"
+      $o = & $py (Join-Path $pdb "export_d1.py") 2>&1
+      if ($LASTEXITCODE -ne 0) { Write-Log "WARN player index export failed: $($o | Select-Object -Last 3)" }
+      else { $o | Where-Object { $_ -match 'players-lite|^done:' } | ForEach-Object { Write-Log "index: $_" } }
+    } else {
+      Write-Log "WARN no venv python or padel.db under $pdb - player index not refreshed"
+    }
+  }
 
   # 1. re-fetch
   $out = & $node "scripts\fetch-fip-team-draws.mjs" "--all" 2>&1
@@ -123,7 +151,7 @@ try {
     Write-Log "ACTION NEEDED: held-back draw(s) changed: $($movedHeld -join ', ') - promote into TEAM_DRAWS if finished"
   }
 
-  $paths = @('public/data/national-teams.json','public/data/national-teams-matches.json','public/data/national-teams')
+  $paths = @('public/data/national-teams.json','public/data/national-teams-matches.json','public/data/national-teams','public/data/players-lite.json')
   $dirty = (& $git (@('status','--porcelain','--') + $paths)) | Where-Object { $_ }
   if ($dirty -and $NoGit) {
     Write-Log "-NoGit: would commit $($dirty.Count) path(s): $($dirty -join ' | ')"
