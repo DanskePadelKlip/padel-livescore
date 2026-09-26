@@ -123,6 +123,9 @@
     .refresh { margin-left: auto; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
     .refresh .dot { width: 8px; height: 8px; border-radius: 50%; background: #3ecf7c; box-shadow: 0 0 0 0 rgba(62,207,124,.5); }
     .refresh.polling .dot { animation: ping 1.1s ease-out; }
+    /* Last refresh failed: the scores on screen are the last good ones. */
+    .refresh.stale .dot { background: #e0a23c; box-shadow: none; animation: none; }
+    .refresh.stale { color: #e0a23c; }
     @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(62,207,124,.55); } 100% { box-shadow: 0 0 0 7px rgba(62,207,124,0); } }
     .theme-btn { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; }
 
@@ -861,10 +864,10 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=cb3c3dff<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=b0c97eed<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=cb3c3dff"></script>
+  <script src="/app.js?v=b0c97eed"></script>
   <!-- Cloudflare Web Analytics. Privacy-first, no cookies, so no consent banner is
        needed. The site already existed in the account (tag below) but the beacon was
        never in the markup, so only a handful of sampled events were ever recorded.

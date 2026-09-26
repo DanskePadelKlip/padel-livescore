@@ -8,6 +8,7 @@
 const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
 const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
 const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
+const POLL_RETRY = 10_000;    // nothing LOADED  -> that is a failure, not a quiet day
 const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
 
 // Player nationality → flag. Data uses two schemes: 2-letter federation codes
@@ -411,13 +412,32 @@ const state = {
 
 const scoreSig = (m) => (m.score?.sets || []).map((s) => s.join("-")).join(",") + "|" + m.status;
 
+// Cloudflare Pages swaps the asset bundle on every deploy and the daemon
+// deploys roughly every ten minutes, so data/matches.json 503s briefly on a
+// regular schedule - one was captured at 18:09:53 on 26 Sep 2026. One retry
+// covers that window; a second failure is real and gets reported rather than
+// hidden.
+const FETCH_RETRY_MS = 1200;
+async function fetchFeed() {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await fetch("data/matches.json?_=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      if (attempt) throw err;
+      await new Promise((r) => setTimeout(r, FETCH_RETRY_MS));
+    }
+  }
+}
+
 async function load(isPoll) {
   const rf = document.getElementById("refresh");
   rf.classList.add("polling");
   try {
-    const res = await fetch("data/matches.json?_=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) throw new Error("no data — run `npm run fetch`");
-    const data = await res.json();
+    const data = await fetchFeed();
+    rf.classList.remove("stale");
+    rf.removeAttribute("title");
     state.meta = data;
     // detect changed scores (for flash) before replacing
     const changed = new Set();
@@ -429,7 +449,19 @@ async function load(isPoll) {
     for (const m of data.matches) state.scoreSig.set(m.id, scoreSig(m));
     render(changed);
   } catch (err) {
-    if (state.firstRender) app.innerHTML = `<div class="empty"><div class="big">🎾</div>${esc(err.message)}</div>`;
+    // Stale scores beat an empty board: keep whatever is rendered, and keep the
+    // day strip and filters usable. The refresh label already carries the truth -
+    // it reads "updated <n>m ago" off the feed's own generatedAt - so the dot
+    // turning amber is the signal that the AGE on it has stopped moving.
+    rf.classList.add("stale");
+    rf.title = "Couldn't refresh — showing the last update";
+    // Only a load with nothing to show may replace the page, and then in the
+    // reader's language: "run `npm run fetch`" was a developer instruction shown
+    // to visitors whenever a deploy swap caught their first load.
+    if (!state.matches.length) {
+      app.innerHTML = `<div class="empty"><div class="big">🎾</div>Couldn't load the scores.` +
+        `<div class="empty-hint">This is usually brief — retrying automatically.</div></div>`;
+    }
   } finally {
     state.firstRender = false;
     setTimeout(() => rf.classList.remove("polling"), 300);
@@ -3949,6 +3981,10 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
 // Self-scheduling poll loop whose interval adapts to what's on: fast while a
 // match is live, slow when nothing is happening.
 function nextPollDelay() {
+  // The feed carries thousands of rows every day of the year, so an empty one
+  // means the fetch failed - and backing off to five minutes there left anyone
+  // who landed during a deploy swap staring at nothing for five minutes.
+  if (!state.matches.length) return POLL_RETRY;
   if (state.matches.some((m) => m.status === "live")) return POLL_LIVE;
   if (state.matches.some((m) => m.status === "upcoming")) return POLL_UPCOMING;
   return POLL_IDLE;
