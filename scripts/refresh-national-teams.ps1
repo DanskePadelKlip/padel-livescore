@@ -58,6 +58,12 @@ if ((Test-Path $log) -and ((Get-Item $log).Length -gt 512KB)) {
   [System.IO.File]::WriteAllLines($log, $keep, [System.Text.UTF8Encoding]::new($false))
 }
 
+# node writes UTF-8; PowerShell decodes a native child's stdout as the ANSI
+# codepage unless told otherwise, so an em-dash arrives as three bytes and every
+# accented player name in this log would be mojibake. Set it before the first
+# child runs, not after.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 Set-Location $repo
 $git = { param([string[]]$a) & git -C $repo @a 2>&1 }
 $node = "node"
