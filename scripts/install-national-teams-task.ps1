@@ -21,6 +21,16 @@
 # is an identity problem. The laptop is always logged on as Dansk, which is what
 # the whole PadelTicker stack already assumes.
 
+# -RunAsUser overrides who the task runs as. The DEFAULT IS THE MACHINE'S
+# INTERACTIVE USER, not whoever is running this script, and that distinction is the
+# whole reason this parameter exists: run from a remoting session the invoking
+# account is Legion_AI\svc-remote, which is never logged on - so the task would
+# register happily, never fire, and could not push if it did (Git Credential
+# Manager's store is DPAPI-bound to Dansk).
+param(
+  [string]$RunAsUser
+)
+
 $ErrorActionPreference = "Stop"
 
 $isAdmin = ([Security.Principal.WindowsPrincipal] `
@@ -53,7 +63,19 @@ $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 5:00am
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
   -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Hours 1)
 
-$principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" `
+if (-not $RunAsUser) {
+  # Win32_ComputerSystem.UserName is the account logged on at the console - the one
+  # an Interactive task actually runs under.
+  $RunAsUser = (Get-CimInstance Win32_ComputerSystem).UserName
+}
+if (-not $RunAsUser) {
+  throw "Could not determine the interactive user, and none was given. Log on at the console, or pass -RunAsUser 'LEGION_AI\Dansk'."
+}
+$me = "$env:USERDOMAIN\$env:USERNAME"
+if ($RunAsUser -ne $me) {
+  Write-Host "Registering the task to run as $RunAsUser (this shell is $me)." -ForegroundColor Yellow
+}
+$principal = New-ScheduledTaskPrincipal -UserId $RunAsUser `
   -LogonType Interactive -RunLevel Limited
 
 if (Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue) {
@@ -63,8 +85,10 @@ Register-ScheduledTask -TaskName $name -Action $action -Trigger $trigger `
   -Settings $settings -Principal $principal `
   -Description "Weekly: re-fetch FIP national-team editions, rebuild national-teams.json + national-teams-matches.json under --check, report new championships without adding them, commit and push if changed. Exit 3 = a new championship needs a hand-checked label; exit 2 = the build refused and nothing shipped." | Out-Null
 
-Write-Host "Registered $name (Mondays 05:00)." -ForegroundColor Green
-Write-Host "Running it once now to prove it works end to end..." -ForegroundColor Cyan
+Write-Host "Registered $name (Mondays 05:00, as $RunAsUser)." -ForegroundColor Green
+# Start-ScheduledTask on an Interactive task runs it in that user's session, so this
+# first run is the only place the git push gets exercised as Dansk before Monday.
+Write-Host "Running it once now to prove it works end to end (watch for exit 4 = push failed)..." -ForegroundColor Cyan
 Start-ScheduledTask -TaskName $name
 Start-Sleep -Seconds 90
 
