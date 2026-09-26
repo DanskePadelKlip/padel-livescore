@@ -156,6 +156,32 @@ function textLines(html) {
 // before and keep capture group 3 as the tie number, knockout rows put the round
 // token there instead.
 const TIE_HEAD_RE = /^Match (\d+) (Male|Female)(?:\s+[A-Z]{3}\s+\d+\s*-\s*\d+\s+[A-Z]{3})?\s*-\s*(?:Group Tie )?(\d+|QF|SF|F)\b/;
+// ON THE LAST DAY FIP PRINTS NO ROUND AT ALL:
+//   "Match 3 Male - GBR 1 - 1 DEU * Followed by"
+// no "Group Tie n", no QF/SF/F, and nothing in the surrounding markup naming
+// the round either - the only category marker on the card is "Men". On
+// 26 Sep 2026 that was 8 of the sheet's 195 headers and ALL THREE of the day's
+// deciding ties (UKR-GRC, NLD-POL, GBR-DEU), one of them a final that was live
+// on court while the site showed nothing.
+// This shape demands the COMPLETE tail - both codes AND the tie score - and
+// that is not caution for its own sake: the documented failure mode of
+// loosening this regex is a line that matches without real nations, which
+// invents an opponent with a 2-0 lead out of a section header.
+// Tried second, so the group and misplaced-tail shapes above still win.
+const TIE_HEAD_NOROUND_RE =
+  /^Match (\d+) (Male|Female)\s*-\s*([A-Z]{3})\s+(\d+)\s*-\s*(\d+)\s+([A-Z]{3})\b/;
+
+// parseSheet, parseLive and the two block scanners that stop AT the next tie
+// row must agree on what one is, or a widened head reads a block that a scanner
+// has already run past. One entry point, `tag` being the round as printed - a
+// number, a knockout token, or "" when FIP states none.
+function tieHead(l) {
+  const m = TIE_HEAD_RE.exec(l);
+  if (m) return { no: m[1], gender: m[2], tag: m[3] };
+  const n = TIE_HEAD_NOROUND_RE.exec(l);
+  return n ? { no: n[1], gender: n[2], tag: "" } : null;
+}
+const isTieHead = (l) => tieHead(l) !== null;
 // The group token rides AFTER "Group Tie <n>" even when the rest of the tail has
 // moved in front of it, and dropping it split one tie into two cards with two
 // different scores (keys "Male||1|HUN|IRL" and "Male|M_G|1|HUN|IRL").
@@ -181,7 +207,7 @@ const STATIC_CODES = new Map(Object.entries({
 function blockNations(lines, i) {
   const out = [];
   for (const x of lines.slice(i + 1, i + 20)) {
-    if (TIE_HEAD_RE.test(x) || /^COURT\s/i.test(x)) break;
+    if (isTieHead(x) || /^COURT\s/i.test(x)) break;
     if (PLAYER_RE.test(x)) continue;
     if (isNation(x)) out.push(x);
   }
@@ -195,9 +221,11 @@ function learnCodes(lines) {
   const map = new Map(STATIC_CODES);
   lines.forEach((l, i) => {
     const t = TIE_TAIL_RE.exec(l);
-    if (!t) return;
+    const nr = t ? null : TIE_HEAD_NOROUND_RE.exec(l);
+    if (!t && !nr) return;
+    const [ca, cb] = t ? [t[2], t[5]] : [nr[3], nr[6]];
     const names = blockNations(lines, i);
-    if (names.length >= 2) { map.set(names[0], t[2]); map.set(names[1], t[5]); }
+    if (names.length >= 2) { map.set(names[0], ca); map.set(names[1], cb); }
   });
   return map;
 }
@@ -213,6 +241,11 @@ function rowTeams(lines, i, codes) {
   const alt = TIE_TAIL_ALT_RE.exec(lines[i]);
   if (alt) {
     return { group: alt[5] || "", a: alt[1], b: alt[4], sa: Number(alt[2]), sb: Number(alt[3]), scored: true };
+  }
+  // The no-round shape states its nations and tie score in the head itself.
+  const nr = TIE_HEAD_NOROUND_RE.exec(lines[i]);
+  if (nr) {
+    return { group: "", a: nr[3], b: nr[6], sa: Number(nr[4]), sb: Number(nr[5]), scored: true };
   }
   const names = blockNations(lines, i);
   const a = codes.get(names[0]), b = codes.get(names[1]);
@@ -236,9 +269,9 @@ export function parseSheet(html) {
     if (pd) { panelDay = pd[1]; court = ""; }
     const c = /^COURT\s+(\S+)/i.exec(l);
     if (c) court = c[1];
-    const head = TIE_HEAD_RE.exec(l);
+    const head = tieHead(l);
     if (!head) return;
-    const [, no, gender, tieNo] = head;
+    const { no, gender, tag: tieNo } = head;
     const t = rowTeams(lines, i, codes);
     if (!t) return;
     const { group, a, b, sa, sb } = t;
@@ -253,7 +286,9 @@ export function parseSheet(html) {
     let tie = ties.find((t) => t.key === key);
     if (!tie) {
       tie = {
-        key, gender: gender === "Male" ? "Men" : "Women", group, tieNo: Number(tieNo), tieTag: tieNo,
+        key, gender: gender === "Male" ? "Men" : "Women", group,
+        // Number("") is 0, not NaN - an unlabelled tie would read "Tie 0".
+        tieNo: tieNo === "" ? null : Number(tieNo), tieTag: tieNo,
         a, b, a_score: sa || 0, b_score: sb || 0, scored: t.scored,
         court, when, dayLabel: panelDay, rows: [],
       };
@@ -324,8 +359,14 @@ const team = (code, name) => ({ name: name || code, players: [{ name: name || co
 // dated properly. The token is spelled out instead; anything unrecognised is
 // printed as FIP wrote it rather than guessed at.
 const KO_ROUND = { QF: "Quarterfinal", SF: "Semifinal", F: "Final" };
+// An unlabelled tie is NOT given a guessed round. FIP states none, the markup
+// carries none, and calling it "Final" because it is the last one on the sheet
+// would be inventing a result. "Play-off" says exactly what is known: a
+// knockout-stage tie whose round the source did not print.
 const tieLabel = (tieNo, tieTag) =>
-  Number.isFinite(tieNo) ? `Tie ${tieNo}` : KO_ROUND[tieTag] || String(tieTag || "");
+  !tieTag ? "Play-off"
+    : Number.isFinite(tieNo) ? `Tie ${tieNo}`
+      : KO_ROUND[tieTag] || String(tieTag);
 
 // The LIVE view (enjuego=1) is a different shape to the order of play: under each
 // tie row it prints elapsed time, then each nation with its two players and one
@@ -344,9 +385,9 @@ export function parseLive(html, fallback = "live") {
     if (pd) { panelDay = pd[1]; court = ""; }
     const c = /^COURT\s+(\S+)/i.exec(l);
     if (c) court = c[1];
-    const head = TIE_HEAD_RE.exec(l);
+    const head = tieHead(l);
     if (!head) return;
-    const [, no, gender, tieNo] = head;
+    const { no, gender, tag: tieNo } = head;
     const t = rowTeams(lines, i, codes);
     if (!t) return;
     const { group: groupRaw, a, b, sa, sb } = t;
@@ -366,7 +407,7 @@ export function parseLive(html, fallback = "live") {
     const sides = [];
     let cur = null;
     for (const x of lines.slice(i + 1, i + 20)) {
-      if (TIE_HEAD_RE.test(x) || /^COURT\s/i.test(x)) break;   // next match starts
+      if (isTieHead(x) || /^COURT\s/i.test(x)) break;   // next match starts
       if (isNation(x)) { cur = { nation: x, players: [], cols: [] }; sides.push(cur); continue; }
       if (!cur) continue;
       if (PLAYER_RE.test(x)) cur.players.push(x);
@@ -389,7 +430,7 @@ export function parseLive(html, fallback = "live") {
     out.push({
       key: `${gender}||${tieNo}|${a}|${b}`,        // see parseSheet: no group token
       matchNo: Number(no), gender: gender === "Male" ? "Men" : "Women",
-      group: groupRaw || "", tieNo: Number(tieNo), tieTag: tieNo, a, b,
+      group: groupRaw || "", tieNo: tieNo === "" ? null : Number(tieNo), tieTag: tieNo, a, b,
       tieScore: t.scored ? [sa, sb] : null, court, elapsed, finished, state,
       dayLabel: panelDay, sides: [A, B], sets, points,
     });
