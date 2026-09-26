@@ -198,7 +198,14 @@ try {
       # local and the log says so; nothing is lost but the sync.
       $p = Invoke-Git -c credential.helper= push origin HEAD:main
       if ($script:gitExit -ne 0) {
-        Write-Log "WARN push failed (commit is local, the site still deploys): $($p -join '; ')"
+        # Unwind the commit and keep the files. A commit that cannot be pushed is
+        # not harmless: it puts this checkout AHEAD of main, so next week's
+        # merge --ff-only refuses, and the laptop quietly stops receiving every
+        # future change to this job - one unpushable commit a week until someone
+        # notices. Soft reset leaves the regenerated data exactly where it is, so
+        # the daemon still deploys it; only the git record waits for a credential.
+        Invoke-Git reset --soft HEAD~1 | Out-Null
+        Write-Log "WARN push failed, commit unwound - the data is in the tree and still deploys, main just stays behind: $($p -join '; ')"
         $exit = 4
       }
       else { Write-Log "committed and pushed" }
