@@ -118,7 +118,7 @@
     "men",
     "women"
    ],
-   "placed": false,
+   "placed": true,
    "unordered": false,
    "n": 89
   },
@@ -158,7 +158,7 @@
     "men",
     "women"
    ],
-   "placed": false,
+   "placed": true,
    "unordered": false,
    "n": 173
   },

@@ -413,6 +413,129 @@ for (const ev of EVENTS) {
   if (meta.genders.length) events.push(meta);
 }
 
+// Editions re-fetched from the matchscorerlive TEAM widget by
+// `scripts/fetch-fip-team-draws.mjs` — see that file for why an old FIP draw turned
+// out to be re-fetchable after all. They live in `public/data/national-teams/draws/`
+// because `public/data/archive/t/` belongs to padel-db's exporter.
+//
+// Every one of these was previously invisible to this section. They are matches-only
+// for now: the widget labels its placement ties "Position 1-2 Final", which STATES a
+// position and is a better source than the 2024 bracket walk — but reading it is a
+// second derivation path and it is not written yet, so nothing here emits a placing.
+const TEAM_DRAWS = [
+  { key: "fip-2025-euro-cup-ph12", comp: "Euro Padel Cup — Phase 1/2", body: "FIP", cat: "Senior" },
+  { key: "fip-2025-euro-cup-final8", comp: "Euro Padel Cup — Final 8", body: "FIP", cat: "Senior" },
+  { key: "fip-2025-junior-world-cup", comp: "Junior World Cup by Teams", body: "FIP", cat: "Junior" },
+  { key: "fip-2025-asia-cup", comp: "Asia Padel Cup", body: "FIP", cat: "Senior" },
+  { key: "fip-2026-wc-q-noram", comp: "World Cup Qualifiers — North & Central America", body: "FIP", cat: "Senior" },
+  { key: "fip-2026-wc-q-souam", comp: "World Cup Qualifiers — South America", body: "FIP", cat: "Senior" },
+  // The source itself stops after the position quarter-finals: day 4 still holds four
+  // UPCOMING cards that never got a result, so the semis and finals are not in the
+  // widget. Published with that said out loud rather than held back whole.
+  // FIP's "Senior" means VETERANS, not the senior national team — the giveaway is the
+  // squads: 22-30 players a nation and not one of Denmark's, Sweden's or Spain's
+  // internationals among them. Labelled Senior it would have published a veterans
+  // result as the national team's World Cup record. It is also the first veteran
+  // edition this section has ever had, which was listed as a flat gap.
+  { key: "fip-2026-senior-world-cup", comp: "Seniors World Cup", body: "FIP", cat: "Veteran", partial: "The widget's own day 4 still lists the last ties as upcoming, so this edition stops after the position quarter-finals." },
+];
+
+// The team-widget editions carry their own name, year and dates, and their gender is
+// already normalised to men/women in the file — so `classes` is the identity map.
+const teamDrawEvents = TEAM_DRAWS.map((ev) => {
+  const file = path.join(NT_DRAWS, `${ev.key}.json`);
+  if (!fs.existsSync(file)) { problems.push(`${ev.key}: team draw not fetched`); return null; }
+  const d = JSON.parse(fs.readFileSync(file, "utf8"));
+  return { ...ev, year: d.year, dir: NT_DRAWS, classes: { Men: "men", Women: "women" } };
+}).filter(Boolean);
+
+// ------------------------------------------- placings the team widget STATES
+// A second way to source a placing, for the editions fetched from the team widget.
+// It needs no bracket walk at all: the widget labels a placement tie by the
+// positions at stake — `Position 1-2 Final`, `Position 3-4 Final` — so a tie whose
+// label names exactly TWO positions hands over both of them, winner first.
+//
+// That "exactly two" is the whole discipline. `Position 1-4 Semifinals` says who is
+// still alive for 1-4, not who finished where, and the block it feeds is decided by
+// a two-position tie of its own; reading it as a placing would be inference. So the
+// semi-finals are skipped and the finals are read, and an edition that never got to
+// a two-position tie (the 2026 Seniors World Cup, which the widget leaves at the
+// position quarter-finals) yields no placing at all rather than a guessed one.
+//
+// Positions therefore arrive sparse — 1-4 of a 9-nation field — and every other
+// nation lands in `unplaced`, the same list the archive editions use for a nation
+// that entered without reaching a placement bracket.
+const POSITION_TIE = /^Position (\d+)-(\d+)\s+(.+)$/;
+
+function derivePositions(ev, draw, gender) {
+  const { ties } = buildTies(draw, gender, ev.classes);
+  const rows = [], at = new Map();
+  for (const t of ties) {
+    const m = POSITION_TIE.exec(t.round);
+    if (!m) continue;
+    const [lo, hi] = [+m[1], +m[2]];
+    if (hi !== lo + 1) continue; // a block, not a result
+    const loser = t.winner === t.a ? t.b : t.a;
+    for (const [code, pos] of [[t.winner, lo], [loser, hi]]) {
+      if (at.has(pos)) refuse(`two nations are given position ${pos} in ${ev.key} ${gender}`);
+      at.set(pos, code);
+      // decider() speaks the archive walk's vocabulary, where the round is "Final"
+      // and the block start says which place was at stake — which is exactly what
+      // `lo` is here, so the same wording comes out: "the final", "the third-place
+      // match", "the 5th-place match".
+      const round = /Final$/i.test(m[3]) ? "Final" : m[3];
+      rows.push({ c: code, pos, via: viaText({ ...t, round }, code, lo) });
+    }
+  }
+  if (!rows.length) return null;
+  const seen = new Set();
+  for (const r of rows) {
+    if (seen.has(r.c)) refuse(`${r.c} is given two positions in ${ev.key} ${gender}`);
+    seen.add(r.c);
+  }
+  const entered = new Set(ties.flatMap((t) => [t.a, t.b]));
+  rows.sort((a, b) => a.pos - b.pos);
+  return { rows, unplaced: [...entered].filter((c) => !seen.has(c)).sort() };
+}
+
+for (const ev of teamDrawEvents) {
+  const draw = JSON.parse(fs.readFileSync(path.join(ev.dir, `${ev.key}.json`), "utf8"));
+  const meta = {
+    id: ev.key,
+    comp: ev.comp,
+    body: ev.body,
+    cat: ev.cat,
+    year: ev.year,
+    name: draw.name,
+    start: draw.start,
+    end: draw.end,
+    where: "",
+    tkey: "",              // no archived draw page to open — the matches are the page
+    genders: [],
+    unplaced: {},
+    source: `${draw.source} — every placement tie that names two positions`,
+  };
+  for (const g of ["men", "women"]) {
+    let d;
+    try {
+      d = derivePositions(ev, draw, g);
+    } catch (e) {
+      if (!(e instanceof Refuse)) throw e;
+      problems.push(`${ev.key} ${g}: ${e.message}`);
+      continue;
+    }
+    if (!d) continue;
+    meta.genders.push(g);
+    if (d.unplaced.length) meta.unplaced[g] = d.unplaced;
+    for (const r of d.rows) {
+      const cc = COUNTRY[r.c];
+      if (!cc) throw new Error(`unmapped country code ${r.c} in ${ev.key}`);
+      rows.push({ ev: ev.key, g, c: r.c, iso: cc[0], name: cc[1], pos: r.pos, via: r.via });
+    }
+  }
+  if (meta.genders.length) events.push(meta);
+}
+
 // Every code the page can render, placed or not, so the unplaced list gets a flag
 // and a name too — and, more to the point, an ISO code, without which a click on
 // one of them could not find that country's national ranking.
@@ -456,33 +579,6 @@ for (const r of rows) byEv[`${r.ev} ${r.g}`] = (byEv[`${r.ev} ${r.g}`] || 0) + 1
 //     rubber count above TIE_RUBBERS — so those stay rubbers and are counted in
 //     `merged`, rather than being published as one tie with an invented score.
 const TIE_RUBBERS = 5;
-
-// Editions re-fetched from the matchscorerlive TEAM widget by
-// `scripts/fetch-fip-team-draws.mjs` — see that file for why an old FIP draw turned
-// out to be re-fetchable after all. They live in `public/data/national-teams/draws/`
-// because `public/data/archive/t/` belongs to padel-db's exporter.
-//
-// Every one of these was previously invisible to this section. They are matches-only
-// for now: the widget labels its placement ties "Position 1-2 Final", which STATES a
-// position and is a better source than the 2024 bracket walk — but reading it is a
-// second derivation path and it is not written yet, so nothing here emits a placing.
-const TEAM_DRAWS = [
-  { key: "fip-2025-euro-cup-ph12", comp: "Euro Padel Cup — Phase 1/2", body: "FIP", cat: "Senior" },
-  { key: "fip-2025-euro-cup-final8", comp: "Euro Padel Cup — Final 8", body: "FIP", cat: "Senior" },
-  { key: "fip-2025-junior-world-cup", comp: "Junior World Cup by Teams", body: "FIP", cat: "Junior" },
-  { key: "fip-2025-asia-cup", comp: "Asia Padel Cup", body: "FIP", cat: "Senior" },
-  { key: "fip-2026-wc-q-noram", comp: "World Cup Qualifiers — North & Central America", body: "FIP", cat: "Senior" },
-  { key: "fip-2026-wc-q-souam", comp: "World Cup Qualifiers — South America", body: "FIP", cat: "Senior" },
-  // The source itself stops after the position quarter-finals: day 4 still holds four
-  // UPCOMING cards that never got a result, so the semis and finals are not in the
-  // widget. Published with that said out loud rather than held back whole.
-  // FIP's "Senior" means VETERANS, not the senior national team — the giveaway is the
-  // squads: 22-30 players a nation and not one of Denmark's, Sweden's or Spain's
-  // internationals among them. Labelled Senior it would have published a veterans
-  // result as the national team's World Cup record. It is also the first veteran
-  // edition this section has ever had, which was listed as a flat gap.
-  { key: "fip-2026-senior-world-cup", comp: "Seniors World Cup", body: "FIP", cat: "Veteran", partial: "The widget's own day 4 still lists the last ties as upcoming, so this edition stops after the position quarter-finals." },
-];
 
 // Editions with no derivable placing but perfectly good matches.
 const MATCH_ONLY = [
@@ -556,15 +652,6 @@ function jsonLines(obj, lineKeys) {
   );
   return `{\n${parts.join(",\n")}\n}\n`;
 }
-
-// The team-widget editions carry their own name, year and dates, and their gender is
-// already normalised to men/women in the file — so `classes` is the identity map.
-const teamDrawEvents = TEAM_DRAWS.map((ev) => {
-  const file = path.join(NT_DRAWS, `${ev.key}.json`);
-  if (!fs.existsSync(file)) { problems.push(`${ev.key}: team draw not fetched`); return null; }
-  const d = JSON.parse(fs.readFileSync(file, "utf8"));
-  return { ...ev, year: d.year, dir: NT_DRAWS, classes: { Men: "men", Women: "women" } };
-}).filter(Boolean);
 
 const mEvents = [], mMatches = [], mTies = [], mStats = {};
 for (const ev of [...EVENTS, ...MATCH_ONLY, ...teamDrawEvents]) {
@@ -652,16 +739,27 @@ for (const [k, s] of Object.entries(mStats)) {
 // walk. Reproducing them is the only independent evidence the walk is right.
 if (process.argv.includes("--check")) {
   const EXPECT = [
-    ["fip-135412", "women", 10],   // "World Championship 2024, women 10" (source: DPF)
-    ["fip-296741", "men", 7],      // "Euro Padel Cup 2026, Junior, men 7" (source: DPF)
+    ["fip-135412", "women", 10, "DEN"],   // "World Championship 2024, women 10" (source: DPF)
+    ["fip-296741", "men", 7, "DEN"],      // "Euro Padel Cup 2026, Junior, men 7" (source: DPF)
+    // The four 2025 finals, checked against reporting OUTSIDE this pipeline before
+    // they shipped: padelfip's own Euro Final 8 coverage (Spain beat Portugal for the
+    // men's title, Spain v France in the women's final) and the FIP Asia Padel Cup
+    // reports (UAE beat Qatar; Japan beat Iran). A position label is a strong source,
+    // but a medal on a public page deserves a second one.
+    ["fip-2025-euro-cup-final8", "men", 1, "ESP"],
+    ["fip-2025-euro-cup-final8", "men", 2, "POR"],
+    ["fip-2025-euro-cup-final8", "women", 2, "FRA"],
+    ["fip-2025-asia-cup", "men", 1, "UAE"],
+    ["fip-2025-asia-cup", "men", 2, "QAT"],
+    ["fip-2025-asia-cup", "women", 1, "JPN"],
   ];
   let bad = 0;
-  for (const [ev, g, pos] of EXPECT) {
-    const r = rows.find((x) => x.ev === ev && x.g === g && x.c === "DEN");
+  for (const [ev, g, pos, code] of EXPECT) {
+    const r = rows.find((x) => x.ev === ev && x.g === g && x.c === code);
     const got = r ? r.pos : "none";
     const ok = got === pos;
     if (!ok) bad++;
-    console.log(`  check ${ev} ${g} DEN: expected ${pos}, derived ${got} ${ok ? "OK" : "MISMATCH"}`);
+    console.log(`  check ${ev} ${g} ${code}: expected ${pos}, derived ${got} ${ok ? "OK" : "MISMATCH"}`);
   }
   // Nations the draw says did not enter must not appear.
   const menWorld = rows.filter((r) => r.ev === "fip-135412" && r.g === "men").map((r) => r.c);

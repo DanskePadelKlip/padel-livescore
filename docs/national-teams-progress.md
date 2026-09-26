@@ -375,3 +375,40 @@ Still no placings from the new editions: the `Position 1-2 Final` labels state o
 and are a better source than the 2024 bracket walk, but that is a second derivation path and
 it is not written yet.
 
+---
+
+## 10. Placings from the position labels, 2026-09-26
+
+The team widget labels a placement tie by the positions at stake, so a second derivation
+path needs no bracket walk: **a tie whose label names exactly TWO positions states both of
+them**, winner first. `Position 1-2 Final` -> 1st and 2nd. That is reading, not inference.
+
+"Exactly two" is the whole discipline. `Position 1-4 Semifinals` says who is still alive for
+1-4, not who finished where, and the block it feeds is settled by a two-position tie of its
+own — so the semis are skipped. An edition that never reached a two-position tie yields
+nothing: the 2026 Seniors World Cup stops at `Position 1-8 Quarterfinals`, so it has 456
+matches here and **no placing at all**, which is the honest answer rather than a guess.
+
+**16 new placings, 54 -> 70, 3 -> 5 editions:**
+
+| edition | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| Euro Padel Cup 2025 Final 8, men | Spain | Portugal | Italy | Netherlands |
+| Euro Padel Cup 2025 Final 8, women | Spain | France | Italy | Belgium |
+| Asia Padel Cup 2025, men | UAE | Qatar | Australia | Iran |
+| Asia Padel Cup 2025, women | Japan | Iran | Indonesia | Australia |
+
+Positions arrive **sparse** — 1-4 of a 9- or 17-nation field — and every other nation lands
+in the existing `unplaced` list, so a thin record cannot read as a complete one.
+
+**Checked outside this pipeline before shipping**, because these are medals on a public page:
+padelfip's own Euro Final 8 coverage has Spain beating Portugal for the men's title and Spain
+v France in the women's final; the Asia Cup reports have UAE over Qatar and Japan over Iran.
+Both also confirm the dates the day strip gave (La Linea 21-25 Oct, Doha 17-24 Oct). Those six
+rows are now in `--check` beside Denmark's two, so a future rebuild that moves them fails.
+
+**A hub bug this exposed:** the "N championships" count filtered editions by whether their
+DRAW LINK appeared in the rendered html — and a team-widget edition has no archived draw to
+link to, so the hub said "3 championships" above five cards. It counts the cards it builds now.
+
+Spain's page is the visible difference: 6 placings, **5 golds and a silver**, 56-1 in ties.

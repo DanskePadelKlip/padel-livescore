@@ -4512,13 +4512,14 @@ function renderNatTeams() {
     (e) => e.genders.includes(state.ntGender) && (state.ntCat === "all" || e.cat.toLowerCase() === state.ntCat.toLowerCase())
   );
 
-  let cards = "", nations = 0;
+  let cards = "", nations = 0, shownEvents = 0;
   for (const e of shown) {
     let rows = (d.rows || []).filter((r) => r.ev === e.id && r.g === state.ntGender);
     const evMatch = !q || `${e.comp} ${e.year} ${e.name}`.toLowerCase().includes(q);
     if (q && !evMatch) rows = rows.filter((r) => r.name.toLowerCase().includes(q) || r.c.toLowerCase().includes(q));
     if (!rows.length) continue;
     nations += rows.length;
+    shownEvents++;
     const unplaced = (e.unplaced || {})[state.ntGender] || [];
     // Only the championship NAME opens the draw. The old Denmark table made the
     // whole row a draw link; here the row carries a country link of its own, and a
@@ -4551,7 +4552,7 @@ function renderNatTeams() {
   }
 
   if (cards) {
-    const nEv = shown.filter((e) => cards.includes(`data-tkey="${e.tkey}"`)).length || shown.length;
+    const nEv = shownEvents;
     html += `<div class="section-label">${nEv} championship${nEv === 1 ? "" : "s"}<span class="count">${nations} placings</span></div>`;
   }
   html += cards || `<div class="empty"><div class="big">🏅</div>No championship matches that filter.</div>`;

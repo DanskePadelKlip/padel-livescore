@@ -88,12 +88,93 @@
    ],
    "unplaced": {},
    "source": "Archived draw fip-296740 — placement bracket read match by match"
+  },
+  {
+   "id": "fip-2025-euro-cup-final8",
+   "comp": "Euro Padel Cup — Final 8",
+   "body": "FIP",
+   "cat": "Senior",
+   "year": 2025,
+   "name": "FIP EURO PADEL CUP 2025 – FINAL 8",
+   "start": "2025-10-21",
+   "end": "2025-10-25",
+   "where": "",
+   "tkey": "",
+   "genders": [
+    "men",
+    "women"
+   ],
+   "unplaced": {
+    "men": [
+     "FRA",
+     "GBR",
+     "GER",
+     "SWE"
+    ],
+    "women": [
+     "GBR",
+     "GER",
+     "NED",
+     "POR"
+    ]
+   },
+   "source": "matchscorerlive teamresults FIP-2025-127, days 1-5 — every placement tie that names two positions"
+  },
+  {
+   "id": "fip-2025-asia-cup",
+   "comp": "Asia Padel Cup",
+   "body": "FIP",
+   "cat": "Senior",
+   "year": 2025,
+   "name": "FIP ASIA PADEL CUP",
+   "start": "2025-10-17",
+   "end": "2025-10-24",
+   "where": "",
+   "tkey": "",
+   "genders": [
+    "men",
+    "women"
+   ],
+   "unplaced": {
+    "men": [
+     "BRN",
+     "CHN",
+     "INA",
+     "JOR",
+     "JPN",
+     "KAZ",
+     "KOR",
+     "KSA",
+     "KUW",
+     "LBN",
+     "PAK",
+     "PHI",
+     "THA"
+    ],
+    "women": [
+     "BRN",
+     "CHN",
+     "KSA",
+     "KUW",
+     "LBN",
+     "PAK",
+     "PHI",
+     "QAT",
+     "THA",
+     "UAE"
+    ]
+   },
+   "source": "matchscorerlive teamresults FIP-2025-128, days 1-8 — every placement tie that names two positions"
   }
  ],
  "countries": {
   "ARG": {
    "iso": "AR",
    "name": "Argentina"
+  },
+  "AUS": {
+   "iso": "AU",
+   "name": "Australia"
   },
   "AUT": {
    "iso": "AT",
@@ -107,9 +188,17 @@
    "iso": "BR",
    "name": "Brazil"
   },
+  "BRN": {
+   "iso": "BH",
+   "name": "Bahrain"
+  },
   "CHI": {
    "iso": "CL",
    "name": "Chile"
+  },
+  "CHN": {
+   "iso": "CN",
+   "name": "China"
   },
   "CRO": {
    "iso": "HR",
@@ -159,13 +248,45 @@
    "iso": "HU",
    "name": "Hungary"
   },
+  "INA": {
+   "iso": "ID",
+   "name": "Indonesia"
+  },
+  "IRI": {
+   "iso": "IR",
+   "name": "Iran"
+  },
   "ITA": {
    "iso": "IT",
    "name": "Italy"
   },
+  "JOR": {
+   "iso": "JO",
+   "name": "Jordan"
+  },
   "JPN": {
    "iso": "JP",
    "name": "Japan"
+  },
+  "KAZ": {
+   "iso": "KZ",
+   "name": "Kazakhstan"
+  },
+  "KOR": {
+   "iso": "KR",
+   "name": "South Korea"
+  },
+  "KSA": {
+   "iso": "SA",
+   "name": "Saudi Arabia"
+  },
+  "KUW": {
+   "iso": "KW",
+   "name": "Kuwait"
+  },
+  "LBN": {
+   "iso": "LB",
+   "name": "Lebanon"
   },
   "LTU": {
    "iso": "LT",
@@ -191,9 +312,17 @@
    "iso": "NO",
    "name": "Norway"
   },
+  "PAK": {
+   "iso": "PK",
+   "name": "Pakistan"
+  },
   "PAR": {
    "iso": "PY",
    "name": "Paraguay"
+  },
+  "PHI": {
+   "iso": "PH",
+   "name": "Philippines"
   },
   "POL": {
    "iso": "PL",
@@ -218,6 +347,10 @@
   "SWE": {
    "iso": "SE",
    "name": "Sweden"
+  },
+  "THA": {
+   "iso": "TH",
+   "name": "Thailand"
   },
   "TUN": {
    "iso": "TN",
@@ -726,6 +859,150 @@
    "name": "Senegal",
    "pos": 3,
    "via": "0 of 2 group ties won; no placement match"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "men",
+   "c": "ESP",
+   "iso": "ES",
+   "name": "Spain",
+   "pos": 1,
+   "via": "beat POR 2-0 in the final"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "men",
+   "c": "POR",
+   "iso": "PT",
+   "name": "Portugal",
+   "pos": 2,
+   "via": "lost 0-2 to ESP in the final"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "men",
+   "c": "ITA",
+   "iso": "IT",
+   "name": "Italy",
+   "pos": 3,
+   "via": "beat NED 2-0 in the third-place match"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "men",
+   "c": "NED",
+   "iso": "NL",
+   "name": "Netherlands",
+   "pos": 4,
+   "via": "lost 0-2 to ITA in the third-place match"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "women",
+   "c": "ESP",
+   "iso": "ES",
+   "name": "Spain",
+   "pos": 1,
+   "via": "beat FRA 2-0 in the final"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "women",
+   "c": "FRA",
+   "iso": "FR",
+   "name": "France",
+   "pos": 2,
+   "via": "lost 0-2 to ESP in the final"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "women",
+   "c": "ITA",
+   "iso": "IT",
+   "name": "Italy",
+   "pos": 3,
+   "via": "beat BEL 2-0 in the third-place match"
+  },
+  {
+   "ev": "fip-2025-euro-cup-final8",
+   "g": "women",
+   "c": "BEL",
+   "iso": "BE",
+   "name": "Belgium",
+   "pos": 4,
+   "via": "lost 0-2 to ITA in the third-place match"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "men",
+   "c": "UAE",
+   "iso": "AE",
+   "name": "United Arab Emirates",
+   "pos": 1,
+   "via": "beat QAT 2-1 in the final"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "men",
+   "c": "QAT",
+   "iso": "QA",
+   "name": "Qatar",
+   "pos": 2,
+   "via": "lost 1-2 to UAE in the final"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "men",
+   "c": "AUS",
+   "iso": "AU",
+   "name": "Australia",
+   "pos": 3,
+   "via": "beat IRI 2-0 in the third-place match"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "men",
+   "c": "IRI",
+   "iso": "IR",
+   "name": "Iran",
+   "pos": 4,
+   "via": "lost 0-2 to AUS in the third-place match"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "women",
+   "c": "JPN",
+   "iso": "JP",
+   "name": "Japan",
+   "pos": 1,
+   "via": "beat IRI 2-0 in the final"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "women",
+   "c": "IRI",
+   "iso": "IR",
+   "name": "Iran",
+   "pos": 2,
+   "via": "lost 0-2 to JPN in the final"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "women",
+   "c": "INA",
+   "iso": "ID",
+   "name": "Indonesia",
+   "pos": 3,
+   "via": "beat AUS 3-0 in the third-place match"
+  },
+  {
+   "ev": "fip-2025-asia-cup",
+   "g": "women",
+   "c": "AUS",
+   "iso": "AU",
+   "name": "Australia",
+   "pos": 4,
+   "via": "lost 0-3 to INA in the third-place match"
   }
  ],
  "gaps": [
