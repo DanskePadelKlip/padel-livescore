@@ -261,3 +261,63 @@ the 301.
 * `padel.db` was never read — the archive draws are in this repo, so the laptop was not touched.
 * `public/data/matches.json` and `rankings.json` were copied from padelticker.com into the
   worktree for local testing. Both are gitignored and were never staged.
+
+---
+
+## 8. The matches behind the placings — branch `national-teams-matches`, 2026-09-26
+
+Kim's ask: *more matches from the country-vs-country events.* Nothing needed fetching. The
+draws the bracket walk reads are already in this repo, and it was **throwing every match away**
+after using it to work out a position. This branch keeps them.
+
+`scripts/build-national-teams.mjs` now writes a second file,
+**`public/data/national-teams-matches.json`** — 855 nation-vs-nation rubbers, 284 ties,
+814 players, 37 nations, from the same four archived draws:
+
+| edition | matches | ties | notes |
+|---|---|---|---|
+| `fip-135412` World 2024 | 261 | 96 | 2 rubbers dropped — a side was not one single nation |
+| `fip-296741` Junior Euro Cup 2026 | 284 | 91 | 2 tie groups merged (same pair, same label, twice) |
+| `fip-296740` Junior Africa Cup 2026 | 23 | 8 | |
+| `fip-137970` **European 2024** | 287 | 89 | **no placing derivable, every match readable** |
+
+**The one that matters is Cagliari.** Its 287 ties carry no round label, which blocks the
+bracket walk and blocks nothing else — a rubber states its own result. So the edition that has
+been a bare gap since 2026-09-15 now publishes all 287 of its matches, and Croatia and Monaco,
+whose only appearance it is, get real pages instead of "no sourced placing".
+
+Decisions worth keeping:
+
+* **The matches pass refuses per ROW, the placings pass per EVENT.** A rubber whose side is not
+  one single nation is dropped and counted; the edition still publishes. A placing still has to
+  satisfy every structural check or the whole edition emits nothing.
+* **A tie is aggregated only where the grouping is unambiguous.** Without a round label two
+  meetings of the same pair collapse onto one key, which shows up as a rubber count above
+  `TIE_RUBBERS`; those stay rubbers and are counted as `merged`, never published as one tie with
+  an invented score.
+* **The gaps now carry `matches` and `nations`**, so the hub can say "its 287 matches are
+  published even so" and link those nations without loading the big file.
+* **No name joins.** Players print exactly as the draw abbreviates them and are *not* linked to
+  profiles. "P. Hansen" → a player id is a name join, and a wrong one puts the wrong person in a
+  national team. That link is the obvious next step and needs its own verification.
+* **The score is turned around on a nation's page.** It is stored in the draw's side order and a
+  nation is side `b` in about half its matches — printed unflipped it reads "4-6 1-6" beside a
+  **W**, which is exactly what the first cut of this branch did.
+
+**Cross-check:** 52 of the 54 placings name the tie that settled them, and all 52 agree with the
+ties derived independently in the matches pass — same opponent, same rubber score, same winner.
+The other two are "group ties won, no placement match" rows, which name no tie. Every tie's
+rubber count also equals the number of matches carrying it.
+
+`scripts/test-national-teams.mjs` is up from 43 checks to **63, all passing**, including the
+score orientation, Croatia's page, and the hub link that makes it reachable. `rankings.json`
+must be in `public/data/` for a full green run (gitignored — `curl` it from padelticker.com);
+without it the Denmark ranking check fails on any non-laptop checkout, on `main` too. That is a
+fixture gap, not a regression.
+
+**Not done, deliberately:** the hub tables are untouched, only the country pages and the gap
+cards changed, and nothing new loads on the hub — the 188 KB match file is fetched lazily, on a
+country page only.
+
+To ship, §6 applies unchanged; the new `public/data/national-teams-matches.json` is tracked, so
+the fast-forward carries it.

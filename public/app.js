@@ -395,6 +395,8 @@ const state = {
   rankCountryQuery: "",
   // ---- national teams (international) ----
   natTeams: null,            // loaded national-teams.json
+  natMatches: null,          // loaded national-teams-matches.json (only on a country page)
+  ntMatchTried: false,       // a missing matches file must cost one 404, not one per render
   ntCat: "all",              // "all" | a category from the data ("Senior"/"Junior"/…)
   ntGender: "men",           // which half of each championship is on screen
   ntCountry: null,           // IOC code: one nation's own page, or null for the championship tables
@@ -4073,8 +4075,12 @@ function setTitle() {
   else if (state.mode === "archive") t = "Padel results & tournament archive · PadelTicker";
   else if (state.mode === "no1") t = "World No.1 padel players since 1986 · PadelTicker";
   else if (state.mode === "natteams" && state.ntCountry) {
-    const c = (state.natTeams?.countries || {})[state.ntCountry];
-    t = `${c?.name || state.ntCountry} national padel team — championship placings · PadelTicker`;
+    // A nation whose only sourced editions state no placing still has a page, and
+    // calling it "placings" would promise something the page does not have. Its name
+    // can also come from the match file alone, which reaches nations the table misses.
+    const c = (state.natTeams?.countries || {})[state.ntCountry] || (state.natMatches?.countries || {})[state.ntCountry];
+    const placed = (state.natTeams?.rows || []).some((r) => r.c === state.ntCountry);
+    t = `${c?.name || state.ntCountry} national padel team — championship ${placed ? "placings" : "matches"} · PadelTicker`;
   }
   else if (state.mode === "natteams") t = "National team padel championships — every nation's placing · PadelTicker";
   else if (state.mode === "pairs") t = "Padel pairs — partnership records, rivals & results · PadelTicker";
@@ -4232,6 +4238,25 @@ async function loadNatTeams() {
   render();
 }
 
+// The rubbers behind the placings — a second, much larger file (every match of every
+// sourced championship), so it is fetched ONLY when a country page is open and never
+// on the hub. A nation's placings render immediately; the match list fills in when
+// this lands, which is why the country page renders without waiting for it.
+//
+// `ntMatchTried` mirrors the `_eloTried` flag: a missing file must cost one 404 for
+// the session, not one per render. A failure leaves an empty shape, so the page shows
+// the placings it already has instead of an error.
+async function ensureNatMatches() {
+  if (state.natMatches || state.ntMatchTried) return;
+  state.ntMatchTried = true;
+  try {
+    const r = await fetch("data/national-teams-matches.json");
+    if (!r.ok) throw new Error(r.status);
+    state.natMatches = await r.json();
+  } catch { state.natMatches = { events: [], matches: [], ties: [], countries: {} }; }
+  if (state.mode === "natteams" && state.ntCountry) { render(); setTitle(); }
+}
+
 // Where a country click goes: the nation's own ranking where PadelTicker publishes
 // one (rankings.json covers ~12 federations), otherwise the FIP world list narrowed
 // to that nationality. Both answer the question the click asks — "who plays for this
@@ -4279,18 +4304,30 @@ const NT_MEDAL_LABEL = { 1: "🥇", 2: "🥈", 3: "🥉" };
 // as a complete one.
 function renderNatCountry(code) {
   const d = state.natTeams;
-  const meta = (d.countries || {})[code] || {};
+  const m = state.natMatches;
+  ensureNatMatches(); // fills in below the placings when it lands; never blocks this paint
+  const meta = (d.countries || {})[code] || (m?.countries || {})[code] || {};
   const rows = (d.rows || []).filter((r) => r.c === code);
   const evById = new Map((d.events || []).map((e) => [e.id, e]));
+  const mine = (m?.matches || []).filter((x) => x.a === code || x.b === code);
 
   // A nation that never appears is a typed or stale URL, not a nation with no record:
   // say so rather than rendering an empty table that looks like a real answer.
+  //
+  // "Never appears" now includes the match file, which reaches further than the
+  // placings do: Croatia and Monaco played the 2024 Europeans, whose bracket states
+  // no placing, so they have a real record and no row in `d.rows`. Waiting for that
+  // file before deciding is what stops their page flashing "no placing" first.
   const entered = (d.events || []).flatMap((e) =>
     Object.entries(e.unplaced || {})
       .filter(([, list]) => (list || []).includes(code))
       .map(([g]) => ({ e, g }))
   );
-  if (!rows.length && !entered.length) {
+  if (!rows.length && !entered.length && !mine.length && !m) {
+    app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
+    return;
+  }
+  if (!rows.length && !entered.length && !mine.length) {
     app.innerHTML = `<div class="empty"><div class="big">🏅</div>No sourced championship placing for “${esc(meta.name || code)}”.
       <div class="empty-hint"><span class="tlink" data-ntback="1">← All championships</span></div></div>`;
     return;
@@ -4304,13 +4341,22 @@ function renderNatCountry(code) {
   const best = byYear.length ? Math.min(...byYear.map((r) => r.pos)) : null;
   const stat = (v, l) => `<div class="ntc-stat"><div class="ntc-stat-v">${v}</div><div class="ntc-stat-l">${esc(l)}</div></div>`;
 
+  // A record, not a claim: every one of these is a match the draw says was played
+  // and who won it. Ties and matches are counted separately because a nation can
+  // lose a tie 2-1 and still have won a match in it.
+  const myTies = (m?.ties || []).filter((t) => t.a === code || t.b === code);
+  const tiesWon = myTies.filter((t) => t.w === code).length;
+  const won = mine.filter((x) => x.w === code).length;
+
   let html = `<div class="ntc-head">
     <div class="ntc-back"><span class="tlink" data-ntback="1">← All championships</span></div>
     <h2 class="ntc-name">${countryFlag(meta.iso || code)} ${esc(meta.name || code)}</h2>
     <div class="ntc-stats">
-      ${stat(byYear.length, byYear.length === 1 ? "placing" : "placings")}
+      ${byYear.length ? stat(byYear.length, byYear.length === 1 ? "placing" : "placings") : ""}
       ${best ? stat(best, "best finish") : ""}
       ${medals[0] + medals[1] + medals[2] ? stat(`${medals[0]}·${medals[1]}·${medals[2]}`, "gold · silver · bronze") : ""}
+      ${myTies.length ? stat(`${tiesWon}–${myTies.length - tiesWon}`, "ties won–lost") : ""}
+      ${mine.length ? stat(`${won}–${mine.length - won}`, "matches won–lost") : ""}
     </div>
     <div class="ntc-actions"><button class="rchip" data-ntrank="${esc(code)}" data-ntiso="${esc(meta.iso || "")}">Players ranked for ${esc(meta.name || code)} →</button></div>
   </div>`;
@@ -4340,12 +4386,101 @@ function renderNatCountry(code) {
         .join(", ") + `</div>`;
   }
   html += `<div class="nt-ev">${card}</div>`;
+  html += natCountryMatches(code, mine, m);
 
   const gaps = (d.gaps || []).length;
   html += `<div class="nt-note">Only editions whose draw states a final classification are listed${
     gaps ? `; ${gaps} championship${gaps === 1 ? " is" : "s are"} not sourced yet and could add to this record` : ""
   }. ${esc(d.note || "")}</div>`;
   app.innerHTML = html;
+}
+
+// FIP labels every placement decider "Final", and the draw's labels are camel-cased.
+// Print them the way the rest of the site does, and print nothing where an edition
+// carries no round label at all rather than inventing one.
+const NT_ROUND_ORDER = ["Group stage", "Quarterfinals", "SemiFinals", "Final"];
+const ntRoundLabel = (r) =>
+  r === "SemiFinals" ? "Semi-finals" : r === "Quarterfinals" ? "Quarter-finals" : r || "";
+
+/**
+ * A stored score is always in the DRAW's side order, and a nation is side `b` in
+ * roughly half its matches — so on its own page the score has to be turned around
+ * to read "us first", the way the W/L beside it already does. Printed unflipped it
+ * says "4-6 1-6" next to a W, which reads as a mistake and is one.
+ */
+const ntScore = (x, code) =>
+  !x.s || x.a === code
+    ? x.s
+    : x.s.split(" ").map((s) => s.split("-").reverse().join("-")).join(" ");
+
+/**
+ * One nation's actual matches, edition by edition — the rubbers that produced the
+ * placings above. Rendered from national-teams-matches.json, which arrives after the
+ * first paint, so this returns "" until it does.
+ *
+ * The squad list is the other half of the point: the placings table names no player,
+ * and these draws name every one of them. Names print exactly as the draw abbreviates
+ * them and are deliberately NOT linked to profiles — resolving "P. Hansen" to a player
+ * id is a name join, and a wrong join here would put the wrong person in a national team.
+ */
+function natCountryMatches(code, mine, m) {
+  if (!m || !mine.length) return "";
+  const evById = new Map((m.events || []).map((e) => [e.id, e]));
+  const cc = (c) => (m.countries || {})[c] || {};
+  const evs = [...new Set(mine.map((x) => x.ev))].sort((a, b) => {
+    const A = evById.get(a) || {}, B = evById.get(b) || {};
+    return (B.year || 0) - (A.year || 0) || String(A.comp).localeCompare(String(B.comp));
+  });
+
+  let html = `<div class="section-label">Matches<span class="count">${mine.length}</span></div>`;
+  for (const id of evs) {
+    const e = evById.get(id) || {};
+    const list = mine
+      .filter((x) => x.ev === id)
+      .sort((x, y) => x.g.localeCompare(y.g) || NT_ROUND_ORDER.indexOf(x.rd) - NT_ROUND_ORDER.indexOf(y.rd));
+    const title = e.tkey
+      ? `<span class="tlink" data-tourney="arch" data-tkey="${esc(e.tkey)}" data-tname="${esc(e.name || "")}" data-tfed="" title="Open the ${esc(e.name || "")} draw">${esc(e.comp)} ${e.year}</span>`
+      : `${esc(e.comp || id)} ${e.year || ""}`;
+    const w = list.filter((x) => x.w === code).length;
+
+    html += `<div class="nt-ev">
+      <div class="nt-head">
+        <div class="nt-title">${title}</div>
+        <div class="nt-sub"><span class="nt-body">${esc(e.body || "")}</span> ${esc(e.cat || "")}${e.where ? ` · ${esc(e.where)}` : ""} · ${w}–${list.length - w}</div>
+      </div>
+      <div class="nt-scroll"><table class="nt-table ntm-table"><tbody>` +
+      list.map((x) => {
+        const opp = x.a === code ? x.b : x.a;
+        const us = x.a === code ? x.pa : x.pb;
+        const them = x.a === code ? x.pb : x.pa;
+        const o = cc(opp);
+        // A handful of matches state a winner and no score (a walkover). Print the
+        // outcome and an em dash rather than an empty result cell.
+        return `<tr class="${x.w === code ? "ntm-w" : "ntm-l"}">
+          <td class="ntm-res">${x.w === code ? "W" : "L"}</td>
+          <td class="ntm-rd">${esc(ntRoundLabel(x.rd))}<div class="ntc-sub">${x.g === "women" ? "Women" : "Men"}</div></td>
+          <td class="ntm-opp"><span class="nt-country has-profile" data-ntcountry="${esc(opp)}" data-ntiso="${esc(o.iso || "")}">${countryFlag(o.iso || "")} ${esc(o.name || opp)}</span></td>
+          <td class="ntm-p">${esc(us.join(" / "))}<div class="ntc-sub">v ${esc(them.join(" / "))}</div></td>
+          <td class="ntm-sc">${esc(ntScore(x, code) || "—")}</td>
+        </tr>`;
+      }).join("") +
+      `</tbody></table></div>` +
+      (e.unordered
+        ? `<div class="nt-src">This draw carries no round labels, so its matches are listed in draw order and no placing is derived from them.</div>`
+        : "") +
+      `</div>`;
+  }
+
+  // Who actually played. Ordered by matches played, so a regular comes before someone
+  // who got one rubber.
+  const squad = new Map();
+  for (const x of mine) for (const p of x.a === code ? x.pa : x.pb) squad.set(p, (squad.get(p) || 0) + 1);
+  const names = [...squad.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  html += `<div class="section-label">Players<span class="count">${names.length}</span></div>
+    <div class="nt-ev"><div class="ntm-squad">` +
+    names.map(([n, c]) => `<span class="ntm-sq">${esc(n)}<span class="ntm-sqn">${c}</span></span>`).join("") +
+    `</div><div class="nt-src">Names as the draw abbreviates them — ${names.length} player${names.length === 1 ? "" : "s"} across ${mine.length} match${mine.length === 1 ? "" : "es"}.</div></div>`;
+  return html;
 }
 
 
@@ -4424,7 +4559,21 @@ function renderNatTeams() {
   if (gaps.length && !q) {
     html += `<div class="section-label">Not sourced yet<span class="count">${gaps.length}</span></div>
       <div class="nt-gaps">` +
-      gaps.map((g) => `<div class="nt-gap"><div class="nt-gap-t">${esc(g.comp)} ${g.year}${g.where ? ` · ${esc(g.where)}` : ""}</div><div class="nt-gap-w">${esc(g.why)}</div></div>`).join("") +
+      gaps.map((g) => {
+        // "No placing" is not "nothing". Where the draw's matches are readable they are
+        // published, and the nations that played are the way in — otherwise a nation
+        // whose only appearance is an unplaceable edition has a page nothing links to.
+        const played = (g.nations || []).length
+          ? `<div class="nt-gap-m">Its ${g.matches} matches are published even so — ` +
+            g.nations
+              .map((c) => {
+                const cc = (d.countries || {})[c] || {};
+                return `<span class="nt-country has-profile" data-ntcountry="${esc(c)}" data-ntiso="${esc(cc.iso || "")}">${countryFlag(cc.iso || "")} ${esc(cc.name || c)}</span>`;
+              })
+              .join(", ") + `</div>`
+          : "";
+        return `<div class="nt-gap"><div class="nt-gap-t">${esc(g.comp)} ${g.year}${g.where ? ` · ${esc(g.where)}` : ""}</div><div class="nt-gap-w">${esc(g.why)}</div>${played}</div>`;
+      }).join("") +
       `</div>`;
   }
   app.innerHTML = html;

@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-15",
+ "updated": "2026-09-26",
  "note": "National-team championships, every nation. Each placing is read off the tournament's own placement bracket in the archived draw — FIP team events play every nation down to an exact position, so nothing here is estimated or inferred from a ranking. Editions whose draw does not state a result are listed as gaps rather than filled in.",
  "events": [
   {
@@ -108,6 +108,10 @@
    "iso": "CL",
    "name": "Chile"
   },
+  "CRO": {
+   "iso": "HR",
+   "name": "Croatia"
+  },
   "CYP": {
    "iso": "CY",
    "name": "Cyprus"
@@ -171,6 +175,10 @@
   "MEX": {
    "iso": "MX",
    "name": "Mexico"
+  },
+  "MON": {
+   "iso": "MC",
+   "name": "Monaco"
   },
   "NED": {
    "iso": "NL",
@@ -725,7 +733,29 @@
    "cat": "Senior",
    "year": 2024,
    "where": "Italy",
-   "why": "The archived draw has no round labels and no dates, so its 287 ties cannot be ordered into a bracket. FIP published a final classification; it is not in any file on this branch."
+   "why": "The archived draw has no round labels and no dates, so its 287 ties cannot be ordered into a bracket. FIP published a final classification; it is not in any file on this branch.",
+   "matches": 287,
+   "nations": [
+    "AUT",
+    "BEL",
+    "CRO",
+    "DEN",
+    "ESP",
+    "EST",
+    "FIN",
+    "FRA",
+    "GBR",
+    "GER",
+    "HUN",
+    "ITA",
+    "LTU",
+    "MON",
+    "NED",
+    "POL",
+    "POR",
+    "SUI",
+    "SWE"
+   ]
   },
   {
    "key": "rin-42477",

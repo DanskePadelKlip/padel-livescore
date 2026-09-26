@@ -82,8 +82,10 @@ for (const k of ["addEventListener", "removeEventListener", "scrollTo", "dispatc
 
 // `state` is a top-level const, so a vm script keeps it in lexical scope rather
 // than on the context object. Hand it out explicitly; everything else the test
-// touches is a function declaration, which does land on the global.
-const code = fs.readFileSync(path.join(PUB, "app.js"), "utf8") + ";globalThis.state = state;";
+// touches is a function declaration, which does land on the global — except
+// `ntScore`, which is a const arrow for the same reason and is asserted on directly.
+const code = fs.readFileSync(path.join(PUB, "app.js"), "utf8") +
+  ";globalThis.state = state; globalThis.ntScore = ntScore;";
 vm.createContext(sandbox);
 new vm.Script(code, { filename: "app.js" }).runInContext(sandbox);
 
@@ -239,6 +241,62 @@ state.ntCountry = "ZZZ";
 sandbox.render();
 ok(/No sourced championship placing/.test(app.innerHTML), "an unknown country code gets an honest empty state");
 ok(!/ntc-table/.test(app.innerHTML), "...and no empty table");
+
+// ---- the matches behind the placings ----------------------------------------
+// national-teams-matches.json is fetched only on a country page, so by here the
+// pages rendered above have pulled it in.
+state.ntCountry = "DEN";
+sandbox.render();
+await settle();
+sandbox.render();
+page = app.innerHTML;
+const mm = state.natMatches;
+ok(!!mm && (mm.matches || []).length > 500, `the match file loaded (${(mm?.matches || []).length} matches)`);
+ok(/section-label">Matches/.test(page), "the country page lists the matches behind its placings");
+ok(/ntm-squad/.test(page), "...and the players who played them");
+
+// Every match must resolve on both sides, or a row renders against no nation.
+const mEvIds = new Set((mm.events || []).map((e) => e.id));
+ok((mm.matches || []).every((x) => mEvIds.has(x.ev)), "every match belongs to a listed edition");
+ok((mm.matches || []).every((x) => mm.countries[x.a] && mm.countries[x.b] && x.a !== x.b), "every match is one nation against another");
+ok((mm.matches || []).every((x) => x.w === x.a || x.w === x.b), "every match names one of the two nations as the winner");
+ok((mm.matches || []).every((x) => x.pa.length && x.pb.length), "every match names both pairs");
+// A tie is an aggregate of its own rubbers: it cannot claim more wins than were
+// played, and it cannot be level — a level tie is dropped by the build, not shipped.
+ok((mm.ties || []).every((t) => t.wa + t.wb <= t.n && t.wa !== t.wb && (t.w === t.a || t.w === t.b)), "every tie is decided and adds up");
+
+// Denmark's record, counted from the rows rather than trusted from the header.
+const dkm = (mm.matches || []).filter((x) => x.a === "DEN" || x.b === "DEN");
+ok(dkm.length > 0, `Denmark has ${dkm.length} matches`);
+ok(new RegExp(`Matches<span class="count">${dkm.length}</span>`).test(page), "the header count is the number of rows on the page");
+
+// The score is stored in the draw's side order, and on a nation's page it must read
+// "us first" — otherwise a won match prints "4-6 1-6" beside a W. Check it against
+// every row the page shows: a winning row's first set number must be the higher one.
+const flipped = dkm.filter((x) => x.s && x.b === "DEN").map((x) => sandbox.ntScore(x, "DEN"));
+ok(flipped.length > 0, `Denmark is the draw's second side in ${flipped.length} scored matches`);
+const wrongWay = dkm.filter((x) => x.s && x.w === "DEN").filter((x) => {
+  const [a, b] = sandbox.ntScore(x, "DEN").split(" ")[0].split("-").map(Number);
+  return a < b; // a first set the winner lost is possible, so only count the whole row
+}).length;
+const wonRows = dkm.filter((x) => x.s && x.w === "DEN").length;
+ok(wrongWay < wonRows / 2, `won matches print the nation's score first (${wonRows - wrongWay}/${wonRows} lead the first set)`);
+ok(sandbox.ntScore({ a: "SWE", b: "DEN", s: "4-6 1-6" }, "DEN") === "6-4 6-1", "a second-side score is turned around");
+ok(sandbox.ntScore({ a: "DEN", b: "SWE", s: "6-4 6-1" }, "DEN") === "6-4 6-1", "...and a first-side score is left alone");
+
+// The point of the match pass: an edition whose bracket states NO placing is still
+// published at match level. Croatia played only the 2024 Europeans.
+ok((mm.events || []).some((e) => e.id === "fip-137970" && e.unordered), "the unplaceable 2024 Europeans are in the match file");
+state.ntCountry = "CRO";
+sandbox.render();
+ok(/ntc-name/.test(app.innerHTML) && /Croatia/.test(app.innerHTML), "a nation with matches but no placing still has a page");
+ok(!/No sourced championship placing/.test(app.innerHTML), "...and is not shown as having no record");
+ok(/European Championship/.test(app.innerHTML), "...listing the edition its matches come from");
+
+// And the hub has to link there, or that page is unreachable.
+state.ntCountry = null;
+sandbox.render();
+ok(/nt-gap-m/.test(app.innerHTML) && /data-ntcountry="CRO"/.test(app.innerHTML), "the gap card links the nations whose matches ARE published");
 
 // Back to the tables.
 state.ntCountry = null;

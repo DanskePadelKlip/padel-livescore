@@ -39,6 +39,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARCH = path.join(ROOT, "public", "data", "archive", "t");
 const OUT = path.join(ROOT, "public", "data", "national-teams.json");
+const OUT_M = path.join(ROOT, "public", "data", "national-teams-matches.json");
 
 // ---------------------------------------------------------------- the events
 // `classes` maps the draw's className to our gender key. FIP's world-championship
@@ -119,12 +120,14 @@ const GAPS = [
 // the events above; an unknown code is a hard error rather than a blank row.
 const COUNTRY = {
   ARG: ["AR", "Argentina"], AUT: ["AT", "Austria"], BEL: ["BE", "Belgium"],
-  BRA: ["BR", "Brazil"], CHI: ["CL", "Chile"], CYP: ["CY", "Cyprus"],
+  BRA: ["BR", "Brazil"], CHI: ["CL", "Chile"], CRO: ["HR", "Croatia"],
+  CYP: ["CY", "Cyprus"],
   CZE: ["CZ", "Czechia"], DEN: ["DK", "Denmark"], EGY: ["EG", "Egypt"],
   ESP: ["ES", "Spain"], EST: ["EE", "Estonia"], FIN: ["FI", "Finland"],
   FRA: ["FR", "France"], GBR: ["GB", "Great Britain"], GER: ["DE", "Germany"],
   HUN: ["HU", "Hungary"], ITA: ["IT", "Italy"], JPN: ["JP", "Japan"],
   LTU: ["LT", "Lithuania"], MDA: ["MD", "Moldova"], MEX: ["MX", "Mexico"],
+  MON: ["MC", "Monaco"],
   NED: ["NL", "Netherlands"], NOR: ["NO", "Norway"], PAR: ["PY", "Paraguay"],
   POL: ["PL", "Poland"], POR: ["PT", "Portugal"], QAT: ["QA", "Qatar"],
   SEN: ["SN", "Senegal"], SUI: ["CH", "Switzerland"], SWE: ["SE", "Sweden"],
@@ -404,13 +407,177 @@ const out = {
   rows,
   gaps: GAPS,
 };
-fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + "\n");
-
+// Written AFTER the matches pass below, which annotates the gaps it can partly fill.
 const byEv = {};
 for (const r of rows) byEv[`${r.ev} ${r.g}`] = (byEv[`${r.ev} ${r.g}`] || 0) + 1;
+
+// ------------------------------------------------ the matches behind the table
+// A placing is a summary of ties that were actually played, and the draw holds
+// every one of those rubbers — the two pairs, the court, the sets, the winner.
+// The pass above reads them to walk the bracket and then throws them away; this
+// one keeps them, so a nation's page can say WHO played and WHAT the score was
+// and not only where the nation finished. Nothing here is fetched: same files.
+//
+// Three things make it a different job from the placings pass:
+//
+//   * It does not need the bracket. A rubber states its own result, so an edition
+//     whose rounds cannot be ORDERED is still completely readable at match level.
+//     That is why fip-137970 is in MATCH_ONLY below — its 287 ties carry no round
+//     label, which blocks a placing and blocks nothing else.
+//   * It refuses per ROW, not per event. A rubber whose two sides are not each
+//     one nation is dropped and counted; the rest of the edition still publishes.
+//   * Ties are aggregated only where the grouping is unambiguous. Without a round
+//     label two meetings of the same pair collapse onto one key — visible as a
+//     rubber count above TIE_RUBBERS — so those stay rubbers and are counted in
+//     `merged`, rather than being published as one tie with an invented score.
+const TIE_RUBBERS = 5;
+
+// Editions with no derivable placing but perfectly good matches.
+const MATCH_ONLY = [
+  {
+    key: "fip-137970",
+    comp: "European Championship",
+    body: "FIP",
+    cat: "Senior",
+    year: 2024,
+    classes: { Men: "men", Women: "women" },
+    unordered: true, // no round labels — matches list flat, in draw order
+  },
+];
+
+/** "6-1 3-6 6-2" from the draw's sets, or "" for a result with no score (walkover). */
+const scoreText = (sc) =>
+  (sc?.sets || []).map((s) => `${s[0]}-${s[1]}`).join(" ");
+
+/**
+ * Every nation-vs-nation rubber of one edition, plus the ties they aggregate into.
+ * `skipped` counts rubbers dropped because a side was not one single nation.
+ */
+function collectMatches(ev, draw) {
+  const matches = [], ties = new Map();
+  let skipped = 0, merged = 0, undecided = 0;
+  for (const m of draw.matches) {
+    const g = ev.classes[m.className ?? ""];
+    if (!g) continue;
+    const a = sideNation(m.teams?.[0]);
+    const b = sideNation(m.teams?.[1]);
+    if (!a || !b || a === b) { skipped++; continue; }
+    const w = m.score?.winner === 0 ? a : m.score?.winner === 1 ? b : null;
+    const rd = ev.unordered ? "" : m.round || "";
+    matches.push({
+      ev: ev.key, g, rd, a, b, w,
+      pa: (m.teams[0].players || []).map((p) => p.name),
+      pb: (m.teams[1].players || []).map((p) => p.name),
+      s: scoreText(m.score),
+      ct: m.court || "",
+    });
+    const [x, y] = [a, b].sort();
+    const k = `${g}::${rd}::${x}|${y}`;
+    if (!ties.has(k)) ties.set(k, { ev: ev.key, g, rd, a: x, b: y, wa: 0, wb: 0, n: 0 });
+    const t = ties.get(k);
+    t.n++;
+    if (w === x) t.wa++; else if (w === y) t.wb++;
+  }
+  const out = [];
+  for (const t of ties.values()) {
+    if (t.n > TIE_RUBBERS) { merged++; continue; }
+    if (t.wa === t.wb) { undecided++; continue; }
+    out.push({ ...t, w: t.wa > t.wb ? t.a : t.b });
+  }
+  return { matches, ties: out, skipped, merged, undecided };
+}
+
+/**
+ * JSON that diffs by row. The point of this build is "rerun it and diff", which a
+ * 900-element array on one line defeats and a fully indented one bloats — so the
+ * long arrays get one compact object per line.
+ */
+function jsonLines(obj, lineKeys) {
+  const parts = Object.entries(obj).map(([k, v]) =>
+    lineKeys.includes(k)
+      ? ` ${JSON.stringify(k)}: [\n${v.map((r) => "  " + JSON.stringify(r)).join(",\n")}\n ]`
+      : ` ${JSON.stringify(k)}: ${JSON.stringify(v, null, 1).split("\n").join("\n ")}`
+  );
+  return `{\n${parts.join(",\n")}\n}\n`;
+}
+
+const mEvents = [], mMatches = [], mTies = [], mStats = {};
+for (const ev of [...EVENTS, ...MATCH_ONLY]) {
+  const file = path.join(ARCH, `${ev.key}.json`);
+  if (!fs.existsSync(file)) { problems.push(`${ev.key}: archive file missing (matches)`); continue; }
+  const draw = JSON.parse(fs.readFileSync(file, "utf8"));
+  const r = collectMatches(ev, draw);
+  if (!r.matches.length) { problems.push(`${ev.key}: no nation-vs-nation rubbers`); continue; }
+  mEvents.push({
+    id: ev.key,
+    comp: ev.comp,
+    body: ev.body,
+    cat: ev.cat,
+    year: ev.year,
+    name: draw.name,
+    start: draw.start,
+    end: draw.end,
+    where: draw.address || draw.venue || "",
+    tkey: ev.key,
+    genders: [...new Set(r.matches.map((m) => m.g))],
+    placed: events.some((e) => e.id === ev.key),
+    unordered: !!ev.unordered,
+    n: r.matches.length,
+  });
+  mMatches.push(...r.matches);
+  mTies.push(...r.ties);
+  mStats[ev.key] = { matches: r.matches.length, ties: r.ties.length, skipped: r.skipped, merged: r.merged, undecided: r.undecided };
+}
+
+const mCountries = {};
+for (const c of [...new Set(mMatches.flatMap((m) => [m.a, m.b]))].sort()) {
+  if (!COUNTRY[c]) throw new Error(`unmapped country code ${c} in the matches pass`);
+  mCountries[c] = { iso: COUNTRY[c][0], name: COUNTRY[c][1] };
+}
+
+fs.writeFileSync(
+  OUT_M,
+  jsonLines(
+    {
+      updated: new Date().toISOString().slice(0, 10),
+      note:
+        "Every nation-vs-nation match played at the national-team championships in the archive — the rubbers behind the placings table, read off the same archived draws. A match is listed only when both pairs are one nation; the score is the draw's own. Rounds are shown where the draw labels them.",
+      events: mEvents,
+      countries: mCountries,
+      ties: mTies,
+      matches: mMatches,
+      stats: mStats,
+    },
+    ["ties", "matches"]
+  )
+);
+
+// A gap whose matches ARE published is a different statement from a gap with nothing
+// behind it, and the hub has to be able to say which is which without loading the big
+// file — so the count and the nations travel in the placings file.
+for (const g of GAPS) {
+  const e = mEvents.find((x) => x.id === g.key);
+  if (!e) continue;
+  g.matches = e.n;
+  g.nations = [...new Set(mMatches.filter((x) => x.ev === g.key).flatMap((x) => [x.a, x.b]))].sort();
+  for (const c of g.nations) countries[c] = countries[c] || { iso: COUNTRY[c][0], name: COUNTRY[c][1] };
+}
+// Re-sort: the nations a gap adds arrive after the map was built, and an unsorted
+// tail makes every future rebuild diff in a place nothing changed.
+out.countries = Object.fromEntries(Object.keys(countries).sort().map((c) => [c, countries[c]]));
+
+fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + "\n");
 console.log(`wrote ${path.relative(ROOT, OUT)} — ${events.length} editions, ${rows.length} rows`);
 for (const k of Object.keys(byEv).sort()) console.log(`  ${k}: ${byEv[k]} nations`);
 for (const p of problems) console.log(`  GAP ${p}`);
+
+console.log(`wrote ${path.relative(ROOT, OUT_M)} — ${mEvents.length} editions, ${mMatches.length} matches, ${mTies.length} ties`);
+for (const [k, s] of Object.entries(mStats)) {
+  console.log(`  ${k}: ${s.matches} matches, ${s.ties} ties` +
+    `${s.skipped ? `, ${s.skipped} not nation-vs-nation` : ""}` +
+    `${s.merged ? `, ${s.merged} tie group(s) merged — rubbers kept, tie dropped` : ""}` +
+    `${s.undecided ? `, ${s.undecided} tie(s) undecided` : ""}`);
+}
 
 // ------------------------------------------------------- --check: Denmark, 1:1
 // Denmark's placings in the removed national-teams.json were sourced one by one
