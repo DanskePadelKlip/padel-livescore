@@ -83,6 +83,11 @@ Set-Location $repo
 # died on its own git fetch, reporting a successful fetch as a failure. So: drop to
 # Continue around the native call and judge it by $LASTEXITCODE, which is the only
 # thing that actually says whether git succeeded.
+#
+# Every '--' below is QUOTED on purpose: bare -- is PowerShell's own
+# end-of-parameters token and is consumed before the array reaches git, so
+# `checkout -- <path>` silently becomes `checkout <path>` - fine until a path
+# collides with a branch name, at which point it checks out the branch.
 function Invoke-Git {
   param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
   $old = $ErrorActionPreference
@@ -108,12 +113,12 @@ try {
   Invoke-Git fetch origin main | Out-Null
   # index.html carries the daemon's app.js?v= stamp and players-lite.json is
   # regenerated below, so neither may block the fast-forward.
-  Invoke-Git checkout -- public/index.html public/data/players-lite.json | Out-Null
+  Invoke-Git checkout '--' public/index.html public/data/players-lite.json | Out-Null
   $before = (Invoke-Git rev-parse HEAD).Trim()
-  Invoke-Git merge --ff-only origin/main | Out-Null
+  $mergeOut = Invoke-Git merge --ff-only origin/main
   $canPush = ($script:gitExit -eq 0)
   $after = (Invoke-Git rev-parse HEAD).Trim()
-  if (-not $canPush) { Write-Log "WARN merge --ff-only refused; will not push this run" }
+  if (-not $canPush) { Write-Log "WARN merge --ff-only refused (git said: $($mergeOut -join '; ')); will not push this run" }
   elseif ($before -ne $after) { Write-Log "fast-forwarded $($before.Substring(0,7)) -> $($after.Substring(0,7))" }
   } else { Write-Log "-NoGit: skipping fetch/merge" }
 
@@ -151,7 +156,7 @@ try {
   $out = & $node "scripts\build-national-teams.mjs" "--check" 2>&1
   if ($LASTEXITCODE -ne 0) {
     $out | ForEach-Object { Write-Log "build: $_" }
-    Invoke-Git checkout -- public/data/national-teams.json public/data/national-teams-matches.json public/data/national-teams | Out-Null
+    Invoke-Git checkout '--' public/data/national-teams.json public/data/national-teams-matches.json public/data/national-teams | Out-Null
     throw "build --check FAILED; data files restored from HEAD, nothing shipped"
   }
   $out | Where-Object { $_ -match '^wrote|^unchanged|player links|check |GAP|HELD BACK' } | ForEach-Object { Write-Log "build: $_" }
@@ -171,20 +176,20 @@ try {
   $movedHeld = @()
   foreach ($k in $held) {
     $f = "public/data/national-teams/draws/$k.json"
-    if ((Invoke-Git status --porcelain -- $f) -match '\S') { $movedHeld += $k }
+    if ((Invoke-Git status --porcelain '--' $f) -match '\S') { $movedHeld += $k }
   }
   if ($movedHeld) {
     Write-Log "ACTION NEEDED: held-back draw(s) changed: $($movedHeld -join ', ') - promote into TEAM_DRAWS if finished"
   }
 
   $paths = @('public/data/national-teams.json','public/data/national-teams-matches.json','public/data/national-teams','public/data/players-lite.json')
-  $dirty = (Invoke-Git status --porcelain -- @paths) | Where-Object { $_ }
+  $dirty = (Invoke-Git status --porcelain '--' @paths) | Where-Object { $_ }
   if ($dirty -and $NoGit) {
     Write-Log "-NoGit: would commit $($dirty.Count) path(s): $($dirty -join ' | ')"
   } elseif ($dirty) {
     $changed = $true
     Write-Log "changed: $($dirty -join ' | ')"
-    Invoke-Git add -- @paths | Out-Null
+    Invoke-Git add '--' @paths | Out-Null
     $msg = "National teams: weekly refresh $(Get-Date -Format yyyy-MM-dd)"
     Invoke-Git -c user.name=PadelTicker -c user.email=danskepadelklip@gmail.com commit -m $msg -m 'Automated by PadelTicker-NationalTeams-Weekly (scripts/refresh-national-teams.ps1).' | Out-Null
     if ($canPush) {
@@ -197,7 +202,7 @@ try {
         $exit = 4
       }
       else { Write-Log "committed and pushed" }
-    } else { Write-Log "committed locally; push skipped (main had diverged)" }
+    } else { Write-Log "committed locally; push skipped - the fast-forward earlier this run did not succeed" }
   } else {
     Write-Log "no change"
   }
