@@ -55,6 +55,21 @@ const idCache = new Map(); // eventLink -> { tid, at }
  * Map a padelfip event page to its sporteaser tournamentId.
  * Returns null when the event has no live-score widget configured.
  */
+// `livescore_tab_load` is a POST to /wp-admin/admin-ajax.php, and Cloudflare has a
+// managed rule on that path: a request without a browser's cookie jar can come back as a
+// 403 "Just a moment..." interstitial instead of JSON. That surfaced as a bare
+// "Unexpected token '<'" parse error, which reads like a code bug and is not one — say
+// what actually happened, so a daemon log distinguishes "no live scoring configured for
+// this event" (the normal, silent case) from "we are being challenged" (an outage).
+async function livescoreTab(res) {
+  const ct = res.headers.get("content-type") || "";
+  if (!res.ok || !/json/i.test(ct)) {
+    const challenged = res.status === 403 || /just a moment/i.test((await res.text()).slice(0, 400));
+    throw new Error(`livescore_tab_load HTTP ${res.status} ${ct.split(";")[0] || "?"}${challenged ? " - Cloudflare challenge, not a parse bug" : ""}`);
+  }
+  return res.json();
+}
+
 export async function discoverTournamentId(eventLink, log = () => {}) {
   const hit = idCache.get(eventLink);
   if (hit && Date.now() - hit.at < (hit.tid ? HIT_TTL : MISS_TTL)) return hit.tid;
@@ -79,7 +94,7 @@ export async function discoverTournamentId(eventLink, log = () => {}) {
       body,
       signal: AbortSignal.timeout(REQ_TIMEOUT_MS),
     });
-    const json = await res.json();
+    const json = await livescoreTab(res);
     // `html: ""` = no live scoring for this event. Not an error.
     tid = (String(json?.data?.html || "").match(/tournamentId=(\d+)/) || [])[1] || null;
   } catch (err) {
@@ -99,7 +114,7 @@ export async function fetchDay(tid, day, log = () => {}) {
   try {
     const res = await fetch(`${API}/tournament/${tid}/matches/day/${day}/sort/fieldname/0`, { headers: HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
     if (!res.ok) return [];
-    const json = await res.json();
+    const json = await livescoreTab(res);
     if (Array.isArray(json?.days) && !json.days.includes(Number(day))) return [];
     return (json.matches || []).map(record).filter(Boolean);
   } catch (err) {

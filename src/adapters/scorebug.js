@@ -34,6 +34,21 @@ const HIT_TTL = 6 * 60 * 60_000;
 const MISS_TTL = 30 * 60_000;
 const baseCache = new Map(); // eventLink -> { base, at }
 
+// `livescore_tab_load` is a POST to /wp-admin/admin-ajax.php, and Cloudflare has a
+// managed rule on that path: a request without a browser's cookie jar can come back as a
+// 403 "Just a moment..." interstitial instead of JSON. That surfaced as a bare
+// "Unexpected token '<'" parse error, which reads like a code bug and is not one — say
+// what actually happened, so a daemon log distinguishes "no live scoring configured for
+// this event" (the normal, silent case) from "we are being challenged" (an outage).
+async function livescoreTab(res) {
+  const ct = res.headers.get("content-type") || "";
+  if (!res.ok || !/json/i.test(ct)) {
+    const challenged = res.status === 403 || /just a moment/i.test((await res.text()).slice(0, 400));
+    throw new Error(`livescore_tab_load HTTP ${res.status} ${ct.split(";")[0] || "?"}${challenged ? " - Cloudflare challenge, not a parse bug" : ""}`);
+  }
+  return res.json();
+}
+
 /**
  * The scorebug origin embedded in an event's Live Score tab, e.g.
  * "https://scorebug.fipgoldbucharest.com", or null when the tab holds something else
@@ -56,7 +71,7 @@ export async function discoverBase(eventLink, log = () => {}) {
       body: new URLSearchParams({ action: "livescore_tab_load", security: nonce, post_id: postId }),
       signal: AbortSignal.timeout(REQ_TIMEOUT_MS),
     });
-    const frame = String((await res.json())?.data?.html || "");
+    const frame = String((await livescoreTab(res))?.data?.html || "");
     // The iframe is lazy: its URL sits in data-src, which this also matches.
     const m = frame.match(/src="(https:\/\/[^"/]+)\/overlay\b/);
     if (m && !/matchscorerlive|sporteaser/i.test(m[1])) base = m[1];
@@ -125,21 +140,33 @@ const totalGames = (sets) =>
   (sets || []).reduce((n, s) => n + (parseInt(s[0], 10) || 0) + (parseInt(s[1], 10) || 0), 0);
 
 /**
- * Overlay the scorebug onto the one live match it describes. Returns 1 when attached.
- * Nothing is touched unless exactly one live match has both pairs matching.
+ * Overlay the scorebug onto the one match it describes, PROMOTING that match to live.
+ * Returns 1 when attached. Nothing is touched unless exactly one non-final match has both
+ * pairs matching.
+ *
+ * Candidates used to be live matches only, which made this module unable to do the one
+ * thing it is for: on a Crionet-blank court the match reads upcoming, so there was nothing
+ * to decorate and the organiser's own board — which states `status: "live"` and names both
+ * pairs — was discarded. Both other overlays (sporteaser, racketscore) promote on exactly
+ * this evidence; this one now does too.
+ *
+ * Widening the pool widens the chance of a name collision, so the "exactly one hit or
+ * leave it alone" rule below carries more weight than it did. The scorebug is a single
+ * broadcast overlay and carries no court, so there is no independent corroborator to fall
+ * back on — an ambiguous hit is skipped, never guessed.
  */
 export function attach(matches, state, log = () => {}) {
   if (!state || state.status !== "live") return 0;
   const sb = state.teams.map((t) => t.players || []);
   const hits = [];
   for (const m of matches) {
-    if (m.status !== STATUS.LIVE) continue;
+    if (m.status === STATUS.FINAL) continue;
     const f = m.teams.map((t) => t.players || []);
     if (sideMatches(f[0], sb[0]) && sideMatches(f[1], sb[1])) hits.push({ m, flipped: false });
     else if (sideMatches(f[0], sb[1]) && sideMatches(f[1], sb[0])) hits.push({ m, flipped: true });
   }
   if (hits.length !== 1) {
-    if (hits.length > 1) log(`    · scorebug matched ${hits.length} live matches - ambiguous, skipped`);
+    if (hits.length > 1) log(`    · scorebug matched ${hits.length} matches - ambiguous, skipped`);
     return 0;
   }
   const { m, flipped } = hits[0];
@@ -160,6 +187,13 @@ export function attach(matches, state, log = () => {}) {
   ].map(side);
   if (totalGames(sets) >= totalGames(m.score.sets)) m.score.sets = sets;
 
-  m.raw = { ...(m.raw || {}), scorebug: state.seq ?? true };
+  // The board says this pairing is on court right now, and it is the only source that
+  // knows on a Crionet-blank court. Promote, and drop the estimated start the scheduler
+  // chained for a match it thought was still upcoming.
+  m.status = STATUS.LIVE;
+  m.estStart = null;
+  m.estStartAt = null;
+
+  m.raw = { ...(m.raw || {}), liveSource: "scorebug", scorebug: state.seq ?? true };
   return 1;
 }
