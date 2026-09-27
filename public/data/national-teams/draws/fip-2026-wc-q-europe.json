@@ -8,7 +8,7 @@
  "source": "matchscorerlive teamresults FIP-2026-3918, days 1-5",
  "sourceUrl": "https://www.padelfip.com/events/fip-world-cup-2026-qualifiers-europe-2026/",
  "pending": 0,
- "fetched": "2026-09-26",
+ "fetched": "2026-09-27",
  "matches": [
   {
    "className": "Men",
@@ -601,6 +601,578 @@
     ],
     "winner": 1
    }
+  }
+ ],
+ "groupTies": [
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "NED",
+   "b": "EST",
+   "wa": 3,
+   "wb": 0,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "NED",
+   "b": "AZE",
+   "wa": 3,
+   "wb": 0,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "EST",
+   "b": "AZE",
+   "wa": 3,
+   "wb": 0,
+   "w": "EST",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "GER",
+   "b": "LTU",
+   "wa": 3,
+   "wb": 0,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "GER",
+   "b": "GEO",
+   "wa": 3,
+   "wb": 0,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "LTU",
+   "b": "GEO",
+   "wa": 2,
+   "wb": 1,
+   "w": "LTU",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "GBR",
+   "b": "MDA",
+   "wa": 3,
+   "wb": 0,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "GBR",
+   "b": "AUT",
+   "wa": 3,
+   "wb": 0,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "MDA",
+   "b": "AUT",
+   "wa": 0,
+   "wb": 3,
+   "w": "AUT",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BUL",
+   "b": "NOR",
+   "wa": 2,
+   "wb": 1,
+   "w": "BUL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BUL",
+   "b": "FIN",
+   "wa": 2,
+   "wb": 1,
+   "w": "BUL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "NOR",
+   "b": "FIN",
+   "wa": 1,
+   "wb": 2,
+   "w": "FIN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "BEL",
+   "b": "SVK",
+   "wa": 3,
+   "wb": 0,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "BEL",
+   "b": "TUR",
+   "wa": 3,
+   "wb": 0,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "SVK",
+   "b": "TUR",
+   "wa": 3,
+   "wb": 0,
+   "w": "SVK",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "ROU",
+   "b": "UKR",
+   "wa": 0,
+   "wb": 3,
+   "w": "UKR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "UKR",
+   "b": "GRE",
+   "wa": 1,
+   "wb": 2,
+   "w": "GRE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "UKR",
+   "b": "CZE",
+   "wa": 3,
+   "wb": 0,
+   "w": "UKR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "ROU",
+   "b": "GRE",
+   "wa": 2,
+   "wb": 1,
+   "w": "ROU",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "GRE",
+   "b": "CZE",
+   "wa": 2,
+   "wb": 1,
+   "w": "GRE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "ROU",
+   "b": "CZE",
+   "wa": 2,
+   "wb": 1,
+   "w": "ROU",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CYP",
+   "b": "DEN",
+   "wa": 0,
+   "wb": 3,
+   "w": "DEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "DEN",
+   "b": "CRO",
+   "wa": 3,
+   "wb": 0,
+   "w": "DEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "DEN",
+   "b": "SRB",
+   "wa": 3,
+   "wb": 0,
+   "w": "DEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CYP",
+   "b": "CRO",
+   "wa": 0,
+   "wb": 3,
+   "w": "CRO",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CRO",
+   "b": "SRB",
+   "wa": 2,
+   "wb": 1,
+   "w": "CRO",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CYP",
+   "b": "SRB",
+   "wa": 1,
+   "wb": 2,
+   "w": "SRB",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "IRL",
+   "b": "POL",
+   "wa": 0,
+   "wb": 3,
+   "w": "POL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "SLO",
+   "b": "POL",
+   "wa": 0,
+   "wb": 3,
+   "w": "POL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "HUN",
+   "b": "POL",
+   "wa": 0,
+   "wb": 3,
+   "w": "POL",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "IRL",
+   "b": "SLO",
+   "wa": 0,
+   "wb": 3,
+   "w": "SLO",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "SLO",
+   "b": "HUN",
+   "wa": 3,
+   "wb": 0,
+   "w": "SLO",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "IRL",
+   "b": "HUN",
+   "wa": 0,
+   "wb": 3,
+   "w": "HUN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "GBR",
+   "b": "SRB",
+   "wa": 3,
+   "wb": 0,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "GBR",
+   "b": "NOR",
+   "wa": 3,
+   "wb": 0,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "SRB",
+   "b": "NOR",
+   "wa": 0,
+   "wb": 3,
+   "w": "NOR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "GER",
+   "b": "TUR",
+   "wa": 3,
+   "wb": 0,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "GER",
+   "b": "HUN",
+   "wa": 3,
+   "wb": 0,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "TUR",
+   "b": "HUN",
+   "wa": 0,
+   "wb": 3,
+   "w": "HUN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "DEN",
+   "b": "AUT",
+   "wa": 3,
+   "wb": 0,
+   "w": "DEN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "DEN",
+   "b": "CZE",
+   "wa": 3,
+   "wb": 0,
+   "w": "DEN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "AUT",
+   "b": "CZE",
+   "wa": 2,
+   "wb": 1,
+   "w": "AUT",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "LTU",
+   "b": "POL",
+   "wa": 0,
+   "wb": 3,
+   "w": "POL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "POL",
+   "b": "SUI",
+   "wa": 2,
+   "wb": 1,
+   "w": "POL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "LTU",
+   "b": "SUI",
+   "wa": 1,
+   "wb": 2,
+   "w": "SUI",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "GEO",
+   "b": "ROU",
+   "wa": 1,
+   "wb": 2,
+   "w": "ROU",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "UKR",
+   "b": "ROU",
+   "wa": 2,
+   "wb": 1,
+   "w": "UKR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "ROU",
+   "b": "CRO",
+   "wa": 2,
+   "wb": 1,
+   "w": "ROU",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "GEO",
+   "b": "UKR",
+   "wa": 0,
+   "wb": 3,
+   "w": "UKR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "UKR",
+   "b": "CRO",
+   "wa": 1,
+   "wb": 2,
+   "w": "CRO",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "GEO",
+   "b": "CRO",
+   "wa": 0,
+   "wb": 3,
+   "w": "CRO",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "SLO",
+   "b": "GRE",
+   "wa": 1,
+   "wb": 2,
+   "w": "GRE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "GRE",
+   "b": "IRL",
+   "wa": 3,
+   "wb": 0,
+   "w": "GRE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "GRE",
+   "b": "BUL",
+   "wa": 3,
+   "wb": 0,
+   "w": "GRE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "SLO",
+   "b": "BUL",
+   "wa": 1,
+   "wb": 2,
+   "w": "BUL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "IRL",
+   "b": "BUL",
+   "wa": 1,
+   "wb": 2,
+   "w": "BUL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "SLO",
+   "b": "IRL",
+   "wa": 1,
+   "wb": 2,
+   "w": "IRL",
+   "n": 3
   }
  ]
 }

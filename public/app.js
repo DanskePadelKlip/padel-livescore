@@ -4359,11 +4359,12 @@ function renderNatCountry(code) {
       .filter(([, list]) => (list || []).includes(code))
       .map(([g]) => ({ e, g }))
   );
+  const anyTie = (m?.ties || []).some((t) => t.a === code || t.b === code);
   if (!rows.length && !entered.length && !mine.length && !m) {
     app.innerHTML = `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
     return;
   }
-  if (!rows.length && !entered.length && !mine.length) {
+  if (!rows.length && !entered.length && !mine.length && !anyTie) {
     app.innerHTML = `<div class="empty"><div class="big">🏅</div>No sourced championship placing for “${esc(meta.name || code)}”.
       <div class="empty-hint"><span class="tlink" data-ntback="1">← All championships</span></div></div>`;
     return;
@@ -4423,6 +4424,7 @@ function renderNatCountry(code) {
   }
   html += `<div class="nt-ev">${card}</div>`;
   html += natCountryMatches(code, mine, m);
+  html += natCountryTies(code, m);
 
   const gaps = (d.gaps || []).length;
   html += `<div class="nt-note">Only editions whose draw states a final classification are listed${
@@ -4468,6 +4470,56 @@ const ntPlayer = (m, name, code) => {
   const id = (m.players || {})[`${name}|${code}`];
   return id ? `<span class="has-profile ntm-pl" data-player="${esc(id)}">${esc(name)}</span>` : esc(name);
 };
+
+/**
+ * Ties with no rubbers behind them. Some editions are only readable at tie level:
+ * the 2026 European World Cup qualifier publishes four ties from its day pages and
+ * fifty-three more from its group tables, which name the two nations and how many
+ * rubbers each won, and nothing else. Denmark won that group 9-0 and only one of
+ * those three ties has pairs and scores behind it.
+ *
+ * They are rendered as their own block, under the matches, saying what they are.
+ * Folding them in beside real matches would imply pairs and scores that do not
+ * exist; leaving them out would show a nation three matches for a group it swept.
+ */
+function natCountryTies(code, m) {
+  if (!m) return "";
+  const mine = (m.ties || []).filter((t) => t.tieOnly && (t.a === code || t.b === code));
+  if (!mine.length) return "";
+  const evById = new Map((m.events || []).map((e) => [e.id, e]));
+  const cc = (c) => (m.countries || {})[c] || {};
+  const evs = [...new Set(mine.map((t) => t.ev))].sort((a, b) => (evById.get(b)?.year || 0) - (evById.get(a)?.year || 0));
+
+  let html = `<div class="section-label">Ties without match detail<span class="count">${mine.length}</span></div>`;
+  for (const id of evs) {
+    const e = evById.get(id) || {};
+    const list = mine.filter((t) => t.ev === id).sort((x, y) => x.g.localeCompare(y.g) || String(x.rd).localeCompare(String(y.rd)));
+    const w = list.filter((t) => t.w === code).length;
+    html += `<div class="nt-ev">
+      <div class="nt-head">
+        <div class="nt-title">${esc(e.comp || id)} ${e.year || ""}</div>
+        <div class="nt-sub"><span class="nt-body">${esc(e.body || "")}</span> ${esc(e.cat || "")} · ${w}\u2013${list.length - w}</div>
+      </div>
+      <div class="nt-scroll"><table class="nt-table ntm-table"><tbody>` +
+      list.map((t) => {
+        const opp = t.a === code ? t.b : t.a;
+        const o = cc(opp);
+        const us = t.a === code ? t.wa : t.wb;
+        const them = t.a === code ? t.wb : t.wa;
+        return `<tr class="${t.w === code ? "ntm-w" : "ntm-l"}">
+          <td class="ntm-res">${t.w === code ? "W" : "L"}</td>
+          <td class="ntm-rd">${esc(t.rd || "")}<div class="ntc-sub">${t.g === "women" ? "Women" : "Men"}</div></td>
+          <td class="ntm-opp"><span class="nt-country has-profile" data-ntcountry="${esc(opp)}" data-ntiso="${esc(o.iso || "")}">${countryFlag(o.iso || "")} ${esc(o.name || opp)}</span></td>
+          <td class="ntm-p"></td>
+          <td class="ntm-sc">${us}\u2013${them}<div class="ntc-sub">rubbers</div></td>
+        </tr>`;
+      }).join("") +
+      `</tbody></table></div>
+      <div class="nt-src">Read off this event's group tables, which state the tie and the rubbers each nation won \u2014 no pairs, no set scores. The matches above are the ties whose rubber-by-rubber detail the draw also publishes.</div>
+    </div>`;
+  }
+  return html;
+}
 
 function natCountryMatches(code, mine, m) {
   if (!m || !mine.length) return "";

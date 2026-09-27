@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-26",
+ "updated": "2026-09-27",
  "note": "Every nation-vs-nation match played at the national-team championships in the archive — the rubbers behind the placings table, read off the same archived draws. A match is listed only when both pairs are one nation; the score is the draw's own. Rounds are shown where the draw labels them.",
  "events": [
   {
@@ -13,6 +13,7 @@
    "end": "2024-11-02",
    "where": "",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-135412",
    "genders": [
     "women",
@@ -33,6 +34,7 @@
    "end": "2026-07-04",
    "where": "Portugal",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-296741",
    "genders": [
     "men",
@@ -53,6 +55,7 @@
    "end": "2026-06-20",
    "where": "Egypt",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-296740",
    "genders": [
     "men",
@@ -73,6 +76,7 @@
    "end": "2024-07-27",
    "where": "Italy",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-137970",
    "genders": [
     "men",
@@ -93,6 +97,7 @@
    "end": "2025-07-13",
    "where": "",
    "partial": "The source still lists 1 tie as unplayed, so this edition stops short of its last rounds.",
+   "tieOnly": 0,
    "tkey": "fip-2025-euro-cup-ph12",
    "genders": [
     "men",
@@ -113,6 +118,7 @@
    "end": "2025-10-25",
    "where": "",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-2025-euro-cup-final8",
    "genders": [
     "men",
@@ -133,6 +139,7 @@
    "end": "2025-10-01",
    "where": "",
    "partial": "The source still lists 1 tie as unplayed, so this edition stops short of its last rounds.",
+   "tieOnly": 0,
    "tkey": "fip-2025-junior-world-cup",
    "genders": [
     "men",
@@ -153,6 +160,7 @@
    "end": "2025-10-24",
    "where": "",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-2025-asia-cup",
    "genders": [
     "men",
@@ -173,6 +181,7 @@
    "end": "2026-08-02",
    "where": "",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-2026-wc-q-noram",
    "genders": [
     "men",
@@ -193,6 +202,7 @@
    "end": "2026-08-22",
    "where": "",
    "partial": "",
+   "tieOnly": 0,
    "tkey": "fip-2026-wc-q-souam",
    "genders": [
     "men",
@@ -201,6 +211,27 @@
    "placed": false,
    "unordered": false,
    "n": 48
+  },
+  {
+   "id": "fip-2026-wc-q-europe",
+   "comp": "World Cup Qualifiers — Europe",
+   "body": "FIP",
+   "cat": "Senior",
+   "year": 2026,
+   "name": "FIP WORLD CUP 2026 QUALIFIERS – EUROPE",
+   "start": "2026-09-22",
+   "end": "2026-09-24",
+   "where": "",
+   "partial": "",
+   "tieOnly": 53,
+   "tkey": "fip-2026-wc-q-europe",
+   "genders": [
+    "men",
+    "women"
+   ],
+   "placed": false,
+   "unordered": false,
+   "n": 12
   },
   {
    "id": "fip-2026-senior-world-cup",
@@ -213,6 +244,7 @@
    "end": "2026-09-17",
    "where": "",
    "partial": "The source still lists 4 ties as unplayed, so this edition stops short of its last rounds.",
+   "tieOnly": 0,
    "tkey": "fip-2026-senior-world-cup",
    "genders": [
     "men",
@@ -455,6 +487,10 @@
   "SMR": {
    "iso": "SM",
    "name": "San Marino"
+  },
+  "SRB": {
+   "iso": "RS",
+   "name": "Serbia"
   },
   "SUI": {
    "iso": "CH",
@@ -1823,6 +1859,20 @@
   "A. Vargas Couri|VEN": "fip-a-vargas-couri",
   "P. Petit Fernandez|PAR": "fip-p-petit-fernandez",
   "T. Del Real Bobadilla|CHI": "fip-t-del-real-bobadilla",
+  "L. Nikolić|SRB": "fip-l-nikolić",
+  "K. Bogićević|SRB": "fip-k-bogićević",
+  "D. Kostic|SRB": "fip-d-kostic",
+  "L. Polovina|SRB": "fip-l-polovina",
+  "L. Sucevic|SRB": "fip-l-sucevic",
+  "L. Vitosevic|SRB": "fip-l-vitosevic",
+  "R. Rymarczyk|POL": "fip-r-rymarczyk",
+  "Z. Kovacic|SLO": "fip-z-kovacic",
+  "G. Dujmovic|CRO": "fip-g-dujmovic",
+  "J. Brkic|CRO": "fip-j-brkic",
+  "A. Graovac|SRB": "fip-a-graovac",
+  "F. Mandić|CRO": "fip-f-mandić",
+  "G. Rendek|HUN": "fip-g-rendek",
+  "J. Janowicz|POL": "fip-j-janowicz",
   "F. Quiles|ARG": "fip-f-quiles",
   "L. Soliverez|ARG": "fip-l-soliverez",
   "D. Gonzalez Borriero|URU": "fip-d-gonzalez-borriero",
@@ -2841,6 +2891,63 @@
   {"ev":"fip-2026-wc-q-souam","g":"women","rd":"Group 1","a":"CHI","b":"VEN","wa":3,"wb":0,"n":3,"w":"CHI"},
   {"ev":"fip-2026-wc-q-souam","g":"women","rd":"Group 1","a":"PAR","b":"VEN","wa":3,"wb":0,"n":3,"w":"PAR"},
   {"ev":"fip-2026-wc-q-souam","g":"women","rd":"Group 1","a":"ECU","b":"PAR","wa":1,"wb":2,"n":3,"w":"PAR"},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"DEN","b":"SRB","wa":3,"wb":0,"n":3,"w":"DEN"},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"POL","b":"SLO","wa":3,"wb":0,"n":3,"w":"POL"},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CRO","b":"SRB","wa":2,"wb":1,"n":3,"w":"CRO"},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"HUN","b":"POL","wa":0,"wb":3,"n":3,"w":"POL"},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group A","a":"EST","b":"NED","wa":0,"wb":3,"n":3,"w":"NED","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group A","a":"AZE","b":"NED","wa":0,"wb":3,"n":3,"w":"NED","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group A","a":"AZE","b":"EST","wa":0,"wb":3,"n":3,"w":"EST","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group B","a":"GER","b":"LTU","wa":3,"wb":0,"n":3,"w":"GER","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group B","a":"GEO","b":"GER","wa":0,"wb":3,"n":3,"w":"GER","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group B","a":"GEO","b":"LTU","wa":1,"wb":2,"n":3,"w":"LTU","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group C","a":"GBR","b":"MDA","wa":3,"wb":0,"n":3,"w":"GBR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group C","a":"AUT","b":"GBR","wa":0,"wb":3,"n":3,"w":"GBR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group C","a":"AUT","b":"MDA","wa":3,"wb":0,"n":3,"w":"AUT","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group D","a":"BUL","b":"NOR","wa":2,"wb":1,"n":3,"w":"BUL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group D","a":"BUL","b":"FIN","wa":2,"wb":1,"n":3,"w":"BUL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group D","a":"FIN","b":"NOR","wa":2,"wb":1,"n":3,"w":"FIN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group E","a":"BEL","b":"SVK","wa":3,"wb":0,"n":3,"w":"BEL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group E","a":"BEL","b":"TUR","wa":3,"wb":0,"n":3,"w":"BEL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group E","a":"SVK","b":"TUR","wa":3,"wb":0,"n":3,"w":"SVK","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group F","a":"ROU","b":"UKR","wa":0,"wb":3,"n":3,"w":"UKR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group F","a":"GRE","b":"UKR","wa":2,"wb":1,"n":3,"w":"GRE","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group F","a":"CZE","b":"UKR","wa":0,"wb":3,"n":3,"w":"UKR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group F","a":"GRE","b":"ROU","wa":1,"wb":2,"n":3,"w":"ROU","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group F","a":"CZE","b":"GRE","wa":1,"wb":2,"n":3,"w":"GRE","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group F","a":"CZE","b":"ROU","wa":1,"wb":2,"n":3,"w":"ROU","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CYP","b":"DEN","wa":0,"wb":3,"n":3,"w":"DEN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CRO","b":"DEN","wa":0,"wb":3,"n":3,"w":"DEN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CRO","b":"CYP","wa":3,"wb":0,"n":3,"w":"CRO","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CYP","b":"SRB","wa":1,"wb":2,"n":3,"w":"SRB","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"IRL","b":"POL","wa":0,"wb":3,"n":3,"w":"POL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"IRL","b":"SLO","wa":0,"wb":3,"n":3,"w":"SLO","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"HUN","b":"SLO","wa":0,"wb":3,"n":3,"w":"SLO","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"HUN","b":"IRL","wa":3,"wb":0,"n":3,"w":"HUN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group A","a":"GBR","b":"SRB","wa":3,"wb":0,"n":3,"w":"GBR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group A","a":"GBR","b":"NOR","wa":3,"wb":0,"n":3,"w":"GBR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group A","a":"NOR","b":"SRB","wa":3,"wb":0,"n":3,"w":"NOR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group B","a":"GER","b":"TUR","wa":3,"wb":0,"n":3,"w":"GER","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group B","a":"GER","b":"HUN","wa":3,"wb":0,"n":3,"w":"GER","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group B","a":"HUN","b":"TUR","wa":3,"wb":0,"n":3,"w":"HUN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group C","a":"AUT","b":"DEN","wa":0,"wb":3,"n":3,"w":"DEN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group C","a":"CZE","b":"DEN","wa":0,"wb":3,"n":3,"w":"DEN","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group C","a":"AUT","b":"CZE","wa":2,"wb":1,"n":3,"w":"AUT","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group D","a":"LTU","b":"POL","wa":0,"wb":3,"n":3,"w":"POL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group D","a":"POL","b":"SUI","wa":2,"wb":1,"n":3,"w":"POL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group D","a":"LTU","b":"SUI","wa":1,"wb":2,"n":3,"w":"SUI","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group E","a":"GEO","b":"ROU","wa":1,"wb":2,"n":3,"w":"ROU","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group E","a":"ROU","b":"UKR","wa":1,"wb":2,"n":3,"w":"UKR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group E","a":"CRO","b":"ROU","wa":1,"wb":2,"n":3,"w":"ROU","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group E","a":"GEO","b":"UKR","wa":0,"wb":3,"n":3,"w":"UKR","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group E","a":"CRO","b":"UKR","wa":2,"wb":1,"n":3,"w":"CRO","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group E","a":"CRO","b":"GEO","wa":3,"wb":0,"n":3,"w":"CRO","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group F","a":"GRE","b":"SLO","wa":2,"wb":1,"n":3,"w":"GRE","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group F","a":"GRE","b":"IRL","wa":3,"wb":0,"n":3,"w":"GRE","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group F","a":"BUL","b":"GRE","wa":0,"wb":3,"n":3,"w":"GRE","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group F","a":"BUL","b":"SLO","wa":2,"wb":1,"n":3,"w":"BUL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group F","a":"BUL","b":"IRL","wa":2,"wb":1,"n":3,"w":"BUL","tieOnly":true},
+  {"ev":"fip-2026-wc-q-europe","g":"women","rd":"Group F","a":"IRL","b":"SLO","wa":2,"wb":1,"n":3,"w":"IRL","tieOnly":true},
   {"ev":"fip-2026-senior-world-cup","g":"men","rd":"Group A","a":"ARG","b":"URU","wa":5,"wb":0,"n":5,"w":"ARG"},
   {"ev":"fip-2026-senior-world-cup","g":"men","rd":"Group A","a":"BRA","b":"UKR","wa":5,"wb":0,"n":5,"w":"BRA"},
   {"ev":"fip-2026-senior-world-cup","g":"men","rd":"Group B","a":"EGY","b":"ESP","wa":0,"wb":5,"n":5,"w":"ESP"},
@@ -4695,6 +4802,18 @@
   {"ev":"fip-2026-wc-q-souam","g":"women","rd":"Group 1","a":"ECU","b":"PAR","w":"ECU","pa":["M. Holguín Reyes","M. J. Mayorga Cruz"],"pb":["J. Perez Castillo","C. Miranda"],"s":"1-6 6-4 6-3","ct":"Court 12"},
   {"ev":"fip-2026-wc-q-souam","g":"women","rd":"Group 1","a":"ECU","b":"PAR","w":"PAR","pa":["S. Alvarez","A. Alvarez"],"pb":["O. Bareiro","V. Cepede Royg"],"s":"2-6 3-6","ct":"Court 12"},
   {"ev":"fip-2026-wc-q-souam","g":"women","rd":"Group 1","a":"ECU","b":"PAR","w":"PAR","pa":["A. P. Gamarra Baquerizo","A. V. Cepeda Stoudennikova"],"pb":["M. A. Garcia Vera","M. L. Salsamendi Guggiari"],"s":"0-6 1-6","ct":"Court 12"},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"DEN","b":"SRB","w":"DEN","pa":["O. Sebber Gormsen","M. Nielsen"],"pb":["L. Nikolić","K. Bogićević"],"s":"6-0 6-2","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"DEN","b":"SRB","w":"DEN","pa":["E. O. Jensen","E. Lilleøre madsen"],"pb":["D. Kostic","L. Polovina"],"s":"4-6 6-1 6-4","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"DEN","b":"SRB","w":"DEN","pa":["N. Ferrigno Olsen","V. Topholm"],"pb":["L. Sucevic","L. Vitosevic"],"s":"6-1 5-7 6-2","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"SLO","b":"POL","w":"POL","pa":["B. Repanšek","A. Šušteršič"],"pb":["G. Biliński","M. Naduk"],"s":"1-6 1-6","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"SLO","b":"POL","w":"POL","pa":["Ž. L. Konjar","S. Javoršek"],"pb":["R. Rymarczyk","K. Krawczyński"],"s":"2-6 2-6","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"SLO","b":"POL","w":"POL","pa":["T. Zalar","Z. Kovacic"],"pb":["M. Lipinski","F. Olech"],"s":"3-6 1-0","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CRO","b":"SRB","w":"SRB","pa":["G. Dujmovic","J. Brkic"],"pb":["L. Polovina","D. Kostic"],"s":"5-7 6-7","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CRO","b":"SRB","w":"CRO","pa":["B. Poljancic","M. Selak"],"pb":["L. Sucevic","A. Graovac"],"s":"7-6 6-2","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group G","a":"CRO","b":"SRB","w":"CRO","pa":["F. Mandić","R. Glasnovic"],"pb":["L. Nikolić","K. Bogićević"],"s":"4-6 6-2 6-3","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"HUN","b":"POL","w":"POL","pa":["C. Toth","G. Rendek"],"pb":["K. Krawczyński","G. Biliński"],"s":"2-6 7-5 6-7","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"HUN","b":"POL","w":"POL","pa":["A. Biro","O. Geresi"],"pb":["J. Janowicz","M. Naduk"],"s":"2-6 6-7","ct":""},
+  {"ev":"fip-2026-wc-q-europe","g":"men","rd":"Group H","a":"HUN","b":"POL","w":"POL","pa":["M. Urvolgyi","Z. Schmidt-Bohn"],"pb":["R. Rymarczyk","M. Lipinski"],"s":"4-6 2-6","ct":""},
   {"ev":"fip-2026-senior-world-cup","g":"men","rd":"Group A","a":"ARG","b":"URU","w":"ARG","pa":["F. Quiles","L. Soliverez"],"pb":["A. A. Caorsi Brunelli","D. Gonzalez Borriero"],"s":"6-0 6-0","ct":""},
   {"ev":"fip-2026-senior-world-cup","g":"men","rd":"Group A","a":"ARG","b":"URU","w":"ARG","pa":["M. Lamperti","A. Allemandi"],"pb":["L. Rodriguez Agesta","F. Puñales"],"s":"6-1 6-2","ct":""},
   {"ev":"fip-2026-senior-world-cup","g":"men","rd":"Group A","a":"ARG","b":"URU","w":"ARG","pa":["G. J. Malacalza","R. E. Nanni"],"pb":["J. A. Innella Gonzalez","A. M. Rial Charamelo"],"s":"6-0 6-0","ct":""},
@@ -5159,7 +5278,8 @@
    "skipped": 2,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-296741": {
    "matches": 284,
@@ -5167,7 +5287,8 @@
    "skipped": 0,
    "merged": 2,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-296740": {
    "matches": 23,
@@ -5175,7 +5296,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-137970": {
    "matches": 287,
@@ -5183,7 +5305,8 @@
    "skipped": 0,
    "merged": 4,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-2025-euro-cup-ph12": {
    "matches": 306,
@@ -5191,7 +5314,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-2025-euro-cup-final8": {
    "matches": 89,
@@ -5199,7 +5323,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 7
+   "unplayed": 7,
+   "tieOnly": 0
   },
   "fip-2025-junior-world-cup": {
    "matches": 266,
@@ -5207,7 +5332,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-2025-asia-cup": {
    "matches": 173,
@@ -5215,7 +5341,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 4
+   "unplayed": 4,
+   "tieOnly": 0
   },
   "fip-2026-wc-q-noram": {
    "matches": 18,
@@ -5223,7 +5350,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
   },
   "fip-2026-wc-q-souam": {
    "matches": 48,
@@ -5231,7 +5359,17 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
-   "unplayed": 0
+   "unplayed": 0,
+   "tieOnly": 0
+  },
+  "fip-2026-wc-q-europe": {
+   "matches": 12,
+   "ties": 57,
+   "skipped": 0,
+   "merged": 0,
+   "undecided": 0,
+   "unplayed": 0,
+   "tieOnly": 53
   },
   "fip-2026-senior-world-cup": {
    "matches": 456,
@@ -5239,7 +5377,8 @@
    "skipped": 0,
    "merged": 0,
    "undecided": 1,
-   "unplayed": 6
+   "unplayed": 6,
+   "tieOnly": 0
   }
  }
 }

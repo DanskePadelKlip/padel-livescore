@@ -89,15 +89,7 @@ const GAPS = [
     where: "Italy",
     why: "The archived draw has no round labels and no dates, so its 287 ties cannot be ordered into a bracket. FIP published a final classification; it is not in any file on this branch.",
   },
-  {
-    key: "fip-2026-wc-q-europe",
-    comp: "World Cup 2026 Qualifiers — Europe",
-    body: "FIP",
-    cat: "Senior",
-    year: 2026,
-    where: "Europe",
-    why: "The team widget for this event serves only Groups G and H - four ties - while the qualifier's own group tables list many more nations. It is a partial source rather than an unfinished one: the widget reports nothing left to play, so waiting will not fill it. Publishing it would present a twelve-match fragment as a qualifier.",
-  },
+
   {
     key: "rin-42477",
     comp: "Junior European Championship (by teams)",
@@ -147,7 +139,8 @@ const COUNTRY = {
   // Added 2026-09-26 with the team-widget editions, which reach five continents.
   // FIP is not consistent with itself: Lebanon appears as LBN at the 2025 Asia Cup
   // and LIB at the 2025 junior world cup, so both map to the same nation.
-  AND: ["AD", "Andorra"], AUS: ["AU", "Australia"], BRN: ["BH", "Bahrain"],
+  AND: ["AD", "Andorra"], AUS: ["AU", "Australia"], AZE: ["AZ", "Azerbaijan"],
+  BRN: ["BH", "Bahrain"],
   BUL: ["BG", "Bulgaria"], CAN: ["CA", "Canada"], CHN: ["CN", "China"],
   ECU: ["EC", "Ecuador"], GEO: ["GE", "Georgia"], GIB: ["GI", "Gibraltar"],
   GRE: ["GR", "Greece"], INA: ["ID", "Indonesia"], IRI: ["IR", "Iran"],
@@ -430,6 +423,12 @@ const TEAM_DRAWS = [
   { key: "fip-2025-asia-cup", comp: "Asia Padel Cup", body: "FIP", cat: "Senior" },
   { key: "fip-2026-wc-q-noram", comp: "World Cup Qualifiers — North & Central America", body: "FIP", cat: "Senior" },
   { key: "fip-2026-wc-q-souam", comp: "World Cup Qualifiers — South America", body: "FIP", cat: "Senior" },
+  // Published from its GROUP TABLES. Its day pages carry four ties, Groups G and
+  // H; the tables carry all eight groups of both draws, and the four they share
+  // agree exactly - same winners, same rubber counts. So the tie record is
+  // complete and the rubber detail is not, which the page states rather than
+  // letting a thin match list imply a thin tournament.
+  { key: "fip-2026-wc-q-europe", comp: "World Cup Qualifiers — Europe", body: "FIP", cat: "Senior" },
 
   // The source itself stops after the position quarter-finals: day 4 still holds four
   // UPCOMING cards that never got a result, so the semis and finals are not in the
@@ -698,6 +697,7 @@ for (const ev of [...EVENTS, ...MATCH_ONLY, ...teamDrawEvents]) {
     end: draw.end,
     where: draw.address || draw.venue || "",
     partial: ev.partial || "",
+    tieOnly: 0, // filled in below, once the group-table ties are merged
     tkey: ev.key,
     genders: [...new Set(r.matches.map((m) => m.g))],
     placed: events.some((e) => e.id === ev.key),
@@ -706,7 +706,32 @@ for (const ev of [...EVENTS, ...MATCH_ONLY, ...teamDrawEvents]) {
   });
   mMatches.push(...r.matches);
   mTies.push(...r.ties);
-  mStats[ev.key] = { matches: r.matches.length, ties: r.ties.length, skipped: r.skipped, merged: r.merged, undecided: r.undecided, unplayed: r.unplayed };
+
+  // Ties the group tables state and the rubbers do not. Same shape as the rest so
+  // a nation's record counts them, with `tieOnly` so the page never implies there
+  // are rubbers behind them to click.
+  const haveTie = new Set(r.ties.map((t) => `${t.g}::${[t.a, t.b].sort().join('|')}`));
+  let tieOnly = 0;
+  for (const t of draw.groupTies || []) {
+    const [x, y] = [t.a, t.b].sort();
+    if (haveTie.has(`${t.gender}::${x}|${y}`)) continue;
+    if (!COUNTRY[t.a] || !COUNTRY[t.b]) throw new Error(`unmapped country in ${ev.key} group tables: ${t.a}/${t.b}`);
+    mTies.push({ ev: ev.key, g: t.gender, rd: t.group, a: x, b: y,
+      wa: x === t.a ? t.wa : t.wb, wb: x === t.a ? t.wb : t.wa, n: t.n, w: t.w, tieOnly: true });
+    tieOnly++;
+  }
+  if (tieOnly) {
+    const meta = mEvents.find((e) => e.id === ev.key);
+    if (meta) {
+      meta.tieOnly = tieOnly;
+      // The genders of an edition come from its matches, and an edition can have a
+      // whole draw with no rubbers behind it at all: the 2026 European qualifier's
+      // women exist only in the group tables. Take the union, or half a nation's
+      // record is invisible on its own page.
+      meta.genders = [...new Set([...meta.genders, ...mTies.filter((t) => t.ev === ev.key).map((t) => t.g)])];
+    }
+  }
+  mStats[ev.key] = { matches: r.matches.length, ties: r.ties.length + tieOnly, skipped: r.skipped, merged: r.merged, undecided: r.undecided, unplayed: r.unplayed, tieOnly };
 }
 
 // Profile links for the names in those matches — the rules, and why the index is a
@@ -777,7 +802,8 @@ for (const [k, s] of Object.entries(mStats)) {
     `${s.skipped ? `, ${s.skipped} not nation-vs-nation` : ""}` +
     `${s.merged ? `, ${s.merged} tie group(s) merged — rubbers kept, tie dropped` : ""}` +
     `${s.undecided ? `, ${s.undecided} tie(s) undecided` : ""}` +
-    `${s.unplayed ? `, ${s.unplayed} rubber(s) never played` : ""}`);
+    `${s.unplayed ? `, ${s.unplayed} rubber(s) never played` : ""}` +
+    `${s.tieOnly ? `, ${s.tieOnly} tie(s) from the group tables only` : ""}`);
 }
 
 // A draw can be fetched and still not published — the World Cup qualifier that was

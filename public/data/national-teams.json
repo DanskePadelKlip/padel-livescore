@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-26",
+ "updated": "2026-09-27",
  "note": "National-team championships, every nation. Each placing is read off the tournament's own placement bracket in the archived draw — FIP team events play every nation down to an exact position, so nothing here is estimated or inferred from a ranking. Editions whose draw does not state a result are listed as gaps rather than filled in.",
  "events": [
   {
@@ -1036,15 +1036,6 @@
     "SUI",
     "SWE"
    ]
-  },
-  {
-   "key": "fip-2026-wc-q-europe",
-   "comp": "World Cup 2026 Qualifiers — Europe",
-   "body": "FIP",
-   "cat": "Senior",
-   "year": 2026,
-   "where": "Europe",
-   "why": "The team widget for this event serves only Groups G and H - four ties - while the qualifier's own group tables list many more nations. It is a partial source rather than an unfinished one: the widget reports nothing left to play, so waiting will not fill it. Publishing it would present a twelve-match fragment as a qualifier."
   },
   {
    "key": "rin-42477",

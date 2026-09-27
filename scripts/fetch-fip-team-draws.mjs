@@ -194,6 +194,77 @@ async function eventTitle(slug) {
   } catch { return ""; }
 }
 
+
+/**
+ * The GROUP TABLES, which are a second and sometimes fuller source than the day
+ * pages. The 2026 European World Cup qualifier is the case that forced this: its
+ * `teamresults` days carry four ties, Groups G and H, while `groups` carries all
+ * eight groups of both draws - Denmark won Group G 9-0 in rubbers and only one of
+ * those three ties is in the day pages at all.
+ *
+ * What comes back is a TIE and nothing more: two nations and how many rubbers each
+ * won. No pairs, no set scores, no court. That is a real step down in fidelity from
+ * everything else here, so these are kept in their own field and the page says which
+ * ties have rubber-by-rubber detail behind them and which do not.
+ *
+ * Structure: one `id="draw-N"` section per draw, titled by an h4 whose text is the
+ * only thing that says which gender it is; inside it, group cards whose standings
+ * rows carry the flag (i.e. the IOC code) and whose expanded rows carry the ties, by
+ * NAME. So the names are resolved through the standings of their own group - the
+ * same nation can be "Great Britain" here and GBR three lines up.
+ */
+async function fetchGroupTies(ev) {
+  const html = await get(`${WIDGET}/groups/${ev.id}?t=tol`);
+  if (!html) return [];
+
+  const titles = [...html.matchAll(/<div class="h4 bold">\s*<span>([^<]*)<\/span>/g)]
+    .map((m) => ({ at: m.index, label: text(m[1]).toUpperCase() }));
+  const genderAt = (pos) => {
+    let g = null;
+    for (const t of titles) {
+      if (t.at > pos) break;
+      if (/WOM|GIRL|GILRS|LADIES/.test(t.label)) g = "women";
+      else if (/MEN|BOY/.test(t.label)) g = "men";
+    }
+    return g;
+  };
+
+  const caps = [...html.matchAll(/<div class="group-caption">\s*<span>([^<]+)<\/span>/g)];
+  const out = [], seen = new Set();
+  for (let i = 0; i < caps.length; i++) {
+    const start = caps[i].index;
+    const card = html.slice(start, i + 1 < caps.length ? caps[i + 1].index : html.length);
+    const group = text(caps[i][1]);
+    const gender = genderAt(start);
+    if (!gender) continue;
+
+    // name -> IOC, from this group's own standings rows
+    const code = new Map();
+    for (const m of card.matchAll(/\/images\/flags\/([A-Z]{3})\.jpg[\s\S]{0,200}?<span class="ml-2">([^<]+)<\/span>/g)) {
+      code.set(text(m[2]).toLowerCase(), m[1]);
+    }
+
+    for (const m of card.matchAll(/<div class="tie-team px-2">([^<]+)<\/div>[\s\S]{0,300}?<div class="tie-team px-2">([^<]+)<\/div>[\s\S]{0,400}?<div class="tie-score">(\d+)\s*-\s*(\d+)<\/div>/g)) {
+      const a = code.get(text(m[1]).toLowerCase());
+      const b = code.get(text(m[2]).toLowerCase());
+      if (!a || !b || a === b) continue;
+      const wa = +m[3], wb = +m[4];
+      if (wa === wb) continue; // undecided or unplayed - never guess a winner
+      // Every tie is printed twice, once under each nation. Key on the pair.
+      const [x, y] = a < b ? [a, b] : [b, a];
+      const k = `${gender}::${group}::${x}|${y}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push({
+        gender, group, a, b, wa, wb,
+        w: wa > wb ? a : b,
+        n: wa + wb,
+      });
+    }
+  }
+  return out;
+}
+
 async function fetchEvent(ev) {
   const first = await get(`${WIDGET}/teamresults/${ev.id}/1?t=tol`);
   if (!first) return { ...ev, error: "day 1 did not serve" };
@@ -232,8 +303,9 @@ async function fetchEvent(ev) {
       }
     }
   }
+  const groupTies = await fetchGroupTies(ev);
   const played = [...new Set(matches.filter((m) => m.status === "final").map((m) => dates[m.day]).filter(Boolean))].sort();
-  return { ...ev, lastDay, matches, ties, pending, genders: genderOf, title, year, start: played[0] || "", end: played[played.length - 1] || "" };
+  return { ...ev, lastDay, matches, ties, groupTies, pending, genders: genderOf, title, year, start: played[0] || "", end: played[played.length - 1] || "" };
 }
 
 
@@ -322,6 +394,9 @@ for (const ev of wanted) {
     pending: r.pending,
     fetched: new Date().toISOString().slice(0, 10),
     matches: r.matches,
+    // Tie-level rows from the group tables: complete where the day pages are not,
+    // but two nations and a rubber count is all they are.
+    groupTies: r.groupTies,
   }, null, 1) + "\n";
   // Rewriting a file whose only difference is today's date turns a weekly refresh
   // into a weekly commit and a weekly deploy that carry nothing. Compare with the
@@ -338,4 +413,5 @@ for (const ev of wanted) {
   console.log(`${ev.id} ${ev.key}: ${same ? "unchanged, " : ""}${r.pending ? `${r.pending} STILL TO PLAY, ` : ""}${r.ties.length} ties, ${r.matches.length} matches, days 1-${r.lastDay}` +
     `${undecided ? `, ${undecided} with no winner marked` : ""}`);
   console.log(`   genders: ${[...new Set(Object.values(r.genders))].join("/") || "NONE"} | rounds: ${rounds.join(" | ")}`);
+  if (r.groupTies.length) console.log(`   group tables: ${r.groupTies.length} ties (${[...new Set(r.groupTies.map((t) => t.gender))].join("/")})`);
 }
