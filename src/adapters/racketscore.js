@@ -29,7 +29,9 @@ import { STATUS } from "../schema.js";
 export const id = "racketscore";
 
 const RS = "https://api.racketscore.com";
-const EVENTS_URL = `${RS}/events/public/`;
+// `?sport=padel` is honoured SERVER-side (4.47 MB -> 3.06 MB measured 2026-09-27); the
+// client-side sport filter below stays as a guard in case that ever silently stops.
+const EVENTS_URL = `${RS}/events/public/?sport=padel`;
 // The public API wants a browser UA and a live.racketscore.com origin.
 const HEADERS = {
   "User-Agent":
@@ -41,9 +43,20 @@ const HEADERS = {
 // Bounded like every adapter fetch (src/http.js): a hung request must not stall the
 // refresh cycle.
 const REQ_TIMEOUT_MS = 10_000;
+// The events list needs its OWN, much larger budget. It is a single unpaginated 3 MB
+// document that the origin builds slowly: measured 2026-09-27 over six cold fetches it
+// took 5.6-10.6 s, so a 10 s cap timed out on two of every three attempts and the
+// overlay ran blind. Boards stay on REQ_TIMEOUT_MS — they are small and on the hot path.
+const EVENTS_TIMEOUT_MS = 25_000;
 const SPORT = "padel";             // the events list carries tennis too
 const MAX_CURRENT_EVENTS = 15;     // safety cap on the board fan-out
-const EVENTS_TTL_MS = 30 * 60_000; // the events list is ~4 MB and changes on a scale of days
+const EVENTS_TTL_MS = 30 * 60_000; // the events list is ~3 MB and changes on a scale of days
+// A FAILED discovery must not buy the full TTL: that is what turned one timeout into
+// half an hour with no live Danish/Swedish scoring at all. Back off only far enough to
+// stop a FAST failure (an instant HTTP 500) from hammering the origin — a slow failure
+// is already rate-limited by EVENTS_TIMEOUT_MS. This has to stay comfortably under one
+// live refresh cycle (20 s sleep + ~35 s of work) so every cycle gets a real retry.
+const EVENTS_RETRY_MS = 20_000;
 
 // ---- discovery -------------------------------------------------------------
 
@@ -57,8 +70,8 @@ const slugify = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9-]/g, "").
 const copenhagenToday = () =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Copenhagen" }).format(new Date());
 
-async function rsGet(url) {
-  const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
+async function rsGet(url, timeoutMs = REQ_TIMEOUT_MS) {
+  const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.json();
 }
@@ -71,7 +84,7 @@ async function rsGet(url) {
 export async function discoverCurrentSlugs(log = () => {}) {
   if (Date.now() - eventsCache.at < EVENTS_TTL_MS) return eventsCache.slugs;
   try {
-    const events = await rsGet(EVENTS_URL);
+    const events = await rsGet(EVENTS_URL, EVENTS_TIMEOUT_MS);
     const today = copenhagenToday();
     const slugs = (Array.isArray(events) ? events : [])
       .filter(
@@ -85,10 +98,13 @@ export async function discoverCurrentSlugs(log = () => {}) {
     eventsCache = { at: Date.now(), slugs };
     return slugs;
   } catch (err) {
-    // Keep the last-good slug list rather than going blind for 30 minutes on one hiccup;
-    // only the very first failure of a process leaves it empty.
+    // Keep the last-good slug list rather than going blind on one hiccup — but do NOT
+    // stamp a fresh full TTL over it. Stamping unconditionally meant a single timeout
+    // pinned an EMPTY list for 30 minutes, and with the old 10 s cap failing most cold
+    // attempts the overlay was empty far more often than not. Back off only briefly, so
+    // the next cycle retries.
     log(`    ! racketscore: event discovery failed — ${err.message}`);
-    eventsCache = { at: Date.now(), slugs: eventsCache.slugs };
+    eventsCache = { at: Date.now() - EVENTS_TTL_MS + EVENTS_RETRY_MS, slugs: eventsCache.slugs };
     return eventsCache.slugs;
   }
 }

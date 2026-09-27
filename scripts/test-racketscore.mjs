@@ -3,6 +3,8 @@
 import assert from "node:assert/strict";
 import { attach } from "../src/adapters/racketscore.js";
 
+const okAsync = async (name, fn) => { await fn(); pass++; console.log("  ok  " + name); };
+
 let pass = 0;
 const ok = (name, fn) => { fn(); pass++; console.log("  ok  " + name); };
 
@@ -125,5 +127,66 @@ ok("a shared FIRST name alone is not a person", () =>
   assert.ok(!joins(["Rasmus Aabling", "Wilfred Mikkelsen"], ["Rasmus", "Wilfred"])));
 ok("different people who share a surname do not join", () =>
   assert.ok(!joins(["Kasper Pauli Aabling", "Cornelius Kjær Mikkelsen"], ["Rasmus Pauli", "Wilfred Kjær"])));
+
+console.log("\ndiscovery — a failed events fetch must not pin an empty list");
+
+// The events list is a slow 3 MB document. Before 2026-09-27 a failure stamped a fresh
+// 30-minute TTL over whatever was cached, so ONE timeout on a cold process blinded the
+// overlay for half an hour — which is how the Swedish championship semi-finals sat on
+// padelticker with a blank board while RacketScore was publishing them point by point.
+// A failure may back off briefly; it may never buy the full TTL.
+const withFetch = async (impl, fn) => {
+  const real = globalThis.fetch;
+  globalThis.fetch = impl;
+  try { return await fn(); } finally { globalThis.fetch = real; }
+};
+const freshModule = (tag) => import(`../src/adapters/racketscore.js?t=${tag}`);
+const eventsBody = (slug) => [{
+  slug, sport: "padel", is_test: false,
+  start: new Date(Date.now() - 864e5).toISOString(),
+  end: new Date(Date.now() + 864e5).toISOString(),
+}];
+
+// Advance the module's clock instead of sleeping. 61 s is far past any sane retry
+// floor and far short of the 30-minute TTL, so this asserts the invariant that matters
+// — a failure does not buy the full TTL — without pinning the exact backoff value.
+const atPlus = async (ms, fn) => {
+  const real = Date.now;
+  Date.now = () => real.call(Date) + ms;
+  try { return await fn(); } finally { Date.now = real; }
+};
+
+await okAsync("a failed discovery does not buy the full TTL", async () => {
+  const mod = await freshModule("fail-then-ok");
+  let calls = 0;
+  const slugs = await withFetch(async () => { calls++; throw new Error("timeout"); },
+    () => mod.discoverCurrentSlugs());
+  assert.deepEqual(slugs, [], "a first-failure process has nothing to serve");
+  assert.equal(calls, 1);
+  const second = await atPlus(61_000, () => withFetch(
+    async () => ({ ok: true, json: async () => eventsBody("sm-2026") }),
+    () => mod.discoverCurrentSlugs()));
+  assert.deepEqual(second, ["sm-2026"], "the retry reached the origin and found the event");
+});
+
+await okAsync("a successful discovery is cached, not refetched every cycle", async () => {
+  const mod = await freshModule("cache-hit");
+  let calls = 0;
+  const hit = async () => { calls++; return { ok: true, json: async () => eventsBody("sm-2026") }; };
+  assert.deepEqual(await withFetch(hit, () => mod.discoverCurrentSlugs()), ["sm-2026"]);
+  assert.deepEqual(await withFetch(hit, () => mod.discoverCurrentSlugs()), ["sm-2026"]);
+  assert.equal(calls, 1, "the second call came from cache");
+});
+
+await okAsync("a failure keeps the last-good slugs rather than going blind", async () => {
+  const mod = await freshModule("keep-last-good");
+  await withFetch(async () => ({ ok: true, json: async () => eventsBody("sm-2026") }),
+    () => mod.discoverCurrentSlugs());
+  // Expire the cache, then fail: the previous list must survive.
+  const kept = await atPlus(31 * 60_000, () => withFetch(
+    async () => { throw new Error("timeout"); },
+    () => mod.discoverCurrentSlugs()));
+  assert.deepEqual(kept, ["sm-2026"]);
+});
 
 console.log(`\n${pass} assertions passed\n`);
