@@ -520,6 +520,25 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
     const matches = [...byKey.values()];
     const table = withStandings ? await standings(ev.msid, log) : [];
 
+    // A tie printed without its round but WITH a group table is a GROUP-STAGE
+    // tie - that table is the proof, and a knockout row has none. The sheet also
+    // says which day it was played, and each group day states one round
+    // throughout: Tuesday was Tie 1 on all 19 ties, Wednesday Tie 2 on all 18.
+    // So the round is READ OFF THE PANEL rather than guessed.
+    // Guarded three ways, because the alternative to a wrong label here is an
+    // honest "Play-off" and that is the better failure: the panel must be
+    // UNANIMOUS, the label must be a group tie NUMBER, and the tie must have a
+    // group table. A knockout day mixes rounds and a play-off keeps saying so.
+    const roundByDay = new Map();
+    for (const t of sheet.ties) {
+      if (!t.tieTag) continue;
+      const k = t.dayLabel || "";
+      if (!roundByDay.has(k)) roundByDay.set(k, t.tieTag);
+      else if (roundByDay.get(k) !== t.tieTag) roundByDay.set(k, null);
+    }
+    // The rubbers under a tie must read the same round as their tie card.
+    const adopted = new Map();
+
     for (const t of sheet.ties) {
       // No row of this tie stated a score - FIP strips the nations and the tie
       // score off a row hours after it was played. Publishing 0-0 for it would
@@ -533,17 +552,44 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
       // handed the win to side B, because `a > b` is false when they are level.
       const decided = t.scored && Math.max(t.a_score, t.b_score) >= 2;
       const status = live ? STATUS.LIVE : decided ? STATUS.FINAL : STATUS.UPCOMING;
+      // THE TWO SOURCES DISAGREE ABOUT COUNTRY CODES. The order-of-play sheet
+      // writes ISO 3166 alpha-3 (DNK, DEU, GRC, NLD) and the groups widget writes
+      // IOC (DEN, GER, GRE, NED). Eight of the 28 nations differ, and joining on
+      // the code alone found nothing for any tie involving one of them: 42 of 67
+      // ties shipped with NO group table, every Danish tie included. Measured
+      // 27 Sep 2026.
+      // A silent zero-join is the worst shape this could take - "no table" is
+      // indistinguishable from a knockout row, which legitimately has none, so it
+      // looked like nothing was wrong.
+      // The two schemes agree on the NAME in all eight cases, so either matches.
+      // Name first would be wrong: two federations can print the same country
+      // differently, whereas a code that IS equal is never a coincidence.
+      const sameNation = (x, code) => {
+        if (x.code === code) return true;
+        const nm = nations.get(code);
+        return !!nm && !!x.name && x.name.toLowerCase() === nm.toLowerCase();
+      };
       const group = table.find(
         (g) => g.draw === (t.gender === "Men" ? "men" : "women") &&
-               g.teams.some((x) => x.code === t.a) && g.teams.some((x) => x.code === t.b));
+               g.teams.some((x) => sameNation(x, t.a)) && g.teams.some((x) => sameNation(x, t.b)));
+      const dayTag = roundByDay.get(t.dayLabel || "");
+      // NOT gated on `group`: functions/api/live-rows.js runs this with
+      // withStandings:false, and a label that depends on the second fetch would
+      // read "Tie 2" on the site and "Play-off" on the board for the same tie.
+      // The panel guard carries it alone - a numeric round means a group day, and
+      // the knockout days state QF/SF, which this refuses. Where the table IS
+      // fetched it corroborates: the one tie this fires on sits in men's Group F.
+      const tag = t.tieTag || (dayTag && /^\d+$/.test(dayTag) ? dayTag : "");
+      const tieNo = tag === "" ? null : Number(tag);
+      if (tag !== t.tieTag) adopted.set(t.key, tag);
       out.push({
         id: gid(id, `${ev.tid}:${t.key}`),
         source: id,
         federation: "FIP",
         tournament: { id: ev.msid || ev.tid, name: ev.name, url: ev.url },
         className: t.gender,
-        round: t.group ? `Group ${t.group.replace("_", " ")} · ${tieLabel(t.tieNo, t.tieTag)}`
-                       : tieLabel(t.tieNo, t.tieTag),
+        round: t.group ? `Group ${t.group.replace("_", " ")} · ${tieLabel(tieNo, tag)}`
+                       : tieLabel(tieNo, tag),
         court: t.court || null,
         status,
         startTime: null,
@@ -559,6 +605,13 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         raw: { day: t.dayLabel || sheet.day, rubbers: t.rows.length, rows: t.rows, standings: group || null },
       });
     }
+    // A rubber reads its tie's round, adopted one included, or the two disagree
+    // on the same card: "Tie 2" over "Play-off * Match 1".
+    const rubberRound = (lm) => {
+      const tag = adopted.has(lm.key) ? adopted.get(lm.key) : lm.tieTag;
+      return [tag === "" ? null : Number(tag), tag];
+    };
+
     // One row per match actually on court, carrying the real set scores and the
     // player names - this is what the scoreboard follows.
     for (const lm of matches) {
@@ -574,7 +627,7 @@ export async function eventRows(ev, { log = () => {}, withStandings = true } = {
         className: `${lm.gender} · ${lm.a} v ${lm.b}`,
         day: dayOf(lm.dayLabel),
         round: lm.group ? `Group ${lm.group.replace("_", " ")} · Match ${lm.matchNo}`
-                        : `${tieLabel(lm.tieNo, lm.tieTag)} · Match ${lm.matchNo}`,
+                        : `${tieLabel(...rubberRound(lm))} · Match ${lm.matchNo}`,
         court: lm.court || null,
         status: lm.state === "final" ? STATUS.FINAL
               : lm.state === "live" ? STATUS.LIVE : STATUS.UPCOMING,
