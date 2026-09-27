@@ -8,7 +8,7 @@
  "source": "matchscorerlive teamresults FIP-2025-126, days 1-9",
  "sourceUrl": "https://www.padelfip.com/events/fip-junior-world-cup-by-teams-2025/",
  "pending": 1,
- "fetched": "2026-09-26",
+ "fetched": "2026-09-27",
  "matches": [
   {
    "className": "Men",
@@ -12929,6 +12929,908 @@
     ],
     "winner": 0
    }
+  }
+ ],
+ "groupTies": [
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "ITA",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "CHI",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "EGY",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ITA",
+   "b": "CHI",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ITA",
+   "b": "EGY",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "CHI",
+   "b": "EGY",
+   "wa": 2,
+   "wb": 1,
+   "w": "CHI",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "SWE",
+   "b": "FRA",
+   "wa": 0,
+   "wb": 3,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "POR",
+   "wa": 3,
+   "wb": 0,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "NED",
+   "wa": 3,
+   "wb": 0,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "SWE",
+   "b": "POR",
+   "wa": 2,
+   "wb": 1,
+   "w": "SWE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "POR",
+   "b": "NED",
+   "wa": 2,
+   "wb": 1,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "SWE",
+   "b": "NED",
+   "wa": 2,
+   "wb": 0,
+   "w": "SWE",
+   "n": 2
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "ARG",
+   "b": "MEX",
+   "wa": 2,
+   "wb": 1,
+   "w": "ARG",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "ARG",
+   "b": "ECU",
+   "wa": 3,
+   "wb": 0,
+   "w": "ARG",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "ARG",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "ARG",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "MEX",
+   "b": "ECU",
+   "wa": 2,
+   "wb": 1,
+   "w": "MEX",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "MEX",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "MEX",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "ECU",
+   "b": "GER",
+   "wa": 2,
+   "wb": 1,
+   "w": "ECU",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "PAR",
+   "b": "BRA",
+   "wa": 2,
+   "wb": 1,
+   "w": "PAR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BRA",
+   "b": "BEL",
+   "wa": 2,
+   "wb": 1,
+   "w": "BRA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BRA",
+   "b": "VEN",
+   "wa": 3,
+   "wb": 0,
+   "w": "BRA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "PAR",
+   "b": "BEL",
+   "wa": 3,
+   "wb": 0,
+   "w": "PAR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "PAR",
+   "b": "VEN",
+   "wa": 1,
+   "wb": 2,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BEL",
+   "b": "VEN",
+   "wa": 1,
+   "wb": 2,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "MEX",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "EGY",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "MEX",
+   "b": "EGY",
+   "wa": 1,
+   "wb": 2,
+   "w": "EGY",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "EGY",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "EGY",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "MEX",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "MEX",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "ARG",
+   "b": "FRA",
+   "wa": 3,
+   "wb": 0,
+   "w": "ARG",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "ARG",
+   "b": "CHI",
+   "wa": 3,
+   "wb": 0,
+   "w": "ARG",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "ARG",
+   "b": "JPN",
+   "wa": 3,
+   "wb": 0,
+   "w": "ARG",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "CHI",
+   "wa": 2,
+   "wb": 1,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "JPN",
+   "wa": 3,
+   "wb": 0,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "CHI",
+   "b": "JPN",
+   "wa": 3,
+   "wb": 0,
+   "w": "CHI",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "ITA",
+   "b": "POR",
+   "wa": 1,
+   "wb": 2,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "POR",
+   "b": "URU",
+   "wa": 3,
+   "wb": 0,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "POR",
+   "b": "VEN",
+   "wa": 3,
+   "wb": 0,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "ITA",
+   "b": "URU",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "ITA",
+   "b": "VEN",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "URU",
+   "b": "VEN",
+   "wa": 1,
+   "wb": 2,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "SWE",
+   "b": "BRA",
+   "wa": 1,
+   "wb": 2,
+   "w": "BRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "BRA",
+   "b": "PAR",
+   "wa": 2,
+   "wb": 1,
+   "w": "BRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "BRA",
+   "b": "BEL",
+   "wa": 2,
+   "wb": 1,
+   "w": "BRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "SWE",
+   "b": "PAR",
+   "wa": 2,
+   "wb": 1,
+   "w": "SWE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "SWE",
+   "b": "BEL",
+   "wa": 3,
+   "wb": 0,
+   "w": "SWE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "PAR",
+   "b": "BEL",
+   "wa": 2,
+   "wb": 1,
+   "w": "PAR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AM Group A",
+   "a": "URU",
+   "b": "VEN",
+   "wa": 0,
+   "wb": 3,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AM Group A",
+   "a": "USA",
+   "b": "VEN",
+   "wa": 0,
+   "wb": 3,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AM Group A",
+   "a": "URU",
+   "b": "USA",
+   "wa": 2,
+   "wb": 1,
+   "w": "URU",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls AM Group A",
+   "a": "ECU",
+   "b": "VEN",
+   "wa": 0,
+   "wb": 3,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls AM Group A",
+   "a": "USA",
+   "b": "VEN",
+   "wa": 1,
+   "wb": 2,
+   "w": "VEN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls AM Group A",
+   "a": "ECU",
+   "b": "USA",
+   "wa": 1,
+   "wb": 2,
+   "w": "USA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group A",
+   "a": "EGY",
+   "b": "SEN",
+   "wa": 3,
+   "wb": 0,
+   "w": "EGY",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group A",
+   "a": "EGY",
+   "b": "QAT",
+   "wa": 2,
+   "wb": 1,
+   "w": "EGY",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group A",
+   "a": "SEN",
+   "b": "QAT",
+   "wa": 1,
+   "wb": 2,
+   "w": "QAT",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group B",
+   "a": "UAE",
+   "b": "JPN",
+   "wa": 1,
+   "wb": 2,
+   "w": "JPN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group B",
+   "a": "PAK",
+   "b": "JPN",
+   "wa": 0,
+   "wb": 3,
+   "w": "JPN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group B",
+   "a": "JPN",
+   "b": "LIB",
+   "wa": 2,
+   "wb": 1,
+   "w": "JPN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group B",
+   "a": "UAE",
+   "b": "PAK",
+   "wa": 3,
+   "wb": 0,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group B",
+   "a": "UAE",
+   "b": "LIB",
+   "wa": 2,
+   "wb": 1,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys AF/AS Group B",
+   "a": "PAK",
+   "b": "LIB",
+   "wa": 0,
+   "wb": 3,
+   "w": "LIB",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group A",
+   "a": "NED",
+   "b": "POL",
+   "wa": 3,
+   "wb": 0,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group A",
+   "a": "NED",
+   "b": "DEN",
+   "wa": 2,
+   "wb": 1,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group A",
+   "a": "POL",
+   "b": "DEN",
+   "wa": 0,
+   "wb": 3,
+   "w": "DEN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group B",
+   "a": "AUT",
+   "b": "GER",
+   "wa": 0,
+   "wb": 3,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group B",
+   "a": "LTU",
+   "b": "GER",
+   "wa": 1,
+   "wb": 2,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group B",
+   "a": "AUT",
+   "b": "LTU",
+   "wa": 2,
+   "wb": 1,
+   "w": "AUT",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group C",
+   "a": "CZE",
+   "b": "NOR",
+   "wa": 2,
+   "wb": 1,
+   "w": "CZE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group C",
+   "a": "CZE",
+   "b": "EST",
+   "wa": 3,
+   "wb": 0,
+   "w": "CZE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group C",
+   "a": "NOR",
+   "b": "EST",
+   "wa": 1,
+   "wb": 2,
+   "w": "EST",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group D",
+   "a": "SUI",
+   "b": "GBR",
+   "wa": 0,
+   "wb": 3,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group D",
+   "a": "GBR",
+   "b": "HUN",
+   "wa": 3,
+   "wb": 0,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group D",
+   "a": "GBR",
+   "b": "FIN",
+   "wa": 3,
+   "wb": 0,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group D",
+   "a": "SUI",
+   "b": "FIN",
+   "wa": 1,
+   "wb": 2,
+   "w": "FIN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group D",
+   "a": "HUN",
+   "b": "FIN",
+   "wa": 0,
+   "wb": 3,
+   "w": "FIN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Boys EU Group D",
+   "a": "SUI",
+   "b": "HUN",
+   "wa": 3,
+   "wb": 0,
+   "w": "SUI",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group A",
+   "a": "EST",
+   "b": "NOR",
+   "wa": 3,
+   "wb": 0,
+   "w": "EST",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group A",
+   "a": "EST",
+   "b": "NED",
+   "wa": 2,
+   "wb": 1,
+   "w": "EST",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group A",
+   "a": "NOR",
+   "b": "NED",
+   "wa": 0,
+   "wb": 3,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group B",
+   "a": "LTU",
+   "b": "FIN",
+   "wa": 1,
+   "wb": 2,
+   "w": "FIN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group B",
+   "a": "FIN",
+   "b": "HUN",
+   "wa": 3,
+   "wb": 0,
+   "w": "FIN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group B",
+   "a": "LTU",
+   "b": "HUN",
+   "wa": 2,
+   "wb": 1,
+   "w": "LTU",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group C",
+   "a": "DEN",
+   "b": "BEL",
+   "wa": 0,
+   "wb": 3,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group C",
+   "a": "BEL",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group C",
+   "a": "BEL",
+   "b": "GBR",
+   "wa": 2,
+   "wb": 1,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group C",
+   "a": "DEN",
+   "b": "GER",
+   "wa": 1,
+   "wb": 2,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group C",
+   "a": "GER",
+   "b": "GBR",
+   "wa": 2,
+   "wb": 1,
+   "w": "GER",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Girls EU Group C",
+   "a": "DEN",
+   "b": "GBR",
+   "wa": 1,
+   "wb": 2,
+   "w": "GBR",
+   "n": 3
   }
  ]
 }

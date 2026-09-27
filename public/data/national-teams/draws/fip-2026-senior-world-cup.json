@@ -8,7 +8,7 @@
  "source": "matchscorerlive teamresults FIP-2026-3803, days 1-6",
  "sourceUrl": "https://www.padelfip.com/events/fip-senior-world-cup-2026-2026/",
  "pending": 4,
- "fetched": "2026-09-26",
+ "fetched": "2026-09-27",
  "matches": [
   {
    "className": "Men",
@@ -22295,6 +22295,788 @@
     ],
     "winner": 0
    }
+  }
+ ],
+ "groupTies": [
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ARG",
+   "b": "BRA",
+   "wa": 5,
+   "wb": 0,
+   "w": "ARG",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ARG",
+   "b": "URU",
+   "wa": 5,
+   "wb": 0,
+   "w": "ARG",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ARG",
+   "b": "UKR",
+   "wa": 5,
+   "wb": 0,
+   "w": "ARG",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "BRA",
+   "b": "URU",
+   "wa": 4,
+   "wb": 1,
+   "w": "BRA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "BRA",
+   "b": "UKR",
+   "wa": 5,
+   "wb": 0,
+   "w": "BRA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "URU",
+   "b": "UKR",
+   "wa": 5,
+   "wb": 0,
+   "w": "URU",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "ESP",
+   "b": "GER",
+   "wa": 5,
+   "wb": 0,
+   "w": "ESP",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "ESP",
+   "b": "EGY",
+   "wa": 5,
+   "wb": 0,
+   "w": "ESP",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "ESP",
+   "b": "GBR",
+   "wa": 5,
+   "wb": 0,
+   "w": "ESP",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "GER",
+   "b": "EGY",
+   "wa": 5,
+   "wb": 0,
+   "w": "GER",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "GER",
+   "b": "GBR",
+   "wa": 3,
+   "wb": 2,
+   "w": "GER",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "EGY",
+   "b": "GBR",
+   "wa": 0,
+   "wb": 5,
+   "w": "GBR",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "FRA",
+   "b": "AUS",
+   "wa": 4,
+   "wb": 1,
+   "w": "FRA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "FRA",
+   "b": "CAN",
+   "wa": 4,
+   "wb": 1,
+   "w": "FRA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "FRA",
+   "b": "VEN",
+   "wa": 5,
+   "wb": 0,
+   "w": "FRA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "AUS",
+   "b": "CAN",
+   "wa": 3,
+   "wb": 2,
+   "w": "AUS",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "AUS",
+   "b": "VEN",
+   "wa": 3,
+   "wb": 2,
+   "w": "AUS",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "CAN",
+   "b": "VEN",
+   "wa": 3,
+   "wb": 2,
+   "w": "CAN",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "SWE",
+   "b": "BEL",
+   "wa": 4,
+   "wb": 1,
+   "w": "SWE",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "SWE",
+   "b": "SVK",
+   "wa": 5,
+   "wb": 0,
+   "w": "SWE",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "SWE",
+   "b": "LTU",
+   "wa": 5,
+   "wb": 0,
+   "w": "SWE",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BEL",
+   "b": "SVK",
+   "wa": 5,
+   "wb": 0,
+   "w": "BEL",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "BEL",
+   "b": "LTU",
+   "wa": 5,
+   "wb": 0,
+   "w": "BEL",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "SVK",
+   "b": "LTU",
+   "wa": 3,
+   "wb": 2,
+   "w": "SVK",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "ITA",
+   "b": "USA",
+   "wa": 3,
+   "wb": 2,
+   "w": "ITA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "ITA",
+   "b": "JPN",
+   "wa": 5,
+   "wb": 0,
+   "w": "ITA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "ITA",
+   "b": "IRL",
+   "wa": 5,
+   "wb": 0,
+   "w": "ITA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "USA",
+   "b": "JPN",
+   "wa": 5,
+   "wb": 0,
+   "w": "USA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "USA",
+   "b": "IRL",
+   "wa": 5,
+   "wb": 0,
+   "w": "USA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group E",
+   "a": "JPN",
+   "b": "IRL",
+   "wa": 2,
+   "wb": 3,
+   "w": "IRL",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "NED",
+   "b": "DEN",
+   "wa": 3,
+   "wb": 2,
+   "w": "NED",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "NED",
+   "b": "POL",
+   "wa": 4,
+   "wb": 1,
+   "w": "NED",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "NED",
+   "b": "PAR",
+   "wa": 4,
+   "wb": 1,
+   "w": "NED",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "DEN",
+   "b": "POL",
+   "wa": 5,
+   "wb": 0,
+   "w": "DEN",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "DEN",
+   "b": "PAR",
+   "wa": 3,
+   "wb": 2,
+   "w": "DEN",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group F",
+   "a": "POL",
+   "b": "PAR",
+   "wa": 1,
+   "wb": 4,
+   "w": "PAR",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CHI",
+   "b": "POR",
+   "wa": 1,
+   "wb": 4,
+   "w": "POR",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "ECU",
+   "b": "POR",
+   "wa": 0,
+   "wb": 5,
+   "w": "POR",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "POR",
+   "b": "CRO",
+   "wa": 5,
+   "wb": 0,
+   "w": "POR",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CHI",
+   "b": "ECU",
+   "wa": 5,
+   "wb": 0,
+   "w": "CHI",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "CHI",
+   "b": "CRO",
+   "wa": 5,
+   "wb": 0,
+   "w": "CHI",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group G",
+   "a": "ECU",
+   "b": "CRO",
+   "wa": 5,
+   "wb": 0,
+   "w": "ECU",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "MEX",
+   "b": "FIN",
+   "wa": 2,
+   "wb": 3,
+   "w": "FIN",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "FIN",
+   "b": "GIB",
+   "wa": 5,
+   "wb": 0,
+   "w": "FIN",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "FIN",
+   "b": "AUT",
+   "wa": 4,
+   "wb": 1,
+   "w": "FIN",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "MEX",
+   "b": "GIB",
+   "wa": 5,
+   "wb": 0,
+   "w": "MEX",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "MEX",
+   "b": "AUT",
+   "wa": 4,
+   "wb": 1,
+   "w": "MEX",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group H",
+   "a": "GIB",
+   "b": "AUT",
+   "wa": 3,
+   "wb": 2,
+   "w": "GIB",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "CHI",
+   "wa": 5,
+   "wb": 0,
+   "w": "ESP",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "LTU",
+   "wa": 5,
+   "wb": 0,
+   "w": "ESP",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "CHI",
+   "b": "LTU",
+   "wa": 5,
+   "wb": 0,
+   "w": "CHI",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "GER",
+   "wa": 5,
+   "wb": 0,
+   "w": "FRA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "PAR",
+   "wa": 5,
+   "wb": 0,
+   "w": "FRA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "GER",
+   "b": "PAR",
+   "wa": 3,
+   "wb": 2,
+   "w": "GER",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "ITA",
+   "b": "BRA",
+   "wa": 2,
+   "wb": 3,
+   "w": "BRA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "BRA",
+   "b": "URU",
+   "wa": 5,
+   "wb": 0,
+   "w": "BRA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "ITA",
+   "b": "URU",
+   "wa": 5,
+   "wb": 0,
+   "w": "ITA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "NED",
+   "b": "DEN",
+   "wa": 4,
+   "wb": 1,
+   "w": "NED",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "NED",
+   "b": "AUT",
+   "wa": 5,
+   "wb": 0,
+   "w": "NED",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group D",
+   "a": "DEN",
+   "b": "AUT",
+   "wa": 4,
+   "wb": 1,
+   "w": "DEN",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "SWE",
+   "b": "AUS",
+   "wa": 5,
+   "wb": 0,
+   "w": "SWE",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "SWE",
+   "b": "GIB",
+   "wa": 5,
+   "wb": 0,
+   "w": "SWE",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group E",
+   "a": "AUS",
+   "b": "GIB",
+   "wa": 5,
+   "wb": 0,
+   "w": "AUS",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "BEL",
+   "b": "GBR",
+   "wa": 4,
+   "wb": 1,
+   "w": "BEL",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "BEL",
+   "b": "ECU",
+   "wa": 5,
+   "wb": 0,
+   "w": "BEL",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group F",
+   "a": "GBR",
+   "b": "ECU",
+   "wa": 5,
+   "wb": 0,
+   "w": "GBR",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group G",
+   "a": "USA",
+   "b": "MEX",
+   "wa": 3,
+   "wb": 2,
+   "w": "USA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group G",
+   "a": "USA",
+   "b": "JPN",
+   "wa": 5,
+   "wb": 0,
+   "w": "USA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group G",
+   "a": "USA",
+   "b": "IRL",
+   "wa": 5,
+   "wb": 0,
+   "w": "USA",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group G",
+   "a": "MEX",
+   "b": "JPN",
+   "wa": 4,
+   "wb": 1,
+   "w": "MEX",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group G",
+   "a": "MEX",
+   "b": "IRL",
+   "wa": 5,
+   "wb": 0,
+   "w": "MEX",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group G",
+   "a": "JPN",
+   "b": "IRL",
+   "wa": 3,
+   "wb": 2,
+   "w": "JPN",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group H",
+   "a": "ARG",
+   "b": "POR",
+   "wa": 4,
+   "wb": 0,
+   "w": "ARG",
+   "n": 4
+  },
+  {
+   "gender": "women",
+   "group": "Group H",
+   "a": "ARG",
+   "b": "SUI",
+   "wa": 5,
+   "wb": 0,
+   "w": "ARG",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group H",
+   "a": "ARG",
+   "b": "CAN",
+   "wa": 5,
+   "wb": 0,
+   "w": "ARG",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group H",
+   "a": "POR",
+   "b": "SUI",
+   "wa": 3,
+   "wb": 1,
+   "w": "POR",
+   "n": 4
+  },
+  {
+   "gender": "women",
+   "group": "Group H",
+   "a": "POR",
+   "b": "CAN",
+   "wa": 4,
+   "wb": 0,
+   "w": "POR",
+   "n": 4
+  },
+  {
+   "gender": "women",
+   "group": "Group H",
+   "a": "SUI",
+   "b": "CAN",
+   "wa": 5,
+   "wb": 0,
+   "w": "SUI",
+   "n": 5
   }
  ]
 }

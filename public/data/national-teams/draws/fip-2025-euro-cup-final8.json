@@ -8,7 +8,7 @@
  "source": "matchscorerlive teamresults FIP-2025-127, days 1-5",
  "sourceUrl": "https://www.padelfip.com/events/fip-euro-padel-cup-2025-final-8/",
  "pending": 0,
- "fetched": "2026-09-26",
+ "fetched": "2026-09-27",
  "matches": [
   {
    "className": "Men",
@@ -4626,6 +4626,248 @@
     "sets": [],
     "winner": null
    }
+  }
+ ],
+ "groupTies": [
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "POR",
+   "wa": 5,
+   "wb": 0,
+   "w": "ESP",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "GBR",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "SWE",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "POR",
+   "b": "GBR",
+   "wa": 3,
+   "wb": 0,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "POR",
+   "b": "SWE",
+   "wa": 2,
+   "wb": 1,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "GBR",
+   "b": "SWE",
+   "wa": 2,
+   "wb": 1,
+   "w": "GBR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "ITA",
+   "b": "FRA",
+   "wa": 2,
+   "wb": 1,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "ITA",
+   "b": "NED",
+   "wa": 4,
+   "wb": 1,
+   "w": "ITA",
+   "n": 5
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "ITA",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "NED",
+   "wa": 1,
+   "wb": 2,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "NED",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "NED",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "POR",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "BEL",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "ESP",
+   "b": "NED",
+   "wa": 3,
+   "wb": 0,
+   "w": "ESP",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "POR",
+   "b": "BEL",
+   "wa": 1,
+   "wb": 2,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "BEL",
+   "b": "NED",
+   "wa": 3,
+   "wb": 0,
+   "w": "BEL",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "POR",
+   "b": "NED",
+   "wa": 2,
+   "wb": 1,
+   "w": "POR",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "ITA",
+   "b": "FRA",
+   "wa": 1,
+   "wb": 2,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "FRA",
+   "b": "GBR",
+   "wa": 3,
+   "wb": 0,
+   "w": "FRA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "ITA",
+   "b": "GER",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "ITA",
+   "b": "GBR",
+   "wa": 3,
+   "wb": 0,
+   "w": "ITA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "GER",
+   "b": "GBR",
+   "wa": 1,
+   "wb": 2,
+   "w": "GBR",
+   "n": 3
   }
  ]
 }

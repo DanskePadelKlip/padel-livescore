@@ -8,7 +8,7 @@
  "source": "matchscorerlive teamresults FIP-2026-3111, days 1-3",
  "sourceUrl": "https://www.padelfip.com/events/fip-world-cup-2026-qualifiers-north-central-america/",
  "pending": 0,
- "fetched": "2026-09-26",
+ "fetched": "2026-09-27",
  "matches": [
   {
    "className": "Men",
@@ -889,6 +889,68 @@
     ],
     "winner": 1
    }
+  }
+ ],
+ "groupTies": [
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "CAN",
+   "b": "USA",
+   "wa": 0,
+   "wb": 3,
+   "w": "USA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "MEX",
+   "b": "USA",
+   "wa": 1,
+   "wb": 2,
+   "w": "USA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "CAN",
+   "b": "MEX",
+   "wa": 0,
+   "wb": 3,
+   "w": "MEX",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group 1",
+   "a": "CAN",
+   "b": "USA",
+   "wa": 0,
+   "wb": 3,
+   "w": "USA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group 1",
+   "a": "MEX",
+   "b": "USA",
+   "wa": 0,
+   "wb": 3,
+   "w": "USA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group 1",
+   "a": "CAN",
+   "b": "MEX",
+   "wa": 0,
+   "wb": 3,
+   "w": "MEX",
+   "n": 3
   }
  ]
 }

@@ -97,7 +97,7 @@
    "end": "2025-07-13",
    "where": "",
    "partial": "The source still lists 1 tie as unplayed, so this edition stops short of its last rounds.",
-   "tieOnly": 0,
+   "tieOnly": 1,
    "tkey": "fip-2025-euro-cup-ph12",
    "genders": [
     "men",
@@ -139,7 +139,7 @@
    "end": "2025-10-01",
    "where": "",
    "partial": "The source still lists 1 tie as unplayed, so this edition stops short of its last rounds.",
-   "tieOnly": 0,
+   "tieOnly": 1,
    "tkey": "fip-2025-junior-world-cup",
    "genders": [
     "men",
@@ -2689,6 +2689,7 @@
   {"ev":"fip-2025-euro-cup-ph12","g":"women","rd":"Group C","a":"LTU","b":"NOR","wa":2,"wb":1,"n":3,"w":"LTU"},
   {"ev":"fip-2025-euro-cup-ph12","g":"women","rd":"Group D","a":"BEL","b":"DEN","wa":3,"wb":0,"n":3,"w":"BEL"},
   {"ev":"fip-2025-euro-cup-ph12","g":"women","rd":"Group D","a":"EST","b":"GRE","wa":1,"wb":2,"n":3,"w":"GRE"},
+  {"ev":"fip-2025-euro-cup-ph12","g":"women","rd":"Group B","a":"IRL","b":"MNE","wa":2,"wb":0,"n":2,"w":"IRL","tieOnly":true},
   {"ev":"fip-2025-euro-cup-final8","g":"men","rd":"Group A","a":"ESP","b":"GBR","wa":3,"wb":0,"n":3,"w":"ESP"},
   {"ev":"fip-2025-euro-cup-final8","g":"men","rd":"Group A","a":"POR","b":"SWE","wa":2,"wb":1,"n":3,"w":"POR"},
   {"ev":"fip-2025-euro-cup-final8","g":"men","rd":"Group B","a":"ITA","b":"NED","wa":2,"wb":1,"n":3,"w":"ITA"},
@@ -2810,6 +2811,7 @@
   {"ev":"fip-2025-junior-world-cup","g":"women","rd":"Group C","a":"URU","b":"VEN","wa":1,"wb":2,"n":3,"w":"VEN"},
   {"ev":"fip-2025-junior-world-cup","g":"women","rd":"Group D","a":"BRA","b":"SWE","wa":2,"wb":1,"n":3,"w":"BRA"},
   {"ev":"fip-2025-junior-world-cup","g":"women","rd":"Group D","a":"BEL","b":"PAR","wa":1,"wb":2,"n":3,"w":"PAR"},
+  {"ev":"fip-2025-junior-world-cup","g":"men","rd":"Group B","a":"NED","b":"SWE","wa":0,"wb":2,"n":2,"w":"SWE","tieOnly":true},
   {"ev":"fip-2025-asia-cup","g":"men","rd":"Group A","a":"BRN","b":"INA","wa":3,"wb":0,"n":3,"w":"BRN"},
   {"ev":"fip-2025-asia-cup","g":"men","rd":"Group B","a":"CHN","b":"THA","wa":3,"wb":0,"n":3,"w":"CHN"},
   {"ev":"fip-2025-asia-cup","g":"men","rd":"Group C","a":"KOR","b":"KSA","wa":0,"wb":3,"n":3,"w":"KSA"},
@@ -5310,12 +5312,12 @@
   },
   "fip-2025-euro-cup-ph12": {
    "matches": 306,
-   "ties": 102,
+   "ties": 103,
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
    "unplayed": 0,
-   "tieOnly": 0
+   "tieOnly": 1
   },
   "fip-2025-euro-cup-final8": {
    "matches": 89,
@@ -5328,12 +5330,12 @@
   },
   "fip-2025-junior-world-cup": {
    "matches": 266,
-   "ties": 89,
+   "ties": 90,
    "skipped": 0,
    "merged": 0,
    "undecided": 0,
    "unplayed": 0,
-   "tieOnly": 0
+   "tieOnly": 1
   },
   "fip-2025-asia-cup": {
    "matches": 173,

@@ -8,7 +8,7 @@
  "source": "matchscorerlive teamresults FIP-2025-128, days 1-8",
  "sourceUrl": "https://www.padelfip.com/events/fip-asia-padel-cup-2025/",
  "pending": 0,
- "fetched": "2026-09-26",
+ "fetched": "2026-09-27",
  "matches": [
   {
    "className": "Men",
@@ -8565,6 +8565,518 @@
     ],
     "winner": 1
    }
+  }
+ ],
+ "groupTies": [
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "INA",
+   "b": "KUW",
+   "wa": 1,
+   "wb": 2,
+   "w": "KUW",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "KUW",
+   "b": "BRN",
+   "wa": 2,
+   "wb": 1,
+   "w": "KUW",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group A",
+   "a": "INA",
+   "b": "BRN",
+   "wa": 0,
+   "wb": 3,
+   "w": "BRN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "THA",
+   "b": "PAK",
+   "wa": 0,
+   "wb": 3,
+   "w": "PAK",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "PAK",
+   "b": "CHN",
+   "wa": 2,
+   "wb": 1,
+   "w": "PAK",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group B",
+   "a": "THA",
+   "b": "CHN",
+   "wa": 0,
+   "wb": 3,
+   "w": "CHN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "KOR",
+   "b": "JOR",
+   "wa": 0,
+   "wb": 3,
+   "w": "JOR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "JOR",
+   "b": "KSA",
+   "wa": 2,
+   "wb": 1,
+   "w": "JOR",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group C",
+   "a": "KOR",
+   "b": "KSA",
+   "wa": 0,
+   "wb": 3,
+   "w": "KSA",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "JPN",
+   "b": "LBN",
+   "wa": 1,
+   "wb": 2,
+   "w": "LBN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "PHI",
+   "b": "LBN",
+   "wa": 0,
+   "wb": 3,
+   "w": "LBN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "LBN",
+   "b": "KAZ",
+   "wa": 2,
+   "wb": 1,
+   "w": "LBN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "JPN",
+   "b": "KAZ",
+   "wa": 1,
+   "wb": 2,
+   "w": "KAZ",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "PHI",
+   "b": "KAZ",
+   "wa": 0,
+   "wb": 3,
+   "w": "KAZ",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group D",
+   "a": "JPN",
+   "b": "PHI",
+   "wa": 3,
+   "wb": 0,
+   "w": "JPN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "LBN",
+   "b": "THA",
+   "wa": 1,
+   "wb": 2,
+   "w": "THA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "THA",
+   "b": "QAT",
+   "wa": 2,
+   "wb": 1,
+   "w": "THA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "LBN",
+   "b": "QAT",
+   "wa": 3,
+   "wb": 0,
+   "w": "LBN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "KUW",
+   "b": "INA",
+   "wa": 0,
+   "wb": 3,
+   "w": "INA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "BRN",
+   "b": "INA",
+   "wa": 0,
+   "wb": 3,
+   "w": "INA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "KUW",
+   "b": "BRN",
+   "wa": 3,
+   "wb": 0,
+   "w": "KUW",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "KSA",
+   "b": "UAE",
+   "wa": 1,
+   "wb": 2,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "UAE",
+   "b": "CHN",
+   "wa": 2,
+   "wb": 1,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "UAE",
+   "b": "PAK",
+   "wa": 2,
+   "wb": 1,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "KSA",
+   "b": "CHN",
+   "wa": 2,
+   "wb": 1,
+   "w": "KSA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "KSA",
+   "b": "PAK",
+   "wa": 3,
+   "wb": 0,
+   "w": "KSA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group C",
+   "a": "CHN",
+   "b": "PAK",
+   "wa": 3,
+   "wb": 0,
+   "w": "CHN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "UAE",
+   "b": "IRI",
+   "wa": 2,
+   "wb": 1,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "UAE",
+   "b": "LBN",
+   "wa": 2,
+   "wb": 1,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "UAE",
+   "b": "JOR",
+   "wa": 2,
+   "wb": 1,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "IRI",
+   "b": "LBN",
+   "wa": 3,
+   "wb": 0,
+   "w": "IRI",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "IRI",
+   "b": "JOR",
+   "wa": 3,
+   "wb": 0,
+   "w": "IRI",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 1",
+   "a": "LBN",
+   "b": "JOR",
+   "wa": 2,
+   "wb": 1,
+   "w": "LBN",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 2",
+   "a": "QAT",
+   "b": "AUS",
+   "wa": 2,
+   "wb": 1,
+   "w": "QAT",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 2",
+   "a": "QAT",
+   "b": "KUW",
+   "wa": 2,
+   "wb": 1,
+   "w": "QAT",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 2",
+   "a": "QAT",
+   "b": "PAK",
+   "wa": 3,
+   "wb": 0,
+   "w": "QAT",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 2",
+   "a": "AUS",
+   "b": "KUW",
+   "wa": 2,
+   "wb": 1,
+   "w": "AUS",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 2",
+   "a": "AUS",
+   "b": "PAK",
+   "wa": 3,
+   "wb": 0,
+   "w": "AUS",
+   "n": 3
+  },
+  {
+   "gender": "men",
+   "group": "Group 2",
+   "a": "KUW",
+   "b": "PAK",
+   "wa": 2,
+   "wb": 1,
+   "w": "KUW",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "JPN",
+   "b": "IRI",
+   "wa": 5,
+   "wb": 0,
+   "w": "JPN",
+   "n": 5
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "JPN",
+   "b": "KSA",
+   "wa": 3,
+   "wb": 0,
+   "w": "JPN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "JPN",
+   "b": "UAE",
+   "wa": 3,
+   "wb": 0,
+   "w": "JPN",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "IRI",
+   "b": "KSA",
+   "wa": 3,
+   "wb": 0,
+   "w": "IRI",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "IRI",
+   "b": "UAE",
+   "wa": 3,
+   "wb": 0,
+   "w": "IRI",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group A",
+   "a": "KSA",
+   "b": "UAE",
+   "wa": 1,
+   "wb": 2,
+   "w": "UAE",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "AUS",
+   "b": "INA",
+   "wa": 0,
+   "wb": 6,
+   "w": "INA",
+   "n": 6
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "PHI",
+   "b": "INA",
+   "wa": 0,
+   "wb": 3,
+   "w": "INA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "INA",
+   "b": "THA",
+   "wa": 3,
+   "wb": 0,
+   "w": "INA",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "AUS",
+   "b": "PHI",
+   "wa": 3,
+   "wb": 0,
+   "w": "AUS",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "AUS",
+   "b": "THA",
+   "wa": 3,
+   "wb": 0,
+   "w": "AUS",
+   "n": 3
+  },
+  {
+   "gender": "women",
+   "group": "Group B",
+   "a": "PHI",
+   "b": "THA",
+   "wa": 1,
+   "wb": 2,
+   "w": "THA",
+   "n": 3
   }
  ]
 }
