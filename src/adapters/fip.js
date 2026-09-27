@@ -248,10 +248,16 @@ async function applyLiveDetail(matches, msId, log) {
 }
 
 // Point-level detail for the broadcast court, where the event's Live Score tab embeds an
-// organiser scorebug. Costs nothing unless the event has a live match; discovery is
-// cached per event.
+// organiser scorebug. Discovery is cached per event, so a miss costs one lookup.
+//
+// The gate used to be "only if Crionet already calls something live", which defeated the
+// whole module: the scorebug exists BECAUSE Crionet's board publishes a permanent "0" and
+// its order-of-play leaves an in-progress match blank. With no live match to trigger on,
+// an event scored entirely on the organiser's own tab was never even looked at. Gate the
+// way sporteaser does instead — on matches the board left without points.
 async function applyScorebugDetail(matches, ev, log) {
-  if (!matches.some((m) => m.status === STATUS.LIVE)) return 0;
+  const pending = matches.filter((m) => m.status !== STATUS.FINAL && !m.score.points);
+  if (!pending.length) return 0;
   const base = await scorebug.discoverBase(ev.link, log);
   if (!base) return 0;
   const n = scorebug.attach(matches, await scorebug.fetchState(base, log), log);

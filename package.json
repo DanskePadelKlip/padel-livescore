@@ -11,7 +11,9 @@
     "fetch": "node scripts/fetch-live.js",
     "serve": "node scripts/serve.js",
     "dev": "node scripts/fetch-live.js && node scripts/serve.js",
-    "test:racketscore": "node scripts/test-racketscore.mjs"
+    "test:racketscore": "node scripts/test-racketscore.mjs",
+    "test:scorebug": "node scripts/test-scorebug.mjs",
+    "test": "npm run test:racketscore && npm run test:scorebug"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",
