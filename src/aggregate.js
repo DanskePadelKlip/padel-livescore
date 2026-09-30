@@ -6,6 +6,7 @@ import * as rankedin from "./adapters/rankedin.js";
 import * as tournamentsoftware from "./adapters/tournamentsoftware.js";
 import * as fip from "./adapters/fip.js";
 import * as puntuate from "./adapters/puntuate.js";
+import * as teamleague from "./adapters/rankedin-teamleague.js";
 import { assertMatch, STATUS } from "./schema.js";
 
 // Register adapters with a min refresh interval. All three are now plain fetch +
@@ -22,6 +23,11 @@ const ADAPTERS = [
   // adapter returns [] outside its events' dates, so this costs nothing the
   // rest of the year; ~1 min while a championship is on.
   { mod: puntuate, minMs: 60_000 },
+  // Danish team leagues - Elitedivisionen and 1. Division. A SEPARATE adapter from
+  // rankedin above because team leagues are a different id namespace; see that file's
+  // header. Results are typed in rubber by rubber rather than scored live, so a minute
+  // is plenty, and a warm cycle costs ~2s against ~10s cold.
+  { mod: teamleague, minMs: 60_000 },
 ];
 
 // Per-adapter cache (persists across cycles in the long-running daemon). Holds the

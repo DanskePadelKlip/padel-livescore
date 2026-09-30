@@ -12,8 +12,10 @@ const FRESH_MIN = 60; // refresh runs every 15 min; >60 (GH-cron jitter margin) 
 // while RankedIn alone kept the site "up" at ~1/4 coverage (2026-07-19).
 const SOURCE_STALE_HOURS = 3;
 // Sources where zero matches is a normal state, not a symptom. puntuate carries FIP
-// national-team championships only and is correctly empty between events.
-const MAY_BE_EMPTY = new Set(["puntuate"]);
+// national-team championships only and is correctly empty between events, and the
+// Danish team leagues run Feb-May and Aug-Nov, so rankedin-teamleague is legitimately
+// empty for months at a time.
+const MAY_BE_EMPTY = new Set(["puntuate", "rankedin-teamleague"]);
 
 const json = (d, status = 200) =>
   new Response(JSON.stringify(d, null, 2), {
