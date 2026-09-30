@@ -680,10 +680,19 @@ function pointsTier(n) {
 }
 
 // National ladders, for names AND class names. Danish events carry their tier as a
-// points number (DPF1000); the team leagues carry none, so Elitedivisionen and DM
-// are pinned above every ranking event as the top of the Danish pyramid.
+// points number (DPF1000); the team leagues carry none, so they are pinned by hand.
+// DM stays at the top of the Danish pyramid, but the DPF1000 is the FLAGSHIP and
+// outranks the team league - Kim's call, 2026-09-30. Not academic: the DPF1000 on
+// 23-24 Oct 2026 falls on two days that BOTH carry Elitedivision ties, and 36 of the
+// season's 65 tie days carry one, so the two really do have to be ordered.
 function nationalTier(s) {
-  if (/elitedivision/.test(s)) return 95;
+  // 65 keeps Elitedivisionen above every DPF event up to DPF700 (58) and below both
+  // DPF1000 (70) and the DPF2000 Series Finals (90).
+  if (/elitedivision/.test(s)) return 65;
+  // The tier below it. Without a number here, the league group's rank swings with
+  // whichever division happens to be playing that day - Elite days put it near the
+  // top of Denmark, 1.-Division-only days dropped it to untiered.
+  if (/\b1\.\s*division\b/.test(s)) return 45;
   if (/\bdm\b|danmarksmesterskab/.test(s)) return 95;
   if (/nordic championship/.test(s)) return 90;
   const dpf = [...s.matchAll(/\bdpf\s*-?\s*(\d{2,4})\b/g)].map((m) => +m[1]);
