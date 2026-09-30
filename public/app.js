@@ -389,7 +389,13 @@ const state = {
   // the Elo board, and the header's rankStat() could pick it as the official
   // ranking. Separate slot, no contamination.
   eloRankings: null,         // loaded rankings-elo.json
-  rankMetric: "points",      // "points" | "elo" — which board the view shows
+  // Recent form, in its own slots for the same reason Elo has one: it is a
+  // third kind of number and must never be read as a ranking. The board file
+  // carries every row's name; the lite file is id -> score for one profile.
+  formRankings: null,        // loaded rankings-form.json
+  formLite: null,            // loaded form-lite.json
+  formCold: false,           // form board: under-performers first
+  rankMetric: "points",      // "points" | "elo" | "form" — which board the view shows
   rankFed: null,
   rankCat: null,
   rankNat: "",               // "" = all; else a country code to filter a ranking to that nationality
@@ -2378,6 +2384,7 @@ function renderProfile() {
   const form = summary.form || [];
   if (form.length)
     html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${summary.streak > 1 ? `<span class="streak">${summary.streak} ${summary.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
+  html += formLine(player.id);
   html += shapeBlock(summary.shape);
   html += qualityBlock(state.player.quality);
   const tp = state.player.topPartner;
@@ -3455,6 +3462,74 @@ async function ensureElo() {
   if (state.mode === "rankings") render();
 }
 
+// Recent form loads the way Elo does and for the same reasons: its own slot,
+// its own tried-flag, one 404 at most. Two files because they are two jobs —
+// the board needs every row's name, a profile needs one player's numbers and
+// should not download a whole board to get them.
+let _formLoading = false, _formTried = false;
+async function ensureForm() {
+  if (state.formRankings || _formLoading || _formTried) return;
+  _formLoading = true;
+  try {
+    const d = await fetch("data/rankings-form.json?_=" + Date.now()).then((r) => (r.ok ? r.json() : null));
+    if (d && (d.lists || []).length) state.formRankings = d;
+  } catch { /* absent or unreachable — the Form chip simply doesn't appear */ }
+  _formLoading = false;
+  _formTried = true;
+  if (state.mode === "rankings") render();
+}
+let _formLiteLoading = false, _formLiteTried = false;
+async function ensureFormLite() {
+  if (state.formLite || _formLiteLoading || _formLiteTried) return;
+  _formLiteLoading = true;
+  try {
+    const d = await fetch("data/form-lite.json?_=" + Date.now()).then((r) => (r.ok ? r.json() : null));
+    if (d && d.players) state.formLite = d;
+  } catch { /* a profile without it shows no form line, nothing else changes */ }
+  _formLiteLoading = false;
+  _formLiteTried = true;
+  if (state.formLite && state.mode === "players" && state.player && state.player !== "loading") render();
+}
+
+// Form is RELATIVE to the player's own rating: the Elo points by which their
+// last matches sit above or below what the ratings predicted. A favourite who
+// wins as expected scores about zero, so this shows who is out-performing their
+// level, never who is best. The band (and its arrows) comes from padel-db's
+// form.py, so every surface draws the same line between "up" and "level".
+const FORM_BAND = { "2": ["▲▲", "up"], "1": ["▲", "up"], "0": ["●", "zero"], "-1": ["▼", "down"], "-2": ["▼▼", "down"] };
+const formBand = (b) => FORM_BAND[String(b)] || FORM_BAND["0"];
+const formSigned = (n) => (n > 0 ? "+" + n : n < 0 ? "−" + -n : "0");
+// One decimal always: 7.0 arrives from JSON as the number 7 and would print as "7".
+const formExp = (x) => Number(x).toFixed(1);
+const formWhy = (w, n, exp) => `won ${w} of the last ${n} counted matches; the ratings expected ${formExp(exp)}`;
+
+// The points column of a form-board row.
+function formCell(r) {
+  const [mark, cls] = formBand(r.band);
+  return `<span class="mv ${cls}">${mark}</span> ${esc(formSigned(r.points))}`
+    + `<span class="rdef" title="${esc(formWhy(r.w, r.n, r.exp))}">${esc(r.w)}–${esc(r.n - r.w)} · exp ${esc(formExp(r.exp))}</span>`;
+}
+
+// The line under a profile's W/L chips. Renders nothing until form-lite.json is
+// in hand, and nothing at all for a player without a score — too few recent
+// matches is not the same as average form, so there is no zero to show.
+function formLine(id) {
+  ensureFormLite();
+  const d = state.formLite;
+  const f = d && d.players && d.players[id];
+  if (!f) return "";
+  const [score, band, n, w, exp] = f;
+  const [mark, cls] = formBand(band);
+  const win = d.window || {};
+  const title = `Recent form, relative to this player's own rating: the Elo points by which the last ${n} counted matches`
+    + ` (within ${win.days || 120} days) sit above or below what the ratings predicted.`
+    + ` A favourite who wins as expected scores about zero. Partners who played the same matches share a score.`;
+  return `<div class="form-row" title="${esc(title)}"><span class="form-lbl">vs rating</span>`
+    + `<span class="mv ${cls}" style="font-size:13px">${mark} ${esc(formSigned(score))}</span>`
+    + `<span class="streak">won ${esc(w)} of the last ${esc(n)}, ${esc(formExp(exp))} expected</span>`
+    + `<span class="streak" data-goto-form="1" style="cursor:pointer;text-decoration:underline">form table →</span></div>`;
+}
+
 // "Race to #1" — the top-5 story for a FIP list: points, gap to the leader, and
 // points each is defending (about to expire) in the next ~8 weeks. Reuses the
 // `defending` field the FIP export computes from padel.db.
@@ -3485,17 +3560,21 @@ function racePanel(rows, cat) {
 function renderRankings() {
   if (!state.rankings) return;
   ensureElo(); // no-op after the first attempt
+  ensureForm();
   const hasElo = !!state.eloRankings;
+  const hasForm = !!state.formRankings;
   // Fall back to points only once the load has actually been TRIED: a deep link to
   // /rankings?by=elo renders before the Elo file lands, and resetting the metric
   // there would silently strand the visitor on the points board.
   if (state.rankMetric === "elo" && !hasElo && _eloTried) state.rankMetric = "points";
+  if (state.rankMetric === "form" && !hasForm && _formTried) state.rankMetric = "points";
   const isElo = state.rankMetric === "elo" && hasElo;
+  const isForm = state.rankMetric === "form" && hasForm;
   // The two boards cover different federations (Elo publishes only where the
   // pool genuinely covers that country's play), so the fed/cat chips derive from
   // whichever board is showing, and a selection absent from the other one falls
   // back rather than rendering an empty table.
-  const lists = (isElo ? state.eloRankings : state.rankings).lists;
+  const lists = (isForm ? state.formRankings : isElo ? state.eloRankings : state.rankings).lists;
   const feds = [...new Set(lists.map((l) => l.fed))];
   const cats = [...new Set(lists.map((l) => l.category))];
   if (!state.rankFed || !feds.includes(state.rankFed)) state.rankFed = feds[0];
@@ -3512,9 +3591,10 @@ function renderRankings() {
     ${feds.map((f) => `<button class="rchip ${state.rankFed === f ? "on" : ""}" data-rfed="${f}" title="${esc(regionLabel(f))}">${FLAGS[f] || ""} ${f}</button>`).join("")}
     <span class="rsep"></span>
     ${cats.map((c) => `<button class="rchip ${state.rankCat === c ? "on" : ""}" data-rcat="${c}">${c === "men" ? "Men" : c === "women" ? "Women" : esc(c)}</button>`).join("")}
-    ${hasElo ? `<span class="rsep"></span>
-    <button class="rchip ${!isElo ? "on" : ""}" data-rmetric="points" title="Official ranking points over the trailing 12 months">Points</button>
-    <button class="rchip ${isElo ? "on" : ""}" data-rmetric="elo" title="Elo rating — strength from results, not from how much you played">Elo</button>` : ""}
+    ${hasElo || hasForm ? `<span class="rsep"></span>
+    <button class="rchip ${!isElo && !isForm ? "on" : ""}" data-rmetric="points" title="Official ranking points over the trailing 12 months">Points</button>` : ""}
+    ${hasElo ? `<button class="rchip ${isElo ? "on" : ""}" data-rmetric="elo" title="Elo rating — strength from results, not from how much you played">Elo</button>` : ""}
+    ${hasForm ? `<button class="rchip ${isForm ? "on" : ""}" data-rmetric="form" title="Recent form — the last matches against what the player's own rating predicted">Form</button>` : ""}
   </div>`;
   const movement = !!list?.movement;
   // Nationality filter — only meaningful on a multi-country list (i.e. FIP world).
@@ -3535,16 +3615,30 @@ function renderRankings() {
   const shown = state.rankNat ? rows.filter((r) => r.country === state.rankNat) : rows;
   // racePanel is a points-race-to-year-end panel; it reads `points` as ranking
   // points and would render nonsense against Elo ratings.
-  if (multiCountry && !state.rankNat && !q && !isElo) html += racePanel(list?.rows, state.rankCat);
-  html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ${isElo ? "Elo" : "ranking"}` +
-    `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ${isElo ? "rated" : "ranked"}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
+  if (multiCountry && !state.rankNat && !q && !isElo && !isForm) html += racePanel(list?.rows, state.rankCat);
+  html += `<div class="section-label region"><span class="rflag">${FLAGS[state.rankFed] || ""}</span>${state.rankFed} ${list?.label || ""} ${isForm ? "form" : isElo ? "Elo" : "ranking"}` +
+    `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ${isForm ? "with a score" : isElo ? "rated" : "ranked"}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
   // Say plainly what the number is and who is missing, so nobody reads an Elo
   // board as an official ranking.
   if (isElo) html += `<div class="elo-note">Strength rating from match results — separate pools for men, women, FIP and Nordic, so ranks only compare within a list. Players with fewer than ${state.eloRankings.minMatches || 20} rated matches are not shown.</div>`;
   // Full list caps at 250 rendered rows (keeps the DOM light on a 1000-deep list);
   // a nationality filter renders all matches so every player of that country shows.
   const cap = state.rankNat || q ? 1000 : 250;
-  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + shown.slice(0, cap).map((r) => rankRow(r, movement, isElo)).join("") + `</div>`;
+  // Say what the number is BEFORE the table: a form board read as a ranking
+  // says the world number one is mid-table, which is true and means nothing.
+  let view = shown;
+  if (isForm) {
+    const w = state.formRankings.window || {};
+    html += `<div class="elo-note">Form is <b>relative to each player's own rating</b>: the Elo points by which their last ${w.matches || 10} matches (within ${w.days || 120} days, at least ${w.min || 6}) sit above or below what the ratings predicted. A favourite who wins as expected scores about zero, so this shows who is out-performing their level — not who is best. Partners who played the same matches share a score. Players with fewer than ${state.formRankings.minMatches || 20} rated matches are not shown.${state.formRankings.asOf ? " As of " + esc(state.formRankings.asOf) + "." : ""}</div>
+    <div class="rank-sel">
+      <button class="rchip ${!state.formCold ? "on" : ""}" data-fdir="hot">▲ Over-performing</button>
+      <button class="rchip ${state.formCold ? "on" : ""}" data-fdir="cold">▼ Under-performing</button>
+    </div>`;
+    // The cold end is the same list read from the bottom, renumbered so #1 is
+    // the coldest; `cold` stops those rows being handed a medal.
+    if (state.formCold) view = shown.slice().reverse().map((r, i) => ({ ...r, rank: i + 1, cold: true }));
+  }
+  html += `<div class="ranktable${movement ? " hasmove" : ""}">` + view.slice(0, cap).map((r) => rankRow(r, movement, isElo, isForm)).join("") + `</div>`;
   if (!shown.length) html += `<div class="empty">No players match.</div>`;
   app.innerHTML = html;
   applyCountryFilter();
@@ -3577,22 +3671,22 @@ function moveCell(r, movement) {
 
 // isElo: render the value ungrouped. An Elo rating is a scale position, not a
 // quantity — "2,323" reads as points, "2323" reads as a rating.
-function rankRow(r, movement, isElo) {
+function rankRow(r, movement, isElo, isForm) {
   // Clicking a row opens that player: by id where the list carries one, otherwise
   // by name through /api/search. Only ~150 of the FIP points list's 6,300 rows
   // resolve to a profile id, so id-only linking left the world ranking — the most
   // browsed list on the site — almost entirely dead to the touch. An ambiguous name,
   // or one absent from the profile DB, lands on the search view rather than on a
   // wrong profile (see openPlayerByName).
-  const prof = r.id || r.name ? " has-profile" : "";
-  const medal = r.rank <= 3 ? ` medal m${r.rank}` : "";
+  const prof = !r.np && (r.id || r.name) ? " has-profile" : "";
+  const medal = r.rank <= 3 && !r.cold ? ` medal m${r.rank}` : "";
   const flag = countryFlag(r.country);
-  return `<div class="rankrow${prof}${medal}"${r.id ? ` data-player="${esc(r.id)}"` : r.name ? ` data-pname="${esc(r.name)}"` : ""}>
+  return `<div class="rankrow${prof}${medal}"${r.np ? "" : r.id ? ` data-player="${esc(r.id)}"` : r.name ? ` data-pname="${esc(r.name)}"` : ""}>
     <span class="rnum">${r.rank}</span>
     <span class="rmove">${moveCell(r, movement)}</span>
     <span class="nm">${flag ? `<span class="rnat" title="${esc(r.country)}">${flag}</span> ` : ""}${esc(r.name)}</span>
     <span class="rclub">${esc(r.club || "")}</span>
-    <span class="rpts">${r.points != null ? (isElo ? String(Math.round(r.points)) : Math.round(r.points).toLocaleString()) : ""}${r.defending ? `<span class="rdef" title="points being defended (at risk) in the next ~8 weeks">def ${Math.round(r.defending).toLocaleString()}</span>` : ""}</span>
+    <span class="rpts">${isForm ? formCell(r) : r.points != null ? (isElo ? String(Math.round(r.points)) : Math.round(r.points).toLocaleString()) : ""}${r.defending ? `<span class="rdef" title="points being defended (at risk) in the next ~8 weeks">def ${Math.round(r.defending).toLocaleString()}</span>` : ""}</span>
     <span class="rstar">${star("players", r.id, r.name, r.country || "")}</span>
   </div>`;
 }
@@ -3794,6 +3888,8 @@ app.addEventListener("click", (e) => {
   // federations, so a country selected on one is often absent from the other and
   // would silently render an empty table.
   if (rm) { state.rankMetric = rm.dataset.rmetric; state.rankNat = ""; render(); syncUrl(false); return; }
+  const fd = e.target.closest("[data-fdir]");
+  if (fd) { state.formCold = fd.dataset.fdir === "cold"; render(); return; }
 
   // earnings: men/women + career/year selector
   const ec = e.target.closest("[data-ecat]");
@@ -3843,6 +3939,9 @@ app.addEventListener("click", (e) => {
   // activateMode's syncUrl then writes ?by=elo.
   const ge = e.target.closest("[data-goto-elo]");
   if (ge) { ensureElo().then(() => { state.rankMetric = "elo"; activateMode("rankings"); }); return; }
+  // Same order of operations, same reason: load first, then set the metric.
+  const gf = e.target.closest("[data-goto-form]");
+  if (gf) { ensureForm().then(() => { state.rankMetric = "form"; activateMode("rankings"); }); return; }
 
   // pair page — BEFORE data-player, because a pair row (a rivalry, a match team,
   // the pair header) contains player links inside it. Innermost wins in the DOM,
@@ -4062,7 +4161,7 @@ function currentPath() {
   // /rankings/[fed]/[cat], so a third segment would need the route rewritten,
   // and a query string still gives a shareable, bookmarkable board.
   if (state.mode === "rankings") {
-    const by = state.rankMetric === "elo" ? "?by=elo" : "";
+    const by = state.rankMetric === "elo" ? "?by=elo" : state.rankMetric === "form" ? "?by=form" : "";
     return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}${by}` : "/rankings" + by;
   }
   if (state.mode === "favorites") return "/following";
@@ -4203,7 +4302,8 @@ function applyRoute() {
       // ?by=elo is validated in renderRankings, which falls back to points when
       // rankings-elo.json is absent, so a stale bookmark cannot blank the page.
       try {
-        state.rankMetric = new URLSearchParams(location.search).get("by") === "elo" ? "elo" : "points";
+        const by = new URLSearchParams(location.search).get("by");
+        state.rankMetric = by === "elo" ? "elo" : by === "form" ? "form" : "points";
       } catch { state.rankMetric = "points"; }
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
     }
