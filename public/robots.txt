@@ -44,5 +44,31 @@ Disallow: /
 User-agent: Amazonbot
 Disallow: /
 
+# --- SEO / backlink tools: disallowed ---
+# AhrefsBot was pulling the 11 MB /data/matches.json ~57 times a day (Cloudflare,
+# 2026-10-01). These tools sell our link graph to third parties and send nothing back.
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: SERankingBacklinksBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AwarioBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
 
 Sitemap: https://padelticker.com/sitemap.xml
