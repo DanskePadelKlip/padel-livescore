@@ -1105,6 +1105,12 @@ async function resolvePlayerId(rawName) {
   // no profile. lookupPlayers() searches the folded static index first (and still
   // falls back to /api/search on a miss), and the comparisons below fold too.
   const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // The export's own name -> id map first: it is the only route from a FIP
+  // spelling to a profile whose display name differs (linked RankedIn players).
+  if ((await ensurePlayerIndex()) && PALIAS) {
+    const a = PALIAS.get(fold(name));
+    if (a) { nameIdCache.set(key, a); return a; }
+  }
   try {
     const hit = await lookupPlayers(name);
     const exact = hit.filter((p) => fold(p.name) === fold(name));
@@ -1790,6 +1796,11 @@ async function fipFallback(q) {
 // day. Searching the file costs nothing per request and survives any outage.
 // /api/search stays only as the fallback for a failed load.
 let PIDX = null, _pidxTried = false;
+// players-lite.json `aliases`: FIP's printed name -> the profile its matches are
+// keyed on, keyed here by the accent-folded name. Built by export_d1.py from the
+// same fip_link + canon rules as the match rows, so it reaches profiles no name
+// search can ("O. Sebber Gormsen" -> R000075559, shown as Oscar Sebber).
+let PALIAS = null;
 async function ensurePlayerIndex() {
   if (PIDX || _pidxTried) return PIDX;
   _pidxTried = true; // a missing file must cost one 404, not one per keystroke
@@ -1800,6 +1811,8 @@ async function ensurePlayerIndex() {
     // Lowercased and folded names are precomputed once: search runs on every
     // keystroke, and searchFold() is far too expensive to run 25k times per key.
     PIDX = rows.map((r) => [r[0], r[1], r[2], String(r[1] || "").toLowerCase(), searchFold(r[1])]);
+    const af = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    PALIAS = new Map(Object.entries(d.aliases || {}).map(([k, v]) => [af(k), v]));
   } catch { PIDX = null; }
   return PIDX;
 }
