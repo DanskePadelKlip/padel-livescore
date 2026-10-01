@@ -1099,9 +1099,15 @@ async function resolvePlayerId(rawName) {
   if (nameIdCache.has(key)) return nameIdCache.get(key);
 
   let id = null;
+  // Accent-blind on both sides: FIP prints "W. Slaryd" one day and "W. Släryd" the
+  // next, and the D1 LIKE behind /api/search is accent-exact, so the plain surname
+  // found nobody and the click fell through to a name_id() for a spelling that has
+  // no profile. lookupPlayers() searches the folded static index first (and still
+  // falls back to /api/search on a miss), and the comparisons below fold too.
+  const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   try {
-    const hit = (await (await fetch("/api/search?q=" + encodeURIComponent(name))).json()).players || [];
-    const exact = hit.filter((p) => (p.name || "").toLowerCase() === key);
+    const hit = await lookupPlayers(name);
+    const exact = hit.filter((p) => fold(p.name) === fold(name));
     if (exact.length) id = exact[0].id;
 
     // FIP abbreviates the first name ("J. Zamora Perez"), which never matches a stored
@@ -1109,10 +1115,10 @@ async function resolvePlayerId(rawName) {
     if (!id) {
       const ab = /^([\p{L}])\.?\s+(.+)$/u.exec(name);
       if (ab) {
-        const initial = ab[1].toLowerCase(), surname = ab[2].toLowerCase();
-        const alt = (await (await fetch("/api/search?q=" + encodeURIComponent(ab[2]))).json()).players || [];
+        const initial = fold(ab[1]), surname = fold(ab[2]);
+        const alt = await lookupPlayers(ab[2]);
         const cands = alt.filter((p) => {
-          const pn = (p.name || "").toLowerCase();
+          const pn = fold(p.name);
           return pn.endsWith(" " + surname) && pn.startsWith(initial);
         });
         if (cands.length === 1) id = cands[0].id;
