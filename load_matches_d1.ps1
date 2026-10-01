@@ -45,10 +45,13 @@ function D1Query([string]$sql) {
   # --json prints [{results:[...], success, meta}]; anything else is a failure.
   # Through cmd so wrangler's stderr is dropped there: in PS 5.1 a native stderr
   # line under ErrorActionPreference=Stop is a terminating error even on success.
-  # The SQL here never contains a double quote.
-  $out = cmd /c "npx wrangler d1 execute padelticker-history --remote --json --command `"$sql`" 2>nul"
+  # Into a FILE, read back as UTF-8: capturing native stdout decodes it with the
+  # console code page, which mangled every non-ASCII player id (fip-a-abruña-...)
+  # so 1,132 players D1 has looked missing. The SQL never contains a double quote.
+  $tmp = Join-Path $root "d1\d1_query.json"
+  cmd /c "npx wrangler d1 execute padelticker-history --remote --json --command `"$sql`" > `"$tmp`" 2>nul"
   if ($LASTEXITCODE -ne 0) { throw "wrangler query failed ($LASTEXITCODE): $sql" }
-  $doc = ($out -join "`n") | ConvertFrom-Json
+  $doc = [IO.File]::ReadAllText($tmp, [Text.Encoding]::UTF8) | ConvertFrom-Json
   if (-not $doc[0].success) { throw "D1 query unsuccessful: $sql" }
   return $doc[0].results
 }
