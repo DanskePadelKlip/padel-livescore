@@ -111,40 +111,38 @@ try {
   $canPush = $false
   if (-not $NoGit) {
   Invoke-Git fetch origin main | Out-Null
-  # index.html carries the daemon's app.js?v= stamp and players-lite.json is
-  # regenerated below, so neither may block the fast-forward.
-  Invoke-Git checkout '--' public/index.html public/data/players-lite.json | Out-Null
+  # index.html carries the daemon's app.js?v= stamp, so it may not block the
+  # fast-forward. players-lite.json is set aside and put back instead of being
+  # discarded: the nightly load_matches_d1.ps1 writes it after D1 is loaded and
+  # never commits it, so a checkout here would roll the live index back to
+  # whatever was last committed.
+  $liteRel = 'public/data/players-lite.json'
+  $liteKeep = Join-Path $env:TEMP "players-lite.keep.json"
+  if (Test-Path $liteRel) { Copy-Item -LiteralPath $liteRel -Destination $liteKeep -Force }
+  Invoke-Git checkout '--' public/index.html $liteRel | Out-Null
   $before = (Invoke-Git rev-parse HEAD).Trim()
   $mergeOut = Invoke-Git merge --ff-only origin/main
   $canPush = ($script:gitExit -eq 0)
+  if (Test-Path $liteKeep) { Copy-Item -LiteralPath $liteKeep -Destination $liteRel -Force }
   $after = (Invoke-Git rev-parse HEAD).Trim()
   if (-not $canPush) { Write-Log "WARN merge --ff-only refused (git said: $($mergeOut -join '; ')); will not push this run" }
   elseif ($before -ne $after) { Write-Log "fast-forwarded $($before.Substring(0,7)) -> $($after.Substring(0,7))" }
   } else { Write-Log "-NoGit: skipping fetch/merge" }
 
-  # 0. the player index the name join reads. It comes from padel-db's export_d1.py
-  #    and NOT from a script of our own: the fip-<slug> id rule lives in that file
-  #    and is load-bearing - a second implementation would drift and orphan every
-  #    live /player/fip-... URL. Nothing else schedules it, so it sat three weeks
-  #    stale (24,895 players against 29,552 actual) and that staleness is directly
-  #    names that do not link. It writes gitignored SQL chunks too; harmless.
-  #    It runs BEFORE the build, because the build resolves names against it.
-  if (-not $NoPlayerIndex) {
-    $pdb = "C:\Users\Dansk\AI Projects\padel-db"
-    $py  = Join-Path $pdb ".venv\Scripts\python.exe"
-    # Explicit paths and the venv interpreter: a scheduled task gets a reduced PATH,
-    # and export_d1.py defaults to ~ which expands per USER - as svc-remote it cannot
-    # even find padel.db.
-    if ((Test-Path $py) -and (Test-Path (Join-Path $pdb "padel.db"))) {
-      $env:PYTHONUTF8 = "1"
-      $env:PADEL_DB = Join-Path $pdb "padel.db"
-      $env:PADEL_D1_OUT = Join-Path $repo "d1"
-      $o = & $py (Join-Path $pdb "export_d1.py") 2>&1
-      if ($LASTEXITCODE -ne 0) { Write-Log "WARN player index export failed: $($o | Select-Object -Last 3)" }
-      else { $o | Where-Object { $_ -match 'players-lite|^done:' } | ForEach-Object { Write-Log "index: $_" } }
-    } else {
-      Write-Log "WARN no venv python or padel.db under $pdb - player index not refreshed"
-    }
+  # 0. the player index the name join reads (public/data/players-lite.json).
+  #    This job used to regenerate it with padel-db's export_d1.py, because nothing
+  #    else did and a three-week-stale index meant names that did not link. Since
+  #    2026-10-01 the nightly load_matches_d1.ps1 does it every night, and only
+  #    AFTER D1 holds the rows behind it. Regenerating it here published ids D1
+  #    did not have yet, so search results and team-page links 404ed until the
+  #    next load. Reading the published index is the right input for the build
+  #    too: it links only to profiles that exist. -NoPlayerIndex is kept so
+  #    existing callers do not break; it no longer changes anything.
+  $lite = Join-Path $repo "public\data\players-lite.json"
+  if (Test-Path $lite) {
+    Write-Log ("index: using published players-lite.json, written {0:yyyy-MM-dd HH:mm} by the nightly" -f (Get-Item $lite).LastWriteTime)
+  } else {
+    Write-Log "WARN no public/data/players-lite.json - names will not link this run"
   }
 
   # 1. re-fetch
