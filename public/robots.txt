@@ -1,4 +1,4 @@
-﻿# PadelTicker robots policy
+# PadelTicker robots policy
 #
 # Search and answer engines that send traffic back are welcome everywhere.
 # Training-only crawlers, which take the aggregated federation data and return
@@ -43,5 +43,6 @@ Disallow: /
 
 User-agent: Amazonbot
 Disallow: /
+
 
 Sitemap: https://padelticker.com/sitemap.xml
