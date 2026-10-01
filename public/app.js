@@ -361,7 +361,8 @@ const state = {
   archiveData: new Map(),    // key -> loaded tournament {matches}
   wptIndex: new Map(),       // wpt key -> archive list row (World Padel Tour, own file)
   wptRankings: {},           // year -> { Men:[…], Women:[…] } end-of-season standings
-  profileTours: new Set(),   // profile view: tournament names to filter matches to (empty = all)
+  mgOpen: new Map(),         // profile / pair match list: tournament group key -> folded open?
+  profileYear: "",           // profile view: "2025" etc. to show one year's matches ("" = all)
   // ---- players (profiles / search / h2h) ----
   playerResults: null,       // search results
   player: null,              // loaded profile
@@ -369,6 +370,8 @@ const state = {
   h2h: null,                 // loaded head-to-head
   comparing: false,          // in "pick an opponent" mode
   partnersAll: false,        // profile: partnership list expanded past the first 8
+  matchesAll: false,         // profile: match list expanded past the first 20
+  ptab: "overview",          // profile: open tab (overview | matches | partners)
   onCourtAll: false,         // /players: "on court today" expanded past the first 40
   // ---- pairs (partnership profiles) ----
   // A pair is two players who play on the SAME SIDE. pairKey is kept in canonical
@@ -376,7 +379,9 @@ const state = {
   // partnership must never produce two different URLs.
   pair: null,                // "loading" | loaded partnership | null
   pairKey: null,             // { a, b } of the open pair (for the URL)
-  pairTours: new Set(),      // pair view: tournament names to filter matches to (empty = all)
+  pairYear: "",              // pair view: one year's matches ("" = all)
+  pairMatchesAll: false,     // pair view: match list expanded past the first 20
+  pairTab: "matches",        // pair view: open tab (matches | rivals)
   pairsTop: null,            // /pairs browse list (loaded once, then cached)
   pairsError: false,         // the browse list failed to load (stops a retry loop)
   // ---- upcoming (curated pro calendar) ----
@@ -1979,7 +1984,9 @@ async function openPlayer(id) {
   state.h2h = null; state.comparing = false; state.player = "loading"; state.playerId = id;
   state.pair = null; state.pairKey = null;   // a profile replaces any open pair
   state.partnersAll = false;
-  state.profileTours = new Set(); // reset the per-player tournament filter
+  state.matchesAll = false;
+  state.mgOpen = new Map();  // a new player starts with only the newest tournament open
+  state.profileYear = "";
   render();
   syncUrl(); // /player/<id>
   ensureRankings(); // so the profile can show the player's ranking
@@ -2357,6 +2364,71 @@ function rankStat(ranks) {
     + `<span>${esc(label)}${pts ? " " + esc(pts) + " pts" : ""}</span></div>`;
 }
 
+// The match list shared by the player and pair pages: a year row (single-select),
+// then one foldable group per tournament, newest first, holding that tournament's
+// matches. Matches arrive newest first, so the Map's insertion order is already
+// newest-tournament first. A group is keyed by tournament AND year, so a yearly
+// event (Italy Major 2025, 2026) is two groups. `me` is the player id whose side
+// the W-L and the result are counted from; `at` names the page's data-attributes.
+// Groups fold in place (no re-render); state.mgOpen remembers what was opened, and
+// with nothing chosen yet only the newest tournament is open.
+function matchFilterList(matches, f) {
+  const { year, all, at, me } = f;
+  const years = [...new Set(matches.map((m) => (m.date || "").slice(0, 4)).filter(Boolean))];
+  const yr = years.includes(year) ? year : "";
+  const shown = yr ? matches.filter((m) => (m.date || "").startsWith(yr)) : matches;
+  let chips = "";
+  if (years.length > 1)
+    chips += `<div class="chips profchips">` +
+      `<span class="chip ${yr ? "" : "active"}" ${at.year}="">All years</span>` +
+      years.map((y) => `<span class="chip ${y === yr ? "active" : ""}" ${at.year}="${y}">${y}<span class="cn">${matches.filter((m) => (m.date || "").startsWith(y)).length}</span></span>`).join("") +
+      `</div>`;
+  const groups = new Map();
+  for (const m of shown) {
+    const key = (m.tournament || "—") + "|" + (m.date || "").slice(0, 4);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(m);
+  }
+  const mine = (m) => {
+    const t = m.teams || [];
+    const side = t[0] && (t[0].players || []).some((p) => p.id === me) ? 0 : 1;
+    return !!(t[side] && t[side].won);
+  };
+  // Inside a tournament the furthest round goes first. Dates cannot order them:
+  // feeds often stamp a whole event's matches with one day.
+  for (const ms of groups.values()) ms.sort((x, y) => roundRank(y.round) - roundRank(x.round) || String(y.date || "").localeCompare(String(x.date || "")));
+  const list = [...groups.entries()];
+  const cap = all ? list.length : 10;
+  let rows = list.slice(0, cap).map(([key, ms], i) => {
+    const w = ms.filter(mine).length;
+    const last = ms[0];                       // furthest round = how far they got
+    const won = mine(last);
+    const champ = won && roundRank(last.round) === 100;   // roundRank: the draw page's, Final = 100
+    const res = champ ? "Won 🏆" : [last.round, won ? "won" : "lost"].filter(Boolean).join(" · ");
+    const open = state.mgOpen.has(key) ? state.mgOpen.get(key) : i === 0;
+    return `<div class="group mgroup${open ? " open" : ""}">
+      <div class="group__head" data-mgrp="${esc(key)}">
+        <span class="chev">▸</span>
+        <span class="group__title">${esc(last.tournament || "—")}</span>
+        <span class="group__meta"><span class="mg-res${champ ? " champ" : ""}">${esc(res)}</span><span class="mg-wl">${w}-${ms.length - w}</span><span class="count">${esc(monthYear(last.date) || "")}</span></span>
+      </div>
+      <div class="group__body">${ms.map((m) => apiMatchRow(m)).join("")}</div>
+    </div>`;
+  }).join("");
+  if (!list.length) rows = `<div class="empty" style="padding:24px">No matches for this year.</div>`;
+  if (list.length > cap)
+    rows += `<button class="morebtn" ${at.more}="1">Show ${list.length - cap} more tournament${list.length - cap === 1 ? "" : "s"} ↓</button>`;
+  return { chips, rows, shown, tourns: list.length, filtered: !!yr };
+}
+
+// One row of tabs over a page's sections; only the open tab's body is drawn.
+function tabsHtml(tabs, open, attr) {
+  const cur = tabs.find((t) => t[0] === open) || tabs[0];
+  return `<div class="ptabs" role="tablist">` + tabs.map(([k, name, n]) =>
+    `<button type="button" role="tab" class="ptab${k === cur[0] ? " on" : ""}" aria-selected="${k === cur[0]}" ${attr}="${k}">${name}${n !== "" ? `<span class="cn">${n}</span>` : ""}</button>`).join("") +
+    `</div><div class="ptab-body" role="tabpanel">${cur[3]}</div>`;
+}
+
 function renderProfile() {
   if (state.player === "loading") { app.innerHTML = `<div class="skel"></div><div class="skel"></div>`; return; }
   const { player, summary, matches } = state.player;
@@ -2394,73 +2466,75 @@ function renderProfile() {
   if (form.length)
     html += `<div class="form-row"><span class="form-lbl">Form</span>${form.map((r) => `<span class="fchip ${r === "W" ? "w" : "l"}">${r}</span>`).join("")}${summary.streak > 1 ? `<span class="streak">${summary.streak} ${summary.streakType === "W" ? "wins" : "losses"} in a row</span>` : ""}</div>`;
   html += formLine(player.id);
-  html += shapeBlock(summary.shape);
-  html += qualityBlock(state.player.quality);
-  const tp = state.player.topPartner;
-  if (tp)
-    html += `<div class="toppartner" ${pairAttr(player.id, tp.id)}><span class="tp-lbl">Top partner</span><b class="pairp" data-player="${esc(tp.id)}">${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span><span class="tp-go">pair →</span></div>`;
+  html += `<button class="pcompare ${state.comparing ? "on" : ""}" data-compare="1">⚔️ ${state.comparing ? "Now search an opponent above…" : "Head-to-head vs…"}</button>`;
+  if (state.comparing && state.playerResults && state.playerResults.length)
+    html += `<div class="section-label">Tap an opponent</div>` +
+      state.playerResults.filter((p) => p.id !== player.id).map(playerResultRow).join("");
 
-  // Every partnership this player has had. Each row is a pair page; the name
-  // inside it still goes to the partner's own profile (innermost target wins).
-  const partners = state.player.partners || [];
-  if (partners.length > 1) {
-    const cap = state.partnersAll ? partners.length : 8;
-    html += `<div class="section-label">Partnerships <span class="count">${partners.length}</span></div>`;
-    html += partners.slice(0, cap).map((p) => `<div class="partner" ${pairAttr(player.id, p.id)}>
-      <span class="flag">${esc((p.country || "").toUpperCase())}</span>
-      <span class="pt-name pairp" data-player="${esc(p.id)}">${esc(p.name)}</span>
-      <span class="pt-rec">${p.wins}-${p.losses}</span>
-      <span class="pt-n">${p.matches} match${p.matches === 1 ? "" : "es"}${p.last ? " · " + esc(monthYear(p.last)) : ""}</span>
-    </div>`).join("");
-    if (partners.length > cap)
-      html += `<button class="morebtn" data-partnersall="1">Show ${partners.length - cap} more partner${partners.length - cap === 1 ? "" : "s"} ↓</button>`;
-  }
+  // Everything below the header is split into tabs, one shown at a time, so a
+  // profile is a screen or two rather than a 12,000px scroll. The tab survives
+  // moving between players (openPlayer does not reset state.ptab), so someone
+  // reading match lists keeps landing on Matches.
+  const tabs = [];
+
+  // -- Overview: how they win, who they beat, where they rank, year by year
+  let ov = shapeBlock(summary.shape) + qualityBlock(state.player.quality);
   if (ranks.length)
-    html += `<div class="section-label">Ranking</div><div class="rankcards">` +
+    ov += `<div class="section-label">Ranking</div><div class="rankcards">` +
       ranks.map((r) => `<div class="rankcard">
         <span class="rc-fed">${FLAGS[r.fed] || ""} ${r.fed === "FIP" ? "FIP world" : (regionLabel(r.fed))}</span>
         <span class="rc-rank">#${r.rank}</span>
         <span class="rc-pts">${r.points != null ? Math.round(r.points).toLocaleString() : ""} pts</span>
         <span class="rc-move">${moveCell(r, r.movement)}</span>
       </div>`).join("") + `</div>`;
-  html += `<button class="pcompare ${state.comparing ? "on" : ""}" data-compare="1">⚔️ ${state.comparing ? "Now search an opponent above…" : "Head-to-head vs…"}</button>`;
-  if (state.comparing && state.playerResults && state.playerResults.length)
-    html += `<div class="section-label">Tap an opponent</div>` +
-      state.playerResults.filter((p) => p.id !== player.id).map(playerResultRow).join("");
   if (summary.byYear.length)
-    html += `<div class="section-label">By year</div><div class="years">` +
+    ov += `<div class="section-label">By year</div><div class="years">` +
       summary.byYear.map((y) => `<span class="ychip"><b>${esc(y.yr)}</b> ${y.won}<span class="ysep">/</span>${y.played}</span>`).join("") +
       `</div>`;
+  if (ov) tabs.push(["overview", "Overview", "", ov]);
 
-  // Tournament filter over the loaded matches. Multi-select: with none selected all
-  // matches show; clicking tournament chips narrows to just those (any-of).
-  const tourCounts = new Map();
-  for (const m of matches) { const t = m.tournament || "—"; tourCounts.set(t, (tourCounts.get(t) || 0) + 1); }
-  const sel = state.profileTours;
-  const shown = sel.size ? matches.filter((m) => sel.has(m.tournament || "—")) : matches;
-  if (tourCounts.size > 1) {
-    const tours = [...tourCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-    html += `<div class="section-label">Filter by tournament</div><div class="chips profchips">` +
-      `<span class="chip ${sel.size === 0 ? "active" : ""}" data-ptour="__all">All</span>` +
-      tours.map(([t, n]) => `<span class="chip ${sel.has(t) ? "active" : ""}" data-ptour="${esc(t)}" title="${esc(t)}">${esc(t)}<span class="cn">${n}</span></span>`).join("") +
-      `</div>`;
-  }
+  // -- Matches
+  const ml = matchFilterList(matches, { year: state.profileYear, all: state.matchesAll, me: player.id,
+    at: { year: "data-pyear", more: "data-matchesall" } });
   const partial = state.player.partnersComplete === false;
-  const label = sel.size
-    ? `Matches · ${shown.length} of ${matches.length}`
+  const label = (ml.filtered
+    ? `Matches · ${ml.shown.length} of ${matches.length}`
     : partial
     ? `Recent matches (${matches.length} of ${summary.total})`
-    : `Recent matches (${matches.length})`;
-  html += `<div class="section-label">${label}</div>` +
+    : `Recent matches (${matches.length})`) + ` <span class="count">${ml.tourns} tournament${ml.tourns === 1 ? "" : "s"}</span>`;
+  const mt = `<div class="section-label">${label}</div>` + ml.chips +
     // The career totals come from padel-db's precomputed row and cover every
     // source; the rows below are only the matches PadelTicker holds in full. Left
     // unsaid, a profile reading "254 matches" over a list of 14 looks broken.
-    (partial && !sel.size
+    (partial && !ml.filtered
       ? `<div style="color:var(--faint);font-size:12px;margin:-2px 0 10px;line-height:1.5">` +
         `Totals above cover all ${summary.total} matches on record. Full detail ` +
         `(scores, partners, opponents) is available for the ${matches.length} most recent.</div>`
-      : "") +
-    (shown.length ? shown.map((m) => apiMatchRow(m)).join("") : `<div class="empty" style="padding:24px">No matches for the selected tournament${sel.size === 1 ? "" : "s"}.</div>`);
+      : "") + ml.rows;
+  tabs.push(["matches", "Matches", matches.length, mt]);
+
+  // -- Partners: the top partner, then every partnership. Each row is a pair page;
+  // the name inside it still goes to the partner's own profile (innermost target wins).
+  let pt = "";
+  const tp = state.player.topPartner;
+  if (tp)
+    pt += `<div class="toppartner" ${pairAttr(player.id, tp.id)}><span class="tp-lbl">Top partner</span><b class="pairp" data-player="${esc(tp.id)}">${esc(tp.name)}</b><span class="tp-meta">${tp.matches} matches · ${tp.wins}-${tp.matches - tp.wins}</span><span class="tp-go">pair →</span></div>`;
+  const partners = state.player.partners || [];
+  if (partners.length > 1) {
+    const cap = state.partnersAll ? partners.length : 8;
+    pt += `<div class="section-label">Partnerships <span class="count">${partners.length}</span></div>`;
+    pt += partners.slice(0, cap).map((p) => `<div class="partner" ${pairAttr(player.id, p.id)}>
+      <span class="flag">${esc((p.country || "").toUpperCase())}</span>
+      <span class="pt-name pairp" data-player="${esc(p.id)}">${esc(p.name)}</span>
+      <span class="pt-rec">${p.wins}-${p.losses}</span>
+      <span class="pt-n">${p.matches} match${p.matches === 1 ? "" : "es"}${p.last ? " · " + esc(monthYear(p.last)) : ""}</span>
+    </div>`).join("");
+    if (partners.length > cap)
+      pt += `<button class="morebtn" data-partnersall="1">Show ${partners.length - cap} more partner${partners.length - cap === 1 ? "" : "s"} ↓</button>`;
+  }
+  if (pt) tabs.push(["partners", "Partners", partners.length > 1 ? partners.length : "", pt]);
+
+  html += tabsHtml(tabs, state.ptab, "data-ptab");
   app.innerHTML = html;
 }
 
@@ -2536,7 +2610,7 @@ async function openPair(a, b) {
   // bare search box. Only the "pick an opponent" mode has to end here.
   state.comparing = false;
   state.pair = "loading"; state.pairKey = { a: x, b: y };
-  state.pairTours = new Set();
+  state.mgOpen = new Map(); state.pairYear = ""; state.pairMatchesAll = false;
   render();
   syncUrl(); // /pair/<a>/<b>
   ensureRankings(); // so the pair header can show each player's ranking
@@ -2676,7 +2750,17 @@ function renderPair() {
       s.byYear.map((y) => `<span class="ychip"><b>${esc(y.yr)}</b> ${y.won}<span class="ysep">/</span>${y.played}</span>`).join("") +
       `</div>`;
 
-  // ---- rivals ----
+  // Rivals and the match list are tabs, like the player page, so the pair page
+  // stays a screen or two long. Matches open first; the tab survives moving
+  // between pairs (openPair does not reset state.pairTab).
+  const tabs = [];
+  const matches = d.matches || [];
+  const ml = matchFilterList(matches, { year: state.pairYear, all: state.pairMatchesAll, me: a.id,
+    at: { year: "data-pairyear", more: "data-pairmatchesall" } });
+  const label = (ml.filtered ? `Matches together · ${ml.shown.length} of ${matches.length}` : `Matches together (${matches.length})`)
+    + ` <span class="count">${ml.tourns} tournament${ml.tourns === 1 ? "" : "s"}</span>`;
+  tabs.push(["matches", "Matches", matches.length, `<div class="section-label">${label}</div>` + ml.chips + ml.rows]);
+
   // The pair-page answer to "who do they keep running into": every opposing pair
   // they have faced, most-met first, each linking to that pair's own page.
   const rivals = d.rivals || [];
@@ -2685,8 +2769,8 @@ function renderPair() {
     // Ranked by meetings, so one-off opponents sink to the bottom; show the
     // repeat rivalries plus enough one-offs to be useful, and say what's hidden.
     const shownRivals = repeat.length >= 3 ? repeat.slice(0, 20) : rivals.slice(0, 12);
-    html += `<div class="section-label">Rivals <span class="count">${rivals.length} pair${rivals.length === 1 ? "" : "s"} faced</span></div>`;
-    html += shownRivals.map((r) => {
+    let rv = `<div class="section-label">Rivals <span class="count">${rivals.length} pair${rivals.length === 1 ? "" : "s"} faced</span></div>`;
+    rv += shownRivals.map((r) => {
       const link = r.linkable ? pairAttr(r.players[0].id, r.players[1].id) : "";
       const last = r.last || {};
       const meta = [last.tournament, last.round, last.date].filter(Boolean).join(" · ");
@@ -2700,29 +2784,11 @@ function renderPair() {
       </div>`;
     }).join("");
     if (shownRivals.length < rivals.length)
-      html += `<div class="rv-more">${rivals.length - shownRivals.length} more pair${rivals.length - shownRivals.length === 1 ? "" : "s"} met once each — they are in the match list below.</div>`;
+      rv += `<div class="rv-more">${rivals.length - shownRivals.length} more pair${rivals.length - shownRivals.length === 1 ? "" : "s"} met once each — they are in the Matches tab.</div>`;
+    tabs.push(["rivals", "Rivals", rivals.length, rv]);
   }
+  html += tabsHtml(tabs, state.pairTab, "data-pairtab");
 
-  // ---- match list, with the same tournament filter the profile uses ----
-  const matches = d.matches || [];
-  const tourCounts = new Map();
-  for (const m of matches) { const t = m.tournament || "—"; tourCounts.set(t, (tourCounts.get(t) || 0) + 1); }
-  const sel = state.pairTours;
-  const shown = sel.size ? matches.filter((m) => sel.has(m.tournament || "—")) : matches;
-  if (tourCounts.size > 1) {
-    const tours = [...tourCounts.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]));
-    html += `<div class="section-label">Filter by tournament</div><div class="chips profchips">` +
-      `<span class="chip ${sel.size === 0 ? "active" : ""}" data-pairtour="__all">All</span>` +
-      tours.map(([t, n]) => `<span class="chip ${sel.has(t) ? "active" : ""}" data-pairtour="${esc(t)}" title="${esc(t)}">${esc(t)}<span class="cn">${n}</span></span>`).join("") +
-      `</div>`;
-  }
-  const label = sel.size ? `Matches together · ${shown.length} of ${matches.length}` : `Matches together (${matches.length})`;
-  html += `<div class="section-label">${label}</div>` +
-    (shown.length ? shown.map((m) => apiMatchRow(m)).join("") : `<div class="empty" style="padding:24px">No matches for the selected tournament${sel.size === 1 ? "" : "s"}.</div>`);
-
-  // data-share (not a bespoke handler): the existing copy button already deals
-  // with in-app browsers where clipboard.writeText is unavailable, and it resets
-  // its own label, so the label here must match the one it restores.
   html += `<div class="pairshare"><button class="mshare" data-share="${esc(pairPath(a.id, b.id))}" title="Copy a link to this pair">🔗 Copy link</button></div>`;
   app.innerHTML = html;
 }
@@ -3762,7 +3828,7 @@ function activateMode(mode, urlMode = "push") {
   // The open pair clears with the rest; state.pairsTop (the browse list) does NOT
   // — it is a cached fetch, like state.archive and state.rankings, and re-fetching
   // a whole-archive GROUP BY every time the mode is clicked would be wasteful.
-  state.pair = null; state.pairKey = null; state.pairTours = new Set();
+  state.pair = null; state.pairKey = null;
   state.tournament = null; state.focusMatch = null;
   state.rankCountryQuery = "";
   state.archiveTour = "all";
@@ -3906,30 +3972,28 @@ app.addEventListener("click", (e) => {
   const ey = e.target.closest("[data-eyear]");
   if (ey) { state.earnYear = ey.dataset.eyear; render(); syncUrl(false); return; }
 
-  // profile: tournament filter chips (multi-select; "All" clears)
-  const ptc = e.target.closest("[data-ptour]");
-  if (ptc) {
-    const t = ptc.dataset.ptour;
-    if (t === "__all") state.profileTours.clear();
-    else if (state.profileTours.has(t)) state.profileTours.delete(t);
-    else state.profileTours.add(t);
-    render();
+  // profile / pair: a tournament group's heading folds it in place
+  const mg = e.target.closest("[data-mgrp]");
+  if (mg) {
+    const open = mg.parentElement.classList.toggle("open");
+    state.mgOpen.set(mg.dataset.mgrp, open);
     return;
   }
+
+  // profile: year chips (single-select)
+  const pyr = e.target.closest("[data-pyear]");
+  if (pyr) { state.profileYear = pyr.dataset.pyear; state.matchesAll = false; render(); return; }
 
   if (e.target.closest("[data-partnersall]")) { state.partnersAll = true; render(); return; }
+  if (e.target.closest("[data-matchesall]")) { state.matchesAll = true; render(); return; }
+  if (e.target.closest("[data-pairmatchesall]")) { state.pairMatchesAll = true; render(); return; }
+  const pairyr = e.target.closest("[data-pairyear]");
+  if (pairyr) { state.pairYear = pairyr.dataset.pairyear; state.pairMatchesAll = false; render(); return; }
+  const pairtab = e.target.closest("[data-pairtab]");
+  if (pairtab) { state.pairTab = pairtab.dataset.pairtab; render(); return; }
+  const ptab = e.target.closest("[data-ptab]");
+  if (ptab) { state.ptab = ptab.dataset.ptab; render(); return; }
   if (e.target.closest("[data-oncourtall]")) { state.onCourtAll = true; render(); return; }
-
-  // pair: tournament filter chips (the pair page's own copy of the profile's)
-  const ptp = e.target.closest("[data-pairtour]");
-  if (ptp) {
-    const t = ptp.dataset.pairtour;
-    if (t === "__all") state.pairTours.clear();
-    else if (state.pairTours.has(t)) state.pairTours.delete(t);
-    else state.pairTours.add(t);
-    render();
-    return;
-  }
 
   // "Try again" on an outage notice: re-run whatever the view was asking for.
   if (e.target.closest("[data-retry]")) {

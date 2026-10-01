@@ -230,6 +230,22 @@
       text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
     .section-label .lampe { width: 8px; height: 8px; border-radius: 50%; background: var(--live); animation: blink 1.3s infinite; }
     @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+    /* profile tabs: one section of the profile on screen at a time */
+    .ptabs { display: flex; gap: 4px; margin: 18px 0 4px; border-bottom: 1px solid var(--line);
+      overflow-x: auto; scrollbar-width: none; }
+    .ptab { background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+      padding: 10px 14px; font: inherit; font-size: 14px; font-weight: 700; color: var(--muted);
+      cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+    .ptab:hover { color: var(--text); }
+    .ptab.on { color: var(--text); border-bottom-color: var(--accent); }
+    .ptab .cn { font-size: 11px; font-weight: 600; color: var(--faint); font-variant-numeric: tabular-nums; }
+    /* profile / pair match list: one foldable group per tournament */
+    .mgroup .group__head .chev { order: -1; }
+    .mgroup .mg-res { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .mgroup .mg-res.champ { color: var(--win); font-weight: 700; }
+    .mgroup .mg-wl { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+    .mgroup .group__meta .count { min-width: 58px; text-align: right; }
+    @media (max-width: 520px) { .mgroup .group__meta .count { display: none; } }
 
     /* ---- tournament group ---- */
     .group { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; background: var(--card); }
@@ -279,6 +295,9 @@
     /* one player per line — the pair never fits on one phone-width line */
     .team .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; color: var(--text); }
     .team .nm .pl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    /* profile / h2h rows write a pair as "A / B" inline, not one .pl per line —
+       in the column flexbox above the "/" became a line of its own */
+    .pmatch .team .nm { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.35; }
     /* FIP world ranking, kept deliberately quiet — it annotates the name, it is
        not a score. Absent for anyone the ranking doesn't cover. */
     /* NOT vertical-align: super. The name line clips (overflow:hidden, for the
@@ -866,10 +885,10 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=b0c97eed<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=de47aa16<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=b0c97eed"></script>
+  <script src="/app.js?v=de47aa16"></script>
   <!-- Cloudflare Web Analytics. Privacy-first, no cookies, so no consent banner is
        needed. The site already existed in the account (tag below) but the beacon was
        never in the markup, so only a handful of sampled events were ever recorded.
