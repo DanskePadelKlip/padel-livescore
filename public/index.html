@@ -246,6 +246,15 @@
     .mgroup .mg-wl { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
     .mgroup .group__meta .count { min-width: 58px; text-align: right; }
     @media (max-width: 520px) { .mgroup .group__meta .count { display: none; } }
+    /* full-career rows: one player's side of a match */
+    .mgroup .group__title .mg-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+    .mg-badge { margin-left: 7px; font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+      color: var(--muted); background: var(--bg-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; vertical-align: 1px; }
+    .mg-badge.nat { color: var(--accent); border-color: var(--accent); }
+    .pmrow .pm-l { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .pmrow .pm-who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    .pmrow .pm-vs { color: var(--faint); }
 
     /* ---- tournament group ---- */
     .group { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; background: var(--card); }
@@ -885,10 +894,10 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=de47aa16<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=7ba869e9<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=de47aa16"></script>
+  <script src="/app.js?v=7ba869e9"></script>
   <!-- Cloudflare Web Analytics. Privacy-first, no cookies, so no consent banner is
        needed. The site already existed in the account (tag below) but the beacon was
        never in the markup, so only a handful of sampled events were ever recorded.

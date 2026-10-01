@@ -363,6 +363,7 @@ const state = {
   wptRankings: {},           // year -> { Men:[…], Women:[…] } end-of-season standings
   mgOpen: new Map(),         // profile / pair match list: tournament group key -> folded open?
   profileYear: "",           // profile view: "2025" etc. to show one year's matches ("" = all)
+  profileKind: "",           // profile view: d domestic / f FIP tour / n national team ("" = all)
   // ---- players (profiles / search / h2h) ----
   playerResults: null,       // search results
   player: null,              // loaded profile
@@ -2005,7 +2006,7 @@ async function openPlayer(id) {
   state.partnersAll = false;
   state.matchesAll = false;
   state.mgOpen = new Map();  // a new player starts with only the newest tournament open
-  state.profileYear = "";
+  state.profileYear = ""; state.profileKind = "";
   render();
   syncUrl(); // /player/<id>
   ensureRankings(); // so the profile can show the player's ranking
@@ -2440,6 +2441,95 @@ function matchFilterList(matches, f) {
   return { chips, rows, shown, tourns: list.length, filtered: !!yr };
 }
 
+// ---- full-career match lists: data/pm/<b>.json (padel-db export_pt_matches.py) ----
+// /api/player returns the 60 newest matches and D1 holds no Danish (dpf) matches,
+// so the profile's Matches tab reads these files instead: every match of every
+// profile, fetched only when the tab is opened. The row shape is the one DPK's
+// /spillere Matches tab uses. Absent files fall back to the API list.
+const pmStore = { meta: undefined, shards: new Map() };   // meta: undefined | "loading" | null | {...}
+// djb2 over UTF-16 code units, mod meta.shards: the exporter's bucket() exactly
+function pmBucket(id, n) {
+  let h = 5381;
+  for (let i = 0; i < id.length; i++) h = (Math.imul(h, 33) + id.charCodeAt(i)) >>> 0;
+  return h % n;
+}
+function pmLoad(id) {
+  if (pmStore.meta === undefined) {
+    pmStore.meta = "loading";
+    fetch("data/pm/meta.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      .then((m) => { pmStore.meta = m && m.shards ? m : null; render(); });
+  }
+  if (pmStore.meta === "loading") return { status: "loading" };
+  if (!pmStore.meta) return { status: "absent" };
+  const b = pmBucket(id, pmStore.meta.shards);
+  const s = pmStore.shards.get(b);
+  if (s === undefined) {
+    pmStore.shards.set(b, "loading");
+    // ?v= the export time: a new night's file is a new URL, never a stale cache hit
+    fetch(`data/pm/${b}.json?v=${encodeURIComponent(pmStore.meta.generated || "")}`)
+      .then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      .then((d) => { pmStore.shards.set(b, d); render(); });
+    return { status: "loading" };
+  }
+  if (s === "loading") return { status: "loading" };
+  if (!s) return { status: "absent" };
+  return { status: "ready", data: s, groups: (s.p || {})[id] || [] };
+}
+
+// Groups [evkey, class, partner, rows], rows [date, round, score, won, opp1, opp2(, partner)];
+// a name is a profile id (linked) or "=Name" (no profile). Filters: kind
+// (domestic / FIP tour / national team) and year, both single-select.
+const PM_KIND = { d: "Domestic", f: "FIP", n: "National team" };
+function pmList(d, groups) {
+  const ev = d.ev || {}, nm = d.n || {};
+  const who = (x) => !x ? "" : x[0] === "=" ? esc(x.slice(1))
+    : `<span class="pn" data-player="${esc(x)}" title="View ${esc(nm[x] || x)}">${esc(nm[x] || x)}</span>`;
+  const gyear = (g) => ((ev[g[0]] || [])[1] || (g[3][0] || [])[0] || "").slice(0, 4);
+  const gkind = (g) => (ev[g[0]] || [])[3] || "d";
+  const years = [...new Set(groups.map(gyear).filter(Boolean))].sort().reverse();
+  const kinds = ["d", "f", "n"].filter((k) => groups.some((g) => gkind(g) === k));
+  const yr = years.includes(state.profileYear) ? state.profileYear : "";
+  const kd = kinds.includes(state.profileKind) ? state.profileKind : "";
+  const list = groups.filter((g) => (!yr || gyear(g) === yr) && (!kd || gkind(g) === kd));
+  const count = (pred) => groups.filter(pred).reduce((a, g) => a + g[3].length, 0);
+  const chipRow = (attr, cur, opts) => `<div class="chips profchips">` + opts.map(([v, t, n]) =>
+    `<span class="chip ${v === cur ? "active" : ""}" ${attr}="${esc(v)}">${esc(t)}${n != null ? `<span class="cn">${n}</span>` : ""}</span>`).join("") + `</div>`;
+  let chips = "";
+  if (kinds.length > 1) chips += chipRow("data-pkind", kd, [["", "All", null], ...kinds.map((k) => [k, PM_KIND[k], count((g) => gkind(g) === k)])]);
+  if (years.length > 1) chips += chipRow("data-pyear", yr, [["", "All years", null], ...years.map((y) => [y, y, count((g) => gyear(g) === y)])]);
+  const cap = state.matchesAll ? list.length : 10;
+  let rows = list.slice(0, cap).map((g, j) => {
+    const [key, cls, partner, ms] = g;
+    const e = ev[key] || [key, "", null, "d"];
+    const w = ms.filter((m) => m[3]).length;
+    const last = ms[0];                                   // furthest round / latest match
+    const champ = last[3] && roundRank(last[1]) === 100;
+    const res = champ ? "Won 🏆" : [last[1], last[3] ? "won" : "lost"].filter(Boolean).join(" · ");
+    const gk = "pm|" + key + "|" + (cls || "");
+    const open = state.mgOpen.has(gk) ? state.mgOpen.get(gk) : j === 0;
+    const badge = gkind(g) === "n" ? `<span class="mg-badge nat">National team</span>` : e[2] ? `<span class="mg-badge">${esc(e[2])}</span>` : "";
+    const sub = [cls ? esc(cls) : "", partner ? "with " + who(partner) : ""].filter(Boolean).join(" · ");
+    const body = ms.map((m) => `<div class="match"><div class="match__main archm pmatch pmrow">
+        <div class="pm-l"><span class="fchip ${m[3] ? "w" : "l"}">${m[3] ? "W" : "L"}</span>
+          <span class="pm-who">${m[6] ? `with ${who(m[6])} ` : ""}<span class="pm-vs">vs</span> ${[m[4], m[5]].filter(Boolean).map(who).join(" / ") || "—"}</span></div>
+        <div class="side"><span class="score-str">${esc(m[2] || "")}</span><span class="pdate">${esc([m[1], m[0]].filter(Boolean).join(" · "))}</span></div>
+      </div></div>`).join("");
+    return `<div class="group mgroup${open ? " open" : ""}">
+      <div class="group__head" data-mgrp="${esc(gk)}">
+        <span class="chev">▸</span>
+        <span class="group__title">${esc(e[0])}${badge}${sub ? `<span class="mg-sub">${sub}</span>` : ""}</span>
+        <span class="group__meta"><span class="mg-res${champ ? " champ" : ""}">${esc(res)}</span><span class="mg-wl">${w}-${ms.length - w}</span><span class="count">${esc(monthYear(e[1] || last[0]) || "")}</span></span>
+      </div>
+      <div class="group__body">${body}</div>
+    </div>`;
+  }).join("");
+  if (!list.length) rows = `<div class="empty" style="padding:24px">No matches for this selection.</div>`;
+  if (list.length > cap)
+    rows += `<button class="morebtn" data-matchesall="1">Show ${list.length - cap} more tournament${list.length - cap === 1 ? "" : "s"} ↓</button>`;
+  const n = list.reduce((a, g) => a + g[3].length, 0);
+  return `<div class="section-label">${yr || kd ? "Matches" : "All matches"} (${n}) <span class="count">${list.length} tournament${list.length === 1 ? "" : "s"}</span></div>` + chips + rows;
+}
+
 // One row of tabs over a page's sections; only the open tab's body is drawn.
 function tabsHtml(tabs, open, attr) {
   const cur = tabs.find((t) => t[0] === open) || tabs[0];
@@ -2512,7 +2602,14 @@ function renderProfile() {
       `</div>`;
   if (ov) tabs.push(["overview", "Overview", "", ov]);
 
-  // -- Matches
+  // -- Matches: the full-career file when it exists (fetched only while this tab
+  // is open), otherwise the API's newest 60 with their own filters below.
+  const pm = state.ptab === "matches" ? pmLoad(player.id) : null;
+  if (pm && pm.status === "loading") {
+    tabs.push(["matches", "Matches", summary.total, `<div class="skel"></div><div class="skel"></div>`]);
+  } else if (pm && pm.status === "ready" && pm.groups.length) {
+    tabs.push(["matches", "Matches", summary.total, pmList(pm.data, pm.groups)]);
+  } else {
   const ml = matchFilterList(matches, { year: state.profileYear, all: state.matchesAll, me: player.id,
     at: { year: "data-pyear", more: "data-matchesall" } });
   const partial = state.player.partnersComplete === false;
@@ -2530,7 +2627,8 @@ function renderProfile() {
         `Totals above cover all ${summary.total} matches on record. Full detail ` +
         `(scores, partners, opponents) is available for the ${matches.length} most recent.</div>`
       : "") + ml.rows;
-  tabs.push(["matches", "Matches", matches.length, mt]);
+  tabs.push(["matches", "Matches", pmStore.meta ? summary.total : matches.length, mt]);
+  }
 
   // -- Partners: the top partner, then every partnership. Each row is a pair page;
   // the name inside it still goes to the partner's own profile (innermost target wins).
@@ -4002,6 +4100,8 @@ app.addEventListener("click", (e) => {
   // profile: year chips (single-select)
   const pyr = e.target.closest("[data-pyear]");
   if (pyr) { state.profileYear = pyr.dataset.pyear; state.matchesAll = false; render(); return; }
+  const pkd = e.target.closest("[data-pkind]");
+  if (pkd) { state.profileKind = pkd.dataset.pkind; state.matchesAll = false; render(); return; }
 
   if (e.target.closest("[data-partnersall]")) { state.partnersAll = true; render(); return; }
   if (e.target.closest("[data-matchesall]")) { state.matchesAll = true; render(); return; }
