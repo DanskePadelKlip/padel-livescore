@@ -18,3 +18,5 @@ logs/
 
 # WPT round-extraction scratch (raw articles, per-batch parts) — regenerable
 /scratch/
+# full-career match files (padel-db export_pt_matches.py, nightly; ~85 MB)
+/public/data/pm/
