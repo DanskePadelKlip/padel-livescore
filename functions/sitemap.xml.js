@@ -19,12 +19,13 @@ export async function onRequestGet({ request }) {
   const origin = new URL(request.url).origin;
   const today = new Date().toISOString().slice(0, 10);
 
-  const [matches, archive, natRanks, fipRanks, natTeams] = await Promise.all([
+  const [matches, archive, natRanks, fipRanks, natTeams, eloRanks] = await Promise.all([
     grab(origin, "/data/matches.json"),
     grab(origin, "/data/archive/index.json"),
     grab(origin, "/data/rankings.json"),
     grab(origin, "/data/rankings-fip.json"),
     grab(origin, "/data/national-teams.json"),
+    grab(origin, "/data/rankings-elo.json"),
   ]);
 
   const urls = [];
@@ -82,6 +83,9 @@ export async function onRequestGet({ request }) {
   // 5) Player profiles — every ranked player with a RankedIn id, deduped.
   const players = new Set();
   for (const l of lists) for (const r of l.rows || []) if (r.id) players.add(r.id);
+  // The Elo board too: every row carries a real id, including the FIP tour (fip-<slug>),
+  // whose points list mostly has none - without this the pro tour had no player URL at all.
+  for (const l of (eloRanks && eloRanks.lists) || []) for (const r of l.rows || []) if (r.id) players.add(r.id);
   for (const id of players) add(`/player/${seg(id)}`, { changefreq: "weekly", priority: "0.5" });
 
   // 6) Pair pages — the partnerships with enough history to be worth a page.
