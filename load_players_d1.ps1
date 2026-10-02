@@ -58,6 +58,11 @@ if (-not (Test-Path $cfg)) { Write-Host "players d1: missing $cfg"; exit 1 }
 if (-not $env:CLOUDFLARE_API_TOKEN) { Write-Host "players d1: no token in config."; exit 1 }
 
 Set-Location $root
+# Budget guard (scripts\d1-budget.ps1): a deferral exits 0; the exporter is
+# stateless, so the next night re-sends the same rows.
+. (Join-Path $root "scripts\d1-budget.ps1")
+$gate = Test-D1Budget -Label "players d1" -Statements $stmts
+if (-not $gate.Go) { exit $gate.ExitCode }
 Write-Host "players d1: applying $stmts row(s) to players..."
 & npx wrangler d1 execute padelticker-history --remote --file d1/players_link.sql --yes
 if ($LASTEXITCODE -ne 0) {

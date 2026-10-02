@@ -23,21 +23,33 @@ if (-not (Test-Path $delta)) {
   exit 1
 }
 
+$cfg = Join-Path $root "..\danskepadelklip-site\deploy.config.ps1"
+if (-not (Test-Path $cfg)) { Write-Host "elo delta: missing $cfg"; exit 1 }
+. $cfg
+if (-not $env:CLOUDFLARE_API_TOKEN) { Write-Host "elo delta: no token in config."; exit 1 }
+Set-Location $root
+
+# export_d1_elo.py advances elo_state.json when it EXPORTS, so a delta that is
+# not applied tonight would never be sent again. Any unapplied delta (deferred
+# by the budget guard, or wrangler failing) is kept in d1\elo_carry.sql and sent
+# ahead of the next night's - see scripts\d1-budget.ps1.
+. (Join-Path $root "scripts\d1-budget.ps1")
+$apply = Join-D1Carry -Name "elo" -Delta $delta
+
 # An empty delta is the normal case on a quiet night. Skip the wrangler call
 # entirely rather than paying a round trip to say nothing changed.
-$lines = @(Get-Content $delta | Where-Object { $_.Trim() })
+$lines = @(Get-Content $apply | Where-Object { $_.Trim() })
 if ($lines.Count -eq 0) {
   Write-Host "elo delta: no rows changed - nothing to load."
   exit 0
 }
 
-$cfg = Join-Path $root "..\danskepadelklip-site\deploy.config.ps1"
-if (-not (Test-Path $cfg)) { Write-Host "elo delta: missing $cfg"; exit 1 }
-. $cfg
-if (-not $env:CLOUDFLARE_API_TOKEN) { Write-Host "elo delta: no token in config."; exit 1 }
+$gate = Test-D1Budget -Label "elo delta" -Statements $lines.Count
+if (-not $gate.Go) { Complete-D1Carry -Name "elo" -Applied $false; exit $gate.ExitCode }
 
-Set-Location $root
 Write-Host "elo delta: applying $($lines.Count) row(s) to D1..."
-& npx wrangler d1 execute padelticker-history --remote --file d1/elo_delta.sql --yes
-if ($LASTEXITCODE -ne 0) { Write-Host "elo delta: FAILED ($LASTEXITCODE)"; exit $LASTEXITCODE }
+& npx wrangler d1 execute padelticker-history --remote --file d1/elo_apply.sql --yes
+$code = $LASTEXITCODE
+Complete-D1Carry -Name "elo" -Applied ($code -eq 0)
+if ($code -ne 0) { Write-Host "elo delta: FAILED ($code) - kept in d1\elo_carry.sql for the next run."; exit $code }
 Write-Host "elo delta: applied $($lines.Count) row(s)."

@@ -22,7 +22,13 @@
 # Auth: the git-ignored deploy.config.ps1 deploy.ps1 uses, dot-sourced so the
 # token never appears on a command line.
 #
-# Exit codes: 0 = applied or nothing to do, 2 = refused (too big), other = failed.
+# Budget: scripts\d1-budget.ps1 is asked twice - before step 1 (the state reads
+# are ~100k rows, and on 2026-10-01 they are what failed once the account was
+# over its cap) and before step 4 with the real statement count. A deferral
+# exits 0 and the next night heals it, since the state is re-read from D1.
+#
+# Exit codes: 0 = applied, nothing to do, or deferred by the budget guard;
+# 2 = refused (too big); 4 = deferred 3 nights running; other = failed.
 # -DryRun: steps 1-3 only (reads D1, writes the delta file, applies nothing).
 param([int]$MaxStatements = 25000, [switch]$DryRun)
 $ErrorActionPreference = "Stop"
@@ -40,6 +46,9 @@ if (-not (Test-Path $cfg)) { Write-Host "matches delta: missing $cfg"; exit 1 }
 . $cfg
 if (-not $env:CLOUDFLARE_API_TOKEN) { Write-Host "matches delta: no token in config."; exit 1 }
 Set-Location $root
+. (Join-Path $root "scripts\d1-budget.ps1")
+$gate = Test-D1Budget -Label "matches delta" -Statements 0 -ExtraReads 150000
+if (-not $gate.Go) { exit $gate.ExitCode }
 
 function D1Query([string]$sql) {
   # --json prints [{results:[...], success, meta}]; anything else is a failure.
@@ -106,6 +115,8 @@ if ($lines.Count -gt $MaxStatements) {
 if ($DryRun) { Write-Host "matches delta: DRY RUN - $($lines.Count) statement(s) in $delta, nothing applied."; exit 0 }
 
 # ---- 4. apply ----
+$gate = Test-D1Budget -Label "matches delta" -Statements $lines.Count
+if (-not $gate.Go) { exit $gate.ExitCode }
 Write-Host "matches delta: applying $($lines.Count) statement(s) to D1..."
 & npx wrangler d1 execute padelticker-history --remote --file d1/matches_delta.sql --yes
 if ($LASTEXITCODE -ne 0) { Write-Host "matches delta: FAILED ($LASTEXITCODE)"; exit $LASTEXITCODE }

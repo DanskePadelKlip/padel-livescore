@@ -55,6 +55,11 @@ if (-not (Test-Path $cfg)) { Write-Host "earnings d1: missing $cfg"; exit 1 }
 if (-not $env:CLOUDFLARE_API_TOKEN) { Write-Host "earnings d1: no token in config."; exit 1 }
 
 Set-Location $root
+# Budget guard (scripts\d1-budget.ps1): a deferral exits 0 WITHOUT promoting the
+# pending state, so the next delta re-sends these rows.
+. (Join-Path $root "scripts\d1-budget.ps1")
+$gate = Test-D1Budget -Label "earnings d1" -Statements $stmts
+if (-not $gate.Go) { exit $gate.ExitCode }
 Write-Host "earnings d1: applying $stmts change(s) to player_earnings..."
 & npx wrangler d1 execute padelticker-history --remote --file d1/earnings_delta.sql --yes
 if ($LASTEXITCODE -ne 0) {
