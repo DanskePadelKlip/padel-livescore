@@ -725,7 +725,42 @@ function groupTier(name, matches) {
   return t;
 }
 // Bigger first: tier dominates, match count breaks ties (and orders nationals).
-const tournamentRank = (g) => groupTier(g.t.name, g.matches) * 1000 + g.matches.length;
+// A split group (see groupKeyOf) ranks by its OWN tier, never the tournament name's:
+// "VPC Open, Vejle (inkl. DPF500 H/D)" would otherwise lift its DPF10 group to 50 too.
+const tournamentRank = (g) =>
+  (g.sub ? (g.sub === "other" ? 0 : classTier(g.sub)) : groupTier(g.t.name, g.matches)) * 1000 + g.matches.length;
+
+// One Danish ranking event runs every tier at once - VPC Open Vejle on 2026-10-03
+// carried Herrer/Damer DPF500 beside DPF100, 60, 35, 25 and 10 - and as one group the
+// DPF500 was 8 rows lost among 46, in start-time order. An event whose classes span
+// more than one DPF tier is therefore listed as one group PER TIER (men and women of
+// a tier together), each ranked by that tier, so the DPF500 sits at the top of Denmark
+// and the DPF10 sorts down among the other small events. Decided on the whole feed,
+// not the filtered slice, so a group's key - and with it its open/closed state - does
+// not change when a filter or the live hoist takes some of its rows away.
+const dpfTierLabel = (cls) => {
+  const t = /\bdpf\s*-?\s*(\d{2,4})\b/i.exec(cls || "");
+  return t ? "DPF" + t[1] : null;
+};
+let _splitT = null, _splitTFor = null;
+function splitTournaments() {
+  if (_splitTFor === state.matches && _splitT) return _splitT;
+  const tiers = new Map();
+  for (const m of state.matches) {
+    const l = dpfTierLabel(m.className);
+    if (!l || !m.tournament) continue;
+    const k = m.source + ":" + m.tournament.id;
+    if (!tiers.has(k)) tiers.set(k, new Set());
+    tiers.get(k).add(l);
+  }
+  _splitT = new Set([...tiers].filter(([, s]) => s.size > 1).map(([k]) => k));
+  _splitTFor = state.matches;
+  return _splitT;
+}
+function groupKeyOf(m) {
+  const base = m.source + ":" + m.tournament.id;
+  return splitTournaments().has(base) ? base + "#" + (dpfTierLabel(m.className) || "other") : base;
+}
 
 // Class sections, highest tier first. One Danish tournament runs DPF500 next to DPF10,
 // and the feed hands the classes over in draw-creation order, so on the 2026-09-12
@@ -746,11 +781,13 @@ const byClassTier = (a, b) => {
 
 function renderGroups(matches, changed) {
   matches = withoutNestedRubbers(matches);
-  // group by tournament, preserve aggregate order
+  // group by tournament (or tournament + DPF tier, see groupKeyOf), preserve aggregate order
   const groups = new Map();
   for (const m of matches) {
-    const key = m.source + ":" + m.tournament.id;
-    if (!groups.has(key)) groups.set(key, { key, t: m.tournament, fed: m.federation, matches: [] });
+    const key = groupKeyOf(m);
+    const tkey = m.source + ":" + m.tournament.id;
+    const sub = key === tkey ? null : key.slice(tkey.length + 1);
+    if (!groups.has(key)) groups.set(key, { key, tkey, sub, t: m.tournament, fed: m.federation, matches: [] });
     groups.get(key).matches.push(m);
   }
   const arr = [...groups.values()];
@@ -782,7 +819,7 @@ function renderGroups(matches, changed) {
     // always false, and an event that was actually on court never opened itself.
     // Ask the feed which tournaments are live instead of the slice we were given.
     const liveTours = new Set(
-      state.matches.filter((m) => m.status === "live").map((m) => m.source + ":" + m.tournament.id));
+      state.matches.filter((m) => m.status === "live").map(groupKeyOf));
     ordered.flatMap(([, gs]) => gs).forEach((g, i) => {
       const hasLive = g.matches.some((m) => m.status === "live") || liveTours.has(g.key);
       if (hasLive || i === 0) state.expandedGroups.add(g.key);
@@ -809,11 +846,14 @@ function groupHtml(g, changed) {
   return `
     <div class="group ${open ? "open" : ""}" data-group="${esc(g.key)}">
       <div class="group__head" data-toggle="${esc(g.key)}">
-        <span class="group__title"><span class="tlink" data-tourney="live" data-tkey="${esc(g.key)}" data-tname="${esc(g.t.name)}" data-tfed="${esc(g.fed)}">${esc(g.t.name)}</span></span>
+        <span class="group__title">${
+          // the tier goes FIRST: .group__title ellipsizes, and a long event name would cut a suffix off on a phone
+          g.sub ? `<span class="group__sub">${g.sub === "other" ? "Other classes" : esc(g.sub)}</span> · ` : ""
+        }<span class="tlink" data-tourney="live" data-tkey="${esc(g.tkey)}" data-tname="${esc(g.t.name)}" data-tfed="${esc(g.fed)}">${esc(g.t.name)}</span></span>
         <span class="group__meta">
           ${nLive ? `<span class="badge live">${nLive} live</span>` : ""}
           <span class="count">${g.matches.length}</span>
-          ${star("tournaments", g.key, g.t.name, g.fed)}
+          ${star("tournaments", g.tkey, g.t.name, g.fed)}
           <span class="chev">▶</span>
         </span>
       </div>
