@@ -44,5 +44,9 @@ export async function onRequestGet({ request, params }) {
     eventStatus: "https://schema.org/EventScheduled",
   };
 
-  return withMeta(base, { title, description, canonical, ogType: "article", image, jsonld });
+  return withMeta(base, {
+    h1: `${pair}${round ? ` — ${round}` : ""}`,
+    lead: [t.name, score, won ? `${won} won` : null].filter(Boolean).join(" · "),
+    title, description, canonical, ogType: "article", image, jsonld,
+  });
 }

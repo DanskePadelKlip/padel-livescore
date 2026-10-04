@@ -67,5 +67,9 @@ export async function onRequestGet({ request, params, env }) {
   ];
 
   const image = `${SITE}/og/pair/${seg(a)}/${seg(b)}`;
-  return withMeta(base, { title, description, canonical, image, jsonld });
+  return withMeta(base, {
+    h1: pairName,
+    lead: bits.join(" · "),
+    title, description, canonical, image, jsonld,
+  });
 }

@@ -11,6 +11,7 @@ export async function onRequestGet({ request }) {
   const origin = new URL(request.url).origin;
   const base = await shell(origin);
   const res = withMeta(base, {
+    h1: "Following",
     title: "Following · PadelTicker",
     description: "The players and tournaments you follow on PadelTicker.",
     canonical: `${SITE}/following`,

@@ -61,5 +61,9 @@ export async function onRequestGet({ request, params }) {
     });
   }
 
-  return withMeta(base, { title, description, canonical, jsonld });
+  return withMeta(base, {
+    h1: `${region} ${g} padel ranking`,
+    lead: rows.length ? `${rows.length} ranked players` : "",
+    title, description, canonical, jsonld,
+  });
 }

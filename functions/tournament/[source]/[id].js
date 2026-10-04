@@ -95,7 +95,15 @@ export async function onRequestGet({ request, params }) {
   // just forgoes the rich result. The BreadcrumbList is unaffected either way.
   const graphs = start ? jsonld : jsonld.filter((g) => g["@type"] !== "SportsEvent");
 
-  return withMeta(base, { title, description, canonical, ogType: "website", image, jsonld: graphs });
+  // start/end are already validated ISO above, so slicing to a date is safe.
+  const when = start ? (end && end.slice(0, 10) !== start.slice(0, 10)
+    ? `${start.slice(0, 10)} – ${end.slice(0, 10)}` : start.slice(0, 10)) : "";
+
+  return withMeta(base, {
+    h1: name,
+    lead: [fed, venue, when].filter(Boolean).join(" · "),
+    title, description, canonical, ogType: "website", image, jsonld: graphs,
+  });
 }
 
 const MONTHS = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };

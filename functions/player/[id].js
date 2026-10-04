@@ -49,5 +49,11 @@ export async function onRequestGet({ request, params, env }) {
   ];
 
   const image = `${SITE}/og/player/${encodeURIComponent(id)}`;
-  return withMeta(base, { title, description, canonical, ogType: "profile", image, jsonld });
+  // bits is already the page's facts (country, matches, W-L, win rate); reused as the
+  // hidden lead so the heading is not the only thing a first-pass crawler can read.
+  return withMeta(base, {
+    h1: p.name,
+    lead: bits.join(" · "),
+    title, description, canonical, ogType: "profile", image, jsonld,
+  });
 }

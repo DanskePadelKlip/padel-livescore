@@ -13,12 +13,14 @@ const hubHandler = hub("earnings");
 
 const CAT = {
   men: {
+    h1: "Men's padel prize money",
     name: "Men's earnings",
     title: "Men's padel prize money — career earnings leaderboard · PadelTicker",
     description:
       "Men's padel prize money by player: estimated career and per-season earnings across Premier Padel and the CUPRA FIP Tour, from published prize tables and draw placings.",
   },
   women: {
+    h1: "Women's padel prize money",
     name: "Women's earnings",
     title: "Women's padel prize money — career earnings leaderboard · PadelTicker",
     description:
@@ -38,6 +40,7 @@ export async function onRequestGet(ctx) {
   const canonical = `${SITE}/earnings/${key}`;
   const base = await shell(url.origin);
   return withMeta(base, {
+    h1: cat.h1,
     title: cat.title,
     description: cat.description,
     canonical,

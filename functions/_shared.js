@@ -30,8 +30,19 @@ export const decodeParam = (v) => {
 // so we always rewrite the current shell (with the current app.js?v=<sha>).
 export const shell = (origin) => fetch(origin + "/index.html", { cf: { cacheTtl: 0 } });
 
+// Visually hidden, but present for crawlers and for screen readers - the standard
+// clip-rect recipe. display:none would hide it from both, which defeats the point.
+// Inline rather than a class because the shell's CSS lives inside index.html and a
+// Function should not have to edit the asset it is rewriting.
+const HIDDEN =
+  "position:absolute;width:1px;height:1px;margin:-1px;padding:0;" +
+  "overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0";
+
+const escapeHtml = (v) =>
+  String(v).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
 // Rewrite the shell's <head> with entity values. m: {title, description,
-// canonical, ogType?, image?, jsonld?}.
+// canonical, ogType?, image?, jsonld?, h1?, lead?}.
 export function withMeta(shellRes, m) {
   const content = (v) => ({ element(e) { if (v != null) e.setAttribute("content", String(v)); } });
   let rw = new HTMLRewriter()
@@ -56,6 +67,19 @@ export function withMeta(shellRes, m) {
     // Escape "<" so a name containing markup can't break out of the script tag.
     const j = JSON.stringify(g).replace(/</g, "\\u003c");
     rw = rw.on("head", { element(e) { e.append(`<script type="application/ld+json">${j}</script>`, { html: true }); } });
+  }
+  // h1/lead: the one server-rendered heading. index.html carries no <h1> and app.js
+  // never creates one, so until this existed EVERY page shipped zero headings - to a
+  // crawler's first pass and to a screen reader alike. Prepending it to <main> puts it
+  // outside #app, and the SPA only ever rewrites #app (the same reason the sitenav
+  // footer lives out there), so it survives boot: the page has exactly one h1 in both
+  // the raw and the rendered DOM. Hidden because the app draws its own visible heading
+  // for the same entity a moment later.
+  if (m.h1) {
+    const inner = `<h1>${escapeHtml(m.h1)}</h1>` + (m.lead ? `<p>${escapeHtml(m.lead)}</p>` : "");
+    rw = rw.on("main", {
+      element(e) { e.prepend(`<div class="seo-head" style="${HIDDEN}">${inner}</div>`, { html: true }); },
+    });
   }
   const res = rw.transform(shellRes);
   const out = new Response(res.body, res);

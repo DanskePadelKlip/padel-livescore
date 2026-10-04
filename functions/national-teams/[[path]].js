@@ -52,6 +52,8 @@ export async function onRequestGet(ctx) {
 
   const base = await shell(url.origin);
   return withMeta(base, {
+    h1: `${name} — national team padel championships`,
+    lead: `${rows.length} sourced placing${rows.length === 1 ? "" : "s"} · best ${ORD(best.pos)}`,
     title,
     description,
     canonical,
