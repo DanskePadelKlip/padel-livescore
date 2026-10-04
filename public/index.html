@@ -758,6 +758,12 @@
     /* knockout bracket */
     .bk-wrap { overflow-x: auto; padding: 6px 0 14px; -webkit-overflow-scrolling: touch; }
     .bk { display: block; }
+    /* Narrow screens: scale the whole draw down to the viewport rather than forcing a
+       sideways pan. The viewBox carries the aspect ratio, so height follows width. The
+       11px labels shrink with it, which is why renderTournament lists every round as
+       rows under the diagram — the diagram is the map, the rows are the detail. Desktop
+       keeps 1:1 and scrolls, where panning costs nothing. */
+    @media (max-width: 560px) { .bk { max-width: 100%; height: auto; } }
     .bk-round { fill: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
     .bk-line { fill: none; stroke: var(--line-hi); stroke-width: 1.5; }
     .bk-box rect { fill: var(--card); stroke: var(--line); stroke-width: 1; }
@@ -894,10 +900,10 @@
       .sitenav__note { flex-basis: 100%; color: #6b7482; margin: .6rem 0 0; }
     </style>
   </footer>
-  <!-- app.js?v=7ba869e9<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
+  <!-- app.js?v=01a2c8bc<sha> is cache-busted at deploy (see .github/workflows/refresh.yml):
        index.html is served no-cache, so a new ?v propagates immediately even though
        the zone forces a long browser TTL on .js files. -->
-  <script src="/app.js?v=7ba869e9"></script>
+  <script src="/app.js?v=01a2c8bc"></script>
   <!-- Cloudflare Web Analytics. Privacy-first, no cookies, so no consent banner is
        needed. The site already existed in the account (tag below) but the beacon was
        never in the markup, so only a handful of sampled events were ever recorded.

@@ -3378,10 +3378,10 @@ function renderTournament() {
       const bracket = tv.tour === "WPT" ? null : buildBracket([...rmap.values()].flat(), tv.kind === "live");
       if (bracket) {
         html += renderBracket(bracket);
-        // A live event has the "By day" toggle as its escape hatch from the bracket; an
-        // archived one has none, so its KO rounds were reachable nowhere as rows and 63% of
-        // FIP archive matches had no clickable player name at all. List every round there.
-        html += roundList(tv.kind === "live" ? [...rmap.entries()].filter(([r]) => !isKO(r)) : [...rmap.entries()]);
+        // Every round is listed as rows under the diagram, KO included. On a phone the
+        // bracket scales down to fit (.bk under 560px) and its 11px labels go small, so the
+        // rows are the legible copy — and they keep every KO player name clickable.
+        html += roundList([...rmap.entries()]);
       } else {
         html += roundList([...rmap.entries()]);
       }
