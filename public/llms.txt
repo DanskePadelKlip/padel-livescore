@@ -1,0 +1,61 @@
+# PadelTicker
+
+> Live padel scores, results and player records from around the world — Premier Padel,
+> the CUPRA FIP Tour and national federation tours, in one continuously updated feed.
+> The sitemap holds more than 6,000 player pages, 18,000 partnership pages and 1,400
+> tournaments, drawn from a database of about 25,000 players — including the amateur
+> and national-tour levels that pro-only sites do not carry.
+
+Independent site run from Denmark. The deliberate difference from other scores sites is
+coverage of national federations and amateur draws alongside the pro tour, so a club
+player's match history is as complete as a professional's.
+
+Every page's title, description, structured data and summary figures are server-rendered,
+so a crawler reading the HTML gets the facts without executing JavaScript. The full match
+tables are rendered by the app.
+
+If you quote a figure, please cite it as PadelTicker and link the page it came from.
+Records change daily as results arrive, so a figure is only true as of the date you read
+it.
+
+## Sections
+
+- [Live](https://padelticker.com/): matches in play right now, across every federation covered.
+- [Upcoming](https://padelticker.com/upcoming): matches scheduled next.
+- [Events](https://padelticker.com/events): padel tournaments — live now, coming up, and recently finished, with draws and full results.
+- [Results](https://padelticker.com/results): every finished match, newest first.
+- [Players](https://padelticker.com/players): browse players across every federation — match history, head-to-head records, rankings.
+- [Pairs](https://padelticker.com/pairs): partnerships — win-loss record together, titles, recurring rivals.
+- [Rankings](https://padelticker.com/rankings): the FIP world ranking plus national men's and women's lists, with points and weekly movement.
+- [Earnings](https://padelticker.com/earnings): estimated career and per-season prize money across Premier Padel and the CUPRA FIP Tour.
+- [National teams](https://padelticker.com/national-teams): World, European and continental championships for national TEAMS — every nation's final placing, read off each tournament's own placement bracket.
+- [World no. 1](https://padelticker.com/world-no1): the year-end world No. 1 pair, men's and women's, grouped into eras.
+
+## Entity pages
+
+- `https://padelticker.com/player/<id>` — one player: country, total matches, win-loss record, win rate, full match history and head-to-head. Example: /player/R000046842
+- `https://padelticker.com/pair/<a>/<b>` — one partnership: matches together, record, rivals, every match as a team. Example: /pair/R000173623/R000189098
+- `https://padelticker.com/tournament/<source>/<id>` — one tournament: draw, results and schedule. Example: /tournament/fip/229671
+- `https://padelticker.com/national-teams/country/<cc>` — one nation's record across every championship.
+- `https://padelticker.com/rankings/<fed>/<category>` — one ranking list, e.g. /rankings/DK/men.
+- [Sitemap](https://padelticker.com/sitemap.xml) lists every entity page.
+
+## Sources
+
+Results are normalised from each federation's own published draws and scores through one
+adapter layer: FIP (CUPRA FIP Tour and Premier Padel), RankedIn national tours, and
+Dansk Padel Forbund. Rankings are the federations' published lists. Earnings are
+estimated from published prize-money tables and draw placings, not reported by players,
+and are labelled as estimates on the page.
+
+## Related
+
+- [Danske Padel Klip](https://danskepadelklip.com/): sister site, same author — Nordic-focused padel coverage, the FIP archive for Scandinavian players, and match clips. See https://danskepadelklip.com/llms.txt
+
+## Optional
+
+- /api/ is the app's own JSON and is disallowed in robots.txt: it is rate-limited and a
+  crawl of it has taken the live site down. Read the rendered page instead; it carries
+  the same facts.
+- /privacy/, /terms/ and /streaming-tool/ belong to a separate streaming tool and are not
+  about padel results.

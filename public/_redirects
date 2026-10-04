@@ -1,0 +1,5 @@
+# /live is not a route in applyRoute() — the live board IS the front page. It is the
+# obvious URL to guess on a site called "live padel scores", and it used to render the
+# board only because every unmatched path fell through to the app shell at 200. Now that
+# public/404.html makes an unmatched path a real 404, send it to the board instead.
+/live  /  301

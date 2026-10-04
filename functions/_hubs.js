@@ -1,4 +1,4 @@
-// Meta for the site's top-level section pages (/results, /players, /rankings, /events).
+// Meta for the site's top-level section pages (/results, /players, /rankings, /events, ...).
 //
 // These are real SPA routes and they are in sitemap.xml, but they had no Function of
 // their own — so they were served the raw app shell, whose canonical is hardcoded to the
@@ -53,6 +53,18 @@ const HUBS = {
     title: "Padel tournaments — live, upcoming & finished · PadelTicker",
     description:
       "Padel tournaments from every federation we cover — live now, coming up, and recently finished, with draws and full results.",
+  },
+  upcoming: {
+    name: "Upcoming",
+    title: "Upcoming padel tournaments — what is on next · PadelTicker",
+    description:
+      "The padel calendar ahead: Premier Padel and CUPRA FIP Tour events merged with the live and recent FIP draws, by date, with each event's status.",
+  },
+  "world-no1": {
+    name: "World No. 1",
+    title: "Padel world No. 1 — every year-end number one pair · PadelTicker",
+    description:
+      "The year-end world No. 1 padel pair, men's and women's, grouped into eras — APA and FEP before a global tour existed, then Padel Pro Tour, World Padel Tour and today's FIP ranking, each era labelled with its source.",
   },
 };
 
