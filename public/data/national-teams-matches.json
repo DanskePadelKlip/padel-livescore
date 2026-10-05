@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-29",
+ "updated": "2026-10-05",
  "note": "Every nation-vs-nation match played at the national-team championships in the archive — the rubbers behind the placings table, read off the same archived draws. A match is listed only when both pairs are one nation; the score is the draw's own. Rounds are shown where the draw labels them.",
  "events": [
   {
@@ -686,7 +686,7 @@
   "M. Deus|POR": "fip-m-deus",
   "N. Deus|POR": "fip-n-deus",
   "M. Nolten|NED": "fip-m-nolten",
-  "T. Roper|NED": "fip-t-roper",
+  "T. Roper|NED": "R000185230",
   "J. Valdes|CHI": "fip-j-valdes",
   "G. Valdivieso Comesaña|CHI": "fip-g-valdivieso-comesaña",
   "M. Al Khanji|QAT": "fip-m-al-khanji",
@@ -1551,7 +1551,7 @@
   "L. Bahurel|FRA": "fip-l-bahurel",
   "M. Oliveira|POR": "fip-m-oliveira",
   "P. Graca|POR": "fip-p-graca",
-  "V. Jülich|GER": "R000052706",
+  "V. Jülich|GER": "fip-v-jülich",
   "M. Guinart España|ESP": "fip-m-guinart-españa",
   "J. Para|POR": "fip-j-para",
   "J. Saravia Alfaro|URU": "fip-j-saravia-alfaro",
