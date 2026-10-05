@@ -1064,6 +1064,14 @@ function shareLink(m, fallbackKey) {
   return `<button class="mshare" data-share="${esc(path)}" title="Copy a link to this match">🔗 Copy link</button>`;
 }
 
+// "Match page" on an expanded match: same uniqueness rule as Copy link, because
+// it is the same URL.
+function matchPageLink(m, fallbackKey) {
+  if (!matchKeyIsUnique(currentMatchList(), m, fallbackKey)) return "";
+  const path = matchPath(m, fallbackKey);
+  return path ? `<a class="mpage" href="${esc(path)}" data-mpage="${esc(path)}">Match page →</a>` : "";
+}
+
 function detail(m) {
   // Head-to-head, Elo and records - but ONLY for the deep-linked match. That
   // page renders its detail with no click, so nothing else would ever fetch it.
@@ -1091,6 +1099,7 @@ function detail(m) {
       ${followPlayers(m)}
       ${matchupHtml(m)}
       <div class="dlinks">
+        ${matchPageLink(m, null)}
         <a class="src" href="${esc(m.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[m.source] || m.source)}</a>
         ${shareLink(m, null)}
       </div>
@@ -1331,6 +1340,627 @@ function matchupHtml(m) {
     bits.push(`<div class="h2hnone">These two have no shared history on record.</div>`);
 
   return `<div class="h2h"><div class="h2hhead">Head-to-head</div>${bits.join("")}</div>`;
+}
+
+// ---------- match page ----------
+// /match/<src>/<tid>/<round>/<pair> is a page of its own: everything you would want
+// in front of you to commentate the match. Built almost entirely from static files —
+// the nightly career files (data/pm, which also carry the Danish matches D1 has
+// never held), form-lite and ranks-lite — plus ONE /api/matchup?lite=1 for Elo,
+// odds, bio and prize money: a dozen primary-key reads. Never a per-player
+// /api/player call; see the D1 read-budget outages (2026-09-04, 2026-10-01).
+
+const MP_DAY = 86400000;
+const mpIds = new Map();      // match id -> "loading" | { a: [id|null, id|null], b: [...] }
+const mpExtra = new Map();    // match id -> "loading" | matchup-lite data | null
+const mpRowsCache = new Map(); // player id -> { src, rows }
+const mpNames = new Map();     // player id -> display name, from every pm shard seen
+// The open match's event, so history stops where this event starts: a finished
+// match is already IN the career files, and must not count as its own previous
+// meeting (or as form). { tid, tname, cut } — see mpPre.
+let mpCtx = null;
+const mpFold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
+// pm event keys are a kind letter + the source's id ("fFIP-2026-3701", "d68902").
+const mpIsEvent = (r) => mpCtx && ((mpCtx.tid && r.ev.slice(1) === mpCtx.tid) || (mpCtx.tname && mpFold(r.evName) === mpCtx.tname));
+const mpPreCache = new WeakMap();
+function mpPre(rows) {
+  if (!mpCtx) return rows;
+  const k = mpCtx.tid + "|" + mpCtx.tname;
+  const c = mpPreCache.get(rows);
+  if (c && c.k === k) return c.rows;
+  // The cut: the event's first match date when the draw has dates, else the date
+  // the career file gives this event; an event the file does not hold yet (today's)
+  // needs no cut at all.
+  let cut = mpCtx.cut;
+  if (!cut) for (const r of rows) if (mpIsEvent(r) && r.date && (!cut || r.date < cut)) cut = r.date;
+  const out = rows.filter((r) => !mpIsEvent(r) && (!cut || !r.date || r.date <= cut));
+  mpPreCache.set(rows, { k, rows: out });
+  return out;
+}
+
+// The match a /match/... route points at, in the open tournament — or null, and
+// the tournament page renders as it always did.
+function matchPageMatch() {
+  const tv = state.tournament;
+  if (!tv || !state.focusMatch) return null;
+  const list = tv.kind === "live" ? state.matches.filter((m) => m.source + ":" + m.tournament.id === tv.key) : tv.matches;
+  if (!Array.isArray(list)) return null;
+  return list.find((m) => matchRouteKey(m) === state.focusMatch.key) || null;
+}
+
+// Archived matches carry no id, so the cache key falls back to the route.
+const mpKey = (m) => m.id || ((state.tournament && state.tournament.key) || "") + "|" + matchRouteKey(m);
+
+function mpLoadIds(m) {
+  const key = mpKey(m);
+  if (mpIds.has(key)) return mpIds.get(key);
+  mpIds.set(key, "loading");
+  const ps = (side) => ((m.teams[side] && m.teams[side].players) || []).slice(0, 2);
+  Promise.all([...ps(0), ...ps(1)].map((p) => (p && p.name && p.name !== "TBD" ? resolvePlayerId(p.name) : null)))
+    .catch(() => [])
+    .then((r) => {
+      const n0 = ps(0).length;
+      mpIds.set(key, { a: [r[0] || null, r[1] || null].slice(0, Math.max(1, n0)), b: [r[n0] || null, r[n0 + 1] || null].slice(0, Math.max(1, ps(1).length)) });
+      render();
+    });
+  return "loading";
+}
+
+function mpLoadExtra(m, ids) {
+  const key = mpKey(m);
+  if (mpExtra.has(key)) return mpExtra.get(key);
+  const A = ids.a.filter(Boolean), B = ids.b.filter(Boolean);
+  if (!A.length || !B.length || A.some((x) => B.includes(x))) { mpExtra.set(key, null); return null; }
+  mpExtra.set(key, "loading");
+  const qs = new URLSearchParams({ lite: "1" });
+  A.forEach((x, i) => qs.set("a" + (i + 1), x));
+  B.forEach((x, i) => qs.set("b" + (i + 1), x));
+  if (m.round) qs.set("round", m.round);
+  fetch("/api/matchup?" + qs).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+    .then((d) => { mpExtra.set(key, d && !d.error ? d : null); render(); });
+  return "loading";
+}
+
+// One player's whole career as flat rows, newest first: the pm groups unrolled.
+// "loading" | null (no file / not in it) | rows[]
+function mpRows(id) {
+  if (!id) return null;
+  const r = pmLoad(id);
+  if (r.status === "loading") return "loading";
+  if (r.status !== "ready" || !r.groups.length) return null;
+  const c = mpRowsCache.get(id);
+  if (c && c.src === r.groups) return mpPre(c.rows);
+  const ev = r.data.ev || {}, nm = r.data.n || {};
+  for (const k in nm) if (!mpNames.has(k)) mpNames.set(k, nm[k]);
+  const rows = [];
+  for (const g of r.groups) {
+    const e = ev[g[0]] || [];
+    for (const x of g[3] || []) {
+      rows.push({
+        date: x[0] || e[1] || "", ev: g[0], evName: e[0] || "", kind: e[3] || "d", cls: g[1] || "",
+        round: x[1] || "", score: x[2] || "", won: x[3] === 1, opp: [x[4], x[5]].filter(Boolean),
+        partner: x[6] || g[2] || null,
+      });
+    }
+  }
+  // Stable: rows inside one event keep the file's latest-round-first order.
+  rows.sort((p, q) => (p.date < q.date ? 1 : p.date > q.date ? -1 : 0));
+  mpRowsCache.set(id, { src: r.groups, rows });
+  return mpPre(rows);
+}
+
+// A name for an id the open shards did not carry: the static player index.
+let _mpPidxNames = null;
+function mpPidxName(id) {
+  if (!PIDX) return null;
+  if (!_mpPidxNames) _mpPidxNames = new Map(PIDX.map((r) => [r[0], r[1]]));
+  return _mpPidxNames.get(id) || null;
+}
+const mpName = (x) => (!x ? "?" : x[0] === "=" ? x.slice(1) : mpNames.get(x) || mpPidxName(x) || x);
+// "Alejandro Galan" -> "A. Galan"; FIP's "A. Galan" stays as it is
+const mpShort = (s) => {
+  const p = String(s || "").trim().split(/\s+/);
+  if (p.length < 2 || /^\p{L}\.$/u.test(p[0])) return s;
+  return `${p[0][0]}. ${p.slice(1).join(" ")}`;
+};
+const mpWho = (x) => (!x ? "" : x[0] === "=" ? esc(mpShort(x.slice(1)))
+  : `<span class="pn" data-player="${esc(x)}">${esc(mpShort(mpName(x)))}</span>`);
+const mpPairWho = (list) => list.map(mpWho).join(" / ");
+
+// Sets/games from the row owner's point of view (pm scores already are).
+function mpSets(score) {
+  const out = [];
+  for (const s of String(score || "").trim().split(/\s+/)) {
+    const m = /^(\d+)-(\d+)/.exec(s);
+    if (m) out.push([+m[1], +m[2]]);
+  }
+  return out;
+}
+
+// Season-style numbers for a list of rows.
+function mpStats(rows) {
+  const st = { n: 0, w: 0, setsW: 0, setsL: 0, gW: 0, gL: 0, three: [0, 0], tb: [0, 0], straight: 0, titles: 0, finals: 0 };
+  for (const r of rows) {
+    st.n++; if (r.won) st.w++;
+    const sets = mpSets(r.score);
+    for (const [a, b] of sets) {
+      st.gW += a; st.gL += b;
+      if (a > b) st.setsW++; else if (b > a) st.setsL++;
+      if ((a === 7 && b === 6) || (a === 6 && b === 7)) st.tb[a > b ? 0 : 1]++;
+    }
+    if (sets.length === 3) st.three[r.won ? 0 : 1]++;
+    if (sets.length === 2 && r.won) st.straight++;
+    if (/^final$/i.test(String(r.round).trim()) || /(^|\s)finals?$/i.test(r.round) && !/semi|quarter|1\//i.test(r.round)) {
+      st.finals++; if (r.won) st.titles++;
+    }
+  }
+  return st;
+}
+
+const mpPct = (w, n) => (n ? Math.round((w / n) * 100) + "%" : "–");
+const mpRec = (w, l) => `${w}–${l}`;
+const mpYear = (r) => String(r.date).slice(0, 4);
+const mpSince = (rows, days) => {
+  const cut = new Date(Date.now() - days * MP_DAY).toISOString().slice(0, 10);
+  return rows.filter((r) => r.date >= cut);
+};
+const mpSame = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+
+// The two players of a pair, together: whichever of them has a career file.
+function mpTogether(p, q) {
+  if (!p || !q) return null;
+  const rp = mpRows(p);
+  if (Array.isArray(rp)) return rp.filter((r) => r.partner === q);
+  const rq = mpRows(q);
+  if (Array.isArray(rq)) return rq.filter((r) => r.partner === p);
+  return rp === "loading" || rq === "loading" ? "loading" : null;
+}
+
+// p against q (any partners), from p's side — falling back to q's file, flipped.
+function mpVersus(p, q) {
+  const rp = mpRows(p);
+  if (Array.isArray(rp)) return rp.filter((r) => r.opp.includes(q));
+  const rq = mpRows(q);
+  if (Array.isArray(rq)) return rq.filter((r) => r.opp.includes(p)).map((r) => ({
+    ...r, won: !r.won, score: mpSets(r.score).map(([a, b]) => `${b}-${a}`).join(" "), opp: [q, r.partner].filter(Boolean), partner: null,
+  }));
+  return rp === "loading" || rq === "loading" ? "loading" : null;
+}
+
+function mpChips(rows, n = 10) {
+  return `<span class="mpchips">${rows.slice(0, n).map((r) =>
+    `<span class="h2hres ${r.won ? "w" : "l"}" title="${esc(`${r.won ? "W" : "L"} ${r.score} vs ${r.opp.map((o) => mpShort(mpName(o))).join(" / ")} · ${r.round ? r.round + " · " : ""}${r.evName} (${r.date})`)}">${r.won ? "W" : "L"}</span>`).join("")}</span>`;
+}
+
+function mpStreak(rows) {
+  if (!rows.length) return null;
+  let n = 0;
+  for (const r of rows) { if (r.won === rows[0].won) n++; else break; }
+  return { won: rows[0].won, n };
+}
+
+function mpMatchList(rows, cap = 8, showPartner = false) {
+  return `<div class="h2hlist">${rows.slice(0, cap).map((r) => `
+    <div class="h2hm">
+      <span class="h2hres ${r.won ? "w" : "l"}">${r.won ? "W" : "L"}</span>
+      <span class="h2hsc">${esc(r.score || "")}</span>
+      <span class="h2hmeta">${showPartner && r.partner ? `w/ ${mpWho(r.partner)} · ` : ""}vs ${mpPairWho(r.opp)} · ${esc([r.round, r.evName, r.date].filter(Boolean).join(" · "))}</span>
+    </div>`).join("")}</div>`;
+}
+
+// This tournament so far for one side: every other match in the draw with the
+// same pair on it, earliest round first, from that pair's point of view.
+function mpRoad(m, list, side) {
+  const key = teamKey(m.teams[side]);
+  const out = [];
+  const rm = roundRank(m.round);
+  // Only what came BEFORE this match: a quarter-final's page must not show the
+  // final those two went on to play. Same-rank rounds (groups, league rounds)
+  // count only with start times that say so.
+  const before = (x) => roundRank(x.round) < rm
+    || (roundRank(x.round) === rm && x.startTime && m.startTime && x.startTime < m.startTime);
+  for (const x of list) {
+    if (x === m || (m.id != null && x.id === m.id) || !before(x)) continue;
+    const s = x.teams.findIndex((t) => teamKey(t) === key);
+    if (s < 0 || x.status === "upcoming") continue;
+    const sets = (x.score && x.score.sets) || [];
+    out.push({
+      x, round: x.round || "", won: x.score && x.score.winner === s, lost: x.score && x.score.winner === 1 - s,
+      live: x.status === "live",
+      score: sets.map((st) => `${setParts(st[s]).g}-${setParts(st[1 - s]).g}`).join(" "),
+      sets: sets.map((st) => [parseInt(setParts(st[s]).g, 10) || 0, parseInt(setParts(st[1 - s]).g, 10) || 0]),
+      opp: x.teams[1 - s], dur: fmtDur(plausibleDur(x.raw && x.raw.dur, sets)),
+      mins: (() => { const d = /^(\d+):(\d+)/.exec(String(plausibleDur(x.raw && x.raw.dur, sets) || "")); return d ? +d[1] * 60 + +d[2] : 0; })(),
+    });
+  }
+  out.sort((p, q) => roundRank(p.round) - roundRank(q.round) || String(p.x.startTime || "").localeCompare(String(q.x.startTime || "")));
+  return out;
+}
+
+const mpTeamName = (t) => (t.players || []).map((p) => mpShort(cleanPlayerName(p.name))).join(" / ") || t.name || "TBD";
+
+function mpAge(d) {
+  if (!d) return null;
+  const b = new Date(d);
+  if (isNaN(b)) return null;
+  const n = new Date();
+  let a = n.getFullYear() - b.getFullYear();
+  if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
+  return a;
+}
+
+// ---- the page ----
+function renderMatchPage(m, list) {
+  const tv = state.tournament;
+  ensureFormLite();
+  loadRanksLite();
+  {
+    const tid = m.tournament && m.tournament.id != null ? String(m.tournament.id) : String(tv.key || "").replace(/^[^:]*:|^[a-z]+-/, "");
+    const ds = list.map((x) => x.startTime || x.date).filter(Boolean).map((d) => String(d).slice(0, 10)).sort();
+    const ctx = { tid, tname: mpFold((m.tournament && m.tournament.name) || tv.name), cut: ds[0] || null };
+    if (!mpCtx || mpCtx.tid !== ctx.tid || mpCtx.tname !== ctx.tname || mpCtx.cut !== ctx.cut) mpCtx = ctx;
+  }
+  const ids = mpLoadIds(m);
+  const ready = ids !== "loading";
+  const A = ready ? ids.a : [], B = ready ? ids.b : [];
+  const ex = ready ? mpLoadExtra(m, ids) : "loading";
+  const X = ex && ex !== "loading" ? ex : null;
+  // start every career file now, so they load in parallel rather than one per render
+  for (const id of [...A, ...B]) if (id) mpRows(id);
+
+  const P = (side, i) => ((m.teams[side] && m.teams[side].players) || [])[i] || null;
+  const idOf = (side, i) => (side === 0 ? A : B)[i] || null;
+  const nameOf = (side, i) => { const p = P(side, i); return p ? cleanPlayerName(p.name) : ""; };
+  const tn = (side) => esc(mpTeamName(m.teams[side]));
+
+  let html = `<button class="pback" data-mback="1">← ${esc(tv.name || "Tournament")}</button>`;
+
+  // header: the scoreboard
+  const sets = m.score.sets || [];
+  const stat = m.status === "live" ? `<span class="badge live">Live</span>`
+    : m.status === "final" ? `<span class="badge final">Final</span>`
+    : `<span class="badge upcoming">${esc(schedLabel(m) || "Upcoming")}</span>`;
+  const meta = [m.className, m.round, m.court, m.schedule && !/^\s*$/.test(m.schedule) ? m.schedule : null,
+    m.startTime ? m.startTime.replace("T", " ").slice(0, 16) : null].filter(Boolean);
+  const dur = fmtDur(plausibleDur(m.raw && m.raw.dur, sets));
+  const sideRow = (side) => {
+    const t = m.teams[side];
+    const win = m.score.winner === side;
+    const names = ((t && t.players) || []).map((p, i) => {
+      const id = idOf(side, i);
+      const f = countryFlag(p.country);
+      const rk = rankFor(cleanPlayerName(p.name), p.country);
+      const label = `${f ? f + " " : ""}${esc(cleanPlayerName(p.name))}${rk ? ` <span class="mprk">#${rk}</span>` : ""}`;
+      return id ? `<span class="pn" data-player="${esc(id)}">${label}</span>` : `<span class="pn" data-pname="${esc(cleanPlayerName(p.name))}">${label}</span>`;
+    }).join(`<span class="mpamp">&amp;</span>`) || esc(t && t.name || "TBD");
+    const cells = sets.map((s) => `<span class="mpset${win ? " w" : ""}">${setCellHtml(s[side])}</span>`).join("");
+    const pts = m.status === "live" && m.score.points ? `<span class="mppts">${esc(m.score.points[side] ?? "")}</span>` : "";
+    const srv = m.status === "live" && m.score.serving === side ? `<span class="srv on" title="Serving"></span>` : "";
+    return `<div class="mpteam${win ? " win" : ""}"><div class="mpnames">${srv}${names}</div><div class="mpscore">${cells}${pts}</div></div>`;
+  };
+  html += `<div class="mphead">
+    <div class="mpmeta"><span class="tlink" data-mback="1">${esc(tv.name || "")}</span>${meta.length ? " · " + meta.map(esc).join(" · ") : ""}</div>
+    <div class="mpstat">${stat}${dur ? `<span class="mpdur">${esc(dur)}</span>` : ""}</div>
+    ${sideRow(0)}${sideRow(1)}
+    ${mpOddsBar(m, X)}
+  </div>`;
+
+  if (!ready) return html + `<div class="skel"></div><div class="skel"></div>`;
+
+  const both = (side) => (side === 0 ? A : B).filter(Boolean).length === 2;
+  const togA = both(0) ? mpTogether(A[0], A[1]) : null;
+  const togB = both(1) ? mpTogether(B[0], B[1]) : null;
+  const road = [mpRoad(m, list, 0), mpRoad(m, list, 1)];
+  // this event's earlier rounds as career rows, newest first: the most recent form
+  // there is, and not yet in the nightly files
+  const heres = road.map((r) => r.filter((x) => x.won || x.lost).reverse().map((x) => ({
+    date: "", ev: "", evName: tv.name || "", round: x.round, score: x.score, won: x.won,
+    opp: ((x.opp && x.opp.players) || []).map((p) => "=" + cleanPlayerName(p.name)),
+  })));
+  const anyLoading = [...A, ...B].some((id) => id && mpRows(id) === "loading");
+
+  // head-to-head, pair vs pair
+  const h2h = both(0) && both(1) && Array.isArray(togA) ? togA.filter((r) => mpSame(r.opp, B)) : null;
+  // every player-vs-player pairing that has happened
+  const cross = [];
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    const p = A[i], q = B[j];
+    if (!p || !q) continue;
+    const v = mpVersus(p, q);
+    if (Array.isArray(v) && v.length) cross.push({ p, q, rows: v, w: v.filter((r) => r.won).length });
+  }
+  // opponents tonight who have partnered each other
+  const exes = [];
+  for (const p of A) for (const q of B) {
+    if (!p || !q) continue;
+    const t = mpTogether(p, q);
+    if (Array.isArray(t) && t.length) exes.push({ p, q, rows: t, w: t.filter((r) => r.won).length });
+  }
+  // partners tonight who have played against each other
+  const rivals = [];
+  for (const [side, L] of [[0, A], [1, B]]) {
+    if (!L[0] || !L[1]) continue;
+    const v = mpVersus(L[0], L[1]);
+    if (Array.isArray(v) && v.length) rivals.push({ side, p: L[0], q: L[1], rows: v, w: v.filter((r) => r.won).length });
+  }
+
+  html += mpTalkingPoints({ m, A, B, X, heres, togA, togB, h2h, cross, exes, rivals, road, tn, nameOf, idOf });
+
+  // ---- head-to-head
+  {
+    let b = "";
+    if (h2h && h2h.length) {
+      const w = h2h.filter((r) => r.won).length, l = h2h.length - w;
+      const st = mpStats(h2h);
+      b += `<div class="h2hlead">${w === l ? "All square" : `${w > l ? tn(0) : tn(1)} lead`} <b>${Math.max(w, l)}–${Math.min(w, l)}</b>
+        <span class="h2hsub">as pairs · ${h2h.length} meeting${h2h.length === 1 ? "" : "s"} · sets ${st.setsW}–${st.setsL} · games ${st.gW}–${st.gL}</span></div>`;
+      b += `<div class="h2hsub" style="margin:-2px 0 4px">From ${tn(0)}'s side:</div>` + mpMatchList(h2h, 12);
+    } else if (h2h) {
+      b += `<div class="h2hlead">First meeting as pairs</div>`;
+    }
+    if (cross.length) {
+      b += `<div class="h2hsect">Player vs player · any partners</div>`;
+      for (const c of cross) b += recordRow(`${mpWho(c.p)} vs ${mpWho(c.q)}`, c.w, c.rows.length - c.w, `${c.rows.length} match${c.rows.length === 1 ? "" : "es"} · last ${esc(c.rows[0].date.slice(0, 4))} ${c.rows[0].won ? "W" : "L"} ${esc(c.rows[0].score)}`);
+    }
+    if (exes.length) {
+      b += `<div class="h2hsect">Opponents today, partners before</div>`;
+      for (const c of exes) b += recordRow(`${mpWho(c.p)} &amp; ${mpWho(c.q)}`, c.w, c.rows.length - c.w,
+        `${c.rows.length} together · ${esc(c.rows[c.rows.length - 1].date.slice(0, 4))}–${esc(c.rows[0].date.slice(0, 4))}`);
+    }
+    if (rivals.length) {
+      b += `<div class="h2hsect">Partners today, rivals before</div>`;
+      for (const c of rivals) b += recordRow(`${mpWho(c.p)} vs ${mpWho(c.q)}`, c.w, c.rows.length - c.w, `${c.rows.length} match${c.rows.length === 1 ? "" : "es"}`);
+    }
+    const unmatched = [0, 1].flatMap((side) => [0, 1].filter((i) => nameOf(side, i) && !idOf(side, i)).map((i) => mpShort(nameOf(side, i))));
+    if (!b) b = anyLoading ? `<div class="h2hnone">Loading careers…</div>`
+      : unmatched.length === [0, 1].flatMap((side) => [0, 1].filter((i) => nameOf(side, i))).length
+        ? `<div class="h2hnone">None of these players has a PadelTicker profile yet, so there is no career history to draw on.</div>`
+        : `<div class="h2hnone">No shared history on record${unmatched.length ? ` (no profile for ${esc(unmatched.join(", "))})` : ""}.</div>`;
+    html += mpSection("Head-to-head", b);
+  }
+
+  // ---- this tournament
+  if (road[0].length || road[1].length) {
+    const col = (side) => {
+      const r = road[side];
+      if (!r.length) return `<div class="mpcol"><div class="mpcolh">${tn(side)}</div><div class="h2hnone">First match of the event</div></div>`;
+      const sw = r.reduce((n, x) => n + x.sets.filter(([a, b]) => a > b).length, 0);
+      const sl = r.reduce((n, x) => n + x.sets.filter(([a, b]) => b > a).length, 0);
+      const gw = r.reduce((n, x) => n + x.sets.reduce((k, [a]) => k + a, 0), 0);
+      const gl = r.reduce((n, x) => n + x.sets.reduce((k, [, b]) => k + b, 0), 0);
+      const mins = r.reduce((n, x) => n + x.mins, 0);
+      return `<div class="mpcol"><div class="mpcolh">${tn(side)}</div>
+        <div class="h2hsub mpsum">sets ${sw}–${sl} · games ${gw}–${gl}${mins ? ` · ${Math.floor(mins / 60)}h ${mins % 60}m on court` : ""}</div>
+        <div class="h2hlist">${r.map((x) => `<div class="h2hm">
+          <span class="h2hres ${x.won ? "w" : x.lost ? "l" : ""}">${x.won ? "W" : x.lost ? "L" : "·"}</span>
+          <span class="h2hsc">${esc(x.score || (x.live ? "live" : ""))}</span>
+          <span class="h2hmeta">${esc(x.round)} · vs ${esc(mpTeamName(x.opp))}${x.dur ? " · " + esc(x.dur) : ""}</span>
+        </div>`).join("")}</div></div>`;
+    };
+    html += mpSection("Road to this match", `<div class="mpcols">${col(0)}${col(1)}</div>`);
+  }
+
+  // ---- form (skipped when there is nothing at all to show)
+  const formAny = heres.some((h) => h.length) || [...A, ...B].some((id) => id && mpRows(id) !== null);
+  if (formAny) {
+    const col = (side) => {
+      const L = side === 0 ? A : B;
+      const tog = side === 0 ? togA : togB;
+      let c = `<div class="mpcol"><div class="mpcolh">${tn(side)}</div>`;
+      const here = heres[side];
+      const tog2 = Array.isArray(tog) ? here.concat(tog) : tog;
+      if (Array.isArray(tog2) && tog2.length) {
+        const s = mpStreak(tog2);
+        c += `<div class="mpfl"><span class="mpfll">Together</span>${mpChips(tog2)}</div>`;
+        c += `<div class="h2hsub mpsum">${s.n > 1 ? `${s.won ? "won" : "lost"} last ${s.n}` : s.won ? "won last match" : "lost last match"}</div>`;
+      }
+      for (let i = 0; i < 2; i++) {
+        const id = L[i];
+        const nm = nameOf(side, i);
+        if (!nm) continue;
+        const rows = id ? mpRows(id) : null;
+        const f = id && state.formLite && state.formLite.players && state.formLite.players[id];
+        const fl = f ? (() => { const [mark, cls] = formBand(f[1]); return ` <span class="mv ${cls}" title="${esc("vs rating: " + formWhy(f[3], f[2], f[4]))}">${mark} ${esc(formSigned(f[0]))}</span>`; })() : "";
+        c += `<div class="mpfl"><span class="mpfll">${id ? mpWho(id) : esc(mpShort(nm))}${fl}</span>${Array.isArray(rows) ? mpChips(here.concat(rows)) : `<span class="h2hsub">${rows === "loading" ? "…" : "no record"}</span>`}</div>`;
+      }
+      if (Array.isArray(tog) && tog.length) c += `<details class="mpmore"><summary>Last matches together</summary>${mpMatchList(tog, 10)}</details>`;
+      return c + `</div>`;
+    };
+    html += mpSection("Form", `<div class="mpcols">${col(0)}${col(1)}</div>
+      <div class="h2hsub mpnote">Newest first, this event included. ▲/▼ is form against the player's own rating: positive means winning more than the ratings expected.</div>`);
+  }
+
+  // ---- tale of the tape: the pairs
+  {
+    const yr = String(new Date().getFullYear());
+    const pairNums = (tog) => {
+      if (!Array.isArray(tog) || !tog.length) return null;
+      const all = mpStats(tog), y = mpStats(tog.filter((r) => mpYear(r) === yr)), l12 = mpStats(mpSince(tog, 365));
+      return { all, y, l12, since: tog[tog.length - 1].date, events: new Set(tog.map((r) => r.ev)).size };
+    };
+    const pa = pairNums(togA), pb = pairNums(togB);
+    if (pa || pb) {
+      const row = (label, f, better) => {
+        const va = pa ? f(pa) : "–", vb = pb ? f(pb) : "–";
+        const cmp = better && pa && pb ? better(pa, pb) : 0;
+        return `<div class="tape"><span class="${cmp > 0 ? "tbest" : ""}">${va}</span><span class="tl">${label}</span><span class="${cmp < 0 ? "tbest" : ""}">${vb}</span></div>`;
+      };
+      const d = (x, y) => (x > y ? 1 : x < y ? -1 : 0);
+      const wr = (s) => (s.n ? s.w / s.n : 0);
+      let t = `<div class="tape th"><span>${tn(0)}</span><span class="tl"></span><span>${tn(1)}</span></div>`;
+      t += row("Together since", (p) => esc(p.since.slice(0, 7)), null);
+      t += row("Events together", (p) => p.events, (a, b) => d(a.events, b.events));
+      t += row("Record together", (p) => `${mpRec(p.all.w, p.all.n - p.all.w)} · ${mpPct(p.all.w, p.all.n)}`, (a, b) => d(wr(a.all), wr(b.all)));
+      t += row(`${yr} record`, (p) => p.y.n ? `${mpRec(p.y.w, p.y.n - p.y.w)} · ${mpPct(p.y.w, p.y.n)}` : "–", (a, b) => d(wr(a.y), wr(b.y)));
+      t += row(`Titles · finals (${yr})`, (p) => `${p.y.titles} · ${p.y.finals}`, (a, b) => d(a.y.titles, b.y.titles));
+      t += row("Titles together", (p) => p.all.titles, (a, b) => d(a.all.titles, b.all.titles));
+      t += row("Three-setters (12 mo)", (p) => p.l12.three[0] + p.l12.three[1] ? `${mpRec(...p.l12.three)}` : "–", (a, b) => d(a.l12.three[0] / (a.l12.three[0] + a.l12.three[1] || 1), b.l12.three[0] / (b.l12.three[0] + b.l12.three[1] || 1)));
+      t += row("Tie-break sets (12 mo)", (p) => p.l12.tb[0] + p.l12.tb[1] ? `${mpRec(...p.l12.tb)}` : "–", (a, b) => d(a.l12.tb[0] / (a.l12.tb[0] + a.l12.tb[1] || 1), b.l12.tb[0] / (b.l12.tb[0] + b.l12.tb[1] || 1)));
+      t += row("Straight-set wins (12 mo)", (p) => p.l12.w ? mpPct(p.l12.straight, p.l12.w) : "–", (a, b) => d(a.l12.straight / (a.l12.w || 1), b.l12.straight / (b.l12.w || 1)));
+      t += row("Games won (12 mo)", (p) => p.l12.gW + p.l12.gL ? mpPct(p.l12.gW, p.l12.gW + p.l12.gL) : "–", (a, b) => d(a.l12.gW / (a.l12.gW + a.l12.gL || 1), b.l12.gW / (b.l12.gW + b.l12.gL || 1)));
+      html += mpSection("The partnerships", t);
+    }
+  }
+
+  // ---- tale of the tape: the players
+  {
+    const cards = [];
+    for (const side of [0, 1]) for (let i = 0; i < 2; i++) {
+      const p = P(side, i);
+      if (!p || !p.name || p.name === "TBD") continue;
+      const id = idOf(side, i);
+      const nm = cleanPlayerName(p.name);
+      const rows = id ? mpRows(id) : null;
+      const bio = X && X.bio && X.bio[id];
+      const e = X && X.elo && X.elo[id];
+      const earn = X && X.earnings && X.earnings[id];
+      const f = countryFlag(p.country);
+      const rk = rankFor(nm, p.country);
+      const kv = [];
+      const age = bio && mpAge(bio.birth_date);
+      if (age) kv.push(["Age", age]);
+      if (bio && bio.height_cm) kv.push(["Height", (bio.height_cm / 100).toFixed(2) + " m"]);
+      if (bio && bio.position) kv.push(["Side", esc(bio.position)]);
+      if (bio && bio.birth_place) kv.push(["From", esc(bio.birth_place)]);
+      if (rk) kv.push(["FIP rank", "#" + rk]);
+      if (e && e.rating) kv.push(["Elo", `${Math.round(e.rating)}${e.rank ? ` <span class="h2hsub">#${e.rank}${e.of ? " of " + e.of : ""}</span>` : ""}`]);
+      if (e && e.peak) kv.push(["Peak Elo", `${Math.round(e.peak)}${e.peak_date ? ` <span class="h2hsub">${esc(String(e.peak_date).slice(0, 7))}</span>` : ""}`]);
+      if (Array.isArray(rows) && rows.length) {
+        const all = mpStats(rows), y = mpStats(rows.filter((r) => mpYear(r) === String(new Date().getFullYear())));
+        kv.push(["Career", `${mpRec(all.w, all.n - all.w)} <span class="h2hsub">${mpPct(all.w, all.n)}</span>`]);
+        if (y.n) kv.push([String(new Date().getFullYear()), `${mpRec(y.w, y.n - y.w)} <span class="h2hsub">${mpPct(y.w, y.n)}</span>`]);
+        if (all.titles) kv.push(["Titles", all.titles]);
+        // partners this year, most frequent first
+        const pc = new Map();
+        for (const r of rows) if (mpYear(r) === String(new Date().getFullYear()) && r.partner) pc.set(r.partner, (pc.get(r.partner) || 0) + 1);
+        const tops = [...pc.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+        if (tops.length > 1) kv.push([`Partners ${new Date().getFullYear()}`, tops.map(([x, n]) => `${mpWho(x)} <span class="h2hsub">${n}</span>`).join(", ")]);
+      }
+      if (earn && earn.total) kv.push(["Prize money", `${earn.exact ? "" : "≈ "}€${Math.round(earn.total).toLocaleString("en")}`]);
+      if (!kv.length && rows !== "loading" && ex !== "loading") continue;
+      cards.push(`<div class="mppl ${side ? "b" : "a"}">
+        <div class="mpplh">${f ? f + " " : ""}${id ? `<span class="pn" data-player="${esc(id)}">${esc(nm)}</span>` : esc(nm)}</div>
+        ${kv.map(([k, v]) => `<div class="h2hrow"><span class="h2hlbl">${k}</span><span class="h2hnum">${v}</span></div>`).join("") || `<div class="h2hnone">${rows === "loading" || ex === "loading" ? "Loading…" : "No profile on record"}</div>`}
+      </div>`);
+    }
+    if (cards.length) html += mpSection("The players", `<div class="mpplgrid">${cards.join("")}</div>`);
+  }
+
+  // ---- common opponents, last 12 months
+  if (Array.isArray(togA) && Array.isArray(togB)) {
+    const key = (r) => [...r.opp].sort().join("|");
+    const byA = new Map(), byB = new Map();
+    for (const r of mpSince(togA, 365)) { const k = key(r); if (!byA.has(k)) byA.set(k, []); byA.get(k).push(r); }
+    for (const r of mpSince(togB, 365)) { const k = key(r); if (!byB.has(k)) byB.set(k, []); byB.get(k).push(r); }
+    const common = [...byA.keys()].filter((k) => byB.has(k) && !mpSame(k.split("|"), B) && !mpSame(k.split("|"), A))
+      .map((k) => ({ k, a: byA.get(k), b: byB.get(k) }))
+      .sort((x, y) => (x.a.length + x.b.length < y.a.length + y.b.length ? 1 : -1));
+    if (common.length) {
+      const res = (rs) => rs.slice(0, 3).map((r) => `<span class="h2hres ${r.won ? "w" : "l"}" title="${esc(`${r.score} · ${r.round} · ${r.evName} (${r.date})`)}">${r.won ? "W" : "L"}</span>`).join("");
+      let t = `<div class="tape th"><span>${tn(0)}</span><span class="tl">vs</span><span>${tn(1)}</span></div>`;
+      for (const c of common.slice(0, 10)) t += `<div class="tape"><span>${res(c.a)}</span><span class="tl">${mpPairWho(c.a[0].opp)}</span><span>${res(c.b)}</span></div>`;
+      html += mpSection(`Common opponents · last 12 months`, t);
+    }
+  }
+
+  html += `<div class="dlinks" style="margin-top:14px">
+    ${m.tournament && m.tournament.url ? `<a class="src" href="${esc(m.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[m.source] || m.source || "source")}</a>` : ""}
+    ${shareLink(m, tv.key)}
+  </div>
+  <div class="h2hsub mpnote">History from PadelTicker's career files (updated nightly): FIP tour, national federations and national teams. Players who could not be matched to a profile are left out of the numbers.</div>`;
+  return html;
+}
+
+function mpSection(title, body) {
+  return `<div class="section-label">${esc(title)}</div><div class="h2h mpsec">${body}</div>`;
+}
+
+// Win chance as a bar, from /api/matchup's pair odds (all four rated, one pool).
+function mpOddsBar(m, X) {
+  if (!X || !X.odds || X.odds.pct == null) return "";
+  const p = X.odds.pct;
+  const pair = (L) => (L || []).map((id) => X.elo && X.elo[id]).filter(Boolean);
+  const avg = (L) => { const e = pair(L); return e.length === 2 ? Math.round((e[0].rating + e[1].rating) / 2) : null; };
+  const ea = avg(X.a), eb = avg(X.b);
+  return `<div class="mpodds" title="Estimated from the four players' Elo ratings${X.odds.caveat ? " — " + esc(X.odds.caveat) : ""}">
+    <div class="mpoddsl"><b>${p}%</b>${ea ? ` <span class="h2hsub">Elo ${ea}</span>` : ""}</div>
+    <div class="mpbar"><span style="width:${p}%"></span></div>
+    <div class="mpoddsr">${eb ? `<span class="h2hsub">Elo ${eb}</span> ` : ""}<b>${100 - p}%</b></div>
+  </div><div class="h2hsub mpnote" style="text-align:center">${m.status === "final" ? "estimate from today's Elo ratings" : "pre-match estimate from Elo"}${X.odds.caveat ? " · " + esc(X.odds.caveat) : ""}</div>`;
+}
+
+// The lines a commentator would actually say. Each is a fact computed above;
+// nothing here is invented, and a point with no data behind it is simply absent.
+function mpTalkingPoints(c) {
+  const { A, B, X, heres, togA, togB, h2h, cross, exes, rivals, road, tn, nameOf, idOf } = c;
+  const pts = [];
+  const yr = String(new Date().getFullYear());
+  const nm = (id) => mpWho(id);
+
+  if (h2h) {
+    if (!h2h.length) pts.push(`First ever meeting between these two pairs.`);
+    else {
+      const w = h2h.filter((r) => r.won).length, l = h2h.length - w;
+      const last = h2h[0];
+      pts.push(`${w === l ? `Head-to-head level at ${w}–${l}` : `${w > l ? tn(0) : tn(1)} lead the head-to-head ${Math.max(w, l)}–${Math.min(w, l)}`}. Last time: ${last.won ? tn(0) : tn(1)} won ${esc(last.won ? last.score : mpSets(last.score).map(([a, b]) => `${b}-${a}`).join(" "))}${last.round ? `, ${esc(last.round)}` : ""} at ${esc(last.evName)} (${esc(last.date.slice(0, 7))}).`);
+    }
+  }
+  for (const e of exes) pts.push(`${nm(e.p)} and ${nm(e.q)} are on opposite sides today, but have partnered each other ${e.rows.length} time${e.rows.length === 1 ? "" : "s"} (${e.w}–${e.rows.length - e.w}${e.rows[0] ? `, last in ${esc(e.rows[0].date.slice(0, 4))}` : ""}).`);
+  for (const r of rivals) if (r.rows.length >= 2) pts.push(`Partners today, ${nm(r.p)} and ${nm(r.q)} have met ${r.rows.length} times as opponents (${r.w}–${r.rows.length - r.w}).`);
+  const bigX = cross.filter((x) => x.rows.length >= 3).sort((a, b) => b.rows.length - a.rows.length)[0];
+  if (bigX && !(h2h && h2h.length >= bigX.rows.length)) pts.push(`${nm(bigX.p)} vs ${nm(bigX.q)}, whoever their partners: ${bigX.w}–${bigX.rows.length - bigX.w} over ${bigX.rows.length} matches.`);
+
+  for (const [side, tog] of [[0, togA], [1, togB]]) {
+    if (!Array.isArray(tog)) continue;
+    if (!tog.length) {
+      pts.push(heres[side].length ? `${tn(side)} are playing their first event together.`
+        : `${tn(side)}: no previous match together on record — a new partnership.`);
+      continue;
+    }
+    const evs = new Set(tog.map((r) => r.ev)).size;
+    if (evs <= 2) pts.push(`${tn(side)} are only ${evs === 1 ? "in their second event" : "in their third event"} together (${tog.length} match${tog.length === 1 ? "" : "es"} so far).`);
+    const s = mpStreak(heres[side].concat(tog));
+    if (s && s.n >= 4) pts.push(`${tn(side)} have ${s.won ? "won" : "lost"} their last ${s.n} matches together.`);
+    const y = mpStats(tog.filter((r) => mpYear(r) === yr));
+    if (y.titles) pts.push(`${tn(side)} have won ${y.titles} title${y.titles === 1 ? "" : "s"} together in ${yr} (${y.finals} final${y.finals === 1 ? "" : "s"}), ${mpRec(y.w, y.n - y.w)} on the season.`);
+    const l12 = mpStats(mpSince(tog, 365));
+    if (l12.three[0] + l12.three[1] >= 5) pts.push(`${tn(side)} are ${mpRec(...l12.three)} in three-set matches over the last 12 months.`);
+  }
+
+  for (const side of [0, 1]) {
+    const r = road[side];
+    if (!r.length) continue;
+    const done = r.filter((x) => x.won || x.lost);
+    const dropped = done.reduce((n, x) => n + x.sets.filter(([a, b]) => b > a).length, 0);
+    if (done.length >= 2 && !dropped) pts.push(`${tn(side)} haven't dropped a set this event (${done.length} matches).`);
+    else if (done.length >= 2) {
+      const threes = done.filter((x) => x.sets.length === 3).length;
+      if (threes >= 2) pts.push(`${tn(side)} have needed three sets in ${threes} of their ${done.length} matches here.`);
+    }
+    const mins = r.reduce((n, x) => n + x.mins, 0);
+    const other = road[1 - side].reduce((n, x) => n + x.mins, 0);
+    if (mins && other && mins - other >= 45) pts.push(`${tn(side)} have spent ${Math.round((mins - other) / 60 * 10) / 10 >= 1 ? Math.floor((mins - other) / 60) + "h " + ((mins - other) % 60) + "m" : (mins - other) + " min"} longer on court this event than ${tn(1 - side)}.`);
+  }
+
+  // form against rating: the outliers only
+  const fl = state.formLite && state.formLite.players;
+  if (fl) for (const side of [0, 1]) for (let i = 0; i < 2; i++) {
+    const id = idOf(side, i), f = id && fl[id];
+    if (f && Math.abs(f[0]) >= 30) pts.push(`${nm(id)} is ${f[0] > 0 ? "over" : "under"}-performing their rating lately: ${f[3]} wins from the last ${f[2]} against ${formExp(f[4])} expected.`);
+  }
+
+  if (X && X.bio) {
+    const ages = [];
+    for (const side of [0, 1]) for (let i = 0; i < 2; i++) { const id = idOf(side, i), b = id && X.bio[id], a = b && mpAge(b.birth_date); if (a) ages.push([a, id]); }
+    if (ages.length >= 3) {
+      ages.sort((a, b) => a[0] - b[0]);
+      const [yA, yId] = ages[0], [oA, oId] = ages[ages.length - 1];
+      if (oA - yA >= 10) pts.push(`${oA - yA} years between the youngest on court, ${nm(yId)} (${yA}), and the oldest, ${nm(oId)} (${oA}).`);
+    }
+  }
+
+  if (!pts.length) return "";
+  return mpSection("Talking points", `<ul class="mptp">${pts.slice(0, 10).map((p) => `<li>${p}</li>`).join("")}</ul>`);
 }
 
 // ---------- controls ----------
@@ -1796,7 +2426,8 @@ function archiveMatchRow(m) {
   const key = matchRouteKey(m);
   const focus = !!state.focusMatch && key === state.focusMatch.key;
   const tkey = state.tournament ? state.tournament.key : null;
-  return `<div class="match${focus ? " focus" : ""}"><div class="match__main archm">
+  const mpath = matchKeyIsUnique(currentMatchList(), m, tkey) ? matchPath(m, tkey) : null;
+  return `<div class="match${focus ? " focus" : ""}"><div class="match__main archm${mpath ? " mplink" : ""}"${mpath ? ` data-mpage="${esc(mpath)}" title="Open the match page"` : ""}>
     <div class="teams">${teamLine(m, 0, false)}${teamLine(m, 1, false)}</div>
     <div class="side">${m.round ? `<span class="sub">${esc(m.round)}</span>` : ""}${shareLink(m, tkey)}</div>
   </div></div>`;
@@ -3313,6 +3944,10 @@ function renderTournament() {
     if (alt) state.focusMatch = { key: matchRouteKey(alt) };
   }
 
+  // A /match/... route is a page of its own; an unknown match falls through to the draw.
+  const mpM = matchPageMatch();
+  if (mpM) { app.innerHTML = renderMatchPage(mpM, matches); return; }
+
   const players = new Set();
   for (const m of matches) for (const t of m.teams) for (const p of (t.name || "").split("/")) { const n = p.trim(); if (n) players.add(n); }
   const dates = matches.map((m) => m.startTime || m.date).filter(Boolean).map((s) => s.slice(0, 10)).sort();
@@ -4272,6 +4907,22 @@ app.addEventListener("click", (e) => {
   // row doesn't also toggle the row's detail).
   const pn = e.target.closest("[data-pname]");
   if (pn) { openPlayerByName(pn.dataset.pname); return; }
+  // match page: open (a link, so ctrl/middle-click still opens a tab) and back
+  const mpg = e.target.closest("[data-mpage]");
+  if (mpg && !e.target.closest("[data-share]")) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
+    e.preventDefault();
+    try { history.pushState({}, "", mpg.dataset.mpage); } catch {}
+    applyRoute();
+    try { window.scrollTo(0, 0); } catch {}
+    return;
+  }
+  if (e.target.closest("[data-mback]")) {
+    state.focusMatch = null; state.focusDone = false;
+    render(); syncUrl();
+    try { window.scrollTo(0, 0); } catch {}
+    return;
+  }
   const om = e.target.closest("[data-open]");
   if (om) {
     const id = om.dataset.open;

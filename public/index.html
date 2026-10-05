@@ -395,6 +395,65 @@
       align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; }
     .h2hres.w { background: var(--accent); }
     .h2hres.l { background: var(--final); }
+    /* ---- match page ---- */
+    .mpage { color: var(--accent); font-weight: 600; font-size: 12px; text-decoration: none; margin-right: 10px; }
+    .mpage:hover { text-decoration: underline; }
+    .archm.mplink { cursor: pointer; }
+    .archm.mplink:hover { background: var(--card-hi); }
+    .mphead { margin: 6px 0 4px; padding: 12px 14px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+    .mpmeta { font-size: 12px; color: var(--muted); }
+    .mpmeta .tlink { color: var(--text); font-weight: 600; cursor: pointer; }
+    .mpmeta .tlink:hover { color: var(--accent); }
+    .mpstat { display: flex; align-items: center; gap: 8px; margin: 8px 0 6px; }
+    .mpdur { font-size: 12px; color: var(--faint); }
+    .mpteam { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); }
+    .mpnames { flex: 1 1 auto; min-width: 0; font-size: 15px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+    .mpteam.win .mpnames { color: var(--text); font-weight: 600; }
+    .mpnames .pn { cursor: pointer; }
+    .mpnames .pn:hover { color: var(--accent); }
+    .mpamp { color: var(--faint); font-weight: 400; }
+    .mprk { font-size: 11px; color: var(--faint); font-weight: 500; }
+    .mpscore { display: flex; gap: 10px; flex: 0 0 auto; font-variant-numeric: tabular-nums; font-size: 18px; color: var(--muted); }
+    .mpset.w { color: var(--text); font-weight: 700; }
+    .mppts { color: var(--live); font-weight: 700; min-width: 22px; text-align: right; }
+    .mpodds { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; }
+    .mpoddsl, .mpoddsr { flex: 0 0 auto; white-space: nowrap; }
+    .mpbar { flex: 1 1 auto; height: 8px; border-radius: 4px; background: var(--final-bg); overflow: hidden; }
+    .mpbar span { display: block; height: 100%; background: var(--accent); }
+    .mpnote { margin-top: 6px; font-size: 11px; }
+    .mpsec { margin-top: 0; display: block; max-width: none; width: 100%; box-sizing: border-box; }
+    .mptp { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text); line-height: 1.5; }
+    .mptp li { margin: 3px 0; }
+    .mptp .pn, .mpsec .pn { cursor: pointer; }
+    .mptp .pn:hover, .mpsec .pn:hover { color: var(--accent); }
+    .mpcols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .mpcol { min-width: 0; }
+    .mpcolh { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mpsum { margin-bottom: 4px; }
+    .mpfl { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; font-size: 12px; }
+    .mpfll { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mpchips { display: inline-flex; gap: 2px; flex: 0 0 auto; }
+    .mpchips .h2hres { width: 13px; height: 13px; font-size: 8px; }
+    .mpmore { margin-top: 6px; font-size: 12px; color: var(--muted); }
+    .mpmore summary { cursor: pointer; }
+    .tape { display: grid; grid-template-columns: 1fr minmax(110px, auto) 1fr; gap: 8px; align-items: center; padding: 4px 0; font-size: 12.5px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+    .tape > span:first-child { text-align: right; }
+    .tape .tl { text-align: center; color: var(--faint); font-size: 11px; }
+    .tape .tbest { color: var(--text); font-weight: 700; }
+    .tape:not(.th) > span:not(.tl):not(.tbest) { color: var(--muted); }
+    .tape.th { border-top: 0; font-weight: 700; color: var(--text); font-size: 12px; }
+    .tape .h2hres { margin: 0 1px; }
+    .mpplgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+    .mppl { min-width: 0; padding: 6px 0; }
+    .mppl.b { }
+    .mpplh { font-weight: 700; color: var(--text); font-size: 13px; margin-bottom: 3px; }
+    .mppl .h2hlbl { flex: 0 0 auto; overflow: visible; }
+    .mppl .h2hnum { white-space: normal; text-align: right; flex: 1 1 auto; min-width: 0; }
+    @media (max-width: 560px) {
+      .mpcols, .mpplgrid { grid-template-columns: 1fr; }
+      .mpscore { font-size: 16px; gap: 8px; }
+      .tape { grid-template-columns: 1fr minmax(84px, auto) 1fr; font-size: 12px; }
+    }
     .h2hsc { font-variant-numeric: tabular-nums; color: var(--text); flex: 0 0 auto; }
     .h2hmeta { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

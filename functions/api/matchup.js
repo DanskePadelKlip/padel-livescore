@@ -1,6 +1,11 @@
 // GET /api/matchup?a1=&a2=&b1=&b2= — what these two teams have already done to each
 // other (D1). Ids come from /api/search; a2 / b2 are optional, because a live-feed
 // name doesn't always resolve to a profile.
+//
+// &lite=1 (the match page): skip the history scan and return only the per-player
+// rows — Elo, odds, bio, prize money — a dozen PK reads instead of up to 6,000
+// rows. The match page builds its head-to-head and form from the static career
+// files (data/pm), which also carry the Danish matches D1 has never held.
 import { pairOdds } from "../_stats.js";
 
 const json = (d, status = 200) =>
@@ -33,6 +38,7 @@ export async function onRequestGet({ request, env }) {
   if (!A.length || !B.length) return json({ error: "need at least a1 & b1" }, 400);
   if (A.some((id) => B.includes(id))) return json({ error: "same player on both sides" }, 400);
 
+  const lite = u.get("lite") === "1";
   const ids = [...new Set([...A, ...B])];
   const ph = ids.map((_, i) => `?${i + 1}`).join(",");
 
@@ -43,7 +49,7 @@ export async function onRequestGet({ request, env }) {
 
   // One pass over every match any of these players appear in; everything below is
   // derived in memory rather than with a query per pairing.
-  const { results: rows } = await env.DB.prepare(
+  const { results: rows } = lite ? { results: [] } : await env.DB.prepare(
     `SELECT mp.match_id mid, mp.player_id pid, mp.side side,
             m.date date, m.round round, m.class cls, m.score score, m.winner_side ws,
             t.name tname, t.federation fed
@@ -60,11 +66,30 @@ export async function onRequestGet({ request, env }) {
   let elo = {};
   try {
     const { results: er } = await env.DB.prepare(
-      `SELECT id,source,pool,rating,"rank" AS rank,"of" AS of,n_matches
+      `SELECT id,source,pool,rating,"rank" AS rank,"of" AS of,n_matches,peak,peak_date
        FROM player_elo WHERE id IN (${ph})`
     ).bind(...ids).all();
     elo = Object.fromEntries(er.map((e) => [e.id, e]));
   } catch { /* table not created yet */ }
+
+  // Bio and prize money, match page only. Both tables are loaded by separate
+  // jobs, so each read is wrapped like player_elo above.
+  let bio = {}, earnings = {};
+  if (lite) {
+    try {
+      const { results: br } = await env.DB.prepare(
+        `SELECT player_id AS id,birth_date,height_cm,position,birth_place
+         FROM player_bio WHERE player_id IN (${ph})`
+      ).bind(...ids).all();
+      bio = Object.fromEntries(br.map((b) => [b.id, b]));
+    } catch { /* table not created yet */ }
+    try {
+      const { results: xr } = await env.DB.prepare(
+        `SELECT id,total,exact FROM player_earnings WHERE id IN (${ph})`
+      ).bind(...ids).all();
+      earnings = Object.fromEntries(xr.map((x) => [x.id, x]));
+    } catch { /* table not created yet */ }
+  }
 
   // Career record per player, derived from the rows ALREADY fetched above -
   // deliberately not a second query. `rows` is every match these players appear
@@ -147,5 +172,6 @@ export async function onRequestGet({ request, env }) {
     players: Object.fromEntries(ids.map((i) => [i, byId[i] || null])),
     a: A, b: B, pair, cross: cross.filter((c) => c.n > 0 || c.together > 0), partners,
     elo, record, odds,
+    ...(lite ? { bio, earnings } : {}),
   });
 }
