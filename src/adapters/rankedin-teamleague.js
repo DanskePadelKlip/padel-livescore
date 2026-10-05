@@ -351,9 +351,11 @@ function rubberRow(r, n, tieId, tie, league, pool) {
 function pairOf(side) {
   if (!side) return null;
   const players = [];
-  for (const [nm, cc] of [[side.name, side.countryShort], [side.player2Name, side.player2CountryShort]]) {
+  for (const [nm, cc, url] of [[side.name, side.countryShort, side.player1Url], [side.player2Name, side.player2CountryShort, side.player2Url]]) {
     if (pending(nm)) continue;
-    players.push({ name: String(nm).trim(), country: iso2(cc) });
+    // The RankedIn id is the PadelTicker profile id; see ridOf in rankedin.js.
+    const rid = /\/player\/(R\d{6,})/.exec(String(url || ""));
+    players.push(rid ? { name: String(nm).trim(), country: iso2(cc), rid: rid[1] } : { name: String(nm).trim(), country: iso2(cc) });
   }
   if (!players.length) return null;
   return { name: players.map((p) => p.name).join(" / "), players };
