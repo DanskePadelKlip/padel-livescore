@@ -373,6 +373,7 @@ const state = {
   partnersAll: false,        // profile: partnership list expanded past the first 8
   matchesAll: false,         // profile: match list expanded past the first 20
   ptab: "overview",          // profile: open tab (overview | matches | partners)
+  mtab: "over",              // match page: open tab (over | h2h | form | pairs | players)
   onCourtAll: false,         // /players: "on court today" expanded past the first 40
   // ---- pairs (partnership profiles) ----
   // A pair is two players who play on the SAME SIDE. pairKey is kept in canonical
@@ -1396,7 +1397,18 @@ function mpLoadIds(m) {
   if (mpIds.has(key)) return mpIds.get(key);
   mpIds.set(key, "loading");
   const ps = (side) => ((m.teams[side] && m.teams[side].players) || []).slice(0, 2);
-  Promise.all([...ps(0), ...ps(1)].map((p) => (p && p.name && p.name !== "TBD" ? resolvePlayerId(p.name) : null)))
+  // A RankedIn feed row carries the player's RankedIn id (p.rid), which IS the
+  // profile id - taken as it is when the index lists it, because a name lookup
+  // cannot tell the two Malthe Nielsens apart. Everyone else is resolved by name.
+  const byId = async (p) => {
+    if (!p || !p.name || p.name === "TBD") return null;
+    if (p.rid && PIDX && mpPidxName(p.rid)) return p.rid;
+    return resolvePlayerId(p.name);
+  };
+  // The index first, ONCE: ensurePlayerIndex() answers null to anyone who calls
+  // while its fetch is in flight, so four parallel lookups would see it only once.
+  ensurePlayerIndex().catch(() => null)
+    .then(() => Promise.all([...ps(0), ...ps(1)].map(byId)))
     .catch(() => [])
     .then((r) => {
       const n0 = ps(0).length;
@@ -1684,7 +1696,10 @@ function renderMatchPage(m, list) {
     if (Array.isArray(v) && v.length) rivals.push({ side, p: L[0], q: L[1], rows: v, w: v.filter((r) => r.won).length });
   }
 
-  html += mpTalkingPoints({ m, A, B, X, heres, togA, togB, h2h, cross, exes, rivals, road, tn, nameOf, idOf });
+  // Each section lands in a tab (see the bottom of this function), like the
+  // profile's: the page is long, and a commentator wants one view at a time.
+  const sec = { over: "", h2h: "", form: "", pairs: "", players: "" };
+  sec.over += mpTalkingPoints({ m, A, B, X, heres, togA, togB, h2h, cross, exes, rivals, road, tn, nameOf, idOf });
 
   // ---- head-to-head
   {
@@ -1716,7 +1731,7 @@ function renderMatchPage(m, list) {
       : unmatched.length === [0, 1].flatMap((side) => [0, 1].filter((i) => nameOf(side, i))).length
         ? `<div class="h2hnone">None of these players has a PadelTicker profile yet, so there is no career history to draw on.</div>`
         : `<div class="h2hnone">No shared history on record${unmatched.length ? ` (no profile for ${esc(unmatched.join(", "))})` : ""}.</div>`;
-    html += mpSection("Head-to-head", b);
+    sec.h2h += mpSection("Head-to-head", b);
   }
 
   // ---- this tournament
@@ -1737,7 +1752,7 @@ function renderMatchPage(m, list) {
           <span class="h2hmeta">${esc(x.round)} · vs ${esc(mpTeamName(x.opp))}${x.dur ? " · " + esc(x.dur) : ""}</span>
         </div>`).join("")}</div></div>`;
     };
-    html += mpSection("Road to this match", `<div class="mpcols">${col(0)}${col(1)}</div>`);
+    sec.over += mpSection("Road to this match", `<div class="mpcols">${col(0)}${col(1)}</div>`);
   }
 
   // ---- form (skipped when there is nothing at all to show)
@@ -1766,7 +1781,7 @@ function renderMatchPage(m, list) {
       if (Array.isArray(tog) && tog.length) c += `<details class="mpmore"><summary>Last matches together</summary>${mpMatchList(tog, 10)}</details>`;
       return c + `</div>`;
     };
-    html += mpSection("Form", `<div class="mpcols">${col(0)}${col(1)}</div>
+    sec.form += mpSection("Form", `<div class="mpcols">${col(0)}${col(1)}</div>
       <div class="h2hsub mpnote">Newest first, this event included. ▲/▼ is form against the player's own rating: positive means winning more than the ratings expected.</div>`);
   }
 
@@ -1798,7 +1813,7 @@ function renderMatchPage(m, list) {
       t += row("Tie-break sets (12 mo)", (p) => p.l12.tb[0] + p.l12.tb[1] ? `${mpRec(...p.l12.tb)}` : "–", (a, b) => d(a.l12.tb[0] / (a.l12.tb[0] + a.l12.tb[1] || 1), b.l12.tb[0] / (b.l12.tb[0] + b.l12.tb[1] || 1)));
       t += row("Straight-set wins (12 mo)", (p) => p.l12.w ? mpPct(p.l12.straight, p.l12.w) : "–", (a, b) => d(a.l12.straight / (a.l12.w || 1), b.l12.straight / (b.l12.w || 1)));
       t += row("Games won (12 mo)", (p) => p.l12.gW + p.l12.gL ? mpPct(p.l12.gW, p.l12.gW + p.l12.gL) : "–", (a, b) => d(a.l12.gW / (a.l12.gW + a.l12.gL || 1), b.l12.gW / (b.l12.gW + b.l12.gL || 1)));
-      html += mpSection("The partnerships", t);
+      sec.pairs += mpSection("The partnerships", t);
     }
   }
 
@@ -1843,7 +1858,7 @@ function renderMatchPage(m, list) {
         ${kv.map(([k, v]) => `<div class="h2hrow"><span class="h2hlbl">${k}</span><span class="h2hnum">${v}</span></div>`).join("") || `<div class="h2hnone">${rows === "loading" || ex === "loading" ? "Loading…" : "No profile on record"}</div>`}
       </div>`);
     }
-    if (cards.length) html += mpSection("The players", `<div class="mpplgrid">${cards.join("")}</div>`);
+    if (cards.length) sec.players += mpSection("The players", `<div class="mpplgrid">${cards.join("")}</div>`);
   }
 
   // ---- common opponents, last 12 months
@@ -1859,9 +1874,18 @@ function renderMatchPage(m, list) {
       const res = (rs) => rs.slice(0, 3).map((r) => `<span class="h2hres ${r.won ? "w" : "l"}" title="${esc(`${r.score} · ${r.round} · ${r.evName} (${r.date})`)}">${r.won ? "W" : "L"}</span>`).join("");
       let t = `<div class="tape th"><span>${tn(0)}</span><span class="tl">vs</span><span>${tn(1)}</span></div>`;
       for (const c of common.slice(0, 10)) t += `<div class="tape"><span>${res(c.a)}</span><span class="tl">${mpPairWho(c.a[0].opp)}</span><span>${res(c.b)}</span></div>`;
-      html += mpSection(`Common opponents · last 12 months`, t);
+      sec.h2h += mpSection(`Common opponents · last 12 months`, t);
     }
   }
+
+  const tabs = [
+    ["over", "Overview", "", sec.over],
+    ["h2h", "H2H", h2h && h2h.length ? h2h.length : "", sec.h2h],
+    ["form", "Form", "", sec.form],
+    ["pairs", "Pairs", "", sec.pairs],
+    ["players", "Players", "", sec.players],
+  ].filter((t) => t[3]);
+  if (tabs.length) html += tabsHtml(tabs, state.mtab, "data-mtab");
 
   html += `<div class="dlinks" style="margin-top:14px">
     ${m.tournament && m.tournament.url ? `<a class="src" href="${esc(m.tournament.url)}" target="_blank" rel="noopener">↗ View on ${esc(SOURCE_LABEL[m.source] || m.source || "source")}</a>` : ""}
@@ -4785,6 +4809,8 @@ app.addEventListener("click", (e) => {
   if (pairyr) { state.pairYear = pairyr.dataset.pairyear; state.pairMatchesAll = false; render(); return; }
   const pairtab = e.target.closest("[data-pairtab]");
   if (pairtab) { state.pairTab = pairtab.dataset.pairtab; render(); return; }
+  const mtab = e.target.closest("[data-mtab]");
+  if (mtab) { state.mtab = mtab.dataset.mtab; render(); return; }
   const ptab = e.target.closest("[data-ptab]");
   if (ptab) { state.ptab = ptab.dataset.ptab; render(); return; }
   if (e.target.closest("[data-oncourtall]")) { state.onCourtAll = true; render(); return; }

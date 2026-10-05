@@ -257,11 +257,17 @@ function normalize(m, ev, fed, hostClub = null) {
   };
 }
 
+// "//player/R000144626/asger-andersen" -> "R000144626". The RankedIn id is the
+// profile id on PadelTicker, so the match page can find a player without
+// guessing from a name (351 Nielsens in the DPF ranking alone).
+const ridOf = (url) => { const m = /\/player\/(R\d{6,})/.exec(String(url || "")); return m ? m[1] : null; };
+
 function team(side) {
   side = side || {};
   const players = [];
-  if (side.Name) players.push({ name: side.Name, country: iso2(side.CountryShort) });
-  if (side.Player2Name) players.push({ name: side.Player2Name, country: iso2(side.Player2CountryShort) });
+  const p = (name, country, url) => { const rid = ridOf(url); return rid ? { name, country, rid } : { name, country }; };
+  if (side.Name) players.push(p(side.Name, iso2(side.CountryShort), side.Player1Url));
+  if (side.Player2Name) players.push(p(side.Player2Name, iso2(side.Player2CountryShort), side.Player2Url));
   const name = players.map((p) => p.name).join(" / ") || side.Name || "TBD";
   return { name, players };
 }
