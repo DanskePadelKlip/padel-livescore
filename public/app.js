@@ -9,7 +9,7 @@ const POLL_LIVE = 20_000;     // ≥1 live match  -> poll fast
 const POLL_UPCOMING = 90_000; // matches upcoming -> moderate
 const POLL_IDLE = 300_000;    // nothing on      -> back off (5 min)
 const POLL_RETRY = 10_000;    // nothing LOADED  -> that is a failure, not a quiet day
-const FLAGS = { FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
+const FLAGS = { GLOBAL: "🌐", FIP: "🌍", DK: "🇩🇰", SE: "🇸🇪", DE: "🇩🇪", CZ: "🇨🇿", NO: "🇳🇴", GB: "🇬🇧", AU: "🇦🇺", FI: "🇫🇮", FR: "🇫🇷", HR: "🇭🇷", EE: "🇪🇪", GE: "🇬🇪", HU: "🇭🇺", UA: "🇺🇦", SI: "🇸🇮", XK: "🇽🇰", BA: "🇧🇦", ME: "🇲🇪" };
 
 // Player nationality → flag. Data uses two schemes: 2-letter federation codes
 // (national rankings/matches: "dk") and 3-letter IOC/FIP codes (FIP world: "ESP").
@@ -1662,7 +1662,7 @@ function renderMatchPage(m, list) {
     <div class="mpmeta"><span class="tlink" data-mback="1">${esc(tv.name || "")}</span>${meta.length ? " · " + meta.map(esc).join(" · ") : ""}</div>
     <div class="mpstat">${stat}${dur ? `<span class="mpdur">${esc(dur)}</span>` : ""}</div>
     ${sideRow(0)}${sideRow(1)}
-    ${mpOddsBar(m, X)}
+    ${mpOddsBar(m, X, A, B)}
   </div>`;
 
   if (!ready) return html + `<div class="skel"></div><div class="skel"></div>`;
@@ -1851,8 +1851,12 @@ function renderMatchPage(m, list) {
       if (bio && bio.position) kv.push(["Side", esc(bio.position)]);
       if (bio && bio.birth_place) kv.push(["From", esc(bio.birth_place)]);
       if (rk) kv.push(["FIP rank", "#" + rk]);
-      if (e && e.rating) kv.push(["Elo", `${Math.round(e.rating)}${e.rank ? ` <span class="h2hsub">#${e.rank}${e.of ? " of " + e.of : ""}</span>` : ""}`]);
-      if (e && e.peak) kv.push(["Peak Elo", `${Math.round(e.peak)}${e.peak_date ? ` <span class="h2hsub">${esc(String(e.peak_date).slice(0, 7))}</span>` : ""}`]);
+      const ge = gElo(id);
+      if (ge) kv.push(["Global Elo", `${ge.rating} <span class="h2hsub">#${ge.rank} of ${ge.of}</span>`]);
+      else if (id && state.globalElo) kv.push(["Global Elo", `<span class="h2hsub">not ranked globally</span>`]);
+      const circ = e && (e.source === "fip" ? "FIP tour Elo" : "Domestic Elo");
+      if (e && e.rating) kv.push([circ, `${Math.round(e.rating)}${e.rank ? ` <span class="h2hsub">#${e.rank}${e.of ? " of " + e.of : ""}</span>` : ""}`]);
+      if (e && e.peak) kv.push([`Peak (${e.source === "fip" ? "FIP tour" : "domestic"})`, `${Math.round(e.peak)}${e.peak_date ? ` <span class="h2hsub">${esc(String(e.peak_date).slice(0, 7))}</span>` : ""}`]);
       if (Array.isArray(rows) && rows.length) {
         const all = mpStats(rows), y = mpStats(rows.filter((r) => mpYear(r) === String(new Date().getFullYear())));
         kv.push(["Career", `${mpRec(all.w, all.n - all.w)} <span class="h2hsub">${mpPct(all.w, all.n)}</span>`]);
@@ -1928,12 +1932,22 @@ function mpEloWant(ids) {
       render();
     });
 }
-// A pair's strength from today's ratings - null unless both are rated in ONE pool.
-function mpPairElo(a, b) {
-  const ea = mpElo.get(a), eb = mpElo.get(b);
-  if (!ea || !eb || ea[1] !== eb[1] || ea[2] !== eb[2]) return null;
-  return { r: Math.round((ea[0] + eb[0]) / 2), pool: ea[1] + "/" + ea[2] };
+// One player's rating for comparisons: GLOBAL when ranked globally, else the
+// circuit Elo, flagged dom. `scale` says which ladder, and two numbers are only
+// ever compared on the same one.
+function mpRate(id) {
+  const g = gElo(id);
+  if (g) return { r: g.rating, scale: "g/" + g.pool, dom: false };
+  const e = mpElo.get(id);
+  return e ? { r: e[0], scale: e[1] + "/" + e[2], dom: true } : null;
 }
+// A pair's strength from today's ratings - null unless both are on ONE scale.
+function mpPairElo(a, b) {
+  const x = mpRate(a), y = mpRate(b);
+  if (!x || !y || x.scale !== y.scale) return null;
+  return { r: Math.round((x.r + y.r) / 2), pool: x.scale, dom: x.dom };
+}
+const mpEloTxt = (x) => x ? `${x.r}${x.dom ? '<span class="mpdom">dom</span>' : ""}` : "";
 
 // "Round of 32" -> "R32", "SemiFinals" -> "SF"; anything unrecognised as is.
 function mpRoundShort(r) {
@@ -2004,7 +2018,8 @@ function mpEventsTab(m, A, B, nameOf, idOf) {
   const want = [who.id];
   for (const e of shown) { want.push(e.partner); for (const r of e.rows) want.push(...r.opp); }
   mpEloWant(want);
-  const me = mpElo.get(who.id);
+  ensureGlobalElo();
+  const me = mpRate(who.id);
 
   // FIP ranking line, when the player is on it (the file carries the event count)
   let rk = "";
@@ -2037,7 +2052,7 @@ function mpEventsTab(m, A, B, nameOf, idOf) {
 
   h += `<div class="mpevhead">
     <div class="mpplh">${countryFlag(who.p && who.p.country) || ""} ${who.id ? `<span class="pn" data-player="${esc(who.id)}">${esc(who.nm)}</span>` : esc(who.nm)}
-      ${me ? `<span class="h2hsub">Elo ${me[0]}</span>` : ""}</div>
+      ${me ? `<span class="h2hsub">${me.dom ? "Domestic Elo" : "Global Elo"} ${me.r}</span>` : ""}</div>
     ${rk ? `<div class="h2hsub">${esc(rk)}</div>` : ""}
     <div class="h2hsub">Last 12 months: ${recent.length} event${recent.length === 1 ? "" : "s"} · ${recW}–${recL} in matches</div>
     ${reach ? `<div class="mpreachrow">${reach}</div>` : ""}
@@ -2064,29 +2079,29 @@ function mpEventsTab(m, A, B, nameOf, idOf) {
     h += `<div class="h2hsect">Results that stand out · last 12 months</div>`;
     if (wins.length) h += `<div class="h2hsub mpnote">Wins over stronger pairs</div><div class="h2hlist mpnot">${wins.map(nrow).join("")}</div>`;
     if (losses.length) h += `<div class="h2hsub mpnote">Losses to weaker pairs</div><div class="h2hlist mpnot">${losses.map(nrow).join("")}</div>`;
-    h += `<div class="h2hsub mpnote">The number is the opponents' pair Elo minus this pair's, by today's ratings.</div>`;
+    h += `<div class="h2hsub mpnote">The number is the opponents' pair Elo minus this pair's, by today's ratings - global Elo where all four are ranked globally, otherwise domestic, never mixed.</div>`;
   }
 
   // the event list
   h += `<div class="h2hsect">Events${state.mpEvAll ? "" : recent.length >= 5 ? " · last 12 months" : " · latest"}</div><div class="mpevlist">`;
   for (const e of shown) {
-    const pe = e.partner && e.partner[0] !== "=" ? mpElo.get(e.partner) : null;
-    const rel = pe && me && pe[1] === me[1] && pe[2] === me[2] ? pe[0] - me[0] : null;
+    const pe = e.partner && e.partner[0] !== "=" ? mpRate(e.partner) : null;
+    const rel = pe && me && pe.scale === me.scale ? pe.r - me.r : null;
     const o = e.out;
     const oe = o && o.opp.length === 2 ? mpPairElo(o.opp[0], o.opp[1]) : null;
     h += `<div class="mpev${deep(e.reached) ? " deep" : ""}">
       <div class="mpevr"><span class="mpreachtag${deep(e.reached) ? " deep" : ""}">${esc(e.reached)}</span></div>
       <div class="mpevb">
         <div class="mpevn">${esc(mpEvShort(e.name))}${e.tier && !e.name.toLowerCase().includes(e.tier.toLowerCase()) ? ` <span class="tourtag">${esc(e.tier)}</span>` : ""} <span class="h2hsub">${esc(String(e.date).slice(0, 10))}</span></div>
-        <div class="h2hsub">${e.partner ? `w/ ${mpWho(e.partner)}${pe ? ` <span class="mpelo">${pe[0]}${rel != null ? ` (${rel > 0 ? "+" : rel < 0 ? "−" : "±"}${Math.abs(rel)})` : ""}</span>` : ""}` : ""}${e.ko ? ` · ${e.w}–${e.l}` : ""}</div>
-        ${o ? `<div class="h2hsub">out to ${mpPairWho(o.opp)}${oe ? ` <span class="mpelo">${oe.r}</span>` : ""} · <b>${esc(o.score)}</b>${e.ko ? "" : ` (${esc(o.round)})`}</div>` : e.reached === "W" ? `<div class="h2hsub">won the event</div>` : ""}
+        <div class="h2hsub">${e.partner ? `w/ ${mpWho(e.partner)}${pe ? ` <span class="mpelo">${mpEloTxt(pe)}${rel != null ? ` (${rel > 0 ? "+" : rel < 0 ? "−" : "±"}${Math.abs(rel)})` : ""}</span>` : ""}` : ""}${e.ko ? ` · ${e.w}–${e.l}` : ""}</div>
+        ${o ? `<div class="h2hsub">out to ${mpPairWho(o.opp)}${oe ? ` <span class="mpelo">${mpEloTxt(oe)}</span>` : ""} · <b>${esc(o.score)}</b>${e.ko ? "" : ` (${esc(o.round)})`}</div>` : e.reached === "W" ? `<div class="h2hsub">won the event</div>` : ""}
       </div>
     </div>`;
   }
   h += `</div>`;
   if (evs.length > shown.length || state.mpEvAll)
     h += `<button class="morebtn" data-mpevall="1">${state.mpEvAll ? "Show fewer" : `Show all ${evs.length} events`}</button>`;
-  h += `<div class="h2hsub mpnote">Before this event. Partner's Elo in brackets is the difference to this player's own; ratings are today's, not as they were at the time.</div>`;
+  h += `<div class="h2hsub mpnote">Before this event. Ratings are global Elo, or domestic where marked <span class="mpdom">dom</span> (no global rating); the bracket is the partner's difference to this player on the same scale. Today's ratings, not as they were at the time.</div>`;
   return h;
 }
 
@@ -2104,17 +2119,37 @@ function mpSection(title, body) {
 }
 
 // Win chance as a bar, from /api/matchup's pair odds (all four rated, one pool).
-function mpOddsBar(m, X) {
-  if (!X || !X.odds || X.odds.pct == null) return "";
-  const p = X.odds.pct;
-  const pair = (L) => (L || []).map((id) => X.elo && X.elo[id]).filter(Boolean);
-  const avg = (L) => { const e = pair(L); return e.length === 2 ? Math.round((e[0].rating + e[1].rating) / 2) : null; };
-  const ea = avg(X.a), eb = avg(X.b);
-  return `<div class="mpodds" title="Estimated from the four players' Elo ratings${X.odds.caveat ? " — " + esc(X.odds.caveat) : ""}">
+// Win chance as a bar. GLOBAL Elo when all four are ranked globally in one pool
+// - the fit's own model, sigmoid(l1 + l2 - l3 - l4) on the logits - else the
+// domestic odds from /api/matchup, labelled as such and naming who lacks a
+// global rating. Never a mix of the two scales.
+function mpOddsBar(m, X, A, B) {
+  ensureGlobalElo();
+  const ids = [...(A || []), ...(B || [])];
+  const g = ids.length === 4 && ids.every(Boolean) ? ids.map(gElo) : null;
+  const when = m.status === "final" ? "estimate from today's" : "pre-match estimate from";
+  let p, ea, eb, note, title;
+  if (g && g.every(Boolean) && new Set(g.map((x) => x.pool)).size === 1) {
+    const d = g[0].logit + g[1].logit - g[2].logit - g[3].logit;
+    p = Math.min(99, Math.max(1, Math.round(100 / (1 + Math.exp(-d)))));
+    ea = Math.round((g[0].rating + g[1].rating) / 2); eb = Math.round((g[2].rating + g[3].rating) / 2);
+    const thin = g.some((x) => x.tour < 10);
+    note = `${when} global Elo${thin ? " · one of them has few FIP tour matches" : ""}`;
+    title = "Global Elo: one scale across every circuit";
+  } else if (X && X.odds && X.odds.pct != null) {
+    p = X.odds.pct;
+    const pair = (L) => (L || []).map((id) => X.elo && X.elo[id]).filter(Boolean);
+    const avg = (L) => { const e = pair(L); return e.length === 2 ? Math.round((e[0].rating + e[1].rating) / 2) : null; };
+    ea = avg(X.a); eb = avg(X.b);
+    const none = state.globalElo ? ids.filter((id) => id && !gElo(id)).map((id) => mpShort(mpName(id))) : [];
+    note = `${when} domestic Elo${none.length ? ` (no global rating for ${none.join(", ")})` : ""}${X.odds.caveat ? " · " + X.odds.caveat : ""}`;
+    title = "Domestic / circuit Elo: not comparable with global numbers";
+  } else return "";
+  return `<div class="mpodds" title="${esc(title)}">
     <div class="mpoddsl"><b>${p}%</b>${ea ? ` <span class="h2hsub">Elo ${ea}</span>` : ""}</div>
     <div class="mpbar"><span style="width:${p}%"></span></div>
     <div class="mpoddsr">${eb ? `<span class="h2hsub">Elo ${eb}</span> ` : ""}<b>${100 - p}%</b></div>
-  </div><div class="h2hsub mpnote" style="text-align:center">${m.status === "final" ? "estimate from today's Elo ratings" : "pre-match estimate from Elo"}${X.odds.caveat ? " · " + esc(X.odds.caveat) : ""}</div>`;
+  </div><div class="h2hsub mpnote" style="text-align:center">${esc(note)}</div>`;
 }
 
 // The lines a commentator would actually say. Each is a fact computed above;
@@ -3237,8 +3272,15 @@ function qualityBlock(q) {
 // loaded — the API returns null and this renders nothing.
 const ELO_POOL = { M: "men", W: "women" };
 const ELO_SOURCE = { fip: "FIP", rin: "Nordic" };
-function eloStat(elo) {
-  if (!elo || elo.rating == null) return "";
+function eloStat(elo, id) {
+  // Global first (see ensureGlobalElo); the circuit rating follows, labelled.
+  ensureGlobalElo();
+  const g = gElo(id);
+  const gs = g ? `<div class="pstat hi" title="${esc(`Global Elo ${g.rating} — #${g.rank} of ${g.of} ranked globally (${g.pool === "W" ? "women" : "men"}) · ${g.tour} FIP tour matches`)}"><b>#${esc(g.rank)}</b><span>Global Elo ${esc(g.rating)}</span></div>` : "";
+  if (!elo || elo.rating == null) return gs;
+  return gs + eloStatCircuit(elo, !!g);
+}
+function eloStatCircuit(elo, second) {
   const pool = ELO_POOL[elo.pool] || "";
   const src = ELO_SOURCE[elo.source] || "";
   const title = `Elo ${elo.rating} — #${elo.rank} of ${elo.of} rated ${src} ${pool}`
@@ -3246,8 +3288,9 @@ function eloStat(elo) {
     + (elo.peak ? ` · peak ${elo.peak}${elo.peak_date ? " " + elo.peak_date.slice(0, 7) : ""}` : "");
   // RANK is the headline, rating is the subtitle. "2039" on its own tells a
   // reader nothing — the position it implies is the part that carries meaning.
-  return `<div class="pstat hi" title="${esc(title)}"><b>#${esc(elo.rank)}</b>`
-    + `<span>Elo ${esc(elo.rating)}</span></div>`;
+  const lab = elo.source === "fip" ? "FIP tour Elo" : "Domestic Elo";
+  return `<div class="pstat${second ? "" : " hi"}" title="${esc(title)}"><b>#${esc(elo.rank)}</b>`
+    + `<span>${lab} ${esc(elo.rating)}</span></div>`;
 }
 
 // Career prize money. Absent for most players by design — FIP stores results under
@@ -3465,7 +3508,7 @@ function renderProfile() {
         ${summary.sets && summary.sets.pct != null ? `<div class="pstat"><b>${summary.sets.pct}%</b><span>sets won</span></div>` : ""}
         ${summary.games && summary.games.pct != null ? `<div class="pstat"><b>${summary.games.pct}%</b><span>games won</span></div>` : ""}
         ${rankStat(ranks)}
-        ${eloStat(state.player.elo)}
+        ${eloStat(state.player.elo, state.player.player && state.player.player.id)}
         ${earningsStat(state.player.earnings)}
       </div>
     </div>`;
@@ -4545,12 +4588,47 @@ async function loadRankings() {
 // rankings-elo.json (older deploy, export not run yet) leaves eloRankings null,
 // and re-checking that on every render would refetch on every keystroke.
 let _eloLoading = false, _eloTried = false;
+// ---- global Elo (data/global-elo.json, padel-db export_pt_global.py) ----
+// Kim, 2026-09-28: "Elo" means the GLOBAL rating - one scale across every
+// circuit, anchored on the FIP tour - and the per-circuit (domestic / FIP tour)
+// Elo is only a labelled fallback for a player with no global rating. Ranked
+// among players with >= 5 tour and >= 20 matches, exactly as DPK's /world-elo.
+// No global rating means "not ranked globally", never "rated low".
+let _gEloP = null;
+function ensureGlobalElo() {
+  if (!_gEloP) _gEloP = fetch("data/global-elo.json?_=" + Date.now())
+    .then((r) => (r.ok ? r.json() : null)).catch(() => null)
+    .then((d) => { if (d && d.players) { state.globalElo = d; render(); } return state.globalElo || null; });
+  return _gEloP;
+}
+function gElo(id) {
+  const d = state.globalElo, p = d && id && d.players[id];
+  return p ? { pool: p[0], rating: p[1], rank: p[2], logit: p[3], tour: p[4], matches: p[5], of: (d.of || {})[p[0]] } : null;
+}
+
 async function ensureElo() {
   if (state.eloRankings || _eloLoading || _eloTried) return;
   _eloLoading = true;
   try {
     const d = await fetch("data/rankings-elo.json?_=" + Date.now()).then((r) => (r.ok ? r.json() : null));
-    if (d && (d.lists || []).length) state.eloRankings = { lists: d.lists, minMatches: d.minMatches };
+    const lists = d && (d.lists || []).length ? d.lists.slice() : [];
+    // The global board leads: it is the Elo (see ensureGlobalElo). Names and
+    // countries come from the player index, so both files are needed.
+    const [g] = await Promise.all([ensureGlobalElo(), ensurePlayerIndex()]);
+    if (g && PIDX) {
+      const meta = new Map(PIDX.map((r) => [r[0], r]));
+      for (const [pool, cat] of [["W", "women"], ["M", "men"]]) {
+        // One row per global rank: a bridged player can carry the rating on two
+        // profiles (see export_pt_global.py); the board lists the person once.
+        const seen = new Set();
+        const rows = Object.entries(g.players).filter(([, x]) => x[0] === pool)
+          .sort((a, b) => a[1][2] - b[1][2] || (meta.has(b[0]) - meta.has(a[0])) || (b[0].startsWith("fip-") - a[0].startsWith("fip-")))
+          .filter(([, x]) => !seen.has(x[2]) && seen.add(x[2]))
+          .map(([id, x]) => { const mm = meta.get(id); return { rank: x[2], name: mm ? mm[1] : x[6] || id, country: mm ? mm[2] : null, points: x[1], club: null, id: mm ? id : null, n: x[5] }; });
+        if (rows.length) lists.unshift({ fed: "GLOBAL", category: cat, label: cat === "men" ? "Men" : "Women", metric: "elo", total: (g.of || {})[pool] || rows.length, rows });
+      }
+    }
+    if (lists.length) state.eloRankings = { lists, minMatches: d && d.minMatches, global: g ? g.gate : null };
   } catch { /* absent or unreachable — the toggle simply doesn't appear */ }
   _eloLoading = false;
   _eloTried = true;
@@ -4672,7 +4750,9 @@ function renderRankings() {
   const lists = (isForm ? state.formRankings : isElo ? state.eloRankings : state.rankings).lists;
   const feds = [...new Set(lists.map((l) => l.fed))];
   const cats = [...new Set(lists.map((l) => l.category))];
-  if (!state.rankFed || !feds.includes(state.rankFed)) state.rankFed = feds[0];
+  // An Elo deep link renders the points board first, while the Elo file loads;
+  // keep its federation (GLOBAL) through that paint instead of resetting it.
+  if (!state.rankFed || (!feds.includes(state.rankFed) && !(state.rankMetric === "elo" && !hasElo))) state.rankFed = feds[0];
   if (!state.rankCat || !cats.includes(state.rankCat)) state.rankCat = cats[0];
   const list = lists.find((l) => l.fed === state.rankFed && l.category === state.rankCat);
   const q = state.query.trim().toLowerCase();
@@ -4715,7 +4795,8 @@ function renderRankings() {
     `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ${isForm ? "with a score" : isElo ? "rated" : "ranked"}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
   // Say plainly what the number is and who is missing, so nobody reads an Elo
   // board as an official ranking.
-  if (isElo) html += `<div class="elo-note">Strength rating from match results — separate pools for men, women, FIP and Nordic, so ranks only compare within a list. Players with fewer than ${state.eloRankings.minMatches || 20} rated matches are not shown.</div>`;
+  if (isElo && state.rankFed === "GLOBAL") html += `<div class="elo-note"><b>Global Elo</b>: one scale across every circuit, anchored on the FIP tour, so any two players compare. Ranked among players with at least ${(state.eloRankings.global || {}).tour || 5} FIP tour matches and ${(state.eloRankings.global || {}).matches || 20} matches in all; everyone else is not ranked globally, which is not the same as rated low. The other lists are each circuit's own Elo.</div>`;
+  else if (isElo) html += `<div class="elo-note">Domestic / circuit Elo: strength rating from match results — separate pools for men, women, FIP and Nordic, so ranks only compare within a list. Players with fewer than ${state.eloRankings.minMatches || 20} rated matches are not shown.</div>`;
   // Full list caps at 250 rendered rows (keeps the DOM light on a 1000-deep list);
   // a nationality filter renders all matches so every player of that country shows.
   const cap = state.rankNat || q ? 1000 : 250;
@@ -4982,7 +5063,11 @@ app.addEventListener("click", (e) => {
   // Clear the nationality filter when switching board: the two cover different
   // federations, so a country selected on one is often absent from the other and
   // would silently render an empty table.
-  if (rm) { state.rankMetric = rm.dataset.rmetric; state.rankNat = ""; render(); syncUrl(false); return; }
+  if (rm) {
+    state.rankMetric = rm.dataset.rmetric; state.rankNat = "";
+    if (rm.dataset.rmetric === "elo" && state.eloRankings && state.eloRankings.lists.some((l) => l.fed === "GLOBAL")) state.rankFed = "GLOBAL";
+    render(); syncUrl(false); return;
+  }
   const fd = e.target.closest("[data-fdir]");
   if (fd) { state.formCold = fd.dataset.fdir === "cold"; render(); return; }
 
@@ -5278,7 +5363,8 @@ function currentPath() {
   // and a query string still gives a shareable, bookmarkable board.
   if (state.mode === "rankings") {
     const by = state.rankMetric === "elo" ? "?by=elo" : state.rankMetric === "form" ? "?by=form" : "";
-    return state.rankFed ? `/rankings/${state.rankFed}/${state.rankCat || "men"}${by}` : "/rankings" + by;
+    // The global Elo board has no federation segment: it is /rankings?by=elo.
+    return state.rankFed && state.rankFed !== "GLOBAL" ? `/rankings/${state.rankFed}/${state.rankCat || "men"}${by}` : "/rankings" + by;
   }
   if (state.mode === "favorites") return "/following";
   if (state.mode === "archive") return "/results";
@@ -5422,6 +5508,7 @@ function applyRoute() {
         state.rankMetric = by === "elo" ? "elo" : by === "form" ? "form" : "points";
       } catch { state.rankMetric = "points"; }
       if (seg[1]) { state.rankFed = seg[1].toUpperCase(); if (seg[2]) state.rankCat = seg[2].toLowerCase(); if (state.rankings) render(); }
+      else if (state.rankMetric === "elo") state.rankFed = "GLOBAL"; // the Elo is the global one
     }
     else if (seg[0] === "earnings") {
       activateMode("earnings");
