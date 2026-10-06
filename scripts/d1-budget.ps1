@@ -80,9 +80,11 @@ function Test-D1Budget {
     [Parameter(Mandatory)][int]$Statements,
     [int]$WritesPer = 3,
     [int]$ReadsPer = 3,
-    [long]$ExtraReads = 0
+    [long]$ExtraReads = 0,
+    # Writes a statement count cannot see: a relink UPDATE moves a whole career.
+    [long]$ExtraWrites = 0
   )
-  $estW = [long]$Statements * $WritesPer
+  $estW = [long]$Statements * $WritesPer + $ExtraWrites
   $estR = [long]$Statements * $ReadsPer + $ExtraReads
   $defer = Read-D1Deferrals
   $why = $null

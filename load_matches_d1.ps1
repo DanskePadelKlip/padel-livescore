@@ -115,7 +115,11 @@ if ($lines.Count -gt $MaxStatements) {
 if ($DryRun) { Write-Host "matches delta: DRY RUN - $($lines.Count) statement(s) in $delta, nothing applied."; exit 0 }
 
 # ---- 4. apply ----
-$gate = Test-D1Budget -Label "matches delta" -Statements $lines.Count
+# fip_link.py tags each relink UPDATE with the rows it moves ("-- relink-rows: N");
+# ~3 writes per row (the row and its player_id index entry).
+$extraW = [long]0
+foreach ($l in $lines) { if ($l -match '^-- relink-rows: (\d+)') { $extraW += 3 * [long]$Matches[1] } }
+$gate = Test-D1Budget -Label "matches delta" -Statements $lines.Count -ExtraWrites $extraW
 if (-not $gate.Go) { exit $gate.ExitCode }
 Write-Host "matches delta: applying $($lines.Count) statement(s) to D1..."
 & npx wrangler d1 execute padelticker-history --remote --file d1/matches_delta.sql --yes
