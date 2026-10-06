@@ -121,4 +121,7 @@ Write-Host "matches delta: applying $($lines.Count) statement(s) to D1..."
 & npx wrangler d1 execute padelticker-history --remote --file d1/matches_delta.sql --yes
 if ($LASTEXITCODE -ne 0) { Write-Host "matches delta: FAILED ($LASTEXITCODE)"; exit $LASTEXITCODE }
 Write-Host "matches delta: applied $($lines.Count) statement(s)."
+# The relink re-keys fip_link.py queued went out at the head of this delta.
+$relink = Join-Path $root "d1\relink_pending.sql"
+if (Test-Path $relink) { Remove-Item -LiteralPath $relink; Write-Host "matches delta: relink queue applied and cleared" }
 PublishLite
