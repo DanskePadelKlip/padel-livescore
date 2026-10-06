@@ -26,6 +26,7 @@ import { attachSourceHistory } from "../src/health-history.js";
 import { refreshCalendar } from "../src/calendar-refresh.js";
 import { setClubStore } from "../src/rankedin-club.js";
 import { fsClubStore } from "../src/club-store-node.js";
+import { recordTimeline } from "../src/serve-timeline.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 setClubStore(fsClubStore()); // organiser cache persists in .cache/ between restarts
@@ -93,6 +94,8 @@ async function cycle() {
   const date = new Date().toISOString().slice(0, 10);
   await maybeRefreshCalendar(date);
   const { matches, sources } = await withDeadline(aggregate({ date }), FETCH_MAX_MS, "fetch phase");
+  // Game-by-game tally + serving side, kept for serve stats (src/serve-timeline.js).
+  const timelineLines = recordTimeline(matches);
   const outDir = join(root, "public", "data");
   mkdirSync(outDir, { recursive: true });
 
@@ -217,6 +220,7 @@ async function cycle() {
       `→ next in ${Math.round(delay / 60000)}m${counts.live ? "  🔴 LIVE" : ""}`
   );
   console.log(`  timing: fetch ${tFetch}ms  deploy ${tDeploy}ms  total ${Date.now() - t0}ms`);
+  if (timelineLines) console.log(`  timeline: +${timelineLines} line(s)`);
   return delay;
 }
 
