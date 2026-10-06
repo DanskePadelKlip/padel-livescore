@@ -373,7 +373,9 @@ const state = {
   partnersAll: false,        // profile: partnership list expanded past the first 8
   matchesAll: false,         // profile: match list expanded past the first 20
   ptab: "overview",          // profile: open tab (overview | matches | partners)
-  mtab: "over",              // match page: open tab (over | h2h | form | pairs | players)
+  mtab: "over",              // match page: open tab (over | h2h | form | pairs | events | players)
+  mpEvPlayer: 0,             // match page Events tab: which of the four players
+  mpEvAll: false,            // ...and whether to list every event, not just the last 12 months
   onCourtAll: false,         // /players: "on court today" expanded past the first 40
   // ---- pairs (partnership profiles) ----
   // A pair is two players who play on the SAME SIDE. pairKey is kept in canonical
@@ -1449,7 +1451,7 @@ function mpRows(id) {
     const e = ev[g[0]] || [];
     for (const x of g[3] || []) {
       rows.push({
-        date: x[0] || e[1] || "", ev: g[0], evName: e[0] || "", kind: e[3] || "d", cls: g[1] || "",
+        date: x[0] || e[1] || "", ev: g[0], evName: e[0] || "", tier: e[2] || "", kind: e[3] || "d", cls: g[1] || "",
         round: x[1] || "", score: x[2] || "", won: x[3] === 1, opp: [x[4], x[5]].filter(Boolean),
         partner: x[6] || g[2] || null,
       });
@@ -1698,7 +1700,11 @@ function renderMatchPage(m, list) {
 
   // Each section lands in a tab (see the bottom of this function), like the
   // profile's: the page is long, and a commentator wants one view at a time.
-  const sec = { over: "", h2h: "", form: "", pairs: "", players: "" };
+  const sec = { over: "", h2h: "", form: "", pairs: "", players: "", events: "" };
+  // Events costs a ratings call and a 1 MB ranking file, so it is built only
+  // while its tab is open; the tab itself shows whenever anyone has a career.
+  if ([...A, ...B].some((id) => id && mpRows(id) !== null))
+    sec.events = state.mtab === "events" ? mpEventsTab(m, A, B, nameOf, idOf) || " " : " ";
   sec.over += mpTalkingPoints({ m, A, B, X, heres, togA, togB, h2h, cross, exes, rivals, road, tn, nameOf, idOf });
 
   // ---- head-to-head
@@ -1883,6 +1889,7 @@ function renderMatchPage(m, list) {
     ["h2h", "H2H", h2h && h2h.length ? h2h.length : "", sec.h2h],
     ["form", "Form", "", sec.form],
     ["pairs", "Pairs", "", sec.pairs],
+    ["events", "Events", "", sec.events],
     ["players", "Players", "", sec.players],
   ].filter((t) => t[3]);
   if (tabs.length) html += tabsHtml(tabs, state.mtab, "data-mtab");
@@ -1893,6 +1900,196 @@ function renderMatchPage(m, list) {
   </div>
   <div class="h2hsub mpnote">History from PadelTicker's career files (updated nightly): FIP tour, national federations and national teams. Players who could not be matched to a profile are left out of the numbers.</div>`;
   return html;
+}
+
+// ---- match page: the Events tab ----
+// The prep a commentator actually does, per player (Mikkel Løkkegaard Hansen,
+// 2026-10-06): which tournaments, at what tier, with which partner and how
+// strong that partner is, how far they went, and who knocked them out with what
+// score - then the results that stand out. Built from the career files; ratings
+// come from /api/elos (today's ratings, by primary key, only once the tab opens).
+const mpElo = new Map();          // id -> [rating, source, pool, n] | null (asked, unrated)
+let _mpEloPending = new Set();
+let _mpFipAsked = false;          // rankings-fip.json is ~1 MB: asked once, when the tab opens
+function mpEloWant(ids) {
+  const need = [...new Set(ids)].filter((x) => x && x[0] !== "=" && !mpElo.has(x) && !_mpEloPending.has(x)).slice(0, 300);
+  if (!need.length) return;
+  need.forEach((x) => _mpEloPending.add(x));
+  fetch("/api/elos?ids=" + encodeURIComponent(need.join(","))).then((r) => (r.ok ? r.json() : {})).catch(() => ({}))
+    .then((d) => {
+      for (const x of need) { mpElo.set(x, (d && d[x]) || null); _mpEloPending.delete(x); }
+      render();
+    });
+}
+// A pair's strength from today's ratings - null unless both are rated in ONE pool.
+function mpPairElo(a, b) {
+  const ea = mpElo.get(a), eb = mpElo.get(b);
+  if (!ea || !eb || ea[1] !== eb[1] || ea[2] !== eb[2]) return null;
+  return { r: Math.round((ea[0] + eb[0]) / 2), pool: ea[1] + "/" + ea[2] };
+}
+
+// "Round of 32" -> "R32", "SemiFinals" -> "SF"; anything unrecognised as is.
+function mpRoundShort(r) {
+  const s = String(r || "").replace(/^(Men|Women|Mixed)\s+/i, "");
+  if (/semi/i.test(s)) return "SF";
+  if (/quarter|kvart/i.test(s)) return "QF";
+  if (/\bfinals?\b|\bfinale\b/i.test(s)) return "F";
+  let x = /round of (\d+)/i.exec(s) || /\br(\d+)\b/i.exec(s);
+  if (x) return "R" + x[1];
+  x = /1\/(\d+)/.exec(s);
+  if (x) return "R" + (+x[1] * 2);
+  x = /\bq(\d)\b/i.exec(s);
+  if (x) return "Q" + x[1];
+  if (/quali|kval/i.test(s)) return "Q";
+  return s;
+}
+const MP_REACH_ORDER = ["W", "F", "SF", "QF", "R16", "R32", "R64", "R128"];
+
+// One player's events, newest first: [{ ev, name, tier, date, partner, rows, reached, ko, out }]
+function mpEvents(rows) {
+  const by = new Map();
+  for (const r of rows) {
+    const k = r.ev + "|" + r.cls;
+    if (!by.has(k)) by.set(k, []);
+    by.get(k).push(r);
+  }
+  const out = [];
+  for (const rs of by.values()) {
+    const last = rs[0];                       // the file keeps the latest round first
+    const ko = rs.some((r) => { const k = roundRank(r.round); return k >= 50 && k <= 100 && k !== 85; });
+    const w = rs.filter((r) => r.won).length;
+    let reached;
+    if (ko) reached = last.won && roundRank(last.round) === 100 ? "W" : mpRoundShort(last.round);
+    else reached = `${w}–${rs.length - w}`;
+    const tier = last.tier || ((/\b(DPF ?\d+)\b/i.exec(`${last.cls} ${last.evName}`) || [])[1] || "").toUpperCase().replace(" ", "");
+    out.push({
+      ev: last.ev, name: last.evName, tier, date: last.date, cls: last.cls, kind: last.kind,
+      partner: last.partner, rows: rs, reached, ko, w, l: rs.length - w,
+      out: !last.won ? last : null,
+    });
+  }
+  return out;
+}
+
+function mpEventsTab(m, A, B, nameOf, idOf) {
+  const people = [];
+  for (const side of [0, 1]) for (let i = 0; i < 2; i++) {
+    const nm = nameOf(side, i);
+    if (nm) people.push({ side, i, id: idOf(side, i), nm, p: ((m.teams[side] || {}).players || [])[i] });
+  }
+  if (!people.length) return "";
+  const sel = Math.min(state.mpEvPlayer || 0, people.length - 1);
+  const who = people[sel];
+  let h = `<div class="tviews mpwho">${people.map((x, k) =>
+    `<button class="tvbtn ${k === sel ? "on" : ""}" data-mpev="${k}">${esc(mpShort(x.nm))}</button>`).join("")}</div>`;
+
+  const rows = who.id ? mpRows(who.id) : null;
+  if (rows === "loading") return h + `<div class="h2hnone">Loading career…</div>`;
+  if (!Array.isArray(rows) || !rows.length)
+    return h + `<div class="h2hnone">${who.id ? "No events on record before this one." : "No PadelTicker profile for this player yet."}</div>`;
+
+  const evs = mpEvents(rows);
+  const yr = mpSince(rows, 365).length ? new Date(Date.now() - 365 * MP_DAY).toISOString().slice(0, 10) : "";
+  const recent = evs.filter((e) => e.date >= yr);
+  const shown = state.mpEvAll ? evs : (recent.length >= 5 ? recent : evs.slice(0, 12));
+
+  // ratings for everyone in the shown events, asked once
+  const want = [who.id];
+  for (const e of shown) { want.push(e.partner); for (const r of e.rows) want.push(...r.opp); }
+  mpEloWant(want);
+  const me = mpElo.get(who.id);
+
+  // FIP ranking line, when the player is on it (the file carries the event count)
+  let rk = "";
+  if (_fipRankCache) {
+    const f = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const cc = String((who.p && who.p.country) || "").toUpperCase();
+    const hit = _fipRankCache.find((r) => f(r.name) === f(who.nm) && (!cc || String(r.country).toUpperCase() === cc))
+      || _fipRankCache.find((r) => f(r.full) === f(who.nm));
+    if (hit) rk = `FIP #${hit.rank} · ${hit.points} pts · ${hit.tourns} events in the ranking`;
+  } else if (!_mpFipAsked) { _mpFipAsked = true; fipRankRows().then(() => render()); }
+
+  // how far they get, at which tier, last 12 months
+  const tally = new Map();
+  for (const e of recent.filter((e) => e.ko)) {
+    const k = e.reached;
+    if (!tally.has(k)) tally.set(k, []);
+    tally.get(k).push(e);
+  }
+  const reachKeys = [...tally.keys()].sort((a, b) => {
+    const ia = MP_REACH_ORDER.indexOf(a), ib = MP_REACH_ORDER.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  const deep = (k) => ["W", "F", "SF"].includes(k);
+  const reach = reachKeys.map((k) => {
+    const es = tally.get(k);
+    const where = deep(k) ? ` <span class="h2hsub">(${es.slice(0, 3).map((e) => esc(mpEvShort(e.name))).join(", ")})</span>` : "";
+    return `<span class="mpreach${deep(k) ? " deep" : ""}"><b>${esc(k === "W" ? "Titles" : k)}</b> ×${es.length}${where}</span>`;
+  }).join("");
+  const recW = recent.reduce((n, e) => n + e.w, 0), recL = recent.reduce((n, e) => n + e.l, 0);
+
+  h += `<div class="mpevhead">
+    <div class="mpplh">${countryFlag(who.p && who.p.country) || ""} ${who.id ? `<span class="pn" data-player="${esc(who.id)}">${esc(who.nm)}</span>` : esc(who.nm)}
+      ${me ? `<span class="h2hsub">Elo ${me[0]}</span>` : ""}</div>
+    ${rk ? `<div class="h2hsub">${esc(rk)}</div>` : ""}
+    <div class="h2hsub">Last 12 months: ${recent.length} event${recent.length === 1 ? "" : "s"} · ${recW}–${recL} in matches</div>
+    ${reach ? `<div class="mpreachrow">${reach}</div>` : ""}
+  </div>`;
+
+  // results that stand out, by today's ratings: beaten someone far stronger,
+  // lost to someone far weaker. Only inside one rating pool, never across.
+  const notable = [];
+  for (const e of recent) for (const r of e.rows) {
+    if (r.opp.length !== 2 || !r.partner || r.partner[0] === "=") continue;
+    const mine = mpPairElo(who.id, r.partner), theirs = mpPairElo(r.opp[0], r.opp[1]);
+    if (!mine || !theirs || mine.pool !== theirs.pool) continue;
+    const gap = theirs.r - mine.r;
+    if ((r.won && gap >= 60) || (!r.won && gap <= -60)) notable.push({ e, r, gap, mine, theirs });
+  }
+  const wins = notable.filter((x) => x.r.won).sort((a, b) => b.gap - a.gap).slice(0, 4);
+  const losses = notable.filter((x) => !x.r.won).sort((a, b) => a.gap - b.gap).slice(0, 4);
+  const nrow = (x) => `<div class="h2hm">
+      <span class="h2hres ${x.r.won ? "w" : "l"}">${x.r.won ? "W" : "L"}</span>
+      <span class="h2hsc">${esc(x.r.score)}</span>
+      <span class="h2hmeta">vs ${mpPairWho(x.r.opp)} <b class="mpgap ${x.gap > 0 ? "up" : "down"}">${x.gap > 0 ? "+" : "−"}${Math.abs(x.gap)}</b> · ${esc(mpRoundShort(x.r.round))} · ${esc(mpEvShort(x.e.name))} (${esc(String(x.e.date).slice(0, 7))}) · w/ ${mpWho(x.r.partner)}</span>
+    </div>`;
+  if (wins.length || losses.length) {
+    h += `<div class="h2hsect">Results that stand out · last 12 months</div>`;
+    if (wins.length) h += `<div class="h2hsub mpnote">Wins over stronger pairs</div><div class="h2hlist mpnot">${wins.map(nrow).join("")}</div>`;
+    if (losses.length) h += `<div class="h2hsub mpnote">Losses to weaker pairs</div><div class="h2hlist mpnot">${losses.map(nrow).join("")}</div>`;
+    h += `<div class="h2hsub mpnote">The number is the opponents' pair Elo minus this pair's, by today's ratings.</div>`;
+  }
+
+  // the event list
+  h += `<div class="h2hsect">Events${state.mpEvAll ? "" : recent.length >= 5 ? " · last 12 months" : " · latest"}</div><div class="mpevlist">`;
+  for (const e of shown) {
+    const pe = e.partner && e.partner[0] !== "=" ? mpElo.get(e.partner) : null;
+    const rel = pe && me && pe[1] === me[1] && pe[2] === me[2] ? pe[0] - me[0] : null;
+    const o = e.out;
+    const oe = o && o.opp.length === 2 ? mpPairElo(o.opp[0], o.opp[1]) : null;
+    h += `<div class="mpev${deep(e.reached) ? " deep" : ""}">
+      <div class="mpevr"><span class="mpreachtag${deep(e.reached) ? " deep" : ""}">${esc(e.reached)}</span></div>
+      <div class="mpevb">
+        <div class="mpevn">${esc(mpEvShort(e.name))}${e.tier && !e.name.toLowerCase().includes(e.tier.toLowerCase()) ? ` <span class="tourtag">${esc(e.tier)}</span>` : ""} <span class="h2hsub">${esc(String(e.date).slice(0, 10))}</span></div>
+        <div class="h2hsub">${e.partner ? `w/ ${mpWho(e.partner)}${pe ? ` <span class="mpelo">${pe[0]}${rel != null ? ` (${rel > 0 ? "+" : rel < 0 ? "−" : "±"}${Math.abs(rel)})` : ""}</span>` : ""}` : ""}${e.ko ? ` · ${e.w}–${e.l}` : ""}</div>
+        ${o ? `<div class="h2hsub">out to ${mpPairWho(o.opp)}${oe ? ` <span class="mpelo">${oe.r}</span>` : ""} · <b>${esc(o.score)}</b>${e.ko ? "" : ` (${esc(o.round)})`}</div>` : e.reached === "W" ? `<div class="h2hsub">won the event</div>` : ""}
+      </div>
+    </div>`;
+  }
+  h += `</div>`;
+  if (evs.length > shown.length || state.mpEvAll)
+    h += `<button class="morebtn" data-mpevall="1">${state.mpEvAll ? "Show fewer" : `Show all ${evs.length} events`}</button>`;
+  h += `<div class="h2hsub mpnote">Before this event. Partner's Elo in brackets is the difference to this player's own; ratings are today's, not as they were at the time.</div>`;
+  return h;
+}
+
+// "FIP SILVER HONG KONG" -> "FIP Silver Hong Kong": the feed's all-caps names
+// read as shouting in a list of twenty.
+function mpEvShort(n) {
+  const s = String(n || "");
+  if (s !== s.toUpperCase()) return s;
+  return s.toLowerCase().replace(/(^|[\s\-(\/])(\p{L})/gu, (_, a, b) => a + b.toUpperCase())
+    .replace(/\b(Fip|Dpf|Ppt|P1|P2)\b/g, (x) => x.toUpperCase());
 }
 
 function mpSection(title, body) {
@@ -4809,6 +5006,9 @@ app.addEventListener("click", (e) => {
   if (pairyr) { state.pairYear = pairyr.dataset.pairyear; state.pairMatchesAll = false; render(); return; }
   const pairtab = e.target.closest("[data-pairtab]");
   if (pairtab) { state.pairTab = pairtab.dataset.pairtab; render(); return; }
+  const mpev = e.target.closest("[data-mpev]");
+  if (mpev) { state.mpEvPlayer = +mpev.dataset.mpev; render(); return; }
+  if (e.target.closest("[data-mpevall]")) { state.mpEvAll = !state.mpEvAll; render(); return; }
   const mtab = e.target.closest("[data-mtab]");
   if (mtab) { state.mtab = mtab.dataset.mtab; render(); return; }
   const ptab = e.target.closest("[data-ptab]");
