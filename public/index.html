@@ -436,12 +436,25 @@
     .mpchips .h2hres { width: 13px; height: 13px; font-size: 8px; }
     .mpmore { margin-top: 6px; font-size: 12px; color: var(--muted); }
     .mpmore summary { cursor: pointer; }
-    .tape { display: grid; grid-template-columns: 1fr minmax(110px, auto) 1fr; gap: 8px; align-items: center; padding: 4px 0; font-size: 12.5px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+    /* Comparison table. ONE fixed middle column, so every row lines up with the
+       next (each row is its own grid; an auto column made them zig-zag). Values
+       sit against the label: left column right-aligned, right column left. */
+    .tape { display: grid; grid-template-columns: 1fr 10.5em 1fr; gap: 12px; align-items: baseline;
+      padding: 8px 2px; font-size: 14px; line-height: 1.35; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
     .tape > span:first-child { text-align: right; }
-    .tape .tl { text-align: center; color: var(--faint); font-size: 11px; }
+    .tape > span:last-child { text-align: left; }
+    .tape .tlab { text-align: center; color: var(--muted); font-size: 12px; }
+    .tape > span:not(.tlab) { color: var(--muted); }
+    .tape.tsub { padding-top: 14px; border-top: 0; grid-template-columns: 1fr; }
+    .tape.tsub > span:empty { display: none; }
+    .tape.tsub > .tlab { text-align: center; }
+    .tape.tsub .tlab { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); }
     .tape .tbest { color: var(--text); font-weight: 700; }
-    .tape:not(.th) > span:not(.tl):not(.tbest) { color: var(--muted); }
-    .tape.th { border-top: 0; font-weight: 700; color: var(--text); font-size: 12px; }
+    .tape .tbest::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin: 0 0 2px 6px; }
+    .tape > span:first-child.tbest::after { display: none; }
+    .tape > span:first-child.tbest::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin: 0 6px 2px 0; }
+    .tape.th { border-top: 0; padding-bottom: 10px; align-items: end; }
+    .tape.th > span { color: var(--text); font-weight: 700; font-size: 13.5px; line-height: 1.3; }
     .tape .h2hres { margin: 0 1px; }
     .mpplgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
     .mppl { min-width: 0; padding: 6px 0; }
@@ -449,6 +462,49 @@
     .mpplh { font-weight: 700; color: var(--text); font-size: 13px; margin-bottom: 3px; }
     .mppl .h2hlbl { flex: 0 0 auto; overflow: visible; }
     .mppl .h2hnum { white-space: normal; text-align: right; flex: 1 1 auto; min-width: 0; }
+    /* Readability (Kim, 2026-10-06: "hard on the eyes"). The match page reused
+       the compact head-to-head card's 11-12px type; as a whole page it needs
+       body-size text, room between rows and a calmer hierarchy. */
+    .mpsec { padding: 14px 16px; border-radius: 12px; font-size: 14px; line-height: 1.45; }
+    .mpsec .h2hrow { font-size: 14px; padding: 4px 0; }
+    .mpsec .h2hlead { font-size: 15px; margin-bottom: 10px; }
+    .mpsec .h2hsub { font-size: 12.5px; }
+    .mpsec .h2hsect { font-size: 11px; margin: 16px 0 6px; color: var(--muted); }
+    .mpsec .h2hsect:first-child { margin-top: 0; }
+    .mpsec .h2hm { font-size: 13.5px; gap: 10px; padding: 3px 0; align-items: center; }
+    .mpsec .h2hlist { gap: 4px; }
+    .mpsec .h2hres { width: 18px; height: 18px; font-size: 10px; }
+    .mpsec .h2hnone { font-size: 14px; }
+    /* A whole page has room to wrap; the compact card's one-line ellipsis hid
+       the very names and scores a commentator opens this to read. */
+    .mpsec .h2hrow { flex-wrap: wrap; row-gap: 0; }
+    .mpsec .h2hlbl, .mpsec .h2hmeta { white-space: normal; overflow: visible; }
+    .mpsec .h2hlbl { flex: 1 1 60%; color: var(--text); }
+    .mpsec .h2hrow > .h2hsub { flex: 1 0 100%; margin-top: -1px; }
+    .mpsec .h2hm { align-items: flex-start; }
+    .mpsec .h2hm .h2hres { margin-top: 1px; }
+    .mpsec .h2hm .h2hsc { flex: 0 0 6.6em; }
+    .mptp { font-size: 14.5px; line-height: 1.55; padding-left: 20px; }
+    .mptp li { margin: 6px 0; }
+    .mptp li::marker { color: var(--accent); }
+    .mpcolh { font-size: 14px; margin-bottom: 6px; }
+    .mpfl { font-size: 13.5px; padding: 5px 0; }
+    .mpchips .h2hres { width: 16px; height: 16px; font-size: 9px; }
+    .mpchips { gap: 3px; }
+    .mpplgrid { gap: 12px; }
+    .mppl { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+    .mpplh { font-size: 15px; margin-bottom: 8px; }
+    .mppl .h2hrow { font-size: 13.5px; padding: 3px 0; border-top: 1px solid var(--line); }
+    .mpplh + .h2hrow { border-top: 0; }
+    .mpev { padding: 10px 0; }
+    .mpevn { font-size: 14.5px; font-weight: 600; }
+    .mpevb .h2hsub { font-size: 13px; margin-top: 2px; }
+    .mpmeta { font-size: 13px; line-height: 1.45; }
+    .mpnames { font-size: 16px; }
+    .mpnote { font-size: 12px; line-height: 1.45; }
+    .mphead + .ptabs { margin-top: 20px; }
+    .ptab-body > .section-label:first-child { margin-top: 14px; }
+    .dlinks { margin-bottom: 8px; }
     .mpwho { margin: 2px 0 10px; flex-wrap: wrap; }
     .mpevhead { margin-bottom: 8px; }
     .mpevhead .h2hsub { display: block; margin-top: 2px; }
@@ -471,7 +527,8 @@
     @media (max-width: 560px) {
       .mpcols, .mpplgrid { grid-template-columns: 1fr; }
       .mpscore { font-size: 16px; gap: 8px; }
-      .tape { grid-template-columns: 1fr minmax(84px, auto) 1fr; font-size: 12px; }
+      .tape { grid-template-columns: 1fr 7.5em 1fr; gap: 8px; font-size: 13.5px; }
+      .tape .tlab { font-size: 11.5px; }
     }
     .h2hsc { font-variant-numeric: tabular-nums; color: var(--text); flex: 0 0 auto; }
     .h2hmeta { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

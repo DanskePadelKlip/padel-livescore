@@ -7,7 +7,15 @@ export async function onRequestGet({ request, params, env }) {
   const base = await shell(origin);
   // One direct D1 read; no second Function invocation. See playerMeta in _shared.js.
   const d = await playerMeta(env, id);
-  if (!d) return base; // unknown id, or D1 down -> generic shell (SPA still works)
+  if (!d) {
+    // A name-derived profile that has since been linked to its RankedIn one
+    // (padel-db fip_link.py) is deleted from D1, so its old URL would land on
+    // "not found" while the player is right there under another id - one human,
+    // two pages, then one page and a dead link. Send it on, permanently.
+    const to = id.startsWith("fip-") ? await relinkedTo(env, origin, id) : null;
+    if (to && to !== id) return Response.redirect(`${origin}/player/${encodeURIComponent(to)}`, 301);
+    return base; // unknown id, or D1 down -> generic shell (SPA still works)
+  }
 
   const p = d.player;
   const s = d.summary || {};
@@ -56,4 +64,22 @@ export async function onRequestGet({ request, params, env }) {
     lead: bits.join(" · "),
     title, description, canonical, ogType: "profile", image, jsonld,
   });
+}
+
+// The id a printed FIP name now resolves to, from players-lite.json's `aliases`
+// (printed name -> profile id, written by padel-db export_d1.py). Read only on
+// this miss path, so the 2 MB file costs nothing on a normal profile view.
+// The slug rule is export_d1.name_id(): keep the three copies identical.
+async function relinkedTo(env, origin, id) {
+  try {
+    const r = await env.ASSETS.fetch(new Request(origin + "/data/players-lite.json"));
+    if (!r.ok) return null;
+    const { aliases } = await r.json();
+    for (const [name, pid] of Object.entries(aliases || {})) {
+      const slug = ("fip-" + name.replaceAll(". ", "-").replace(/ /g, "-").replace(/\./g, ""))
+        .replace(/[A-Z]/g, (c) => c.toLowerCase());
+      if (slug === id) return pid;
+    }
+  } catch { /* no index: fall through to the shell */ }
+  return null;
 }

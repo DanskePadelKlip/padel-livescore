@@ -1626,6 +1626,10 @@ function renderMatchPage(m, list) {
   const idOf = (side, i) => (side === 0 ? A : B)[i] || null;
   const nameOf = (side, i) => { const p = P(side, i); return p ? cleanPlayerName(p.name) : ""; };
   const tn = (side) => esc(mpTeamName(m.teams[side]));
+  // A pair stacked one name per line: in a two-column table "A. Goñi Lacabe"
+  // otherwise breaks in the middle of a surname.
+  const tns = (side) => ((m.teams[side] && m.teams[side].players) || [])
+    .map((p) => esc(mpShort(cleanPlayerName(p.name)))).join("<br>") || tn(side);
 
   let html = `<button class="pback" data-mback="1">← ${esc(tv.name || "Tournament")}</button>`;
 
@@ -1634,7 +1638,9 @@ function renderMatchPage(m, list) {
   const stat = m.status === "live" ? `<span class="badge live">Live</span>`
     : m.status === "final" ? `<span class="badge final">Final</span>`
     : `<span class="badge upcoming">${esc(schedLabel(m) || "Upcoming")}</span>`;
-  const meta = [m.className, m.round, m.court, m.schedule && !/^\s*$/.test(m.schedule) ? m.schedule : null,
+  // FIP's bare "Followed by" means after the previous match on that court.
+  const sched = m.schedule && m.schedule.trim() ? (/^followed by$/i.test(m.schedule.trim()) ? "after the previous match" : m.schedule) : null;
+  const meta = [m.className, m.round, m.court, sched,
     m.startTime ? m.startTime.replace("T", " ").slice(0, 16) : null].filter(Boolean);
   const dur = fmtDur(plausibleDur(m.raw && m.raw.dur, sets));
   const sideRow = (side) => {
@@ -1804,21 +1810,22 @@ function renderMatchPage(m, list) {
       const row = (label, f, better) => {
         const va = pa ? f(pa) : "–", vb = pb ? f(pb) : "–";
         const cmp = better && pa && pb ? better(pa, pb) : 0;
-        return `<div class="tape"><span class="${cmp > 0 ? "tbest" : ""}">${va}</span><span class="tl">${label}</span><span class="${cmp < 0 ? "tbest" : ""}">${vb}</span></div>`;
+        return `<div class="tape"><span class="${cmp > 0 ? "tbest" : ""}">${va}</span><span class="tlab">${label}</span><span class="${cmp < 0 ? "tbest" : ""}">${vb}</span></div>`;
       };
       const d = (x, y) => (x > y ? 1 : x < y ? -1 : 0);
       const wr = (s) => (s.n ? s.w / s.n : 0);
-      let t = `<div class="tape th"><span>${tn(0)}</span><span class="tl"></span><span>${tn(1)}</span></div>`;
+      let t = `<div class="tape th"><span>${tns(0)}</span><span class="tlab"></span><span>${tns(1)}</span></div>`;
       t += row("Together since", (p) => esc(p.since.slice(0, 7)), null);
-      t += row("Events together", (p) => p.events, (a, b) => d(a.events, b.events));
-      t += row("Record together", (p) => `${mpRec(p.all.w, p.all.n - p.all.w)} · ${mpPct(p.all.w, p.all.n)}`, (a, b) => d(wr(a.all), wr(b.all)));
+      t += row("Events", (p) => p.events, (a, b) => d(a.events, b.events));
+      t += row("Record", (p) => `${mpRec(p.all.w, p.all.n - p.all.w)} · ${mpPct(p.all.w, p.all.n)}`, (a, b) => d(wr(a.all), wr(b.all)));
       t += row(`${yr} record`, (p) => p.y.n ? `${mpRec(p.y.w, p.y.n - p.y.w)} · ${mpPct(p.y.w, p.y.n)}` : "–", (a, b) => d(wr(a.y), wr(b.y)));
-      t += row(`Titles · finals (${yr})`, (p) => `${p.y.titles} · ${p.y.finals}`, (a, b) => d(a.y.titles, b.y.titles));
-      t += row("Titles together", (p) => p.all.titles, (a, b) => d(a.all.titles, b.all.titles));
-      t += row("Three-setters (12 mo)", (p) => p.l12.three[0] + p.l12.three[1] ? `${mpRec(...p.l12.three)}` : "–", (a, b) => d(a.l12.three[0] / (a.l12.three[0] + a.l12.three[1] || 1), b.l12.three[0] / (b.l12.three[0] + b.l12.three[1] || 1)));
-      t += row("Tie-break sets (12 mo)", (p) => p.l12.tb[0] + p.l12.tb[1] ? `${mpRec(...p.l12.tb)}` : "–", (a, b) => d(a.l12.tb[0] / (a.l12.tb[0] + a.l12.tb[1] || 1), b.l12.tb[0] / (b.l12.tb[0] + b.l12.tb[1] || 1)));
-      t += row("Straight-set wins (12 mo)", (p) => p.l12.w ? mpPct(p.l12.straight, p.l12.w) : "–", (a, b) => d(a.l12.straight / (a.l12.w || 1), b.l12.straight / (b.l12.w || 1)));
-      t += row("Games won (12 mo)", (p) => p.l12.gW + p.l12.gL ? mpPct(p.l12.gW, p.l12.gW + p.l12.gL) : "–", (a, b) => d(a.l12.gW / (a.l12.gW + a.l12.gL || 1), b.l12.gW / (b.l12.gW + b.l12.gL || 1)));
+      t += row(`${yr} titles · finals`, (p) => `${p.y.titles} · ${p.y.finals}`, (a, b) => d(a.y.titles, b.y.titles));
+      t += row("All titles", (p) => p.all.titles, (a, b) => d(a.all.titles, b.all.titles));
+      t += `<div class="tape tsub"><span></span><span class="tlab">Last 12 months</span><span></span></div>`;
+      t += row("Three-setters", (p) => p.l12.three[0] + p.l12.three[1] ? `${mpRec(...p.l12.three)}` : "–", (a, b) => d(a.l12.three[0] / (a.l12.three[0] + a.l12.three[1] || 1), b.l12.three[0] / (b.l12.three[0] + b.l12.three[1] || 1)));
+      t += row("Tie-break sets", (p) => p.l12.tb[0] + p.l12.tb[1] ? `${mpRec(...p.l12.tb)}` : "–", (a, b) => d(a.l12.tb[0] / (a.l12.tb[0] + a.l12.tb[1] || 1), b.l12.tb[0] / (b.l12.tb[0] + b.l12.tb[1] || 1)));
+      t += row("Straight-set wins", (p) => p.l12.w ? mpPct(p.l12.straight, p.l12.w) : "–", (a, b) => d(a.l12.straight / (a.l12.w || 1), b.l12.straight / (b.l12.w || 1)));
+      t += row("Games won", (p) => p.l12.gW + p.l12.gL ? mpPct(p.l12.gW, p.l12.gW + p.l12.gL) : "–", (a, b) => d(a.l12.gW / (a.l12.gW + a.l12.gL || 1), b.l12.gW / (b.l12.gW + b.l12.gL || 1)));
       sec.pairs += mpSection("The partnerships", t);
     }
   }
@@ -1878,8 +1885,8 @@ function renderMatchPage(m, list) {
       .sort((x, y) => (x.a.length + x.b.length < y.a.length + y.b.length ? 1 : -1));
     if (common.length) {
       const res = (rs) => rs.slice(0, 3).map((r) => `<span class="h2hres ${r.won ? "w" : "l"}" title="${esc(`${r.score} · ${r.round} · ${r.evName} (${r.date})`)}">${r.won ? "W" : "L"}</span>`).join("");
-      let t = `<div class="tape th"><span>${tn(0)}</span><span class="tl">vs</span><span>${tn(1)}</span></div>`;
-      for (const c of common.slice(0, 10)) t += `<div class="tape"><span>${res(c.a)}</span><span class="tl">${mpPairWho(c.a[0].opp)}</span><span>${res(c.b)}</span></div>`;
+      let t = `<div class="tape th"><span>${tns(0)}</span><span class="tlab">vs</span><span>${tns(1)}</span></div>`;
+      for (const c of common.slice(0, 10)) t += `<div class="tape"><span>${res(c.a)}</span><span class="tlab">${mpPairWho(c.a[0].opp)}</span><span>${res(c.b)}</span></div>`;
       sec.h2h += mpSection(`Common opponents · last 12 months`, t);
     }
   }
