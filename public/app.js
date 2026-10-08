@@ -1518,24 +1518,41 @@ const mpSince = (rows, days) => {
   const cut = new Date(Date.now() - days * MP_DAY).toISOString().slice(0, 10);
   return rows.filter((r) => r.date >= cut);
 };
-const mpSame = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+// A career-file reference is a profile id, or "=Name" for someone who had no
+// profile when the file was written. Comparing ids alone turned "=Malthe
+// Nielsen" into a stranger, and the page told Kim that Lilleoere/Nielsen - 70
+// matches together - were a new partnership meeting Windahl/Vasquez for the
+// first time (2026-10-08). A name reference counts as the player when the
+// surnames overlap and the first name (or its initial) agrees.
+const mpTok = (s) => String(s || "").toLowerCase().replace(/ø/g, "o").replace(/æ/g, "ae").replace(/å/g, "a")
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
+function mpIs(ref, id) {
+  if (!ref || !id) return false;
+  if (ref === id) return true;
+  if (ref[0] !== "=") return false;
+  const a = mpTok(ref.slice(1)), b = mpTok(mpName(id));
+  if (a.length < 2 || b.length < 2) return false;
+  const first = a[0] === b[0] || (a[0].length === 1 && b[0][0] === a[0]) || (b[0].length === 1 && a[0][0] === b[0]);
+  return first && a.slice(1).some((t) => b.slice(1).includes(t));
+}
+const mpSame = (refs, ids) => refs.length === ids.length && ids.every((id) => refs.some((x) => mpIs(x, id)));
 
 // The two players of a pair, together: whichever of them has a career file.
 function mpTogether(p, q) {
   if (!p || !q) return null;
   const rp = mpRows(p);
-  if (Array.isArray(rp)) return rp.filter((r) => r.partner === q);
+  if (Array.isArray(rp)) return rp.filter((r) => mpIs(r.partner, q));
   const rq = mpRows(q);
-  if (Array.isArray(rq)) return rq.filter((r) => r.partner === p);
+  if (Array.isArray(rq)) return rq.filter((r) => mpIs(r.partner, p));
   return rp === "loading" || rq === "loading" ? "loading" : null;
 }
 
 // p against q (any partners), from p's side — falling back to q's file, flipped.
 function mpVersus(p, q) {
   const rp = mpRows(p);
-  if (Array.isArray(rp)) return rp.filter((r) => r.opp.includes(q));
+  if (Array.isArray(rp)) return rp.filter((r) => r.opp.some((x) => mpIs(x, q)));
   const rq = mpRows(q);
-  if (Array.isArray(rq)) return rq.filter((r) => r.opp.includes(p)).map((r) => ({
+  if (Array.isArray(rq)) return rq.filter((r) => r.opp.some((x) => mpIs(x, p))).map((r) => ({
     ...r, won: !r.won, score: mpSets(r.score).map(([a, b]) => `${b}-${a}`).join(" "), opp: [q, r.partner].filter(Boolean), partner: null,
   }));
   return rp === "loading" || rq === "loading" ? "loading" : null;
@@ -2184,8 +2201,13 @@ function mpTalkingPoints(c) {
     if (evs <= 2) pts.push(`${tn(side)} are only ${evs === 1 ? "in their second event" : "in their third event"} together (${tog.length} match${tog.length === 1 ? "" : "es"} so far).`);
     const s = mpStreak(heres[side].concat(tog));
     if (s && s.n >= 4) pts.push(`${tn(side)} have ${s.won ? "won" : "lost"} their last ${s.n} matches together.`);
+    // Titles only where a draw names its final - the FIP tour. Domestic events
+    // run "Elimination"/"Monrad" draws whose final is not labelled, so counting
+    // them as titles would understate a pair that wins at home (Windahl/Vasquez:
+    // "1 title" beside an Arla Series and an SPT win).
     const y = mpStats(tog.filter((r) => mpYear(r) === yr));
-    if (y.titles) pts.push(`${tn(side)} have won ${y.titles} title${y.titles === 1 ? "" : "s"} together in ${yr} (${y.finals} final${y.finals === 1 ? "" : "s"}), ${mpRec(y.w, y.n - y.w)} on the season.`);
+    const yf = mpStats(tog.filter((r) => mpYear(r) === yr && r.kind === "f"));
+    if (yf.titles) pts.push(`${tn(side)} have won ${yf.titles} FIP title${yf.titles === 1 ? "" : "s"} together in ${yr} (${yf.finals} FIP final${yf.finals === 1 ? "" : "s"}); ${mpRec(y.w, y.n - y.w)} in all events this season.`);
     const l12 = mpStats(mpSince(tog, 365));
     if (l12.three[0] + l12.three[1] >= 5) pts.push(`${tn(side)} are ${mpRec(...l12.three)} in three-set matches over the last 12 months.`);
   }
