@@ -193,10 +193,10 @@ function teamNameWithFlags(t) {
 // A slim name->rank map (42 KB brotli) rather than the full ranking file, which
 // is ~145 KB and carries points/movement/slugs the feed has no use for. Loaded
 // lazily after first paint: scores must never wait on it.
-let RANKS = null;
+let RANKS = null, RANK_IDS = {};
 async function loadRanksLite() {
   if (RANKS) return;
-  try { RANKS = (await (await fetch("data/ranks-lite.json?_=" + Date.now())).json()).ranks || {}; }
+  try { const j = await (await fetch("data/ranks-lite.json?_=" + Date.now())).json(); RANKS = j.ranks || {}; RANK_IDS = j.ids || {}; }
   catch { RANKS = {}; }
   render();
 }
@@ -204,8 +204,12 @@ async function loadRanksLite() {
 // ("M. Borrero Fernandez De La Puente" vs "M. Borrero"), so try the whole name
 // first and then drop trailing surname tokens. Country must match, which is what
 // keeps two same-initial namesakes apart.
-function rankFor(name, country) {
-  if (!RANKS || !country) return null;
+// `id` first: an abbreviation two players share ("M. Nielsen" is Malthe and
+// Mathias) is missing from the name map, but the profile id still has a rank.
+function rankFor(name, country, id) {
+  if (!RANKS) return null;
+  if (id && RANK_IDS[id]) return RANK_IDS[id];
+  if (!country) return null;
   const cc = String(country).toUpperCase();
   const toks = String(name || "").trim().split(/\s+/);
   for (let i = toks.length; i >= 2; i--) {
@@ -1472,11 +1476,9 @@ function mpPidxName(id) {
 }
 const mpName = (x) => (!x ? "?" : x[0] === "=" ? x.slice(1) : mpNames.get(x) || mpPidxName(x) || x);
 // "Alejandro Galan" -> "A. Galan"; FIP's "A. Galan" stays as it is
-const mpShort = (s) => {
-  const p = String(s || "").trim().split(/\s+/);
-  if (p.length < 2 || /^\p{L}\.$/u.test(p[0])) return s;
-  return `${p[0][0]}. ${p.slice(1).join(" ")}`;
-};
+// Kim, 2026-10-09: full first and last names on the match page, not FIP's
+// "M. Nielsen". Only a name we could not match to a profile stays abbreviated.
+const mpShort = (s) => String(s || "").trim();
 const mpWho = (x) => (!x ? "" : x[0] === "=" ? esc(mpShort(x.slice(1)))
   : `<span class="pn" data-player="${esc(x)}">${esc(mpShort(mpName(x)))}</span>`);
 const mpPairWho = (list) => list.map(mpWho).join(" / ");
@@ -1610,6 +1612,14 @@ function mpRoad(m, list, side) {
 
 const mpTeamName = (t) => (t.players || []).map((p) => mpShort(cleanPlayerName(p.name))).join(" / ") || t.name || "TBD";
 
+// RankedIn's age (as read on age_asof) where FIP has no birth date - most Nordic
+// players. Projected to today, so it can be a few months early on a birthday.
+function mpRinAge(b) {
+  if (!b || b.age == null) return null;
+  const yrs = b.age_asof ? (Date.now() - new Date(b.age_asof)) / 31557600000 : 0;
+  return Math.floor(b.age + Math.max(0, yrs || 0)) || null;
+}
+
 function mpAge(d) {
   if (!d) return null;
   const b = new Date(d);
@@ -1642,11 +1652,24 @@ function renderMatchPage(m, list) {
   const P = (side, i) => ((m.teams[side] && m.teams[side].players) || [])[i] || null;
   const idOf = (side, i) => (side === 0 ? A : B)[i] || null;
   const nameOf = (side, i) => { const p = P(side, i); return p ? cleanPlayerName(p.name) : ""; };
-  const tn = (side) => esc(mpTeamName(m.teams[side]));
+  // The profile's full name when matched; FIP's printed name otherwise.
+  const full = (side, i) => {
+    const p = P(side, i); if (!p) return "";
+    const id = idOf(side, i), n = id && mpName(id);
+    return n && n !== id && n !== "?" ? n : cleanPlayerName(p.name);
+  };
+  const tPlayers = (side) => (m.teams[side] && m.teams[side].players) || [];
+  const tn = (side) => esc(tPlayers(side).map((p, i) => full(side, i)).join(" / ") || mpTeamName(m.teams[side]));
   // A pair stacked one name per line: in a two-column table "A. Goñi Lacabe"
   // otherwise breaks in the middle of a surname.
-  const tns = (side) => ((m.teams[side] && m.teams[side].players) || [])
-    .map((p) => esc(mpShort(cleanPlayerName(p.name)))).join("<br>") || tn(side);
+  const tns = (side) => tPlayers(side).map((p, i) => esc(full(side, i))).join("<br>") || tn(side);
+  // The edge writes FIP's printed names into the visible SEO heading (scrapers
+  // never run this); once the profiles are known, show the full names there too.
+  if (ready) {
+    const h = document.querySelector(".seo-head h1");
+    const plain = (side) => tPlayers(side).map((p, i) => full(side, i)).join(" / ");
+    if (h) h.textContent = `${plain(0)} vs ${plain(1)}${m.round ? " — " + m.round : ""}`;
+  }
 
   let html = `<button class="pback" data-mback="1">← ${esc(tv.name || "Tournament")}</button>`;
 
@@ -1666,8 +1689,8 @@ function renderMatchPage(m, list) {
     const names = ((t && t.players) || []).map((p, i) => {
       const id = idOf(side, i);
       const f = countryFlag(p.country);
-      const rk = rankFor(cleanPlayerName(p.name), p.country);
-      const label = `${f ? f + " " : ""}${esc(cleanPlayerName(p.name))}${rk ? ` <span class="mprk">#${rk}</span>` : ""}`;
+      const rk = rankFor(cleanPlayerName(p.name), p.country, id);
+      const label = `${f ? f + " " : ""}${esc(full(side, i))}${rk ? ` <span class="mprk">#${rk}</span>` : ""}`;
       return id ? `<span class="pn" data-player="${esc(id)}">${label}</span>` : `<span class="pn" data-pname="${esc(cleanPlayerName(p.name))}">${label}</span>`;
     }).join(`<span class="mpamp">&amp;</span>`) || esc(t && t.name || "TBD");
     const cells = sets.map((s) => `<span class="mpset${win ? " w" : ""}">${setCellHtml(s[side])}</span>`).join("");
@@ -1860,9 +1883,9 @@ function renderMatchPage(m, list) {
       const e = X && X.elo && X.elo[id];
       const earn = X && X.earnings && X.earnings[id];
       const f = countryFlag(p.country);
-      const rk = rankFor(nm, p.country);
+      const rk = rankFor(nm, p.country, id);
       const kv = [];
-      const age = bio && mpAge(bio.birth_date);
+      const age = bio && (mpAge(bio.birth_date) || mpRinAge(bio));
       if (age) kv.push(["Age", age]);
       if (bio && bio.height_cm) kv.push(["Height", (bio.height_cm / 100).toFixed(2) + " m"]);
       if (bio && bio.position) kv.push(["Side", esc(bio.position)]);
@@ -1888,7 +1911,7 @@ function renderMatchPage(m, list) {
       if (earn && earn.total) kv.push(["Prize money", `${earn.exact ? "" : "≈ "}€${Math.round(earn.total).toLocaleString("en")}`]);
       if (!kv.length && rows !== "loading" && ex !== "loading") continue;
       cards.push(`<div class="mppl ${side ? "b" : "a"}">
-        <div class="mpplh">${f ? f + " " : ""}${id ? `<span class="pn" data-player="${esc(id)}">${esc(nm)}</span>` : esc(nm)}</div>
+        <div class="mpplh">${f ? f + " " : ""}${id ? `<span class="pn" data-player="${esc(id)}">${esc(full(side, i))}</span>` : esc(nm)}</div>
         ${kv.map(([k, v]) => `<div class="h2hrow"><span class="h2hlbl">${k}</span><span class="h2hnum">${v}</span></div>`).join("") || `<div class="h2hnone">${rows === "loading" || ex === "loading" ? "Loading…" : "No profile on record"}</div>`}
       </div>`);
     }
@@ -2236,7 +2259,7 @@ function mpTalkingPoints(c) {
 
   if (X && X.bio) {
     const ages = [];
-    for (const side of [0, 1]) for (let i = 0; i < 2; i++) { const id = idOf(side, i), b = id && X.bio[id], a = b && mpAge(b.birth_date); if (a) ages.push([a, id]); }
+    for (const side of [0, 1]) for (let i = 0; i < 2; i++) { const id = idOf(side, i), b = id && X.bio[id], a = b && (mpAge(b.birth_date) || mpRinAge(b)); if (a) ages.push([a, id]); }
     if (ages.length >= 3) {
       ages.sort((a, b) => a[0] - b[0]);
       const [yA, yId] = ages[0], [oA, oId] = ages[ages.length - 1];

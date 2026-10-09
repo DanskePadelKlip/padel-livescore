@@ -78,7 +78,7 @@ export async function onRequestGet({ request, env }) {
   if (lite) {
     try {
       const { results: br } = await env.DB.prepare(
-        `SELECT player_id AS id,birth_date,height_cm,position,birth_place
+        `SELECT player_id AS id,birth_date,height_cm,position,birth_place,age,age_asof
          FROM player_bio WHERE player_id IN (${ph})`
       ).bind(...ids).all();
       bio = Object.fromEntries(br.map((b) => [b.id, b]));
