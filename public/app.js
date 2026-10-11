@@ -975,12 +975,16 @@ function rubberLines(m) {
   return `<div style="${RUB_CSS.wrap}">${rs.map(line).join("")}</div>`;
 }
 
-function matchRow(m, changed, showTournament) {
+// Courts view options. opts.noCourt: the row sits under its court's own heading, so
+// the "📍 court" pin would only repeat it — keep the round, drop the pin.
+// opts.inQueue: the row is already labelled Now / Next / After that, so FIP's own
+// "Next up" (= "followed by") tag would contradict the label beside it.
+function matchRow(m, changed, showTournament, opts = {}) {
   const focus = !!state.focusMatch && matchRouteKey(m) === state.focusMatch.key;
   const open = state.openMatches.has(m.id) || focus; // a deep link opens what it points at
   const isChanged = changed.has(m.id);
   const time = m.startTime ? m.startTime.slice(11, 16) : "";
-  const followed = /follow/i.test(m.schedule || "") && m.estStart; // estimate is "next up"
+  const followed = !opts.inQueue && /follow/i.test(m.schedule || "") && m.estStart; // estimate is "next up"
   const stateCol =
     m.status === "live"
       ? `<span class="lampe"></span><span class="badge live">Live</span>`
@@ -997,7 +1001,7 @@ function matchRow(m, changed, showTournament) {
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
           ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${fedFlag(m.federation)} ${m.federation}</span><span class="nm tlink" data-tourney="live" data-tkey="${esc(m.source + ":" + m.tournament.id)}" data-tname="${esc(m.tournament.name)}" data-tfed="${esc(m.federation)}" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
-          ${m.court ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : ""}
+          ${m.court && !opts.noCourt ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : opts.noCourt && m.round ? `<div class="crtline">${esc(m.round)}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
           ${rubberLines(m)}
@@ -4067,7 +4071,8 @@ function splitCategory(m) {
 }
 
 function openTournament(kind, key, name, fed) {
-  state.tView = "draw"; // each tournament opens on the draw; user can switch to By day
+  state.tView = "draw"; // each tournament opens on the draw; user can switch to By day / Courts
+  state.courtQ = "";
   state.tournament = { kind, key, name, fed, matches: kind === "live" ? null : "loading" };
   syncUrl(); // /tournament/<source>/<id>
   if (kind === "arch") {
@@ -4291,19 +4296,33 @@ function renderTournament() {
       }</div></div>`;
   }
 
-  // Offer a "By day" schedule when the matches carry a play-day (FIP) or a date (RankedIn).
+  // Offer a "By day" schedule when the matches carry a play-day (FIP) or a date (RankedIn),
+  // and "Courts" when a live event says which court each match is on.
   const hasDays = matches.some((m) => matchDay(m));
-  const view = hasDays ? (state.tView || "draw") : "draw";
-  if (hasDays) {
+  // Only while something is on court today or still to come: once an event is over the
+  // tab would be a dead end, and a venue's QR link then falls back to the draw.
+  const hasCourts = tv.kind === "live" && matches.some((m) => m.court) &&
+    courtQueues(matches).courts.some((c) => c.queue.length || c.last);
+  let view = state.tView || "draw";
+  if ((view === "day" && !hasDays) || (view === "courts" && !hasCourts)) view = "draw";
+  if (hasDays || hasCourts) {
     html += `<div class="tviews">
       <button class="tvbtn ${view === "draw" ? "on" : ""}" data-tview="draw">Draw</button>
-      <button class="tvbtn ${view === "day" ? "on" : ""}" data-tview="day">By day</button>
+      ${hasDays ? `<button class="tvbtn ${view === "day" ? "on" : ""}" data-tview="day">By day</button>` : ""}
+      ${hasCourts ? `<button class="tvbtn ${view === "courts" ? "on" : ""}" data-tview="courts">Courts</button>` : ""}
     </div>`;
   }
 
   if (!matches.length) { app.innerHTML = html + `<div class="empty">No matches for this event yet.</div>`; return; }
 
-  if (view === "day") {
+  if (view === "courts") {
+    // The input survives the poll's re-render: same value from state, focus put back.
+    const ae = document.activeElement;
+    const keep = ae && ae.id === "crtq" ? [ae.selectionStart, ae.selectionEnd] : null;
+    app.innerHTML = html + renderByCourt(matches);
+    if (keep) { const el = document.getElementById("crtq"); if (el) { el.focus(); try { el.setSelectionRange(keep[0], keep[1]); } catch {} } }
+    return;
+  } else if (view === "day") {
     html += renderByDay(matches, tv);
   } else {
     // group by category (class) → round, rounds ordered final-first
@@ -4376,6 +4395,121 @@ function renderByDay(matches, tv) {
       `<div class="group open"><div class="group__body">${(tv.kind === "live" ? withoutNestedRubbers(g.matches) : g.matches).map((m) => (tv.kind === "live" ? matchRow(m, new Set(), false) : archiveMatchRow(m))).join("")}</div></div>`;
   }
   return out;
+}
+
+// ---------- courts view: what is on each court now, next, and after that ----------
+//
+// For someone standing in the venue: which court to walk to. Built from the rows the
+// draw already has (FIP order of play: court + "Followed by" chain; RankedIn: court +
+// time), so nothing new is fetched. Opened directly by /tournament/<src>/<id>?view=courts.
+//
+// Inline styles on purpose, as with RUB_CSS: index.html is rewritten by the deploy loop.
+const CRT_CSS = {
+  head: "display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:16px 2px 6px",
+  name: "font-size:15px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+  lbl: "padding:8px 12px 0;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)",
+  now: "color:var(--live)",
+  more: "padding:7px 12px 9px;font-size:12px;color:var(--faint);border-top:1px solid var(--line)",
+  done: "padding:10px 12px;font-size:13px;color:var(--muted)",
+  q: "display:block;width:100%;box-sizing:border-box;margin:12px 0 2px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font-size:16px",
+  day: "margin:10px 2px 0;font-size:13px;color:var(--muted)",
+};
+// A show court first (that is where people head), then plain numeric order, so
+// "Court 10" sits after "Court 9" and a court keeps its place from poll to poll.
+const CENTRE_RX = /cent(er|re)|central|\bcc\b|stadium|principal/i;
+const cmpCourt = (a, b) =>
+  (CENTRE_RX.test(a) ? 0 : 1) - (CENTRE_RX.test(b) ? 0 : 1) ||
+  a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+const foldName = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+// -> { day, courts: [{ court, queue: [live…, upcoming…], last }] } for one play day.
+function courtQueues(matches) {
+  const today = todayYmd();
+  // Sources leave unplayed rows "upcoming" for days or weeks (a RankedIn club event
+  // still listed 5 August matches as upcoming on 11 October), so a row dated before
+  // today is never "next". Undated rows stay: FIP's order of play is the only clock.
+  const fresh = (m) => !matchDate(m) || matchDate(m) >= today;
+  const rows = withoutNestedRubbers(matches.filter((m) => m.court))
+    .map((m, i) => ({ m, i, court: m.court.trim() }));
+  const open = rows.filter((r) => r.m.status === "live" || (r.m.status === "upcoming" && fresh(r.m)));
+  // The day the view is about: today while anything is still on today, else the
+  // event's next play day (the evening before day two shows day two's courts).
+  const later = open.map((r) => matchDate(r.m)).filter((d) => d && d > today).sort();
+  const day = open.some((r) => r.m.status === "live" || !matchDate(r.m) || matchDate(r.m) === today) || !later.length ? today : later[0];
+  const onDay = (m) => !matchDate(m) || matchDate(m) === day;
+  const byStart = (a, b) => startMin(a.m) - startMin(b.m) || a.i - b.i;
+
+  const courts = [...new Set(rows.map((r) => r.court))].sort(cmpCourt).map((court) => {
+    const mine = rows.filter((r) => r.court === court);
+    const live = mine.filter((r) => r.m.status === "live");
+    let up = mine.filter((r) => r.m.status === "upcoming" && fresh(r.m) && onDay(r.m)).sort(byStart);
+    // A row timed before the match that is on court now was never played or never
+    // reported — the court has moved past it. Only a real clock time (RankedIn) can
+    // say so; FIP's estimates are chained from the live match itself.
+    const liveAt = Math.min(...live.map((r) => (r.m.startTime ? startMin(r.m) : Infinity)));
+    if (live.length) up = up.filter((r) => !(r.m.startTime && startMin(r.m) < liveAt));
+    const fin = mine.filter((r) => r.m.status === "final" && matchDate(r.m) === day).sort(byStart);
+    return { court, queue: [...live, ...up].map((r) => r.m), last: fin.length ? fin[fin.length - 1].m : null };
+  });
+  return { day, courts };
+}
+
+// Where a match stands in its court's queue, in words a visitor acts on.
+function queueLabel(q, k) {
+  const nLive = q.filter((m) => m.status === "live").length;
+  if (k < nLive) return "Now";
+  const u = k - nLive;
+  if (u === 0) return nLive ? "Next" : "Up next";
+  if (u === 1) return "After that";
+  const n = u + 1;
+  const sfx = n % 10 === 1 && n % 100 !== 11 ? "st" : n % 10 === 2 && n % 100 !== 12 ? "nd" : n % 10 === 3 && n % 100 !== 13 ? "rd" : "th";
+  return `${n}${sfx} in line`;
+}
+
+const crtLbl = (text, live) => `<div style="${CRT_CSS.lbl}${live ? ";" + CRT_CSS.now : ""}">${esc(text)}</div>`;
+
+function courtsBody(matches) {
+  const { day, courts } = courtQueues(matches);
+  const q = foldName(state.courtQ || "").trim();
+
+  // "Where does X play?" — every court's whole queue, not just its next two.
+  if (q.length >= 2) {
+    const hits = [];
+    for (const c of courts) c.queue.forEach((m, k) => {
+      const names = m.teams.flatMap((t) => [t.name, ...(t.players || []).map((p) => p.name)]).map(foldName).join(" | ");
+      if (names.includes(q)) hits.push({ c, m, k });
+    });
+    if (!hits.length) return `<div class="empty" style="padding:36px 0">Nothing left on court today for “${esc(state.courtQ.trim())}”.<div class="empty-hint">Finished matches are in the Draw.</div></div>`;
+    return `<div class="group open"><div class="group__body">${hits.map(({ c, m, k }) =>
+      crtLbl(`${queueLabel(c.queue, k)} · ${c.court}`, m.status === "live") + matchRow(m, new Set(), false, { inQueue: true })).join("")}</div></div>`;
+  }
+
+  if (!courts.some((c) => c.queue.length || c.last)) return `<div class="empty" style="padding:36px 0">No court schedule for ${day === todayYmd() ? "today" : esc(dateLabel(day))}.</div>`;
+
+  let out = "";
+  for (const c of courts) {
+    if (!c.queue.length && !c.last) continue; // a court with nothing on this day at all
+    const shown = c.queue.slice(0, 3);
+    const rest = c.queue.length - shown.length;
+    const live = c.queue.some((m) => m.status === "live");
+    const right = live ? `<span class="badge live">Live</span>` : !c.queue.length ? `<span class="count">Done${day === todayYmd() ? " for today" : ""}</span>` : "";
+    out += `<div style="${CRT_CSS.head}"><span style="${CRT_CSS.name}">📍 ${esc(c.court)}</span>${right}</div>`;
+    let body = shown.map((m, k) => crtLbl(queueLabel(c.queue, k), m.status === "live") + matchRow(m, new Set(), false, { noCourt: true, inQueue: true })).join("");
+    if (rest > 0) body += `<div style="${CRT_CSS.more}">+ ${rest} more on this court later</div>`;
+    // Between matches, the one that just finished is what people ask about.
+    if (!live && c.last) body += crtLbl("Last result") + matchRow(c.last, new Set(), false, { noCourt: true });
+    if (!body) body = `<div style="${CRT_CSS.done}">Nothing more on this court.</div>`;
+    out += `<div class="group open"><div class="group__body">${body}</div></div>`;
+  }
+  return out;
+}
+
+function renderByCourt(matches) {
+  const { day } = courtQueues(matches);
+  const dayLine = day === todayYmd() ? `Today · ${esc(dateLabel(day))}` : `Next play day · ${esc(dateLabel(day))}`;
+  return `<div style="${CRT_CSS.day}">${dayLine}</div>
+    <input id="crtq" type="search" autocomplete="off" enterkeyhint="search" style="${CRT_CSS.q}" placeholder="Find a player: which court, and when?" value="${esc(state.courtQ || "")}">
+    <div id="crtbody">${courtsBody(matches)}</div>`;
 }
 
 // ---------- world No.1 timeline ----------
@@ -5026,6 +5160,14 @@ document.getElementById("brand").addEventListener("click", (e) => {
 
 // rankings country filter — narrows the federation chips without re-rendering
 // #app (so the input keeps focus). Enter jumps to a lone match.
+// courts view "find a player" — rewrites only #crtbody, so the input keeps focus
+app.addEventListener("input", (e) => {
+  if (e.target.id !== "crtq" || !state.tournament) return;
+  state.courtQ = e.target.value;
+  const body = document.getElementById("crtbody");
+  const tv = state.tournament;
+  if (body && tv.kind === "live") body.innerHTML = courtsBody(state.matches.filter((m) => m.source + ":" + m.tournament.id === tv.key));
+});
 app.addEventListener("input", (e) => {
   if (e.target.id !== "rankcountry") return;
   state.rankCountryQuery = e.target.value;
@@ -5093,7 +5235,8 @@ app.addEventListener("click", (e) => {
   const ntr = e.target.closest("[data-ntrank]");
   if (ntr) { openCountryRanking(ntr.dataset.ntrank, ntr.dataset.ntiso); return; }
   const tvw = e.target.closest("[data-tview]");
-  if (tvw) { state.tView = tvw.dataset.tview; render(); return; }
+  // replaceState, so Back leaves the event rather than stepping through its tabs
+  if (tvw) { state.tView = tvw.dataset.tview; render(); syncUrl(false); return; }
 
   // push alerts enable/disable
   const pb = e.target.closest("[data-push]");
@@ -5399,7 +5542,9 @@ function currentPath() {
     const tk = tournamentUrlKey(state.tournament.key);
     // A deep-linked match keeps its own URL, so reloading or re-sharing the page
     // lands back on the same match rather than the top of the draw.
-    return state.focusMatch ? `/match/${tk}/${state.focusMatch.key}` : "/tournament/" + tk;
+    // ?view=courts, not a path segment: the Pages Function route is
+    // /tournament/[source]/[id], and this is the link a venue prints as a QR code.
+    return state.focusMatch ? `/match/${tk}/${state.focusMatch.key}` : "/tournament/" + tk + (state.tView === "courts" ? "?view=courts" : "");
   }
   if (state.mode === "pairs") return "/pairs";
   if (state.mode === "players") return state.playerId ? "/player/" + encodeURIComponent(state.playerId) : "/players";
@@ -5543,7 +5688,10 @@ function applyRoute() {
     else if (seg[0] === "pair" && seg[1] && seg[2]) { activateMode("pairs"); openPair(seg[1], seg[2]); }
     else if (seg[0] === "pairs") activateMode("pairs");
     else if (seg[0] === "match" && seg.length >= 5) openMatchRoute(seg);
-    else if (seg[0] === "tournament" && seg[1] && seg[2]) { openTournamentRoute(seg[1], seg.slice(2).join("/")); }
+    else if (seg[0] === "tournament" && seg[1] && seg[2]) {
+      openTournamentRoute(seg[1], seg.slice(2).join("/"));
+      if (q.get("view") === "courts") { state.tView = "courts"; render(); }
+    }
     else if (seg[0] === "rankings") {
       activateMode("rankings");
       // ?by=elo is validated in renderRankings, which falls back to points when
