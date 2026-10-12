@@ -424,6 +424,24 @@
     .mpsec { margin-top: 0; display: block; max-width: none; width: 100%; box-sizing: border-box; }
     .mptp { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text); line-height: 1.5; }
     .mptp li { margin: 3px 0; }
+    /* Premier Padel match stats (ppStatsSection in app.js) */
+    .ppshead { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+    .ppshead span:last-child { text-align: right; }
+    .ppshead .w { color: var(--text); }
+    .pptabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .pptabs button { flex: 1; background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 0; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .pptabs button.on { background: var(--card-hi); color: var(--text); border-color: var(--line-hi); }
+    .pprow { margin: 0 0 11px; }
+    .ppt { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 13px; }
+    .ppv { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .ppv b { font-size: 14.5px; }
+    .ppv.lead { color: var(--text); }
+    .ppv small { color: var(--faint); font-size: 11px; margin: 0 4px; }
+    .ppl { flex: 1; text-align: center; color: var(--muted); font-size: 12px; }
+    .ppbar { display: flex; gap: 3px; height: 5px; margin-top: 5px; }
+    .ppbar i { display: block; height: 100%; border-radius: 3px; background: var(--line-hi); }
+    .ppbar i.lead { background: var(--accent); }
+    .ppsrc { font-size: 11px; color: var(--faint); margin-top: 2px; }
     .mptp .pn, .mpsec .pn { cursor: pointer; }
     .mptp .pn:hover, .mpsec .pn:hover { color: var(--accent); }
     .mpcols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }

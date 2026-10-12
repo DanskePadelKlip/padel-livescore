@@ -1776,6 +1776,7 @@ function renderMatchPage(m, list) {
   // while its tab is open; the tab itself shows whenever anyone has a career.
   if ([...A, ...B].some((id) => id && mpRows(id) !== null))
     sec.events = state.mtab === "events" ? mpEventsTab(m, A, B, nameOf, idOf) || " " : " ";
+  sec.over += ppStatsSection(m, tn);
   sec.over += mpTalkingPoints({ m, A, B, X, heres, togA, togB, h2h, cross, exes, rivals, road, tn, nameOf, idOf });
 
   // ---- head-to-head
@@ -2177,6 +2178,130 @@ function mpEvShort(n) {
   if (s !== s.toUpperCase()) return s;
   return s.toLowerCase().replace(/(^|[\s\-(\/])(\p{L})/gu, (_, a, b) => a + b.toUpperCase())
     .replace(/\b(Fip|Dpf|Ppt|P1|P2)\b/g, (x) => x.toUpperCase());
+}
+
+// ---- Premier Padel match stats (data/ppstats/, built by scripts/build-ppstats.mjs)
+// Premier Padel publishes serve/return points per match and per set for every
+// Premier event since 2024; FIP's feed, which the match page is built on, has none.
+// The two share no ids and not even the event name ("CUPRA GERMANY PREMIER PADEL P2"
+// vs "GERMANY P2"), so the join is by date and by the PAIR: every PP event whose
+// dates cover the match is opened (one, two on an overlap week) and the match is
+// the one where both teams' surnames agree. The same pair meeting in consecutive
+// weeks (Coello/Tapia vs Stupaczuk/Sanz, Rotterdam then Germany) is told apart by
+// the match date, which is why a match with no usable date gets no stats at all.
+let ppIndex = null;          // null = not asked, "loading", [] when absent
+const ppFiles = new Map();   // slug -> "loading" | null | file
+const ppMonths = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
+const ppDay = (s) => Date.parse(String(s).slice(0, 10) + "T00:00:00Z");
+
+// A missing file under /data answers 200 with the home page (Pages' SPA fallback),
+// so "ok" proves nothing: anything that does not parse as JSON is "no file".
+const ppJson = (url) => fetch(url).then((r) => (r.ok ? r.text() : "")).then((t) => { try { return JSON.parse(t); } catch { return null; } }).catch(() => null);
+
+// [from, to] in ms for the PP match date: the FIP row's own day when it has one,
+// else the archived tournament's dates.
+function ppWindow(m) {
+  const lab = m.day && m.day.label && /^([A-Z]{3})\s+(\d{1,2})\b/.exec(String(m.day.label).toUpperCase());
+  if (lab && ppMonths[lab[1]] != null) {
+    const now = new Date();
+    let t = Date.UTC(now.getUTCFullYear(), ppMonths[lab[1]], +lab[2]);
+    if (t > now.getTime() + 30 * 864e5) t = Date.UTC(now.getUTCFullYear() - 1, ppMonths[lab[1]], +lab[2]);
+    return [t - 864e5, t + 864e5];
+  }
+  if (m.startTime) { const t = ppDay(m.startTime); if (!isNaN(t)) return [t - 864e5, t + 864e5]; }
+  const tv = state.tournament;
+  const d = tv && state.archiveData && state.archiveData.get(tv.key);
+  if (d && d.start) return [ppDay(d.start) - 2 * 864e5, ppDay(d.end || d.start) + 864e5];
+  return null;
+}
+
+// Same rule as sameMatch in scripts/build-ppstats.mjs. Every FIP player has to be
+// in the PP team; PP may list more than two when a lucky loser replaced a pair
+// (it keeps the withdrawn pair in the team too).
+const ppSameName = (a, b) => a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b) || b.startsWith(a)));
+const ppSameTeam = (pp, fip) => fip.length > 0 && pp.length >= fip.length && fip.every((y) => pp.some((x) => ppSameName(x, y)));
+
+// "loading" | null | { x, flip, u, w }  (flip: PP's team 1 is the page's side 1)
+function ppStatsFor(m) {
+  if (!m || m.source !== "fip" && !(state.tournament && /^fip-/.test(state.tournament.key || ""))) return null;
+  if (m.status !== "final") return null;
+  const win = ppWindow(m);
+  if (!win) return null;
+  if (ppIndex === null) {
+    ppIndex = "loading";
+    ppJson("data/ppstats/index.json").then((d) => { ppIndex = Array.isArray(d) ? d : []; render(); });
+  }
+  if (ppIndex === "loading") return "loading";
+  const evs = ppIndex.filter((e) => ppDay(e.a) - 864e5 <= win[1] && ppDay(e.b) + 864e5 >= win[0]);
+  if (!evs.length) return null;
+  const fip = (m.teams || []).map((t) => ((t && t.players) || []).map((p) => surnameKey(p.name)).filter(Boolean));
+  if (fip.length !== 2 || fip.some((t) => !t.length)) return null;
+  // Every file first: answering from the first one that loads could pick the wrong
+  // week. Then the hit from the event that overlaps the window most (an archived
+  // event's own dates), nearest the middle of the window as the tie-break.
+  for (const e of evs) if (!ppFiles.has(e.s)) {
+    ppFiles.set(e.s, "loading");
+    ppJson(`data/ppstats/${e.s}.json`).then((d) => { ppFiles.set(e.s, d && Array.isArray(d.m) ? d : null); render(); });
+  }
+  const hits = [];
+  for (const e of evs) {
+    const f = ppFiles.get(e.s);
+    if (f === "loading") return "loading";
+    if (!f) continue;
+    const overlap = Math.min(ppDay(e.b), win[1]) - Math.max(ppDay(e.a), win[0]);
+    for (const x of f.m) {
+      const t = ppDay(x.d);
+      if (!(t >= win[0] && t <= win[1])) continue;
+      const flip = ppSameTeam(x.t[0], fip[1]) && ppSameTeam(x.t[1], fip[0]);
+      if (flip || (ppSameTeam(x.t[0], fip[0]) && ppSameTeam(x.t[1], fip[1])))
+        hits.push({ overlap, dist: Math.abs(t - (win[0] + win[1]) / 2), r: { x: x.x, flip, u: x.u, w: x.w } });
+    }
+  }
+  hits.sort((p, q) => q.overlap - p.overlap || p.dist - q.dist);
+  return hits.length ? hits[0].r : null;
+}
+
+const PP_ROWS = ["Total points won", "Points won on serve", "1st serve points won", "2nd serve points won",
+  "Points won on return", "1st return points won", "2nd return points won"];
+
+function ppStatsSection(m, tn) {
+  const st = ppStatsFor(m);
+  if (!st || st === "loading") return "";
+  const keys = ["M", "1", "2", "3", "4", "5"].filter((k) => st.x[k]);
+  const k = keys.includes(state.ppSet) ? state.ppSet : "M";
+  const v = st.x[k];
+  // page side 0/1 -> PP team index
+  const ix = (side) => (st.flip ? 1 - side : side);
+  const pct = (w, p) => (p ? Math.round((w / p) * 100) : null);
+  let rows = "";
+  PP_ROWS.forEach((label, i) => {
+    const o = i * 4;
+    const s = [[v[o], v[o + 1]], [v[o + 2], v[o + 3]]];
+    const a = s[ix(0)], b = s[ix(1)];
+    if (!a[1] && !b[1]) return;
+    const pa = pct(a[0], a[1]), pb = pct(b[0], b[1]);
+    rows += ppRow(label, pa == null ? "–" : pa + "%", pb == null ? "–" : pb + "%", `${a[0]}/${a[1]}`, `${b[0]}/${b[1]}`, pa || 0, pb || 0);
+  });
+  const sa = v[28 + ix(0)], sb = v[28 + ix(1)];
+  if (sa != null && sb != null) rows += ppRow("Longest points streak", String(sa), String(sb), "", "", sa, sb);
+  const winSide = m.score && m.score.winner;
+  const head = `<div class="ppshead"><span${winSide === 0 ? ' class="w"' : ""}>${tn(0)}${winSide === 0 ? " ✓" : ""}</span>` +
+    `<span${winSide === 1 ? ' class="w"' : ""}>${tn(1)}${winSide === 1 ? " ✓" : ""}</span></div>`;
+  const tabs = keys.length > 1 ? `<div class="pptabs">${keys.map((x) =>
+    `<button class="${x === k ? "on" : ""}" data-ppset="${x}">${x === "M" ? "Match" : "Set " + x}</button>`).join("")}</div>` : "";
+  return mpSection("Match stats", head + tabs + rows + `<div class="ppsrc">Stats: Premier Padel</div>`);
+}
+
+// One stat line. The bar is split by the two values and the side that leads THIS
+// stat is the coloured one, so it shows where the losing pair was the better one.
+function ppRow(label, va, vb, ra, rb, na, nb) {
+  const tot = na + nb || 1;
+  const la = na > nb ? " lead" : "", lb = nb > na ? " lead" : "";
+  return `<div class="pprow"><div class="ppt">
+      <span class="ppv${la}"><b>${esc(va)}</b>${ra ? `<small>${esc(ra)}</small>` : ""}</span>
+      <span class="ppl">${esc(label)}</span>
+      <span class="ppv r${lb}">${rb ? `<small>${esc(rb)}</small>` : ""}<b>${esc(vb)}</b></span></div>
+    <div class="ppbar"><i class="${la ? "lead" : ""}" style="width:${((na / tot) * 100).toFixed(1)}%"></i><i class="${lb ? "lead" : ""}" style="width:${((nb / tot) * 100).toFixed(1)}%"></i></div></div>`;
 }
 
 function mpSection(title, body) {
@@ -5402,6 +5527,12 @@ app.addEventListener("click", (e) => {
           .catch(() => {});
       } else render();
     }
+    return;
+  }
+  const ppset = e.target.closest("[data-ppset]");
+  if (ppset) {
+    state.ppSet = ppset.dataset.ppset;
+    render();
     return;
   }
   if (e.target.closest("[data-archmore]")) {
