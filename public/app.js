@@ -1099,7 +1099,7 @@ function detail(m) {
     m.className && `<span>Class <b>${esc(m.className)}</b></span>`,
     m.round && `<span>Round <b>${esc(m.round)}</b></span>`,
     m.court && `<span>Court <b>${esc(m.court)}</b></span>`,
-    m.schedule && `<span>Order of play <b>${esc(m.schedule)}</b></span>`,
+    m.schedule && `<span>Order of play <b>${esc(/^followed by$/i.test(m.schedule.trim()) ? "after the previous match" : m.schedule)}</b></span>`,
     m.estStart && !/\d/.test(m.schedule || "") && `<span>Est. start <b>≈${esc(m.estStart)}</b></span>`,
     m.startTime && `<span>Start <b>${esc(m.startTime.replace("T", " ").slice(0, 16))}</b></span>`,
   ].filter(Boolean).join("");
@@ -1218,6 +1218,7 @@ async function loadMatchup(m) {
   try {
     const t0 = (m.teams && m.teams[0] && m.teams[0].players) || [];
     const t1 = (m.teams && m.teams[1] && m.teams[1].players) || [];
+    await Promise.all([ensurePlayerIndex().catch(() => null), ensureGlobalElo()]);
     const [a1, a2, b1, b2] = await Promise.all([
       resolvePlayerId(t0[0] && t0[0].name), resolvePlayerId(t0[1] && t0[1].name),
       resolvePlayerId(t1[0] && t1[0].name), resolvePlayerId(t1[1] && t1[1].name),
@@ -1247,7 +1248,7 @@ async function loadMatchup(m) {
 
 function recordRow(label, left, right, sub) {
   return `<div class="h2hrow">
-    <span class="h2hlbl">${label}</span>
+    <span class="h2hlbl" style="white-space:normal;overflow-wrap:anywhere">${label}</span>
     <span class="h2hnum"><b>${left}</b>–<b>${right}</b></span>
     ${sub ? `<span class="h2hsub">${sub}</span>` : ""}
   </div>`;
@@ -1273,30 +1274,50 @@ function matchupHtml(m) {
 
   // Elo and career record for the four players, plus the match's own win
   // chance. Placed first: it is what the reader wants before the history.
-  if (d.elo && Object.keys(d.elo).length) {
+  const ids4 = [...(d.a || []), ...(d.b || [])];
+  if ((d.elo && Object.keys(d.elo).length) || ids4.some((id) => gElo(id))) {
     const rate = (id) => {
       const r = d.record && d.record[id];
       return r && r.played ? `${Math.round((r.won / r.played) * 100)}% of ${r.played}` : "";
     };
+    // Global Elo when the player has one (one scale across every circuit, the
+    // same number the match page uses); otherwise the circuit line, named, so a
+    // domestic rating never sits unlabelled beside a FIP tour one.
     const line = (id) => {
-      const e = d.elo[id];
-      if (!e) return "";
-      return `<div class="h2hrow">
-        <span class="h2hlbl pn" data-player="${esc(id)}" title="View profile">${esc(short(nm(id) || (d.names && d.names[id]) || id))}</span>
-        <span class="h2hnum"><b>${Math.round(e.rating)}</b></span>
-        <span class="h2hsub">Elo${e.rank ? ` · #${e.rank}` : ""}${rate(id) ? ` · won ${rate(id)}` : ""}</span>
+      const g = gElo(id), e = d.elo && d.elo[id];
+      if (!g && !e) return "";
+      const val = g ? g.rating : e.rating;
+      const lab = g ? `global Elo${g.rank ? ` #${g.rank}` : ""}`
+        : `${e.source === "fip" ? "FIP tour" : "domestic"} Elo${e.rank ? ` #${e.rank}` : ""}`;
+      return `<div class="h2hrow" style="display:grid;grid-template-columns:minmax(0,1fr) 3.2em minmax(0,1.35fr);column-gap:8px">
+        <span class="h2hlbl pn" data-player="${esc(id)}" title="View profile" style="white-space:normal;overflow-wrap:anywhere">${esc(short(nm(id) || (d.names && d.names[id]) || id))}</span>
+        <span class="h2hnum" style="text-align:right"><b>${Math.round(val)}</b></span>
+        <span class="h2hsub">${lab}${rate(id) ? ` · won ${rate(id)}` : ""}</span>
       </div>`;
     };
-    const rows = [...(d.a || []), ...(d.b || [])].map(line).filter(Boolean).join("");
+    const rows = ids4.map(line).filter(Boolean).join("");
     if (rows) {
       bits.push(`<div class="h2hsect">Elo &amp; record</div>${rows}`);
-      if (d.odds && d.odds.pct != null) {
+      // Same number as the match page: global Elo when all four have it (same
+      // pool), else the API's circuit estimate, labelled as such. Pre-match.
+      const g4 = ids4.length === 4 ? ids4.map(gElo) : null;
+      let oddsA = null, how = "";
+      if (g4 && g4.every(Boolean) && new Set(g4.map((x) => x.pool)).size === 1) {
+        const lg = g4[0].logit + g4[1].logit - g4[2].logit - g4[3].logit;
+        oddsA = Math.min(99, Math.max(1, Math.round(100 / (1 + Math.exp(-lg)))));
+        how = "global Elo";
+      } else if (d.odds && d.odds.pct != null) {
+        oddsA = d.odds.pct;
+        how = `circuit Elo${d.odds.caveat ? " · " + d.odds.caveat : ""}`;
+      }
+      if (oddsA != null) {
         // Name the side the number belongs to - a bare percentage next to two
         // teams is ambiguous, and this one is a model output, not a result.
-        const favA = d.odds.pct >= 50;
-        const pct = favA ? d.odds.pct : 100 - d.odds.pct;
+        const favA = oddsA >= 50;
+        const pct = favA ? oddsA : 100 - oddsA;
+        const when = m.status === "final" ? "estimate from today's" : "pre-match estimate from";
         bits.push(`<div class="h2hlead">${esc(teamLabel(favA ? 0 : 1))} <b>${pct}%</b>
-          <span class="h2hsub">estimated${d.odds.caveat ? " · " + esc(d.odds.caveat) : ""}</span></div>`);
+          <span class="h2hsub">${when} ${esc(how)}</span></div>`);
       }
     }
   }
@@ -1333,7 +1354,7 @@ function matchupHtml(m) {
     bits.push(`<div class="h2hsect">Used to partner</div>`);
     for (const c of exes)
       bits.push(`<div class="h2hrow">
-        <span class="h2hlbl"><span class="pn" data-player="${esc(c.a)}">${esc(short(nm(c.a)))}</span> &amp; <span class="pn" data-player="${esc(c.b)}">${esc(short(nm(c.b)))}</span></span>
+        <span class="h2hlbl" style="white-space:normal;overflow-wrap:anywhere"><span class="pn" data-player="${esc(c.a)}">${esc(short(nm(c.a)))}</span> &amp; <span class="pn" data-player="${esc(c.b)}">${esc(short(nm(c.b)))}</span></span>
         <span class="h2hnum"><b>${c.together}</b></span>
         <span class="h2hsub">together · won ${c.togetherWins}</span>
       </div>`);
@@ -2785,7 +2806,15 @@ let PIDX = null, _pidxTried = false;
 // same fip_link + canon rules as the match rows, so it reaches profiles no name
 // search can ("O. Sebber Gormsen" -> R000075559, shown as Oscar Sebber).
 let PALIAS = null;
-async function ensurePlayerIndex() {
+let _pidxP = null;
+function ensurePlayerIndex() {
+  // One shared fetch: a caller arriving while it is in flight waits for it. It used
+  // to get null back, so the live-row head-to-head (four lookups at once) skipped
+  // the alias map and filed "A. Axelsson" under a name_id with no profile.
+  if (!_pidxP) _pidxP = loadPlayerIndex();
+  return _pidxP;
+}
+async function loadPlayerIndex() {
   if (PIDX || _pidxTried) return PIDX;
   _pidxTried = true; // a missing file must cost one 404, not one per keystroke
   try {
