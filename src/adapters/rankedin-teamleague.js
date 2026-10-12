@@ -261,7 +261,12 @@ const pending = (s) => !s || !String(s).trim() || /^pending$/i.test(String(s).tr
 function tieRows(tie, rubbers, league, pool, date) {
   const decided = rubbers.filter((r) => !voidRubber(r) && winnerOf(r) != null).length;
   const voided = rubbers.filter(voidRubber).length;
-  const status = tieStatus(tie, decided + voided, rubbers.length, date);
+  // Rubbers WON per side; team1 is the challenger of every rubber (fetchPoolTies).
+  const won = [0, 1].map((s) => rubbers.filter((r) => !voidRubber(r) && winnerOf(r) === s).length);
+  // A rubber that can still be on court: lineup submitted, no result yet. The unplayed
+  // 3-3 decider has no lineup ("Pending") and so never counts here.
+  const open = rubbers.filter((r) => !voidRubber(r) && winnerOf(r) == null && pairOf(r.challenger) && pairOf(r.challenged)).length;
+  const status = tieStatus(tie, decided + voided, rubbers.length, date, won, open);
 
   const tieId = gid(id, tie.tieId);
   const rows = [
@@ -279,7 +284,7 @@ function tieRows(tie, rubbers, league, pool, date) {
       status,
       startTime: tie.startTime,
       teams: tie.teams.map((t) => ({ name: t.name, players: [] })),
-      score: tieScore(tie, status),
+      score: tieScore(tie, status, won),
       raw: { tie: true, teamMatchId: tie.tieId, poolId: pool.id, rubbers: rubbers.length, settled: tie.settled },
     },
   ];
@@ -300,13 +305,19 @@ const event = (league) => ({
 });
 
 // Live only while the tie is actually around the target day. A tie whose result
-// entry stalled days ago would otherwise sit "live" for the rest of the season;
-// no such tie exists in the data (every past tie is settled), so this is a guard
-// rather than a workaround for something observed.
-function tieStatus(tie, done, total, date) {
+// entry stalled days ago would otherwise sit "live" for the rest of the season.
+//
+// DECIDED is final, the same rule puntuate.js uses for national ties (a majority of
+// rubbers WON). RankedIn voids the unplayed 3-3 decider ("Not Played", state 6) only
+// when a captain confirms the tie; until then it sits as a "Pending" lineup at state 2
+// and `done` never reaches `total`. Seen: 152636 (Rocket Padel Randers 4-2, 10 Oct)
+// never confirmed and held the loop live ~33 h; 152547 / 162855 (8 Oct) 10-12 h
+// overnight. Requiring no OPEN rubber keeps a 4-0 live while rubbers 5-6 are on court.
+function tieStatus(tie, done, total, date, won = [0, 0], open = 0) {
   if (tie.settled) return STATUS.FINAL;
   if (!done) return STATUS.UPCOMING;
   if (total && done >= total) return STATUS.FINAL;
+  if (total && Math.max(...won) > total / 2 && !open) return STATUS.FINAL;
   const near = tie.day && tie.day >= shiftISO(date, -1) && tie.day <= shiftISO(date, 1);
   return near ? STATUS.LIVE : STATUS.FINAL;
 }
@@ -315,11 +326,15 @@ function tieStatus(tie, done, total, date) {
 // counted here: its own tally already skips the rubbers nobody played, and
 // disagreeing with the source about a number the source displays is worse than
 // showing none. An unplayed tie shows no score at all, not 0-0.
-function tieScore(tie, status) {
+// Until a captain confirms the tie (`settled`), RankedIn publishes NO tally — team1/
+// team2.result read 0-0 however many rubbers are in — so an unsettled tie counts its
+// own rubbers rather than print a 0-0 that was never the score.
+function tieScore(tie, status, won = [0, 0]) {
   const [a, b] = tie.teams;
   if (status === STATUS.UPCOMING) return { sets: [], winner: null };
-  const winner = status === STATUS.FINAL && a.result !== b.result ? (a.result > b.result ? 0 : 1) : null;
-  return { sets: [[a.result, b.result]], winner };
+  const [x, y] = tie.settled ? [a.result, b.result] : won;
+  const winner = status === STATUS.FINAL && x !== y ? (x > y ? 0 : 1) : null;
+  return { sets: [[x, y]], winner };
 }
 
 function rubberRow(r, n, tieId, tie, league, pool) {
