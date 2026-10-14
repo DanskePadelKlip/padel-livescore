@@ -57,6 +57,7 @@ export async function onRequestGet({ request }) {
   add("/earnings/men", { changefreq: "weekly", priority: "0.6", lastmod: today });
   add("/earnings/women", { changefreq: "weekly", priority: "0.6", lastmod: today });
   add("/rules", { changefreq: "monthly", priority: "0.5" });
+  add("/dictionary", { changefreq: "monthly", priority: "0.5" });
 
   // 2) One page per ranking list (fed + category).
   const lists = [...((fipRanks && fipRanks.lists) || []), ...((natRanks && natRanks.lists) || [])];

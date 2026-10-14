@@ -31,6 +31,7 @@ it.
 - [National teams](https://padelticker.com/national-teams): World, European and continental championships for national TEAMS — every nation's final placing, read off each tournament's own placement bracket.
 - [World no. 1](https://padelticker.com/world-no1): the year-end world No. 1 pair, men's and women's, grouped into eras.
 - [Rules of padel](https://padelticker.com/rules): the official FIP Rules of Padel (2026 revision, with Star Point), searchable, in English with a Danish translation.
+- [Padel dictionary](https://padelticker.com/dictionary): 76 padel terms (bandeja, vibora, por tres, golden point, star point ...) explained in plain English, with the Danish and Spanish names. Each term has an anchor, e.g. /dictionary#bandeja.
 
 ## Entity pages
 
