@@ -232,9 +232,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
     var head = s.querySelector("h2,h3");
     s.querySelectorAll(".item").forEach(function (p) {
       var spans = p.querySelectorAll(":scope > span[lang]");
-      var txt = "";
-      spans.forEach(function (sp) { txt += " " + sp.textContent; });
-      items.push({ p: p, s: s, text: fold(txt + " " + head.textContent), kw: kw, orig: [].map.call(spans, function (sp) { return sp.innerHTML; }) });
+      var txt = "", da = "";
+      spans.forEach(function (sp) { txt += " " + sp.textContent; if (sp.lang === "da") da += " " + sp.textContent; });
+      var headDa = head.querySelector('span[lang="da"]');
+      items.push({ p: p, s: s, text: fold(txt + " " + head.textContent), textDa: fold(da + " " + (headDa ? headDa.textContent : "")),
+                   kw: kw, orig: [].map.call(spans, function (sp) { return sp.innerHTML; }) });
     });
   });
   function setLang(l) {
@@ -272,13 +274,17 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
   }
   var timer;
   function run() {
-    // Danish synonyms: "parti" is the older word for a game, so search it as "game"
+    // Danish synonyms: "parti" is the older word for a game, so search it as "game" - in the Danish
+    // text only, where "game" is always the scoring unit (FIP's English also uses it for the sport)
+    var daOnly = false;
     var raw = q.value.trim(), phrase = fold(raw).split(/\s+/).map(function (w) {
-      return /^parti(et|er|erne)?$/.test(w) ? "game" : w;
+      if (/^parti(et|er|erne)?$/.test(w)) { daOnly = true; return "game"; }
+      return w;
     }).join(" ");
+    var hay = function (it) { return daOnly ? it.textDa : it.text; };
     var terms = phrase.split(" ").filter(Boolean);
     // an exact phrase that occurs somewhere wins over loose words ("star point" should not light up every "point")
-    if (terms.length > 1 && items.some(function (it) { return it.text.indexOf(phrase) !== -1; })) terms = [phrase];
+    if (terms.length > 1 && items.some(function (it) { return hay(it).indexOf(phrase) !== -1; })) terms = [phrase];
     items.forEach(function (it) {
       var spans = it.p.querySelectorAll(":scope > span[lang]");
       spans.forEach(function (sp, i) { sp.innerHTML = it.orig[i]; });
@@ -290,11 +296,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
       return;
     }
     var shown = 0, secHit = new Set(), textHit = new Set();
-    var okText = items.map(function (it) { return terms.every(function (t) { return it.text.indexOf(t) !== -1; }); });
+    var okText = items.map(function (it) { return terms.every(function (t) { return hay(it).indexOf(t) !== -1; }); });
     items.forEach(function (it, i) { if (okText[i]) textHit.add(it.s); });
     items.forEach(function (it, i) {
       // a paragraph shows on its own text; keywords only pull in a section nothing else matched
-      var viaKw = !textHit.has(it.s) && terms.every(function (t) { return it.kw.indexOf(t) !== -1 || it.text.indexOf(t) !== -1; });
+      var viaKw = !textHit.has(it.s) && terms.every(function (t) { return it.kw.indexOf(t) !== -1 || hay(it).indexOf(t) !== -1; });
       var ok = okText[i] || viaKw;
       it.p.classList.toggle("hide", !ok);
       if (ok) { shown++; secHit.add(it.s); if (okText[i]) it.p.querySelectorAll(":scope > span[lang]").forEach(function (sp) { highlight(sp, terms); }); }
