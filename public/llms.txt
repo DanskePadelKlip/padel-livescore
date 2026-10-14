@@ -30,6 +30,7 @@ it.
 - [Earnings](https://padelticker.com/earnings): estimated career and per-season prize money across Premier Padel and the CUPRA FIP Tour.
 - [National teams](https://padelticker.com/national-teams): World, European and continental championships for national TEAMS — every nation's final placing, read off each tournament's own placement bracket.
 - [World no. 1](https://padelticker.com/world-no1): the year-end world No. 1 pair, men's and women's, grouped into eras.
+- [Rules of padel](https://padelticker.com/rules): the official FIP Rules of Padel (2026 revision, with Star Point), searchable, in English with a Danish translation.
 
 ## Entity pages
 
