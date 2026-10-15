@@ -3051,7 +3051,27 @@ async function openPlayerByName(name) {
   render(); // shows the search box populated while the lookup runs
   try {
     let players = [], target = q, lookupErr = null;
-    try { players = await lookupPlayers(q); } catch (e) { lookupErr = e; }
+    const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    // The export's FIP-name -> profile map first, as resolvePlayerId() does: it is
+    // what the match page itself links, so a click must land on the same person.
+    // An abbreviated name is then matched as initial + surname over the whole
+    // index, never by substring: searchFold() drops spaces, so "H. Haraldsen"
+    // ("hharaldsen") sat inside "hannahharaldsen" and Hannah was the ONLY hit,
+    // while Haakon ("haakonharaldsen") did not match at all (2026-10-15).
+    await ensurePlayerIndex().catch(() => null);
+    const alias = PALIAS && PALIAS.get(fold(q));
+    if (alias) return openPlayer(alias);
+    const abq = /^(\p{L})\.\s+(.+)$/u.exec(q);
+    if (abq && PIDX) {
+      const ini = fold(abq[1]), sur = fold(abq[2]), full = fold(q);
+      players = PIDX.filter((r) => {
+        const pn = fold(r[1]);
+        return pn === full || (pn.startsWith(ini) && pn.endsWith(" " + sur));
+      }).slice(0, PIDX_LIMIT).map((r) => ({ id: r[0], name: r[1], country: r[2] }));
+    }
+    if (!players.length) {
+      try { players = await lookupPlayers(q); } catch (e) { lookupErr = e; }
+    }
     // A FULL name ("Arturo Coello" on the world No.1 list) finds nothing: the profile
     // DB stores FIP's abbreviated form, "A. Coello". Retry once as initial + surname.
     // It must still run when the full-name lookup THREW: a miss in the static index
