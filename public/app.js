@@ -1285,20 +1285,18 @@ function matchupHtml(m) {
   // Elo and career record for the four players, plus the match's own win
   // chance. Placed first: it is what the reader wants before the history.
   const ids4 = [...(d.a || []), ...(d.b || [])];
-  if ((d.elo && Object.keys(d.elo).length) || ids4.some((id) => gElo(id))) {
+  if (ids4.some((id) => gElo(id))) {
     const rate = (id) => {
       const r = d.record && d.record[id];
       return r && r.played ? `${Math.round((r.won / r.played) * 100)}% of ${r.played}` : "";
     };
-    // Global Elo when the player has one (one scale across every circuit, the
-    // same number the match page uses); otherwise the circuit line, named, so a
-    // domestic rating never sits unlabelled beside a FIP tour one.
+    // ONE Elo: the global rating (Kim, 2026-10-15). The per-circuit ladders are
+    // no longer shown anywhere; a player without a global rating shows none.
     const line = (id) => {
-      const g = gElo(id), e = d.elo && d.elo[id];
-      if (!g && !e) return "";
-      const val = g ? g.rating : e.rating;
-      const lab = g ? `global Elo${g.rank ? ` #${g.rank}` : ""}`
-        : `${e.source === "fip" ? "FIP tour" : "domestic"} Elo${e.rank ? ` #${e.rank}` : ""}`;
+      const g = gElo(id);
+      if (!g) return "";
+      const val = g.rating;
+      const lab = `Elo${g.rank ? ` #${g.rank}` : ""}`;
       return `<div class="h2hrow" style="display:grid;grid-template-columns:minmax(0,1fr) 3.2em minmax(0,1.35fr);column-gap:8px">
         <span class="h2hlbl pn" data-player="${esc(id)}" title="View profile" style="white-space:normal;overflow-wrap:anywhere">${esc(short(nm(id) || (d.names && d.names[id]) || id))}</span>
         <span class="h2hnum" style="text-align:right"><b>${Math.round(val)}</b></span>
@@ -1309,16 +1307,13 @@ function matchupHtml(m) {
     if (rows) {
       bits.push(`<div class="h2hsect">Elo &amp; record</div>${rows}`);
       // Same number as the match page: global Elo when all four have it (same
-      // pool), else the API's circuit estimate, labelled as such. Pre-match.
+      // pool), else no odds. Pre-match.
       const g4 = ids4.length === 4 ? ids4.map(gElo) : null;
       let oddsA = null, how = "";
       if (g4 && g4.every(Boolean) && new Set(g4.map((x) => x.pool)).size === 1) {
         const lg = g4[0].logit + g4[1].logit - g4[2].logit - g4[3].logit;
         oddsA = Math.min(99, Math.max(1, Math.round(100 / (1 + Math.exp(-lg)))));
-        how = "global Elo";
-      } else if (d.odds && d.odds.pct != null) {
-        oddsA = d.odds.pct;
-        how = `circuit Elo${d.odds.caveat ? " · " + d.odds.caveat : ""}`;
+        how = "Elo";
       }
       if (oddsA != null) {
         // Name the side the number belongs to - a bare percentage next to two
@@ -1928,11 +1923,9 @@ function renderMatchPage(m, list) {
       if (bio && bio.birth_place) kv.push(["From", esc(bio.birth_place)]);
       if (rk) kv.push(["FIP rank", "#" + rk]);
       const ge = gElo(id);
-      if (ge) kv.push(["Global Elo", `${ge.rating} <span class="h2hsub">#${ge.rank} of ${ge.of}</span>`]);
-      else if (id && state.globalElo) kv.push(["Global Elo", `<span class="h2hsub">not ranked globally</span>`]);
-      const circ = e && (e.source === "fip" ? "FIP tour Elo" : "Domestic Elo");
-      if (e && e.rating) kv.push([circ, `${Math.round(e.rating)}${e.rank ? ` <span class="h2hsub">#${e.rank}${e.of ? " of " + e.of : ""}</span>` : ""}`]);
-      if (e && e.peak) kv.push([`Peak (${e.source === "fip" ? "FIP tour" : "domestic"})`, `${Math.round(e.peak)}${e.peak_date ? ` <span class="h2hsub">${esc(String(e.peak_date).slice(0, 7))}</span>` : ""}`]);
+      // ONE Elo: the global rating (Kim, 2026-10-15); no per-circuit lines.
+      if (ge) kv.push(["Elo", `${ge.rating} <span class="h2hsub">${ge.rank ? `#${ge.rank} of ${ge.of}` : "not ranked (few FIP tour matches)"}</span>`]);
+      else if (id && state.globalElo) kv.push(["Elo", `<span class="h2hsub">not rated yet</span>`]);
       if (Array.isArray(rows) && rows.length) {
         const all = mpStats(rows), y = mpStats(rows.filter((r) => mpYear(r) === String(new Date().getFullYear())));
         kv.push(["Career", `${mpRec(all.w, all.n - all.w)} <span class="h2hsub">${mpPct(all.w, all.n)}</span>`]);
@@ -2008,14 +2001,11 @@ function mpEloWant(ids) {
       render();
     });
 }
-// One player's rating for comparisons: GLOBAL when ranked globally, else the
-// circuit Elo, flagged dom. `scale` says which ladder, and two numbers are only
-// ever compared on the same one.
+// One player's rating for comparisons: the global Elo, the only one shown
+// (Kim, 2026-10-15). `scale` keeps men and women apart.
 function mpRate(id) {
   const g = gElo(id);
-  if (g) return { r: g.rating, scale: "g/" + g.pool, dom: false };
-  const e = mpElo.get(id);
-  return e ? { r: e[0], scale: e[1] + "/" + e[2], dom: true } : null;
+  return g ? { r: g.rating, scale: "g/" + g.pool, dom: false } : null;
 }
 // A pair's strength from today's ratings - null unless both are on ONE scale.
 function mpPairElo(a, b) {
@@ -2128,7 +2118,7 @@ function mpEventsTab(m, A, B, nameOf, idOf) {
 
   h += `<div class="mpevhead">
     <div class="mpplh">${countryFlag(who.p && who.p.country) || ""} ${who.id ? `<span class="pn" data-player="${esc(who.id)}">${esc(who.nm)}</span>` : esc(who.nm)}
-      ${me ? `<span class="h2hsub">${me.dom ? "Domestic Elo" : "Global Elo"} ${me.r}</span>` : ""}</div>
+      ${me ? `<span class="h2hsub">Elo ${me.r}</span>` : ""}</div>
     ${rk ? `<div class="h2hsub">${esc(rk)}</div>` : ""}
     <div class="h2hsub">Last 12 months: ${recent.length} event${recent.length === 1 ? "" : "s"} · ${recW}–${recL} in matches</div>
     ${reach ? `<div class="mpreachrow">${reach}</div>` : ""}
@@ -2155,7 +2145,7 @@ function mpEventsTab(m, A, B, nameOf, idOf) {
     h += `<div class="h2hsect">Results that stand out · last 12 months</div>`;
     if (wins.length) h += `<div class="h2hsub mpnote">Wins over stronger pairs</div><div class="h2hlist mpnot">${wins.map(nrow).join("")}</div>`;
     if (losses.length) h += `<div class="h2hsub mpnote">Losses to weaker pairs</div><div class="h2hlist mpnot">${losses.map(nrow).join("")}</div>`;
-    h += `<div class="h2hsub mpnote">The number is the opponents' pair Elo minus this pair's, by today's ratings - global Elo where all four are ranked globally, otherwise domestic, never mixed.</div>`;
+    h += `<div class="h2hsub mpnote">The number is the opponents' pair Elo minus this pair's, by today's Elo (one scale across every circuit).</div>`;
   }
 
   // the event list
@@ -2177,7 +2167,7 @@ function mpEventsTab(m, A, B, nameOf, idOf) {
   h += `</div>`;
   if (evs.length > shown.length || state.mpEvAll)
     h += `<button class="morebtn" data-mpevall="1">${state.mpEvAll ? "Show fewer" : `Show all ${evs.length} events`}</button>`;
-  h += `<div class="h2hsub mpnote">Before this event. Ratings are global Elo, or domestic where marked <span class="mpdom">dom</span> (no global rating); the bracket is the partner's difference to this player on the same scale. Today's ratings, not as they were at the time.</div>`;
+  h += `<div class="h2hsub mpnote">Before this event. Ratings are Elo (one scale across every circuit); the bracket is the partner's difference to this player on the same scale. Today's ratings, not as they were at the time.</div>`;
   return h;
 }
 
@@ -2334,17 +2324,9 @@ function mpOddsBar(m, X, A, B) {
     p = Math.min(99, Math.max(1, Math.round(100 / (1 + Math.exp(-d)))));
     ea = Math.round((g[0].rating + g[1].rating) / 2); eb = Math.round((g[2].rating + g[3].rating) / 2);
     const thin = g.some((x) => x.tour < 10);
-    note = `${when} global Elo${thin ? " · one of them has few FIP tour matches" : ""}`;
-    title = "Global Elo: one scale across every circuit";
-  } else if (X && X.odds && X.odds.pct != null) {
-    p = X.odds.pct;
-    const pair = (L) => (L || []).map((id) => X.elo && X.elo[id]).filter(Boolean);
-    const avg = (L) => { const e = pair(L); return e.length === 2 ? Math.round((e[0].rating + e[1].rating) / 2) : null; };
-    ea = avg(X.a); eb = avg(X.b);
-    const none = state.globalElo ? ids.filter((id) => id && !gElo(id)).map((id) => mpShort(mpName(id))) : [];
-    note = `${when} domestic Elo${none.length ? ` (no global rating for ${none.join(", ")})` : ""}${X.odds.caveat ? " · " + X.odds.caveat : ""}`;
-    title = "Domestic / circuit Elo: not comparable with global numbers";
-  } else return "";
+    note = `${when} Elo${thin ? " · one of them has few FIP tour matches" : ""}`;
+    title = "Elo: one scale across every circuit";
+  } else return "";   // one Elo only (Kim, 2026-10-15): no circuit-Elo fallback
   return `<div class="mpodds" title="${esc(title)}">
     <div class="mpoddsl"><b>${p}%</b>${ea ? ` <span class="h2hsub">Elo ${ea}</span>` : ""}</div>
     <div class="mpbar"><span style="width:${p}%"></span></div>
@@ -3459,7 +3441,9 @@ function shapeBlock(sh) {
 function qualityBlock(q) {
   if (!q || !q.rated) return "";
   const rec = (r) => `${r.w}-${r.l}`;
-  const cells = [`<div class="pstat" title="Mean Elo of the opponents in the ${q.rated} matches where both sides are rated"><b>${q.avgOpp}</b><span>avg opponent</span></div>`];
+  // No "avg opponent" figure: it is a per-circuit Elo number, and only the
+  // global Elo is shown (Kim, 2026-10-15). The records below are relative.
+  const cells = [];
   if (q.top10.w + q.top10.l)
     cells.push(`<div class="pstat${q.top10.w ? " hi" : ""}" title="Against pairs containing a player ranked in today's Elo top 10"><b>${rec(q.top10)}</b><span>vs top 10</span></div>`);
   if (q.top50.w + q.top50.l)
@@ -3471,7 +3455,7 @@ function qualityBlock(q) {
   if (q.bestWin)
     html += `<div class="toppartner"><span class="tp-lbl">Best win</span>` +
       `<b class="pairp" data-player="${esc(q.bestWin.id)}">${esc(q.bestWin.name)}</b>` +
-      `<span class="tp-meta">Elo ${q.bestWin.rating}${q.bestWin.tournament ? " · " + esc(q.bestWin.tournament) : ""}${q.bestWin.date ? " · " + esc(monthYear(q.bestWin.date)) : ""}</span></div>`;
+      `<span class="tp-meta">${gElo(q.bestWin.id) ? `Elo ${gElo(q.bestWin.id).rating}` : ""}${q.bestWin.tournament ? " · " + esc(q.bestWin.tournament) : ""}${q.bestWin.date ? " · " + esc(monthYear(q.bestWin.date)) : ""}</span></div>`;
   html += `<div class="elo-note">Elo figures are the opponents' ratings <b>today</b>, not on the day of the match — a player who has since improved makes an old win look better than it was.</div>`;
   return html;
 }
@@ -3486,12 +3470,16 @@ function qualityBlock(q) {
 const ELO_POOL = { M: "men", W: "women" };
 const ELO_SOURCE = { fip: "FIP", rin: "Nordic" };
 function eloStat(elo, id) {
-  // Global first (see ensureGlobalElo); the circuit rating follows, labelled.
+  // ONE Elo: the global rating (Kim, 2026-10-15). The circuit ladders are not
+  // shown; eloStatCircuit stays only for anything that still calls it.
   ensureGlobalElo();
   const g = gElo(id);
-  const gs = g ? `<div class="pstat hi" title="${esc(`Global Elo ${g.rating} — #${g.rank} of ${g.of} ranked globally (${g.pool === "W" ? "women" : "men"}) · ${g.tour} FIP tour matches`)}"><b>#${esc(g.rank)}</b><span>Global Elo ${esc(g.rating)}</span></div>` : "";
-  if (!elo || elo.rating == null) return gs;
-  return gs + eloStatCircuit(elo, !!g);
+  if (!g) return "";
+  const pool = g.pool === "W" ? "women" : "men";
+  if (!g.rank) {
+    return `<div class="pstat hi" title="${esc(`Elo ${g.rating} - one scale across every circuit (${pool}). Not ranked: a rank needs 5+ FIP tour matches (has ${g.tour}).`)}"><b>${esc(g.rating)}</b><span>Elo</span></div>`;
+  }
+  return `<div class="pstat hi" title="${esc(`Elo ${g.rating} — #${g.rank} of ${g.of} ranked (${pool}) · one scale across every circuit · ${g.tour} FIP tour matches`)}"><b>#${esc(g.rank)}</b><span>Elo ${esc(g.rating)}</span></div>`;
 }
 function eloStatCircuit(elo, second) {
   const pool = ELO_POOL[elo.pool] || "";
@@ -3933,14 +3921,14 @@ function pairSpan(first, last) {
 // The pair's Elo: the average of both ratings, and only when the two ratings come
 // from the same population (see combineElo in /api/pair). An average across pools
 // would be arithmetic on two different scales.
-function pairEloStat(elo) {
-  if (!elo || !elo.combined) return "";
-  const c = elo.combined;
-  const pool = ELO_POOL[c.pool] || "";
-  const src = ELO_SOURCE[c.source] || "";
-  const parts = [elo.a, elo.b].filter((e) => e && e.rating != null).map((e) => `${e.rating}`);
-  const title = `Combined Elo ${c.rating} — the mean of ${parts.join(" and ")}`
-    + `, both rated among ${src} ${pool}. Not a rating of the pair itself: no rating system`
+function pairEloStat(aId, bId) {
+  // ONE Elo (Kim, 2026-10-15): the mean of the two global ratings, same pool only.
+  ensureGlobalElo();
+  const x = gElo(aId), y = gElo(bId);
+  if (!x || !y || x.pool !== y.pool) return "";
+  const c = { rating: Math.round((x.rating + y.rating) / 2) };
+  const title = `Combined Elo ${c.rating} — the mean of ${x.rating} and ${y.rating}`
+    + ` (${ELO_POOL[x.pool] || ""}). Not a rating of the pair itself: no rating system`
     + ` measures a partnership, so this says how strong the two players are, not how well they play together.`;
   return `<div class="pstat hi" title="${esc(title)}"><b>${esc(c.rating)}</b><span>combined Elo</span></div>`;
 }
@@ -3986,7 +3974,7 @@ function renderPair() {
         ${!s.titles && !s.finals ? bestResultChip(s.best) : ""}
         ${s.sets && s.sets.pct != null ? `<div class="pstat"><b>${s.sets.pct}%</b><span>sets won</span></div>` : ""}
         ${s.games && s.games.pct != null ? `<div class="pstat"><b>${s.games.pct}%</b><span>games won</span></div>` : ""}
-        ${pairEloStat(d.players.elo)}
+        ${pairEloStat(a.id, b.id)}
       </div>
     </div>`;
 
@@ -4954,7 +4942,10 @@ async function ensureElo() {
   _eloLoading = true;
   try {
     const d = await fetch("data/rankings-elo.json?_=" + Date.now()).then((r) => (r.ok ? r.json() : null));
-    const lists = d && (d.lists || []).length ? d.lists.slice() : [];
+    // One Elo (Kim, 2026-10-15): the per-circuit lists in rankings-elo.json are
+    // no longer offered; only the global board below. The file still supplies
+    // minMatches.
+    const lists = [];
     // The global board leads: it is the Elo (see ensureGlobalElo). Names and
     // countries come from the player index, so both files are needed.
     const [g] = await Promise.all([ensureGlobalElo(), ensurePlayerIndex()]);
@@ -4964,7 +4955,7 @@ async function ensureElo() {
         // One row per global rank: a bridged player can carry the rating on two
         // profiles (see export_pt_global.py); the board lists the person once.
         const seen = new Set();
-        const rows = Object.entries(g.players).filter(([, x]) => x[0] === pool)
+        const rows = Object.entries(g.players).filter(([, x]) => x[0] === pool && x[2] != null)
           .sort((a, b) => a[1][2] - b[1][2] || (meta.has(b[0]) - meta.has(a[0])) || (b[0].startsWith("fip-") - a[0].startsWith("fip-")))
           .filter(([, x]) => !seen.has(x[2]) && seen.add(x[2]))
           .map(([id, x]) => { const mm = meta.get(id); return { rank: x[2], name: mm ? mm[1] : x[6] || id, country: mm ? mm[2] : null, points: x[1], club: null, id: mm ? id : null, n: x[5] }; });
@@ -5138,7 +5129,7 @@ function renderRankings() {
     `<span class="count">${state.rankNat ? `${countryFlag(state.rankNat)} ${shown.length} of ` : ""}${(list?.total ?? rows.length).toLocaleString()} ${isForm ? "with a score" : isElo ? "rated" : "ranked"}${movement ? " · ▲▼ vs last week" : ""}</span></div>`;
   // Say plainly what the number is and who is missing, so nobody reads an Elo
   // board as an official ranking.
-  if (isElo && state.rankFed === "GLOBAL") html += `<div class="elo-note"><b>Global Elo</b>: one scale across every circuit, anchored on the FIP tour, so any two players compare. Ranked among players with at least ${(state.eloRankings.global || {}).tour || 5} FIP tour matches and ${(state.eloRankings.global || {}).matches || 20} matches in all; everyone else is not ranked globally, which is not the same as rated low. The other lists are each circuit's own Elo.</div>`;
+  if (isElo && state.rankFed === "GLOBAL") html += `<div class="elo-note"><b>Global Elo</b>: one scale across every circuit, anchored on the FIP tour, so any two players compare. Ranked among players with at least ${(state.eloRankings.global || {}).tour || 5} FIP tour matches and ${(state.eloRankings.global || {}).matches || 20} matches in all; everyone else is not ranked globally, which is not the same as rated low. </div>`;
   else if (isElo) html += `<div class="elo-note">Domestic / circuit Elo: strength rating from match results — separate pools for men, women, FIP and Nordic, so ranks only compare within a list. Players with fewer than ${state.eloRankings.minMatches || 20} rated matches are not shown.</div>`;
   // Full list caps at 250 rendered rows (keeps the DOM light on a 1000-deep list);
   // a nationality filter renders all matches so every player of that country shows.
