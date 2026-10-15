@@ -7,6 +7,7 @@ import * as tournamentsoftware from "./adapters/tournamentsoftware.js";
 import * as fip from "./adapters/fip.js";
 import * as puntuate from "./adapters/puntuate.js";
 import * as teamleague from "./adapters/rankedin-teamleague.js";
+import * as dpkBoard from "./adapters/dpk-board.js";
 import { assertMatch, STATUS } from "./schema.js";
 
 // Register adapters with a min refresh interval. All three are now plain fetch +
@@ -80,6 +81,12 @@ export async function aggregate(opts = {}) {
     for (const m of c.matches) { byId.set(m.id, m); n++; } // last write wins on dupe id
     sources.push({ id, ok: c.ok, count: n, ...(c.ok ? {} : { error: c.error }) });
   }
+  // Our own stream boards (danskepadelklip.com), overlaid on the MERGED list because a
+  // board can belong to any adapter's match (a league rubber, a DPF match). Copies are
+  // swapped in by id, so the per-adapter cache above keeps RankedIn's own version and a
+  // board that goes away stops showing on the next cycle. NOT pushed into `sources`:
+  // it is empty whenever nobody streams, and health.js reads an empty source as down.
+  for (const m of await dpkBoard.applyLiveDetail([...byId.values()], log, { force })) byId.set(m.id, m);
   // Sort: live first, then upcoming, then final; within a status, by start time.
   const matches = [...byId.values()].sort((a, b) => {
     const s = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];

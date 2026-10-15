@@ -949,6 +949,14 @@ const RUB_CSS = {
   side: "min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
 };
 
+// A score carried from our own stream boards (src/adapters/dpk-board.js) is provisional:
+// people at the court or watching the stream scored it, and the official result replaces
+// it as soon as it is typed in. Say so wherever that score is shown. Inline style, same
+// reason as RUB_CSS.
+const PROV_TITLE = "Scored live on the Danske Padel Klip stream by people at the court or watching. Unofficial: the official result replaces it.";
+const isProv = (m) => !!(m && m.status !== "upcoming" && m.raw && m.raw.provisional);
+const provTag = (m) => isProv(m) ? `<span title="${PROV_TITLE}" style="font-size:10px;color:var(--muted);letter-spacing:.02em">unofficial</span>` : "";
+
 function rubberLines(m) {
   const rs = rubbersOf(m);
   if (!rs.length) return "";
@@ -962,7 +970,8 @@ function rubberLines(m) {
   const line = (r, i) => {
     const no = (/:m(\d+)$/.exec(r.id) || [])[1] || String(i + 1);
     const sets = (r.score.sets || []).map((x) => `${setCellHtml(x[0])}-${setCellHtml(x[1])}`).join(" ");
-    const pts = r.status === "live" && r.score.points ? ` <b>${esc(r.score.points.join("-"))}</b>` : "";
+    const pts = (r.status === "live" && r.score.points ? ` <b>${esc(r.score.points.join("-"))}</b>` : "")
+      + (isProv(r) ? `<span title="${PROV_TITLE}">*</span>` : "");
     const mid = sets || (r.status === "live" ? "live" : "·");
     const w = r.score.winner;
     return `<div style="${RUB_CSS.row}">`
@@ -972,7 +981,8 @@ function rubberLines(m) {
       + `<span style="${RUB_CSS.side}${w === 1 ? ";font-weight:600" : ""}">${pair(r.teams[1])}</span>`
       + `</div>`;
   };
-  return `<div style="${RUB_CSS.wrap}">${rs.map(line).join("")}</div>`;
+  const note = rs.some(isProv) ? `<div style="font-size:10px;color:var(--muted)" title="${PROV_TITLE}">* unofficial, scored on the stream</div>` : "";
+  return `<div style="${RUB_CSS.wrap}">${rs.map(line).join("")}${note}</div>`;
 }
 
 // Courts view options. opts.noCourt: the row sits under its court's own heading, so
@@ -1001,7 +1011,7 @@ function matchRow(m, changed, showTournament, opts = {}) {
         <div class="match__state">${stateCol}${m.status !== "upcoming" && time ? `<span class="t">${time}</span>` : ""}</div>
         <div class="teams">
           ${showTournament ? `<div class="team"><span class="flag" style="font-size:10px">${fedFlag(m.federation)} ${m.federation}</span><span class="nm tlink" data-tourney="live" data-tkey="${esc(m.source + ":" + m.tournament.id)}" data-tname="${esc(m.tournament.name)}" data-tfed="${esc(m.federation)}" style="color:var(--muted);font-size:12px">${esc(m.tournament.name)}</span></div>` : ""}
-          ${m.court && !opts.noCourt ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}</div>` : opts.noCourt && m.round ? `<div class="crtline">${esc(m.round)}</div>` : ""}
+          ${m.court && !opts.noCourt ? `<div class="crtline"><span class="crtpin">📍 ${esc(m.court)}</span>${m.round ? ` · ${esc(m.round)}` : ""}${isProv(m) ? " · " + provTag(m) : ""}</div>` : opts.noCourt && m.round ? `<div class="crtline">${esc(m.round)}${isProv(m) ? " · " + provTag(m) : ""}</div>` : isProv(m) ? `<div class="crtline">${provTag(m)}</div>` : ""}
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
           ${rubberLines(m)}
@@ -1725,7 +1735,7 @@ function renderMatchPage(m, list) {
   };
   html += `<div class="mphead">
     <div class="mpmeta"><span class="tlink" data-mback="1">${esc(tv.name || "")}</span>${meta.length ? " · " + meta.map(esc).join(" · ") : ""}</div>
-    <div class="mpstat">${stat}${dur ? `<span class="mpdur">${esc(dur)}</span>` : ""}</div>
+    <div class="mpstat">${stat}${isProv(m) ? " " + provTag(m) : ""}${dur ? `<span class="mpdur">${esc(dur)}</span>` : ""}</div>
     ${sideRow(0)}${sideRow(1)}
     ${mpOddsBar(m, X, A, B)}
   </div>`;

@@ -191,7 +191,8 @@ const playerMatches = (a, b) => {
   return small.length >= 2 || small[0] === big[big.length - 1];
 };
 
-const sideMatches = (matchPlayers, boardPlayers) => {
+// Exported for dpk-board.js, which joins our own boards onto matches by the same rule.
+export const sideMatches = (matchPlayers, boardPlayers) => {
   if (!matchPlayers?.length || !boardPlayers?.length) return false;
   return matchPlayers.every((p) =>
     boardPlayers.some((q) => playerMatches(p.name || p, q.name || q))
