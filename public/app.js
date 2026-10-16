@@ -1002,7 +1002,7 @@ function matchRow(m, changed, showTournament, opts = {}) {
       // Compact tick, not a full "ENDED" pill: the pill held a 46px column open
       // on every finished row, and finished rows are most of the board — that
       // width was coming straight out of the player names.
-      ? `<span class="badge final mini" title="Ended" aria-label="Ended">✓</span>`
+      ? `<span class="badge final mini" title="Finished" aria-label="Finished">✓</span>`
       : `${followed ? `<span class="foll">Next up</span>` : ""}<span class="badge upcoming">${schedLabel(m) || "Soon"}</span>`;
 
   return `
