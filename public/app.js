@@ -588,8 +588,9 @@ function renderView(changed) {
 
   let html = "";
   if (live.length) {
-    html += `<div class="section-label live"><span class="lampe"></span>Live now · ${live.length}</div>`;
-    html += `<div class="group open"><div class="group__body">${live.map((m) => matchRow(m, changed, true)).join("")}</div></div>`;
+    const liveRows = withoutNestedRubbers(live);   // the count is the rows shown, not the rubbers folded into a tie
+    html += `<div class="section-label live"><span class="lampe"></span>Live now · ${liveRows.length}</div>`;
+    html += `<div class="group open"><div class="group__body">${liveRows.map((m) => matchRow(m, changed, true)).join("")}</div></div>`;
   }
 
   if (rest.length) {
@@ -923,9 +924,10 @@ function rubberIndex() {
 // row of its own beside it - without this every rubber appears twice, and the
 // tournament page printed all 57 of them twice over. Only dropped when the tie
 // row is in the SAME list: a view that lists a rubber without its parent must
-// still show it. Live rows never reach here - renderView hoists them into LIVE
-// NOW before grouping - so a live rubber keeps its own row, and the current
-// point that only that row shows.
+// still show it. LIVE NOW applies it too (Kim, 2026-10-17: "make the tie cards
+// fold out each match"): a live rubber sits in its live tie's card, where its
+// line carries the current point and taps open to the rubber's own detail. A
+// live rubber whose tie row is not live itself still gets a row of its own.
 function withoutNestedRubbers(list) {
   const present = new Set(list.map((m) => m.id));
   return list.filter((m) => {
@@ -947,6 +949,7 @@ const RUB_CSS = {
   no: "color:var(--muted);text-align:center",
   sets: "color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums",
   side: "min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+  det: "display:block;padding:4px 0 6px 18px;border-left:2px solid var(--line, rgba(127,127,127,.25));margin-left:5px",
 };
 
 // A score carried from our own stream boards (src/adapters/dpk-board.js) is provisional:
@@ -974,12 +977,19 @@ function rubberLines(m) {
       + (isProv(r) ? `<span title="${PROV_TITLE}">*</span>` : "");
     const mid = sets || (r.status === "live" ? "live" : "·");
     const w = r.score.winner;
-    return `<div style="${RUB_CSS.row}">`
-      + `<span style="${RUB_CSS.no}">${esc(no)}</span>`
+    const open = state.openMatches.has(r.id);
+    // The rubber's own detail (sets, court, follow, head-to-head, match page), the same
+    // block a match row opens - shown under its line. Inline display because .detail is
+    // hidden unless its .match is open, and the tie's card is open or shut on its own.
+    const body = open
+      ? `<div data-rubbody style="margin:2px 0 6px">${detail(r).replace('<div class="detail">', `<div class="detail" style="${RUB_CSS.det}">`)}</div>`
+      : "";
+    return `<div style="${RUB_CSS.row};cursor:pointer" data-rub="${esc(r.id)}" aria-expanded="${open}" title="${open ? "Hide" : "Show"} this match">`
+      + `<span style="${RUB_CSS.no}">${open ? "▾" : esc(no)}</span>`
       + `<span style="${RUB_CSS.side}${w === 0 ? ";font-weight:600" : ""}">${pair(r.teams[0])}</span>`
       + `<span style="${RUB_CSS.sets}">${mid}${pts}</span>`
       + `<span style="${RUB_CSS.side}${w === 1 ? ";font-weight:600" : ""}">${pair(r.teams[1])}</span>`
-      + `</div>`;
+      + `</div>` + body;
   };
   const note = rs.some(isProv) ? `<div style="font-size:10px;color:var(--muted)" title="${PROV_TITLE}">* unofficial, scored on the stream</div>` : "";
   return `<div style="${RUB_CSS.wrap}">${rs.map(line).join("")}${note}</div>`;
@@ -5608,6 +5618,23 @@ app.addEventListener("click", (e) => {
     state.focusMatch = null; state.focusDone = false;
     render(); syncUrl();
     try { window.scrollTo(0, 0); } catch {}
+    return;
+  }
+  // Tie cards (rubberLines): a tap on a rubber's line folds that match out or in, and a
+  // tap inside its open detail does nothing - both sit inside the tie's data-open area,
+  // which would otherwise fold the whole card shut. Buttons, stars, names and links in
+  // the detail were already handled above.
+  if (e.target.closest("[data-rubbody]")) return;
+  const rub = e.target.closest("[data-rub]");
+  if (rub) {
+    const id = rub.dataset.rub;
+    if (state.openMatches.has(id)) state.openMatches.delete(id);
+    else {
+      state.openMatches.add(id);
+      const m = state.matches.find((x) => x.id === id);
+      if (m) loadMatchup(m);
+    }
+    render();
     return;
   }
   const om = e.target.closest("[data-open]");
