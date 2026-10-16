@@ -30,6 +30,20 @@
 // The feed is ONE request (danskepadelklip.com/api/boards), cached 15 s at the edge and
 // polled here at most every MIN_MS. READ-ONLY.
 
+//
+// WATCH LINKS. Our court streams are on the Danske Padel Klip YouTube channel. Which
+// broadcast is on air for which court only YouTube knows (a stream key carries several
+// broadcasts, and the configs have been wrong on the night), so the answer comes from
+// matchi-autostream's bin/live-courts.mjs, run on this machine: it asks YouTube for the
+// broadcasts that are live and joins each to a MATCHi court (and the tie when the stream
+// schedule has it). A board room `court-<courtId>` then gets raw.watchUrl, and every
+// pending match of a streamed tie gets raw.tieWatch = [{ court, url }]. Where that script
+// is absent (GitHub Actions, any other box) there are simply no links.
+
+import { existsSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { STATUS } from "../schema.js";
 import { sideMatches } from "./racketscore.js";
 
@@ -64,6 +78,94 @@ export async function fetchRooms(log = () => {}, { force = false } = {}) {
     log(`    ! dpk-board: ${FEED} failed — ${err.message}`);
   }
   return now - last.okAt < STALE_MS ? last.rooms : [];
+}
+
+// ---- which court is on air, from YouTube --------------------------------------------
+
+const LIVE_COURTS_SCRIPT = process.env.DPK_LIVE_COURTS_SCRIPT
+  || resolve(dirname(fileURLToPath(import.meta.url)), "../../../matchi-autostream/bin/live-courts.mjs");
+const COURTS_MIN_MS = 90_000;       // one YouTube API unit per run
+const COURTS_STALE_MS = 5 * 60_000;
+const COURTS_TIMEOUT_MS = 60_000;
+const TIE_WINDOW_MS = [5 * 60 * 60_000, 60 * 60_000];   // a tie may be on court from 1 h before to 5 h after its start
+
+let courts = { at: 0, okAt: 0, list: [], running: false };
+
+/**
+ * The courts on air, from the last run of live-courts.mjs. Never blocks the cycle: a due run
+ * starts in the background and the NEXT cycle sees its answer. `runner` is for the tests.
+ */
+export function liveCourts(log = () => {}, { runner = runLiveCourts, now = Date.now() } = {}) {
+  if (!courts.running && now - courts.at >= COURTS_MIN_MS) {
+    courts.at = now;
+    courts.running = true;
+    Promise.resolve().then(runner).then((doc) => {
+      if (!doc || !Array.isArray(doc.courts)) throw new Error("no courts[] in the answer");
+      courts.list = doc.courts.filter((c) => c && c.courtId && /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]{6,20}$/.test(c.url || ""));
+      courts.okAt = Date.now();
+    }).catch((err) => log(`    ! dpk-board: live courts failed — ${err.message}`))
+      .finally(() => { courts.running = false; });
+  }
+  return now - courts.okAt < COURTS_STALE_MS ? courts.list : [];
+}
+export const _resetLiveCourts = () => { courts = { at: 0, okAt: 0, list: [], running: false }; };
+
+function runLiveCourts() {
+  if (!existsSync(LIVE_COURTS_SCRIPT)) return null;
+  return new Promise((ok, fail) => {
+    execFile(process.execPath, [LIVE_COURTS_SCRIPT], { cwd: dirname(dirname(LIVE_COURTS_SCRIPT)), timeout: COURTS_TIMEOUT_MS, windowsHide: true, maxBuffer: 1 << 20 },
+      (err, stdout, stderr) => {
+        if (err) return fail(new Error(String(stderr || err.message).trim().slice(0, 200)));
+        try { ok(JSON.parse(stdout)); } catch (e) { fail(new Error("unreadable answer")); }
+      });
+  });
+}
+
+/** Worth asking YouTube: a board is up, or a Danish tie is within its window right now. */
+function streamsLikely(matches, rooms, now) {
+  if ((rooms || []).some((r) => /^court-\d+$/.test(r && r.room))) return true;
+  return matches.some((m) => {
+    if (!m.raw || !m.raw.tie || m.status === STATUS.FINAL) return false;
+    const t = Date.parse(m.startTime);
+    return Number.isFinite(t) && now >= t - TIE_WINDOW_MS[1] && now <= t + TIE_WINDOW_MS[0];
+  });
+}
+
+const courtIdOf = (room) => { const m = /^court-(\d+)$/.exec(String(room || "")); return m ? m[1] : null; };
+const tieOfId = (mid) => { const m = /^rankedin-teamleague:(\d+)(?::m\d+)?$/.exec(String(mid || "")); return m ? Number(m[1]) : null; };
+
+/**
+ * Watch links onto `byId` (match id -> match, copies already made where overlaid). Returns the
+ * ids it changed; every change is made on a copy, never on an adapter's cached object.
+ */
+export function attachWatch(byId, overlaid, live) {
+  const changed = new Set();
+  if (!live || !live.length) return changed;
+  const byCourt = new Map(live.map((c) => [String(c.courtId), c]));
+  const copy = (id) => {
+    if (!overlaid.has(id) && !changed.has(id)) byId.set(id, structuredClone(byId.get(id)));
+    changed.add(id);
+    return byId.get(id);
+  };
+  // A board on a streamed court: that match IS on that broadcast.
+  for (const id of overlaid) {
+    const m = byId.get(id);
+    const c = m && m.status !== STATUS.FINAL && byCourt.get(courtIdOf(m.raw && m.raw.dpkRoom));
+    if (!c) continue;
+    const out = copy(id);
+    out.raw = { ...out.raw, watchUrl: c.url, watchCourt: c.court || null };
+  }
+  // A streamed tie: every pending match of it lists the tie's courts.
+  const byTie = new Map();
+  for (const c of live) if (c.tie) (byTie.get(c.tie) || byTie.set(c.tie, []).get(c.tie)).push({ court: c.court || null, url: c.url });
+  if (!byTie.size) return changed;
+  for (const [id, m] of byId) {
+    const list = byTie.get(tieOfId(id));
+    if (!list || m.status === STATUS.FINAL) continue;
+    const out = copy(id);
+    out.raw = { ...(out.raw || {}), tieWatch: [...list].sort((a, b) => String(a.court).localeCompare(String(b.court), "en", { numeric: true })) };
+  }
+  return changed;
 }
 
 // ---- joining ----------------------------------------------------------------
@@ -176,11 +278,23 @@ export function attach(matches, rooms, log = () => {}, now = Date.now()) {
 export async function applyLiveDetail(matches, log = () => {}, opts = {}) {
   try {
     const rooms = await fetchRooms(log, opts);
-    if (!rooms.length) return [];
-    const out = attach(matches, rooms, log);
-    const live = rooms.filter((r) => r.live).length;
-    log(`  DPK boards: ${rooms.length} board(s) (${live} live) — ${out.length} match(es) carried`);
-    return out;
+    const out = rooms.length ? attach(matches, rooms, log) : [];
+    if (rooms.length) {
+      const live = rooms.filter((r) => r.live).length;
+      log(`  DPK boards: ${rooms.length} board(s) (${live} live) — ${out.length} match(es) carried`);
+    }
+    const now = Date.now();
+    const h = copenhagenHour();
+    if (h >= QUIET_HOURS[0] && h < QUIET_HOURS[1]) return out;
+    if (!streamsLikely(matches, rooms, now)) return out;
+    const live = liveCourts(log, { now });
+    if (!live.length) return out;
+    const byId = new Map(matches.map((m) => [m.id, m]));
+    for (const m of out) byId.set(m.id, m);
+    const changed = attachWatch(byId, new Set(out.map((m) => m.id)), live);
+    const ids = new Set([...out.map((m) => m.id), ...changed]);
+    log(`  DPK streams: ${live.length} court(s) on air — ${changed.size} match(es) linked`);
+    return [...ids].map((id) => byId.get(id));
   } catch (err) {
     log(`    ! dpk-board overlay failed — ${err.message}`);
     return [];

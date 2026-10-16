@@ -3,7 +3,7 @@
 // against a stubbed fetch.
 //   node scripts/test-dpk-board.mjs
 
-import { attach, fetchRooms } from "../src/adapters/dpk-board.js";
+import { attach, fetchRooms, attachWatch, liveCourts, _resetLiveCourts } from "../src/adapters/dpk-board.js";
 import { STATUS } from "../src/schema.js";
 
 let pass = 0, fail = 0;
@@ -110,6 +110,47 @@ console.log("fetchRooms");
   ok(logs.some((s) => /failed/.test(s)), "and logs the failure");
   globalThis.fetch = async () => new Response("<html>", { status: 200 });
   eq((await fetchRooms(() => {}, { force: true })).length, 1, "garbage is a failure, not an empty board list");
+}
+
+console.log("watch links");
+{
+  const live = [
+    { courtId: "2787", room: "court-2787", court: "C1", tie: 152468, url: "https://www.youtube.com/watch?v=AAAAAAAAAAA" },
+    { courtId: "2788", room: "court-2788", court: "C2", tie: 152468, url: "https://www.youtube.com/watch?v=BBBBBBBBBBB" },
+    { courtId: "1275", room: "court-1275", court: "Court 5", tie: null, url: "https://www.youtube.com/watch?v=CCCCCCCCCCC" },
+  ];
+  const tie = match("rankedin-teamleague:152468", team("EYDA"), team("Aalborg"), { raw: { tie: true } });
+  const done = { ...other, status: STATUS.FINAL, score: { sets: [[6, 3], [6, 2]], winner: 0 } };
+  const before = JSON.stringify([rubber, tie, done, dpf]);
+  const over = attach([rubber, done, dpf, tie], [room({ room: "court-2788", tie: 152468, rubber: 2 })], () => {}, NOW);
+  const byId = new Map([rubber, tie, done, dpf].map((m) => [m.id, m]));
+  for (const m of over) byId.set(m.id, m);
+  const changed = attachWatch(byId, new Set(over.map((m) => m.id)), live);
+  eq([...changed].sort(), [rubber.id, tie.id].sort(), "the boarded rubber and the tie; not the finished rubber, not a DPF match");
+  const r = byId.get(rubber.id);
+  eq([r.raw.watchUrl, r.raw.watchCourt, r.raw.liveSource], ["https://www.youtube.com/watch?v=BBBBBBBBBBB", "C2", "dpk-board"], "the board's court is its broadcast");
+  eq(byId.get(tie.id).raw.tieWatch.map((w) => w.court), ["C1", "C2"], "the tie lists its courts in order");
+  ok(!("watchUrl" in byId.get(tie.id).raw), "a tie card gets the list, not one court's link");
+  eq(JSON.stringify([rubber, tie, done, dpf]), before, "cached matches untouched");
+  eq(attachWatch(new Map([[dpf.id, dpf]]), new Set(), live).size, 0, "nothing streamed, nothing changed");
+  eq(attachWatch(new Map(byId), new Set(), []).size, 0, "no courts on air, nothing changed");
+}
+
+console.log("liveCourts");
+{
+  _resetLiveCourts();
+  let runs = 0;
+  const doc = { courts: [{ courtId: "1", court: "C1", url: "https://www.youtube.com/watch?v=AAAAAAAAAAA" }, { courtId: "2", url: "javascript:alert(1)" }] };
+  const runner = async () => { runs++; return doc; };
+  eq(liveCourts(() => {}, { runner, now: 1_000_000 }).length, 0, "the first call starts a run and does not wait for it");
+  await new Promise((r) => setTimeout(r, 10));
+  eq(liveCourts(() => {}, { runner, now: 1_000_000 + 5_000 }).map((c) => c.courtId), ["1"], "the next cycle sees it; a non-YouTube url is dropped");
+  eq(runs, 1, "throttled");
+  const logs = [];
+  liveCourts((s) => logs.push(s), { runner: async () => { throw new Error("quota"); }, now: 1_000_000 + 100_000 });
+  await new Promise((r) => setTimeout(r, 10));
+  ok(logs.some((s) => /live courts failed/.test(s)), "a failed run is logged");
+  _resetLiveCourts();
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
