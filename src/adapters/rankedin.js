@@ -75,8 +75,10 @@ export async function fetchMatches({
   const passDone = _cal.cursor >= _cal.events.length;
   if (_cal.date !== date || (passDone && Date.now() - _cal.completedAt >= CAL_TTL_MS)) {
     try {
-      const evs = await discoverCalendarEvents(date);
-      if (_cal.date !== date) _cal.byEvent = new Map();   // new day - drop yesterday's rows
+      const evs = await discoverCalendarEvents(date, log);
+      // byEvent is NOT wiped on a new day: the new window still holds yesterday's events,
+      // and wiping it emptied the calendar half of the site at every UTC midnight until
+      // the pass caught up. Rows of events that left the window go when the pass ends.
       _cal.date = date;
       _cal.events = evs;
       _cal.cursor = 0;
@@ -85,23 +87,43 @@ export async function fetchMatches({
       log(`  calendar discovery failed — ${err.message}`);
     }
   }
-  const calDeadline = Date.now() + CAL_BUDGET_MS;
-  let fetched = 0;
+  // The budget only has to be tight while matches are live, i.e. while the daemon cycles
+  // every ~20s+work. A long gap since the last call means it is pacing at 10-30 min (or
+  // has just restarted), so nothing is waiting on this cycle and it can do a bigger
+  // slice. Measured 2026-10-17: with 12s on every cycle, a restart at 22:26Z left the
+  // site missing most calendar events for ~40 min (four 10-min cycles of ~10 events).
+  const idle = Date.now() - _cal.lastRunAt >= CAL_IDLE_GAP_MS;
+  _cal.lastRunAt = Date.now();
+  const calDeadline = Date.now() + (idle ? CAL_BUDGET_IDLE_MS : CAL_BUDGET_MS);
+  let fetched = 0, skipped = 0;
   while (_cal.cursor < _cal.events.length && Date.now() < calDeadline) {
     const ev = _cal.events[_cal.cursor++];
+    // An event that is not on the target day (finished earlier in the window, or not
+    // started) rarely changes, so its held copy is reused for CAL_COLD_MS instead of
+    // spending ~1.2s of the budget on it every pass. Keeps the pass short for today's.
+    const at = _cal.fetchedAt.get(ev.eventId);
+    if (at && !coversDay(ev, date) && _cal.byEvent.has(ev.eventId) && Date.now() - at < CAL_COLD_MS) {
+      skipped++;
+      continue;
+    }
     try {
       const hostClub = await fetchClub(ev.eventId); // cached; null when no club is connected
       const matches = await fetchTournamentMatches(ev.eventId);
       _cal.byEvent.set(ev.eventId, matches.map((m) => normalize(m, ev, { code: ev.country }, hostClub)));
+      _cal.fetchedAt.set(ev.eventId, Date.now());
     } catch (err) {
       log(`    ! calendar tournament ${ev.eventId} (${ev.eventName}) failed — ${err.message}`);
     }
     fetched++;
     await sleep(120);
   }
-  if (_cal.events.length && _cal.cursor >= _cal.events.length) _cal.completedAt = Date.now();
+  if (_cal.events.length && _cal.cursor >= _cal.events.length) {
+    _cal.completedAt = Date.now();
+    const keep = new Set(_cal.events.map((e) => e.eventId));
+    for (const id of _cal.byEvent.keys()) if (!keep.has(id)) { _cal.byEvent.delete(id); _cal.fetchedAt.delete(id); }
+  }
   for (const arr of _cal.byEvent.values()) out.push(...arr);
-  log(`  calendar: +${fetched} event(s) this cycle, ${_cal.byEvent.size} held, cursor ${_cal.cursor}/${_cal.events.length}`);
+  log(`  calendar: +${fetched} event(s) this cycle${skipped ? `, ${skipped} cold reused` : ""}${idle ? " (idle budget)" : ""}, ${_cal.byEvent.size} held, cursor ${_cal.cursor}/${_cal.events.length}`);
 
   // Danish (and other RacketScore-scored) events publish NOTHING live through RankedIn:
   // the organiser scores in the on-court referee app and types only the finished result
@@ -141,46 +163,75 @@ async function discoverEvents(fed, take) {
 }
 
 // Padel = RankedIn sportId 5 (verified 2026-07-20). Window around the target day so
-// the day strip gets recent finals + current + near-upcoming; bounded by CAL_MAX so
-// a busy week can't explode the match-fetch count.
-const PADEL_SPORT = 5, CAL_BACK = 3, CAL_FWD = 3, CAL_MAX = 40;
-// See the budget note in fetchMatches: a full calendar pass is ~150s of round trips,
-// so it is spread across cycles rather than run inline. TTL is how often the event
-// LIST is re-discovered; BUDGET is the most wall-clock one cycle may spend fetching.
+// the day strip gets recent finals + current + near-upcoming. CAL_MAX is a safety
+// valve only, applied AFTER the events are ordered (calendarPriority) so what it cuts
+// is the far edge of the window. It used to be 40 on an unordered list: on Sat
+// 2026-10-17 that cut 32 of 72 events, mostly that day's one-day events (Lunar Open
+// Aarhus 218 matches, Sportsgroup Denmark Open 104, Padelshoppen Open 87, ...).
+const PADEL_SPORT = 5, CAL_BACK = 3, CAL_FWD = 3, CAL_MAX = 200, CAL_PAGE = 100, CAL_PAGES = 5;
+// See the budget note in fetchMatches: a full calendar pass is ~1.2s per event (~110s
+// for the ~90 events of a Saturday), so it is spread across cycles rather than run
+// inline. TTL is how often the event LIST is re-discovered; BUDGET is the most
+// wall-clock one cycle may spend fetching, IDLE_BUDGET the most when the previous call
+// was at least IDLE_GAP ago (nothing live, or the first cycle after a restart). Both
+// stay well inside refresh-loop's 3-min FETCH_MAX_MS.
 const CAL_TTL_MS = 15 * 60_000;
 const CAL_BUDGET_MS = 12_000;
-let _cal = { date: null, events: [], cursor: 0, byEvent: new Map(), completedAt: 0 };
+const CAL_BUDGET_IDLE_MS = 45_000;
+const CAL_IDLE_GAP_MS = 3 * 60_000;
+const CAL_COLD_MS = 60 * 60_000;
+let _cal = { date: null, events: [], cursor: 0, byEvent: new Map(), fetchedAt: new Map(), completedAt: 0, lastRunAt: 0 };
 const ORG_COUNTRIES = new Set(RANKEDIN_FEDERATIONS.map((f) => f.code.toLowerCase()));
 const shiftISO = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 
-async function discoverCalendarEvents(date) {
+// Order of the calendar pass, lowest first: events on the target day that last a few
+// days at most (a weekend open - where the day's results are), then long-running
+// leagues that span it, then events that finished earlier in the window (newest
+// first), then upcoming ones (soonest first). The pass walks this list, so after a
+// restart or a rediscovery today's events are on the site within the first cycle.
+function calendarPriority(e, day) {
+  const start = (e.startDate || "").slice(0, 10), end = (e.endDate || e.startDate || "").slice(0, 10);
+  const spanDays = (Date.parse(end) - Date.parse(start)) / 86_400_000 || 0; // undated: treat as one day
+  if (start <= day && day <= end) return [spanDays <= 3 ? 0 : 1, spanDays];
+  if (end < day) return [2, -Date.parse(end) || 0];
+  return [3, Date.parse(start) || 0];
+}
+
+async function discoverCalendarEvents(date, log = () => {}) {
   const lo = shiftISO(date, -CAL_BACK), hi = shiftISO(date, CAL_FWD);
-  // TWO date-filter modes, merged. Mode 2 returns only what is IN PROGRESS at query
-  // time - 16 events against ~100 upstream for the same window, so ~88% of the week
-  // was never requested. Mode 3 returns the week but drops some long-running club
-  // leagues mode 2 catches (the 481-match Venezuelan one, and BA). Neither is a
-  // superset of the other, so union them and dedupe by EventId.
+  // Date-filter modes, merged. Mode 0 (no filter), PAGED, is the full window: on
+  // 2026-10-17 it returned 101 rows (so take=100 alone truncates) and held every event
+  // modes 2 and 3 did, plus 14 more starting the next day (incl. 3 Danish events with
+  // matches). Modes 2 (in progress now) and 3 are kept as a single page each because
+  // 2026-09-23 saw mode 3 drop leagues mode 2 caught (the 481-match Venezuelan one, BA);
+  // they cost two calls per discovery. Dedupe by EventId.
   const seen = new Map();
-  for (const mode of [2, 3]) {
-    let data;
-    try {
-      data = await rankedinGet(
-        `calendar/GetEventsAsync?from=0&take=100&country=0&sport=${PADEL_SPORT}&eventType=0&eventState=0` +
-        `&startDate=${lo}&endDate=${hi}&calendarAgeGroups=0&calendarDateFilter=${mode}&calendarOrganization=0`
-      );
-    } catch { continue; }
-    for (const e of Object.values(data || {})) {
-      if (e && e.EventId && e.CountryShort && !seen.has(e.EventId)) seen.set(e.EventId, e);
-    }
+  const add = (data) => {
+    const rows = Object.values(data || {}).filter((e) => e && e.EventId);
+    for (const e of rows) if (e.CountryShort && !seen.has(e.EventId)) seen.set(e.EventId, e);
+    return rows.length;
+  };
+  const q = (mode, from) =>
+    `calendar/GetEventsAsync?from=${from}&take=${CAL_PAGE}&country=0&sport=${PADEL_SPORT}&eventType=0&eventState=0` +
+    `&startDate=${lo}&endDate=${hi}&calendarAgeGroups=0&calendarDateFilter=${mode}&calendarOrganization=0`;
+  let ok = 0;
+  for (let page = 0; page < CAL_PAGES; page++) {
+    let n;
+    try { n = add(await rankedinGet(q(0, page * CAL_PAGE))); ok++; } catch { break; }
+    if (n < CAL_PAGE) break;
+    if (page === CAL_PAGES - 1) log(`  calendar: mode 0 still full after ${CAL_PAGES} pages - raise CAL_PAGES`);
   }
+  for (const mode of [2, 3]) {
+    try { add(await rankedinGet(q(mode, 0))); ok++; } catch { /* the other modes still count */ }
+  }
+  if (!ok) throw new Error("every calendar query failed");
   // No org-country exclusion any more. The org loop only sees events hosted under a
   // federation's OWN org, so a CLUB-hosted Danish event was invisible to both paths -
   // measured 2026-09-23, Danish tournament 70941 was live upstream with 48 matches and
   // absent from the site. Overlap is harmless: aggregate dedupes by match id.
-  return [...seen.values()]
+  const evs = [...seen.values()]
     .filter((e) => e && e.EventId && e.CountryShort)
     .filter(isTournament)   // the calendar feed carries team leagues too (Type 3)
-    .slice(0, CAL_MAX)
     .map((e) => ({
       eventId: e.EventId,
       eventName: e.EventName,
@@ -196,6 +247,13 @@ async function discoverCalendarEvents(date) {
       // this back.
       ranking: e.OrganisationName || null,
     }));
+  const pri = new Map(evs.map((e) => [e.eventId, calendarPriority(e, date)]));
+  evs.sort((a, b) => {
+    const x = pri.get(a.eventId), y = pri.get(b.eventId);
+    return x[0] - y[0] || x[1] - y[1];
+  });
+  if (evs.length > CAL_MAX) log(`  calendar: ${evs.length} events, dropping the last ${evs.length - CAL_MAX} (CAL_MAX)`);
+  return evs.slice(0, CAL_MAX);
 }
 
 async function fetchTournamentMatches(eventId) {
