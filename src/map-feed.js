@@ -9,7 +9,9 @@
 //   town     the source's town, or a place read out of the event name
 //   country  the country itself (drawn dashed on the map)
 // The adapters supply venue/address/city (rankedin, fip, tournamentsoftware); team
-// leagues and Puntuate events carry none and land on their country.
+// leagues and Puntuate events carry none and land on their country. A team league's
+// ties do name their hall, so its row also carries `halls`: one per hall with a tie
+// today, each placed on its own (see hallsOf()).
 
 import { levelOf } from "./levels.js";
 
@@ -82,6 +84,73 @@ export function placeQueries(t, source, fed) {
   return out;
 }
 
+// Team leagues (Lunar Ligaen) are one event spread over many halls: every tie is played
+// at the home club, which the adapter writes into `court`. Today's ties are grouped by
+// that hall so the map can draw one dot per hall instead of one on the country's centre.
+const LEAGUE = "rankedin-teamleague";
+// The tie row itself, not one of its rubbers (those repeat the venue and would count
+// each tie six times). Rubber rounds end "· Kamp n".
+const isTie = (m) => m.raw?.tie === true || (m.raw?.tie == null && !/·\s*Kamp \d+$/.test(m.round || ""));
+
+// "Padel Lounge Aalborg" -> "Aalborg": a hall's name often ends in its town, which is
+// both a fallback place and the anchor a venue hit is checked against. Each " - " or
+// "," part of the name offers its last word ("Rocket Padel Viborg - Fabrikvej" offers
+// Fabrikvej, then Viborg; pick() keeps the first that OSM calls a settlement). Generic
+// tails ("Padel Club", "Arena", "ApS") are not towns.
+const GENERIC = new Set(["padel", "club", "klub", "center", "centre", "centret", "padelcenter", "hal", "hallen", "halls", "arena",
+  "indoor", "indendørs", "outdoor", "sport", "sports", "sportscenter", "idrætscenter", "tennis", "tennisklub", "court", "courts",
+  "house", "hub", "park", "studio", "match", "rocket", "city", "world", "star", "lounge", "yard", "aps", "a/s", "ivs", "denmark", "danmark", "dk", "øst", "vest", "nord", "syd"]);
+export function townsOfVenue(venue) {
+  const parts = String(venue || "").replace(/\(.*?\)/g, " ").split(/\s[–-]\s|,/).map((s) => s.trim()).filter(Boolean);
+  const out = [];
+  const town = (w) => w && w.length >= 3 && !/\d/.test(w) && !GENERIC.has(w.toLowerCase()) && /^\p{Lu}/u.test(w) && !out.includes(w);
+  for (const p of [...parts].reverse()) {
+    const words = p.split(/\s+/);
+    if (words.length < 2 && parts.length < 2) continue; // a one-word name is the club, not a town
+    if (town(words.at(-1))) out.push(words.at(-1));
+  }
+  // "Køge Padel Klub": with nothing at the end, the town may lead
+  const first = parts[0]?.split(/\s+/);
+  if (!out.length && first?.length > 2 && town(first[0])) out.push(first[0]);
+  return out;
+}
+
+/** Geocoder queries for one hall of a team league: the venue itself, then its town(s). */
+export function hallQueries(venue, fed) {
+  const country = (isIso2(fed) ? regionNames(fed) : null) || "";
+  const withCountry = (s) => (country ? `${s}, ${country}` : s);
+  return [
+    { q: withCountry(venue), prec: "venue" },
+    ...townsOfVenue(venue).map((t) => ({ q: withCountry(t), prec: "town", anchor: 1 })),
+  ];
+}
+
+function hallsOf(e, date) {
+  const byName = new Map();
+  for (const m of e.ties) {
+    if (String(m.startTime || "").slice(0, 10) !== date) continue;
+    const name = String(m.court || "").replace(/\s+/g, " ").trim();
+    if (!name) continue;
+    let h = byName.get(name);
+    if (!h) byName.set(name, (h = { name, ties: [] }));
+    const set = m.score?.sets?.[0];
+    h.ties.push({
+      a: m.teams?.[0]?.name || "",
+      b: m.teams?.[1]?.name || "",
+      s: Array.isArray(set) ? `${set[0]}-${set[1]}` : null,
+      st: m.status,
+      t: String(m.startTime || "").slice(11, 16) || null,
+      cls: m.className || null,
+    });
+  }
+  const halls = [...byName.values()];
+  for (const h of halls) {
+    h.ties.sort((x, y) => String(x.t).localeCompare(String(y.t)) || x.a.localeCompare(y.a));
+    h.queries = hallQueries(h.name, e.fed);
+  }
+  return halls;
+}
+
 function eventsOf(matches, date) {
   const byKey = new Map();
   for (const m of matches) {
@@ -89,10 +158,11 @@ function eventsOf(matches, date) {
     const key = `${m.source}:${t.id}`;
     let e = byKey.get(key);
     if (!e) {
-      e = { key, source: m.source, fed: m.federation, t, classes: new Set(), courts: new Set(),
+      e = { key, source: m.source, fed: m.federation, t, classes: new Set(), courts: new Set(), ties: [],
         total: 0, final: 0, live: 0, upcoming: 0, tn: 0, tfinal: 0, tlive: 0 };
       byKey.set(key, e);
     }
+    if (m.source === LEAGUE && isTie(m)) e.ties.push(m);
     // RankedIn can see one event through two discovery paths: the calendar (a postal
     // address, sometimes only a street) and the federation feed (club and town). Merge
     // the copies field by field; for the address keep the fuller string.
@@ -124,16 +194,23 @@ function eventsOf(matches, date) {
  */
 export async function buildMapFeed(matches, { date, geocoder, maxLookups = 5, budgetMs = 8_000, log = () => {} }) {
   const events = eventsOf(matches, date);
-  for (const e of events) e.queries = placeQueries(e.t, e.source, e.fed);
+  for (const e of events) {
+    e.queries = placeQueries(e.t, e.source, e.fed);
+    e.halls = e.source === LEAGUE ? hallsOf(e, date) : [];
+  }
+  // Each hall is placed like an event of its own, in the league's country.
+  const places = events.flatMap((e) => [e, ...e.halls.map((h) => ({ queries: h.queries, fed: e.fed, hall: h }))]);
 
   // Ask only for what the cached answers cannot already place: walk each event's
   // queries until one is known to hit; everything before that, still unasked, queues.
   const want = [];
   // The town anchor is always asked for too: it is what a street-level hit is checked
   // against (see pick()).
-  for (const e of events) {
-    const anchor = anchorOf(e.queries);
-    if (anchor && geocoder.lookup(anchor.q) === undefined) want.push(anchor.q);
+  for (const e of places) {
+    // A hall may offer several town words; each is asked so pick() can choose.
+    for (const a of e.hall ? e.queries.filter((x) => x.anchor) : [anchorOf(e.queries)].filter(Boolean)) {
+      if (geocoder.lookup(a.q) === undefined) want.push(a.q);
+    }
     for (const { q } of e.queries) {
       const hit = geocoder.lookup(q);
       if (hit === undefined) { want.push(q); break; }
@@ -167,10 +244,25 @@ export async function buildMapFeed(matches, { date, geocoder, maxLookups = 5, bu
       // The source's own town reads better than OSM's (which can be a district or county)
       place: e.t.city || place?.town || null,
       prec: place?.prec || "none",
+      ...(e.source === LEAGUE ? { halls: e.halls.map((h) => hallRow(h, geocoder, e.fed)) } : {}),
     };
   });
   rows.sort((a, b) => a.rank - b.rank || b.total - a.total);
   return { generatedAt: new Date().toISOString(), date, count: rows.length, events: rows };
+}
+
+// A hall that cannot be placed keeps lat/lng null: the page leaves it off the map rather
+// than stack it on the country's centre, and still lists its ties under the league.
+function hallRow(h, geocoder, fed) {
+  const place = pick({ queries: h.queries, fed }, geocoder, { settlementAnchor: true });
+  return {
+    name: h.name,
+    lat: place?.lat ?? null,
+    lng: place?.lng ?? null,
+    prec: place?.prec || "none",
+    live: h.ties.filter((x) => x.st === "live").length,
+    ties: h.ties,
+  };
 }
 
 const anchorOf = (queries) => queries.filter((x) => x.anchor).sort((a, b) => b.anchor - a.anchor)[0] || null;
@@ -184,13 +276,23 @@ function km(a, b) {
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
   return 12742 * Math.asin(Math.sqrt(h));
 }
-function pick(e, geocoder) {
-  const anchorQ = anchorOf(e.queries);
+// A hall's anchor is a word read out of its name, so it only counts when OSM says it is
+// a settlement: "Norden" or "Syd" may geocode to a farm or a road.
+export const SETTLEMENT = new Set(["city", "town", "village", "hamlet", "suburb", "quarter", "neighbourhood", "municipality", "borough", "city_district", "administrative"]);
+// A hall name that OSM answers with a street ("Pakhus 77" -> a road in Rudkøbing, the
+// hall is in Aarhus) matched words, not the hall.
+export const ROAD = new Set(["road", "street", "residential", "highway", "primary", "secondary", "tertiary", "unclassified", "service", "living_street", "pedestrian", "footway", "path", "track"]);
+function pick(e, geocoder, { settlementAnchor = false } = {}) {
+  const usable = (x) => { const h = geocoder.lookup(x.q); return h && accept(h, e.fed) && SETTLEMENT.has(h.type); };
+  const anchorQ = settlementAnchor ? e.queries.find((x) => x.anchor && usable(x)) || null : anchorOf(e.queries);
   const anchorHit = anchorQ ? geocoder.lookup(anchorQ.q) : null;
   const anchor = anchorHit && accept(anchorHit, e.fed) ? anchorHit : null;
-  for (const { q, prec } of e.queries) {
+  for (const x of e.queries) {
+    const { q, prec } = x;
     const hit = geocoder.lookup(q);
     if (!hit || !accept(hit, e.fed)) continue;
+    if (settlementAnchor && x.anchor && !usable(x)) continue; // a road or farm, not a town
+    if (settlementAnchor && prec === "venue" && ROAD.has(hit.type)) continue;
     if (anchor && prec !== "country" && q !== anchorQ.q && km(hit, anchor) > ANCHOR_KM) continue;
     return { ...hit, prec: hit.type === "country" ? "country" : prec };
   }

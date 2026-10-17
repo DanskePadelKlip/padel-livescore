@@ -88,6 +88,17 @@
       max-width: 280px; line-height: 1.35; transform: translate(12px, -50%); z-index: 3; }
     .tip b { display: block; }
     .tip span { opacity: .75; font-size: 12px; }
+    .tip span.ln { display: block; opacity: 1; font-family: var(--mono); font-size: 11.5px; white-space: pre-wrap; padding-left: 6ch; text-indent: -6ch; }
+    .tip span.lg { display: block; opacity: .75; font-size: 11.5px; margin-top: 4px; }
+    .tip span.ln.live { color: var(--accent); }
+    .dot.hall { stroke-width: 1.2; }
+    .halls { grid-column: 2 / 4; margin-top: 6px; font-size: 12px; }
+    .halls .h { padding: 5px 0 3px; border-top: 1px dashed var(--line); }
+    .halls .h b { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+    .halls .h b .k { width: 8px; height: 8px; margin: 0; }
+    .halls .t { display: grid; grid-template-columns: 3.4em minmax(0, 1fr); gap: 0 6px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); padding-left: 14px; }
+    .halls .t.live { color: var(--accent); }
+    .halls .h.lit { background: color-mix(in srgb, var(--accent) 7%, transparent); }
 
     .list { min-width: 0; overflow-y: auto; background: var(--panel); }
     .grp { position: sticky; top: 0; z-index: 1; background: var(--panel); display: flex; justify-content: space-between;

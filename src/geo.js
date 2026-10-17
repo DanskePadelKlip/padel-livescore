@@ -35,7 +35,8 @@ export function makeGeocoder({ seedPath, cachePath, fetchImpl = fetch, log = () 
   /** @returns {object|null|undefined} a hit, null for a known miss, undefined if never asked */
   function lookup(q) {
     const k = geoKey(q);
-    const v = runtime[k] ?? seed[k];
+    // A miss cached on this machine must not hide a place the seed has since learned
+    const v = runtime[k] && !runtime[k].miss ? runtime[k] : seed[k] ?? runtime[k];
     if (!fresh(v)) return undefined;
     return v.miss ? null : v;
   }

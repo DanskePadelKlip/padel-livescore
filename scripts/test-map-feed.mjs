@@ -1,9 +1,13 @@
-// Unit tests for the /map feed: the level ladder, place queries, the two venue parsers
-// and the feed builder against a fake geocoder (no network).
+// Unit tests for the /map feed: the level ladder, place queries, the two venue parsers,
+// the feed builder against a fake geocoder, and team-league halls (no network).
 import assert from "node:assert/strict";
 import { levelOf, bandOf } from "../src/levels.js";
-import { placeQueries, placeFromName, buildMapFeed } from "../src/map-feed.js";
+import { placeQueries, placeFromName, buildMapFeed, townsOfVenue, hallQueries } from "../src/map-feed.js";
 import { parseVenue } from "../src/adapters/tournamentsoftware.js";
+import { makeGeocoder } from "../src/geo.js";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { eventPlace } from "../src/adapters/fip.js";
 
 let pass = 0;
@@ -118,6 +122,92 @@ await ok("feed: a street hit far from the named town is skipped", async () => {
   const feed = await buildMapFeed([{ id: "x", source: "tournamentsoftware", federation: "GB", tournament: t, status: "final", startTime: "2026-10-17T09:00:00" }], { date: "2026-10-17", geocoder });
   assert.equal(feed.events[0].lng, -0.719, "must sit on Maidenhead, not the City of London");
   assert.equal(feed.events[0].prec, "town");
+});
+
+await ok("hall names: town words, generic tails skipped", () => {
+  assert.deepEqual(townsOfVenue("Padel Lounge Aalborg"), ["Aalborg"]);
+  assert.deepEqual(townsOfVenue("Rocket Padel Viborg - Fabrikvej"), ["Fabrikvej", "Viborg"]);
+  assert.deepEqual(townsOfVenue("Rocket Padel Kolding - Sparekassen Kronjylland Padel Arena"), ["Kolding"]);
+  assert.deepEqual(townsOfVenue("Padel City - Svendborg"), ["Svendborg"]);
+  assert.deepEqual(townsOfVenue("Padelhuset Stæremosen 11, 3250 Gilleleje"), ["Gilleleje"]);
+  assert.deepEqual(townsOfVenue("Padelton ApS"), []);
+  assert.deepEqual(townsOfVenue("Pakhus 77"), []);
+  assert.deepEqual(townsOfVenue("Match Padel Studio"), []);
+  const qs = hallQueries("Padel Lounge Aalborg", "DK");
+  assert.deepEqual(qs.map((x) => [x.q, x.prec]), [["Padel Lounge Aalborg, Denmark", "venue"], ["Aalborg, Denmark", "town"]]);
+});
+
+await ok("feed: a team league is drawn as one dot per hall with a tie today", async () => {
+  const answers = {
+    "denmark": { lat: 56, lng: 10, cc: "DK", town: "", type: "country" },
+    "padel lounge aalborg, denmark": { lat: 57.03, lng: 9.93, cc: "DK", town: "Aalborg", type: "leisure" },
+    "aalborg, denmark": { lat: 57.05, lng: 9.92, cc: "DK", town: "Aalborg", type: "city" },
+    // a namesake: the Viborg branch's name finds the Aarhus one, 60 km off; the town is used
+    "rocket padel viborg - fabrikvej, denmark": { lat: 56.15, lng: 10.2, cc: "DK", town: "Aarhus", type: "leisure" },
+    "fabrikvej, denmark": { lat: 55.3, lng: 11.1, cc: "DK", town: "Slagelse", type: "road" },
+    "viborg, denmark": { lat: 56.45, lng: 9.4, cc: "DK", town: "Viborg", type: "town" },
+    "match padel studio, denmark": { lat: 55.66, lng: 12.5, cc: "DK", town: "Copenhagen", type: "leisure" },
+    "padelton aps, denmark": { lat: 33, lng: -97, cc: "US", town: "Padelton", type: "leisure" }, // abroad: rejected
+  };
+  const geocoder = { lookup: (q) => answers[q.toLowerCase()] ?? null, resolve: async () => 0, save: () => {} };
+  const L = { id: 7, name: "Lunar Ligaen 4P - Efterår 2026" };
+  const tie = (id, court, a, b, status, startTime, sets) => ({
+    id, source: "rankedin-teamleague", federation: "DK", tournament: L, className: "Øst - 1. Division", round: "Runde 3",
+    court, status, startTime, teams: [{ name: a }, { name: b }], score: { sets }, raw: { tie: true },
+  });
+  const rubber = (id, court, startTime) => ({
+    id, source: "rankedin-teamleague", federation: "DK", tournament: L, round: "A v B · Runde 3 · Kamp 1",
+    court, status: "final", startTime, teams: [{ name: "x" }, { name: "y" }], raw: { tie: false },
+  });
+  const matches = [
+    tie("t1", "Padel Lounge Aalborg", "Aalborg PK", "Hjørring", "live", "2026-10-18T13:00:00", [[2, 1]]),
+    tie("t2", "Padel Lounge Aalborg", "Aalborg PK 2", "Skagen", "upcoming", "2026-10-18T10:00:00", []),
+    rubber("r1", "Padel Lounge Aalborg", "2026-10-18T13:00:00"),
+    rubber("r2", "Padel Lounge Aalborg", "2026-10-18T13:00:00"),
+    tie("t3", "Rocket Padel Viborg - Fabrikvej", "Viborg", "Skive", "final", "2026-10-18T11:00:00", [[4, 2]]),
+    tie("t4", "Match Padel Studio", "MPS", "KB", "final", "2026-10-18T09:00:00", [[3, 3]]),
+    tie("t5", "Padelton ApS", "Padelton", "Horsens", "final", "2026-10-18T12:00:00", [[5, 1]]),
+    tie("t6", "Vejle Padelcenter", "Vejle", "Fredericia", "upcoming", "2026-10-20T19:00:00", []), // not today
+  ];
+  const feed = await buildMapFeed(matches, { date: "2026-10-18", geocoder });
+  assert.equal(feed.count, 1, "the league stays one event");
+  const [e] = feed.events;
+  assert.equal(e.prec, "country");
+  assert.deepEqual(e.halls.map((h) => h.name), ["Padel Lounge Aalborg", "Rocket Padel Viborg - Fabrikvej", "Match Padel Studio", "Padelton ApS"]);
+  const [aal, vib, mps, pdt] = e.halls;
+  assert.deepEqual([aal.lat, aal.prec, aal.live, aal.ties.length], [57.03, "venue", 1, 2], "rubbers are not ties");
+  assert.deepEqual(aal.ties.map((t) => [t.t, t.a, t.s, t.st]), [["10:00", "Aalborg PK 2", null, "upcoming"], ["13:00", "Aalborg PK", "2-1", "live"]]);
+  assert.deepEqual([vib.lat, vib.prec], [56.45, "town"], "the Aarhus namesake and the road are skipped");
+  assert.equal(vib.ties[0].s, "4-2");
+  assert.deepEqual([mps.lat, mps.prec], [55.66, "venue"], "no town word: the venue hit stands");
+  assert.deepEqual([pdt.lat, pdt.prec], [null, "none"], "a hit abroad leaves the hall unplaced, not on the country centre");
+  // other sources carry no halls
+  const other = await buildMapFeed([{ id: "z", source: "rankedin", federation: "DK", tournament: { id: 1, name: "X" }, status: "final", startTime: "2026-10-18T09:00:00", court: "C1" }], { date: "2026-10-18", geocoder });
+  assert.equal(other.events[0].halls, undefined);
+});
+
+await ok("feed: hall towns are asked for even after the venue hit is cached", async () => {
+  const answers = { "padel lounge aalborg, denmark": { lat: 57.03, lng: 9.93, cc: "DK", town: "Aalborg", type: "leisure" } };
+  const asked = [];
+  const geocoder = { lookup: (q) => answers[q.toLowerCase()] ?? (asked.includes(q) ? null : undefined), resolve: async (qs) => { asked.push(...qs); return qs.length; }, save: () => {} };
+  const m = { id: "t", source: "rankedin-teamleague", federation: "DK", tournament: { id: 7, name: "Lunar" }, court: "Padel Lounge Aalborg",
+    status: "upcoming", startTime: "2026-10-18T10:00:00", teams: [{ name: "A" }, { name: "B" }], score: { sets: [] }, raw: { tie: true } };
+  await buildMapFeed([m], { date: "2026-10-18", geocoder });
+  assert.ok(asked.includes("Aalborg, Denmark"));
+  assert.ok(!asked.includes("Padel Lounge Aalborg, Denmark"), "a cached venue is not asked again");
+});
+
+await ok("geocoder: a seed hit beats a miss cached on this machine", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "geo-"));
+  const seedPath = join(dir, "seed.json"), cachePath = join(dir, "cache.json");
+  const today = new Date().toISOString().slice(0, 10);
+  writeFileSync(seedPath, JSON.stringify({ "match padel studio, denmark": { lat: 55.66, lng: 12.62, cc: "DK", town: "København", type: "venue-list" } }));
+  writeFileSync(cachePath, JSON.stringify({ "match padel studio, denmark": { miss: today }, "nowhere, denmark": { miss: today }, "aalborg, denmark": { lat: 57, lng: 9.9, cc: "DK" } }));
+  const g = makeGeocoder({ seedPath, cachePath });
+  assert.equal(g.lookup("Match Padel Studio, Denmark").lat, 55.66);
+  assert.equal(g.lookup("Nowhere, Denmark"), null);
+  assert.equal(g.lookup("Aalborg, Denmark").lat, 57);
+  rmSync(dir, { recursive: true, force: true });
 });
 
 console.log(`\n${pass} passed`);

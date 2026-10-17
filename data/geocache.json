@@ -27,6 +27,13 @@
   "town": "Greater London",
   "type": "leisure"
  },
+ "aalborg, denmark": {
+  "lat": 57.04626,
+  "lng": 9.92153,
+  "cc": "DK",
+  "town": "Aalborg",
+  "type": "city"
+ },
  "alkmaar, netherlands": {
   "lat": 52.60085,
   "lng": 4.8171,
@@ -90,12 +97,26 @@
   "town": "Seville",
   "type": "road"
  },
+ "cebu city, 6014 cebu, philippines": {
+  "lat": 10.32856,
+  "lng": 123.90088,
+  "cc": "PH",
+  "town": "Cebu City",
+  "type": "amenity"
+ },
  "cebu city, philippines": {
   "lat": 10.29349,
   "lng": 123.90182,
   "cc": "PH",
   "town": "Cebu City",
   "type": "city"
+ },
+ "cebu, philippines": {
+  "lat": 10.47,
+  "lng": 123.83,
+  "cc": "PH",
+  "town": "Cebu",
+  "type": "state"
  },
  "christian x's vej 9a, denmark": {
   "lat": 55.26218,
@@ -181,6 +202,13 @@
   "town": "Exeter",
   "type": "city"
  },
+ "fabrikvej, denmark": {
+  "lat": 56.11259,
+  "lng": 10.13706,
+  "cc": "DK",
+  "town": "Tranbjerg",
+  "type": "road"
+ },
  "fleet, united kingdom": {
   "lat": 51.28286,
   "lng": -0.83163,
@@ -195,6 +223,27 @@
   "town": "Frederikshavn",
   "type": "town"
  },
+ "frederikssund, denmark": {
+  "lat": 55.84178,
+  "lng": 12.06359,
+  "cc": "DK",
+  "town": "Frederikssund",
+  "type": "town"
+ },
+ "gadstrup, denmark": {
+  "lat": 55.572,
+  "lng": 12.09384,
+  "cc": "DK",
+  "town": "Gadstrup",
+  "type": "village"
+ },
+ "gilleleje, denmark": {
+  "lat": 56.12442,
+  "lng": 12.31245,
+  "cc": "DK",
+  "town": "Gilleleje",
+  "type": "village"
+ },
  "göteborg, sweden": {
   "lat": 57.70723,
   "lng": 11.96702,
@@ -208,6 +257,13 @@
   "cc": "GB",
   "town": "Vale of White Horse",
   "type": "highway"
+ },
+ "halmstad, sweden": {
+  "lat": 56.67398,
+  "lng": 12.85748,
+  "cc": "SE",
+  "town": "Halmstad",
+  "type": "city"
  },
  "harju maakond, estonia": {
   "lat": 59.40901,
@@ -237,12 +293,47 @@
   "town": "Harrogate",
   "type": "railway"
  },
+ "hørning, denmark": {
+  "lat": 56.08592,
+  "lng": 10.0356,
+  "cc": "DK",
+  "town": "Hørning",
+  "type": "village"
+ },
+ "ikast, denmark": {
+  "lat": 56.13902,
+  "lng": 9.15479,
+  "cc": "DK",
+  "town": "Ikast",
+  "type": "town"
+ },
+ "jernbanebyen, denmark": {
+  "lat": 55.65815,
+  "lng": 12.54903,
+  "cc": "DK",
+  "town": "Copenhagen",
+  "type": "quarter"
+ },
  "kanarbiku tee 2, järveküla, 75304 harju maakond, estonia": {
   "lat": 59.38234,
   "lng": 24.79993,
   "cc": "EE",
   "town": "Rae vald",
   "type": "leisure"
+ },
+ "køge, denmark": {
+  "lat": 55.4565,
+  "lng": 12.1819,
+  "cc": "DK",
+  "town": "Køge",
+  "type": "town"
+ },
+ "kolding, denmark": {
+  "lat": 55.4895,
+  "lng": 9.47905,
+  "cc": "DK",
+  "town": "Kolding",
+  "type": "city"
  },
  "landbotorpsallén 1, 702 43 örebro, sweden": {
   "lat": 59.25666,
@@ -256,6 +347,13 @@
   "lng": 13.11458,
   "cc": "SE",
   "town": "Västra Tommarp",
+  "type": "road"
+ },
+ "liavegen 1b, 5132 nyborg, norway": {
+  "lat": 60.46494,
+  "lng": 5.34398,
+  "cc": "NO",
+  "town": "Bergen",
   "type": "road"
  },
  "lincoln, united kingdom": {
@@ -293,6 +391,13 @@
   "town": "Mandaue",
   "type": "amenity"
  },
+ "match padel studio, denmark": {
+  "lat": 55.66477,
+  "lng": 12.62069,
+  "cc": "DK",
+  "town": "København",
+  "type": "venue-list"
+ },
  "milano, italy": {
   "lat": 45.46419,
   "lng": 9.18963,
@@ -313,6 +418,13 @@
   "cc": "GB",
   "town": "Nottingham",
   "type": "city"
+ },
+ "nyborg, norway": {
+  "lat": 64.04344,
+  "lng": 13.98672,
+  "cc": "NO",
+  "town": "Lierne",
+  "type": "hamlet"
  },
  "oeiras, portugal": {
   "lat": 38.69258,
@@ -341,6 +453,69 @@
   "cc": "SE",
   "town": "Gothenburg",
   "type": "road"
+ },
+ "padel city - svendborg, denmark": {
+  "lat": 55.06265,
+  "lng": 10.6182,
+  "cc": "DK",
+  "town": "Svendborg",
+  "type": "leisure"
+ },
+ "padel lounge aalborg, denmark": {
+  "lat": 57.03414,
+  "lng": 9.93135,
+  "cc": "DK",
+  "town": "Aalborg",
+  "type": "leisure"
+ },
+ "padel professor club, denmark": {
+  "lat": 56.10841,
+  "lng": 10.10931,
+  "cc": "DK",
+  "town": "Aarhus",
+  "type": "venue-list"
+ },
+ "padel star, denmark": {
+  "lat": 56.10803,
+  "lng": 10.16497,
+  "cc": "DK",
+  "town": "Aarhus",
+  "type": "leisure"
+ },
+ "padel yard jernbanebyen, denmark": {
+  "lat": 55.65858,
+  "lng": 12.54786,
+  "cc": "DK",
+  "town": "Copenhagen",
+  "type": "leisure"
+ },
+ "padelpadel aalborg - al bank arena, denmark": {
+  "lat": 56.95468,
+  "lng": 9.86032,
+  "cc": "DK",
+  "town": "Aalborg",
+  "type": "venue-list"
+ },
+ "padelton aps, denmark": {
+  "lat": 56.07409,
+  "lng": 10.02397,
+  "cc": "DK",
+  "town": "Aarhus",
+  "type": "venue-list"
+ },
+ "padelworld ikast, denmark": {
+  "lat": 56.12003,
+  "lng": 9.17153,
+  "cc": "DK",
+  "town": "Ikast",
+  "type": "leisure"
+ },
+ "pakhus 77, denmark": {
+  "lat": 56.16178,
+  "lng": 10.22266,
+  "cc": "DK",
+  "town": "Aarhus",
+  "type": "venue-list"
  },
  "peterburi tee 103, 13812 tallinn, estonia": {
   "lat": 59.43892,
@@ -377,12 +552,40 @@
   "town": "Prague",
   "type": "city"
  },
+ "racket club raw, denmark": {
+  "lat": 55.71846,
+  "lng": 12.60824,
+  "cc": "DK",
+  "town": "København",
+  "type": "venue-list"
+ },
+ "raw, denmark": {
+  "lat": 55.69008,
+  "lng": 12.59983,
+  "cc": "DK",
+  "town": "Copenhagen",
+  "type": "amenity"
+ },
  "ringhofferova 115/19, 155 21 praha 5, czechia": {
   "lat": 50.05381,
   "lng": 14.29127,
   "cc": "CZ",
   "town": "Prague",
   "type": "road"
+ },
+ "rocket padel kolding - sparekassen kronjylland padel arena, denmark": {
+  "lat": 55.4637,
+  "lng": 9.47514,
+  "cc": "DK",
+  "town": "Kolding",
+  "type": "venue-list"
+ },
+ "rocket padel viborg - fabrikvej, denmark": {
+  "lat": 56.46928,
+  "lng": 9.40663,
+  "cc": "DK",
+  "town": "Viborg",
+  "type": "leisure"
  },
  "romania": {
   "lat": 45.98521,
@@ -433,6 +636,20 @@
   "town": "Njurunda District",
   "type": "road"
  },
+ "simon's padel club, denmark": {
+  "lat": 55.96,
+  "lng": 12.49803,
+  "cc": "DK",
+  "town": "Nivå",
+  "type": "club"
+ },
+ "simon's, denmark": {
+  "lat": 55.67796,
+  "lng": 12.57,
+  "cc": "DK",
+  "town": "Copenhagen",
+  "type": "shop"
+ },
  "sittingbourne, united kingdom": {
   "lat": 51.33974,
   "lng": 0.73423,
@@ -446,6 +663,13 @@
   "cc": "NO",
   "town": "Egersund",
   "type": "place"
+ },
+ "skagen padelcenter, denmark": {
+  "lat": 57.73023,
+  "lng": 10.57027,
+  "cc": "DK",
+  "town": "Skagen",
+  "type": "building"
  },
  "sl bn, united kingdom": {
   "lat": 51.51562,
@@ -468,12 +692,26 @@
   "town": "Stratford-on-Avon",
   "type": "town"
  },
+ "svendborg, denmark": {
+  "lat": 55.06366,
+  "lng": 10.60847,
+  "cc": "DK",
+  "town": "Svendborg",
+  "type": "town"
+ },
  "sweden": {
   "lat": 59.67497,
   "lng": 14.52086,
   "cc": "SE",
   "town": "",
   "type": "country"
+ },
+ "t'bilisi, georgia": {
+  "lat": 41.69346,
+  "lng": 44.80145,
+  "cc": "GE",
+  "town": "Tbilisi",
+  "type": "city"
  },
  "tallinn, estonia": {
   "lat": 59.43724,
@@ -488,6 +726,20 @@
   "cc": "UZ",
   "town": "Tashkent",
   "type": "city"
+ },
+ "tåsinge tennis og padel klub, denmark": {
+  "lat": 55.04061,
+  "lng": 10.61906,
+  "cc": "DK",
+  "town": "Svendborg",
+  "type": "amenity"
+ },
+ "tåsinge, denmark": {
+  "lat": 54.9991,
+  "lng": 10.57832,
+  "cc": "DK",
+  "town": "Bjerreby",
+  "type": "island"
  },
  "trelleborg, sweden": {
   "lat": 55.37592,
@@ -522,6 +774,20 @@
   "lng": -1.86492,
   "cc": "GB",
   "town": "East Staffordshire",
+  "type": "town"
+ },
+ "vejle padelcenter, denmark": {
+  "lat": 55.73952,
+  "lng": 9.5942,
+  "cc": "DK",
+  "town": "Vejle",
+  "type": "leisure"
+ },
+ "viborg, denmark": {
+  "lat": 56.44691,
+  "lng": 9.40594,
+  "cc": "DK",
+  "town": "Viborg",
   "type": "town"
  },
  "waltham abbey, united kingdom": {
