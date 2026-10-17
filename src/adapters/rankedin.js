@@ -238,6 +238,9 @@ function normalize(m, ev, fed, hostClub = null) {
       url: "https://www.rankedin.com" + (ev.eventUrl || ""),
       ...(venue ? { venue } : {}),
       ...(address ? { address } : {}),
+      // The per-org feed's town on its own, for /map: `address` above may hold it or a
+      // bare street, depending on which discovery path saw the event.
+      ...(ev.city ? { city: ev.city } : {}),
       ...(hostClub ? { organizer: hostClub.name, organizerUrl: hostClub.url } : {}),
       ...(ranking ? { ranking } : {}),
       ...(ev.startDate ? { start: String(ev.startDate).slice(0, 10) } : {}),

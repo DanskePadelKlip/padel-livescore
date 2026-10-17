@@ -20,3 +20,5 @@ logs/
 /scratch/
 # full-career match files (padel-db export_pt_matches.py, nightly; ~85 MB)
 /public/data/pm/
+# /map feed, rebuilt every cycle (src/map-feed-node.js)
+public/data/map.json

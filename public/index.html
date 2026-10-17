@@ -131,8 +131,10 @@
 
     /* ---- controls ---- */
     .modes { display: flex; gap: 6px; padding-bottom: 9px; flex-wrap: wrap; }
-    .modes button { flex: 1 1 auto; min-width: 84px; background: var(--card); border: 1px solid var(--line); color: var(--muted);
+    .modes button, .modes a.modelink { flex: 1 1 auto; min-width: 84px; background: var(--card); border: 1px solid var(--line); color: var(--muted);
       padding: 9px 6px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    /* /map is its own page, so a real link among the in-app mode buttons */
+    .modes a.modelink { text-decoration: none; text-align: center; font-family: inherit; line-height: normal; }
     .modes button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .year { background: var(--card); border: 1px solid var(--line); color: var(--text);
       border-radius: 8px; padding: 7px 10px; font-size: 13px; cursor: pointer; }
@@ -995,6 +997,7 @@
         <button data-mode="no1">👑 World #1</button>
         <button data-mode="natteams">🏅 National teams</button>
         <button data-mode="earnings">💰 Earnings</button>
+        <a class="modelink" href="/map">🗺️ Map</a>
       </div>
       <div class="tabs" id="tabs">
         <button class="tab active" data-status="all">All</button>
@@ -1022,6 +1025,7 @@
         <b>Live</b>
         <a href="/">Live scores</a>
         <a href="/events">Tournaments &amp; events</a>
+        <a href="/map">Tournament map</a>
         <a href="/results">Results archive</a>
         <a href="/rules">Rules of padel</a>
         <a href="/dictionary">Padel dictionary</a>

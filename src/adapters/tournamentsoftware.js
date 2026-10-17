@@ -97,6 +97,10 @@ export async function fetchMatches({
   date = todayISO(),
   instances = TOURNAMENTSOFTWARE_INSTANCES,
   maxTournaments = 30,
+  // One extra page per tournament (cached per process). Off by default: the free-plan
+  // Worker (worker/index.js) is already near its 50-subrequest cap on this source and
+  // starts cold every firing; aggregate.js turns it on for the daemon and CI.
+  venues = false,
   log = () => {},
 } = {}) {
   const out = [];
@@ -116,6 +120,7 @@ export async function fetchMatches({
           // day heading omits the year.
           const fallbackYear = (t.start || "").slice(0, 4) || String(new Date().getFullYear());
           const raw = await scrapeMatches(jar, inst.base, t.guid, fallbackYear, months, date);
+          if (venues) Object.assign(t, await venueOf(jar, inst.base, t.guid));
           for (const m of dedupe(raw)) out.push(normalize(m, t, inst));
         } catch (err) {
           log(`    ! tournament ${t.guid} (${t.name}) failed — ${err.message}`);
@@ -126,6 +131,48 @@ export async function fetchMatches({
     }
   }
   return out;
+}
+
+// ---- venue ------------------------------------------------------------------
+// The overview page names the venue and carries a Google Maps "Route" link whose
+// destination is "Town,Street,Postcode,Country" - the cleanest address any source
+// gives us. A venue does not move during an event, so each guid is fetched once per
+// process; a failed fetch is remembered too, so a broken page costs one request.
+const venueCache = new Map();
+
+export function parseVenue(html) {
+  const out = {};
+  const { document } = parseHTML(html);
+  const dest = document.querySelector('a[href*="google.com/maps"]')?.getAttribute("href")?.match(/destination=([^&]+)/);
+  if (dest) {
+    let d = dest[1];
+    try { d = decodeURIComponent(d.replace(/\+/g, " ")); } catch { /* keep raw */ }
+    const parts = d.split(",").map(clean).filter(Boolean);
+    if (parts.length) {
+      out.city = parts[0].replace(/\b\w+/g, (w) => (w === w.toUpperCase() && w.length > 2 ? w[0] + w.slice(1).toLowerCase() : w));
+      // The country closes the string ("Great Britain", "Norway"); the federation
+      // already says which country, so keep only street and postcode here.
+      const street = parts.slice(1, parts.length > 2 && !/\d/.test(parts.at(-1)) ? -1 : undefined);
+      if (street.length) out.address = street.join(", ");
+    }
+  }
+  // "Padel Maidenhead Ltd | Berkshire": the organiser, which is usually the club. A
+  // federation as organiser (an NPT stage) says nothing about where play is.
+  const sub = clean(document.querySelector(".media__subheading")?.textContent);
+  const venue = sub.split("|")[0]?.trim();
+  if (venue && !/forbund|federation|association|tennis- og/i.test(venue)) out.venue = venue;
+  return out;
+}
+
+async function venueOf(jar, base, guid) {
+  if (venueCache.has(guid)) return venueCache.get(guid);
+  let v = {};
+  try {
+    const res = await req(`${base}/tournament/${guid}`, jar);
+    if (res.ok) v = parseVenue(await res.text());
+  } catch { /* no venue this time; the matches still ship */ }
+  venueCache.set(guid, v);
+  return v;
 }
 
 // ---- discovery -------------------------------------------------------------
@@ -310,7 +357,12 @@ function normalize(m, t, inst) {
     id: gid("ts", `${t.guid}:${sig(a, b, m)}`),
     source: "tournamentsoftware",
     federation: inst.code,
-    tournament: { id: t.guid, name: t.name, url: `${inst.base}/sport/tournament?id=${t.guid}` },
+    tournament: {
+      id: t.guid, name: t.name, url: `${inst.base}/sport/tournament?id=${t.guid}`,
+      ...(t.venue ? { venue: t.venue } : {}),
+      ...(t.address ? { address: t.address } : {}),
+      ...(t.city ? { city: t.city } : {}),
+    },
     className: className || null,
     round,
     court: null,

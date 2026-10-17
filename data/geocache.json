@@ -1,0 +1,541 @@
+{
+ "1 iremonger road, ng2 3hu, nottingham, united kingdom": {
+  "lat": 52.94161,
+  "lng": -1.13881,
+  "cc": "GB",
+  "town": "Nottingham",
+  "type": "road"
+ },
+ "1, czechia": {
+  "lat": 50.07792,
+  "lng": 14.4184,
+  "cc": "CZ",
+  "town": "Prague",
+  "type": "tourism"
+ },
+ "35 starkie drive, 2200, australia": {
+  "lat": -33.92755,
+  "lng": 150.98104,
+  "cc": "AU",
+  "town": "Sydney",
+  "type": "road"
+ },
+ "60 chiswick common road, w4 1rz, london, united kingdom": {
+  "lat": 51.4948,
+  "lng": -0.25784,
+  "cc": "GB",
+  "town": "Greater London",
+  "type": "leisure"
+ },
+ "alkmaar, netherlands": {
+  "lat": 52.60085,
+  "lng": 4.8171,
+  "cc": "NL",
+  "town": "Alkmaar",
+  "type": "municipality"
+ },
+ "apholmenvej 11, frederikshavn, denmark": {
+  "lat": 57.46256,
+  "lng": 10.51937,
+  "cc": "DK",
+  "town": "Frederikshavn",
+  "type": "place"
+ },
+ "asuncion, paraguay": {
+  "lat": -25.28005,
+  "lng": -57.63438,
+  "cc": "PY",
+  "town": "Asuncion",
+  "type": "city"
+ },
+ "bålsta, sweden": {
+  "lat": 59.56821,
+  "lng": 17.52936,
+  "cc": "SE",
+  "town": "Bålsta",
+  "type": "town"
+ },
+ "bankstown, australia": {
+  "lat": -33.91719,
+  "lng": 151.03359,
+  "cc": "AU",
+  "town": "Sydney",
+  "type": "suburb"
+ },
+ "bicester, united kingdom": {
+  "lat": 51.89884,
+  "lng": -1.15188,
+  "cc": "GB",
+  "town": "Bicester",
+  "type": "town"
+ },
+ "brøndby, denmark": {
+  "lat": 55.64411,
+  "lng": 12.42171,
+  "cc": "DK",
+  "town": "Glostrup",
+  "type": "suburb"
+ },
+ "bunsen-kirchhoff-straße 9, 44139 dortmund, germany": {
+  "lat": 51.48973,
+  "lng": 7.46227,
+  "cc": "DE",
+  "town": "Dortmund",
+  "type": "leisure"
+ },
+ "c/ economía 11-13, sevilla, spain": {
+  "lat": 37.39422,
+  "lng": -5.94799,
+  "cc": "ES",
+  "town": "Seville",
+  "type": "road"
+ },
+ "cebu city, philippines": {
+  "lat": 10.29349,
+  "lng": 123.90182,
+  "cc": "PH",
+  "town": "Cebu City",
+  "type": "city"
+ },
+ "christian x's vej 9a, denmark": {
+  "lat": 55.26218,
+  "lng": 9.50234,
+  "cc": "DK",
+  "town": "Haderslev",
+  "type": "place"
+ },
+ "christian x's vej a, denmark": {
+  "lat": 56.13131,
+  "lng": 10.17383,
+  "cc": "DK",
+  "town": "Aarhus",
+  "type": "place"
+ },
+ "cotonou, bénin, benin": {
+  "lat": 6.35566,
+  "lng": 2.41945,
+  "cc": "BJ",
+  "town": "Cotonou",
+  "type": "office"
+ },
+ "cremers road, me10 3us, united kingdom": {
+  "lat": 51.34455,
+  "lng": 0.75091,
+  "cc": "GB",
+  "town": "Borough of Swale",
+  "type": "road"
+ },
+ "czechia": {
+  "lat": 49.7439,
+  "lng": 15.33811,
+  "cc": "CZ",
+  "town": "",
+  "type": "country"
+ },
+ "denmark": {
+  "lat": 55.67025,
+  "lng": 10.33333,
+  "cc": "DK",
+  "town": "",
+  "type": "country"
+ },
+ "dortmund, germany": {
+  "lat": 51.51423,
+  "lng": 7.46528,
+  "cc": "DE",
+  "town": "Dortmund",
+  "type": "city"
+ },
+ "drayton manor drive, cv37 9rq, stratford-upon-avon, united kingdom": {
+  "lat": 52.19488,
+  "lng": -1.75966,
+  "cc": "GB",
+  "town": "Stratford-on-Avon",
+  "type": "road"
+ },
+ "egersund, norway": {
+  "lat": 58.45151,
+  "lng": 6.00076,
+  "cc": "NO",
+  "town": "Egersund",
+  "type": "town"
+ },
+ "eidsvoll, norway": {
+  "lat": 60.4163,
+  "lng": 11.25554,
+  "cc": "NO",
+  "town": "Eidsvoll",
+  "type": "municipality"
+ },
+ "ex sb, united kingdom": {
+  "lat": 52.64352,
+  "lng": 1.15035,
+  "cc": "GB",
+  "town": "South Norfolk",
+  "type": "road"
+ },
+ "exeter, united kingdom": {
+  "lat": 50.72561,
+  "lng": -3.52692,
+  "cc": "GB",
+  "town": "Exeter",
+  "type": "city"
+ },
+ "fleet, united kingdom": {
+  "lat": 51.28286,
+  "lng": -0.83163,
+  "cc": "GB",
+  "town": "Hart",
+  "type": "suburb"
+ },
+ "frederikshavn, denmark": {
+  "lat": 57.44121,
+  "lng": 10.53362,
+  "cc": "DK",
+  "town": "Frederikshavn",
+  "type": "town"
+ },
+ "göteborg, sweden": {
+  "lat": 57.70723,
+  "lng": 11.96702,
+  "cc": "SE",
+  "town": "Gothenburg",
+  "type": "city"
+ },
+ "green lane, ox26 1th, united kingdom": {
+  "lat": 51.61581,
+  "lng": -1.60657,
+  "cc": "GB",
+  "town": "Vale of White Horse",
+  "type": "highway"
+ },
+ "harju maakond, estonia": {
+  "lat": 59.40901,
+  "lng": 24.73696,
+  "cc": "EE",
+  "town": "Harju County",
+  "type": "county"
+ },
+ "harrogate, united kingdom": {
+  "lat": 53.99215,
+  "lng": -1.5391,
+  "cc": "GB",
+  "town": "Harrogate",
+  "type": "town"
+ },
+ "haven banks retail park, ex2 8by, united kingdom": {
+  "lat": 50.71573,
+  "lng": -3.53236,
+  "cc": "GB",
+  "town": "Exeter",
+  "type": "place"
+ },
+ "hornbeam park, hg2 8qt, harrogate, united kingdom": {
+  "lat": 53.98036,
+  "lng": -1.52768,
+  "cc": "GB",
+  "town": "Harrogate",
+  "type": "railway"
+ },
+ "kanarbiku tee 2, järveküla, 75304 harju maakond, estonia": {
+  "lat": 59.38234,
+  "lng": 24.79993,
+  "cc": "EE",
+  "town": "Rae vald",
+  "type": "leisure"
+ },
+ "landbotorpsallén 1, 702 43 örebro, sweden": {
+  "lat": 59.25666,
+  "lng": 15.2034,
+  "cc": "SE",
+  "town": "Örebro",
+  "type": "road"
+ },
+ "lastvägen 8, 231 62 trelleborg, sweden": {
+  "lat": 55.38689,
+  "lng": 13.11458,
+  "cc": "SE",
+  "town": "Västra Tommarp",
+  "type": "road"
+ },
+ "lincoln, united kingdom": {
+  "lat": 53.22935,
+  "lng": -0.54048,
+  "cc": "GB",
+  "town": "Lincoln",
+  "type": "city"
+ },
+ "london, united kingdom": {
+  "lat": 51.50745,
+  "lng": -0.12777,
+  "cc": "GB",
+  "town": "Greater London",
+  "type": "city"
+ },
+ "magyarország, hungary": {
+  "lat": 47.51315,
+  "lng": 19.08372,
+  "cc": "HU",
+  "town": "Budapest",
+  "type": "amenity"
+ },
+ "maidenhead, united kingdom": {
+  "lat": 51.52274,
+  "lng": -0.71974,
+  "cc": "GB",
+  "town": "Maidenhead",
+  "type": "town"
+ },
+ "mandaue city, cebu 6014 philippines": {
+  "lat": 10.3351,
+  "lng": 123.94397,
+  "cc": "PH",
+  "town": "Mandaue",
+  "type": "amenity"
+ },
+ "milano, italy": {
+  "lat": 45.46419,
+  "lng": 9.18963,
+  "cc": "IT",
+  "town": "Milan",
+  "type": "city"
+ },
+ "noruega, norway": {
+  "lat": 59.90679,
+  "lng": 10.76102,
+  "cc": "NO",
+  "town": "Oslo",
+  "type": "office"
+ },
+ "nottingham, united kingdom": {
+  "lat": 52.95342,
+  "lng": -1.14965,
+  "cc": "GB",
+  "town": "Nottingham",
+  "type": "city"
+ },
+ "oeiras, portugal": {
+  "lat": 38.69258,
+  "lng": -9.31231,
+  "cc": "PT",
+  "town": "Oeiras",
+  "type": "town"
+ },
+ "örebro, sweden": {
+  "lat": 59.27473,
+  "lng": 15.21512,
+  "cc": "SE",
+  "town": "Örebro",
+  "type": "city"
+ },
+ "oslo, norway": {
+  "lat": 59.91333,
+  "lng": 10.73897,
+  "cc": "NO",
+  "town": "Oslo",
+  "type": "county"
+ },
+ "östra sörredsvägen 4, göteborg, sweden": {
+  "lat": 57.71533,
+  "lng": 11.85025,
+  "cc": "SE",
+  "town": "Gothenburg",
+  "type": "road"
+ },
+ "peterburi tee 103, 13812 tallinn, estonia": {
+  "lat": 59.43892,
+  "lng": 24.88334,
+  "cc": "EE",
+  "town": "Tallinn",
+  "type": "building"
+ },
+ "piazza carlo stuparich 1 milano, italy": {
+  "lat": 45.48261,
+  "lng": 9.14224,
+  "cc": "IT",
+  "town": "Milan",
+  "type": "leisure"
+ },
+ "podgorica, montenegro": {
+  "lat": 42.44152,
+  "lng": 19.26211,
+  "cc": "ME",
+  "town": "Podgorica",
+  "type": "city"
+ },
+ "porto salvo, portugal": {
+  "lat": 38.7294,
+  "lng": -9.30361,
+  "cc": "PT",
+  "town": "Oeiras",
+  "type": "city_district"
+ },
+ "praha, czechia": {
+  "lat": 50.08747,
+  "lng": 14.42125,
+  "cc": "CZ",
+  "town": "Prague",
+  "type": "city"
+ },
+ "ringhofferova 115/19, 155 21 praha 5, czechia": {
+  "lat": 50.05381,
+  "lng": 14.29127,
+  "cc": "CZ",
+  "town": "Prague",
+  "type": "road"
+ },
+ "romania": {
+  "lat": 45.98521,
+  "lng": 24.68592,
+  "cc": "RO",
+  "town": "",
+  "type": "country"
+ },
+ "russia": {
+  "lat": 64.68631,
+  "lng": 97.74531,
+  "cc": "RU",
+  "town": "",
+  "type": "country"
+ },
+ "russia, 197374": {
+  "lat": 59.99126,
+  "lng": 30.22542,
+  "cc": "RU",
+  "town": "Saint Petersburg",
+  "type": "postcode"
+ },
+ "schermerweg 95, alkmaar, netherlands": {
+  "lat": 52.6239,
+  "lng": 4.76714,
+  "cc": "NL",
+  "town": "Alkmaar",
+  "type": "leisure"
+ },
+ "sevilla, spain": {
+  "lat": 37.38863,
+  "lng": -5.99534,
+  "cc": "ES",
+  "town": "Seville",
+  "type": "city"
+ },
+ "silovägen 7a, sweden": {
+  "lat": 59.15462,
+  "lng": 18.10974,
+  "cc": "SE",
+  "town": "Jordbro",
+  "type": "road"
+ },
+ "silovägen a, sweden": {
+  "lat": 62.26749,
+  "lng": 17.34939,
+  "cc": "SE",
+  "town": "Njurunda District",
+  "type": "road"
+ },
+ "sittingbourne, united kingdom": {
+  "lat": 51.33974,
+  "lng": 0.73423,
+  "cc": "GB",
+  "town": "Borough of Swale",
+  "type": "town"
+ },
+ "sjukehusveien 24, 4373, egersund, norway": {
+  "lat": 58.46602,
+  "lng": 6.01407,
+  "cc": "NO",
+  "town": "Egersund",
+  "type": "place"
+ },
+ "sl bn, united kingdom": {
+  "lat": 51.51562,
+  "lng": -0.092,
+  "cc": "GB",
+  "town": "City of London",
+  "type": "city"
+ },
+ "slavonska avenija 17, 10000, zagreb, croatia": {
+  "lat": 45.804,
+  "lng": 16.06695,
+  "cc": "HR",
+  "town": "City of Zagreb",
+  "type": "shop"
+ },
+ "stratford-upon-avon, united kingdom": {
+  "lat": 52.19278,
+  "lng": -1.70634,
+  "cc": "GB",
+  "town": "Stratford-on-Avon",
+  "type": "town"
+ },
+ "sweden": {
+  "lat": 59.67497,
+  "lng": 14.52086,
+  "cc": "SE",
+  "town": "",
+  "type": "country"
+ },
+ "tallinn, estonia": {
+  "lat": 59.43724,
+  "lng": 24.75727,
+  "cc": "EE",
+  "town": "Tallinn",
+  "type": "city"
+ },
+ "tashkent, uzbekistan": {
+  "lat": 41.31234,
+  "lng": 69.27871,
+  "cc": "UZ",
+  "town": "Tashkent",
+  "type": "city"
+ },
+ "trelleborg, sweden": {
+  "lat": 55.37592,
+  "lng": 13.14615,
+  "cc": "SE",
+  "town": "Trelleborg",
+  "type": "town"
+ },
+ "unit 2, st14 5au, united kingdom": {
+  "lat": 52.50658,
+  "lng": -2.02863,
+  "cc": "GB",
+  "town": "Sandwell",
+  "type": "industrial"
+ },
+ "unit 3 beacon hill, gu52 8dy, fleet, united kingdom": {
+  "lat": 51.25941,
+  "lng": -0.82646,
+  "cc": "GB",
+  "town": "Hart",
+  "type": "road"
+ },
+ "unit c4, ln2 4zs, united kingdom": {
+  "lat": 53.04445,
+  "lng": -2.9896,
+  "cc": "GB",
+  "town": "Wrexham",
+  "type": "shop"
+ },
+ "uttoxeter, united kingdom": {
+  "lat": 52.89803,
+  "lng": -1.86492,
+  "cc": "GB",
+  "town": "East Staffordshire",
+  "type": "town"
+ },
+ "waltham abbey, united kingdom": {
+  "lat": 51.6805,
+  "lng": 0.0331,
+  "cc": "GB",
+  "town": "Epping Forest",
+  "type": "suburb"
+ },
+ "zagreb, croatia": {
+  "lat": 45.8131,
+  "lng": 15.97728,
+  "cc": "HR",
+  "town": "City of Zagreb",
+  "type": "city"
+ }
+}

@@ -24,6 +24,7 @@ import { EVENTS as PUNTUATE_EVENTS } from "../src/adapters/puntuate.js";
 import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
 import { refreshCalendar } from "../src/calendar-refresh.js";
+import { writeMapFeed } from "../src/map-feed-node.js";
 import { setClubStore } from "../src/rankedin-club.js";
 import { fsClubStore } from "../src/club-store-node.js";
 import { recordTimeline } from "../src/serve-timeline.js";
@@ -131,6 +132,11 @@ async function cycle() {
     join(outDir, "matches.json"),
     JSON.stringify({ generatedAt: new Date().toISOString(), date, count: feedRows.length, matches: feedRows }, null, 2)
   );
+
+  // /map feed (public/data/map.json): tournaments with level and place. Bounded and
+  // never throws - see src/map-feed-node.js.
+  const map = await writeMapFeed(root, feedRows, date, { log: (m) => console.log(m) });
+  if (map && map.placed < map.events) console.log(`  map: ${map.placed}/${map.events} events placed`);
 
   // Rankings change ~weekly and RankedIn is heavier than the match feed, so refresh
   // them at most every 6h (or when missing/empty) instead of every cycle. Without

@@ -65,7 +65,8 @@ export async function aggregate(opts = {}) {
     const due = force || !prev || Date.now() - prev.at >= minMs;
     if (due) {
       try {
-        const matches = await mod.fetchMatches(opts);
+        // venues: tournamentsoftware's extra venue page, for /map (off in the Worker)
+        const matches = await mod.fetchMatches({ venues: true, ...opts });
         for (const m of matches) assertMatch(m); // validate before caching
         cache.set(id, { at: Date.now(), matches, ok: true, error: null });
       } catch (err) {

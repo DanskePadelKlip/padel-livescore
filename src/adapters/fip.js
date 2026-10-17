@@ -110,6 +110,8 @@ async function discoverActiveEvents(date, log) {
       slug: e.slug,
       link: e.link,
       title: decodeEntities(e.title?.rendered || e.slug),
+      // WP taxonomy slug for the tier ("fip-tour-gold", "fip-ppt-p1"); src/levels.js reads it.
+      level: (e.class_list || []).find((c) => c.startsWith("category-event-"))?.slice(15) || null,
       year: (e.slug.match(/-(\d{4})\b/) || [])[1] || String(new Date().getFullYear()),
     }));
 }
@@ -117,8 +119,32 @@ async function discoverActiveEvents(date, log) {
 async function matchscorerId(ev) {
   const res = await fetch(ev.link, { headers: FIP_HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
   const html = await res.text();
+  Object.assign(ev, eventPlace(html)); // same page, so the venue costs no extra request
   const m = html.match(/idEvent[_-](\d+)/i);
   return m ? `FIP-${ev.year}-${m[1]}` : null;
+}
+
+// Venue block of an event page: `event__place` reads "Sevilla  - Spain", and the overview
+// lists "Venue <name>" and "Address <street>". Every field is optional: a page without
+// them just leaves the tournament without a location, as it was before.
+export function eventPlace(html) {
+  const out = {};
+  const place = String(html).match(/class="event__place">([^<]+)</);
+  if (place) {
+    const [city, country] = decodeEntities(place[1]).split(/\s+-\s+/);
+    if (city?.trim()) out.city = city.trim();
+    if (country?.trim()) out.countryName = country.trim();
+  }
+  const at = String(html).indexOf("overview__venue");
+  if (at >= 0) {
+    const parts = String(html).slice(at, at + 3000).replace(/<script[\s\S]*$/i, "")
+      .split(/<[^>]+>/).map((t) => decodeEntities(t).replace(/\s+/g, " ").trim()).filter(Boolean);
+    const after = (label) => { const i = parts.findIndex((t) => t.toLowerCase() === label); return i >= 0 ? parts[i + 1] : null; };
+    const venue = after("venue"), address = after("address");
+    if (venue && !/^address$/i.test(venue)) out.venue = venue;
+    if (address) out.address = address;
+  }
+  return out;
 }
 
 // Scan day-by-day; return the last `windowN` non-empty days (≈ today's results +
@@ -364,7 +390,14 @@ function normalize(m, ev, msId, day) {
     id: gid("fip", `${msId}:${sig(a, b, m.round)}`),
     source: "fip",
     federation: "FIP",
-    tournament: { id: msId, name: ev.title, url: ev.link },
+    tournament: {
+      id: msId, name: ev.title, url: ev.link,
+      ...(ev.venue ? { venue: ev.venue } : {}),
+      ...(ev.address ? { address: ev.address } : {}),
+      ...(ev.city ? { city: ev.city } : {}),
+      ...(ev.countryName ? { countryName: ev.countryName } : {}),
+      ...(ev.level ? { level: ev.level } : {}),
+    },
     className: null,
     round: m.round || null,
     day: day || null,                 // { n, label } tournament play-day, for per-day grouping
