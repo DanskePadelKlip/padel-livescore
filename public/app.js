@@ -962,6 +962,24 @@ const isPtRoom = (m) => !!(m && m.raw && /^pt-/.test(String(m.raw.dpkRoom || "")
 const isProv = (m) => !!(m && m.status !== "upcoming" && m.raw && m.raw.provisional);
 const provTag = (m) => isProv(m) ? `<span title="${isPtRoom(m) ? PROV_TITLE_PT : PROV_TITLE}" style="font-size:10px;color:var(--muted);letter-spacing:.02em">unofficial</span>` : "";
 
+// Matches on a court we stream live on the Danske Padel Klip YouTube channel (dpk-board.js
+// asks YouTube which broadcast is on air): raw.watchUrl = this match's court, raw.tieWatch =
+// every streamed court of its tie. Only while the match is not finished - by then the
+// broadcast shows the next match, or nothing.
+const YT_WATCH = /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]{6,20}$/;
+function watchLinks(m) {
+  if (!m || !m.raw || m.status === "final") return [];
+  if (YT_WATCH.test(m.raw.watchUrl || "")) return [{ court: m.raw.watchCourt || null, url: m.raw.watchUrl }];
+  return (m.raw.tieWatch || []).filter((w) => w && YT_WATCH.test(w.url || ""));
+}
+function watchHtml(m, style = "") {
+  const ws = watchLinks(m);
+  if (!ws.length) return "";
+  const a = (w, label) => `<a data-watch href="${esc(w.url)}" target="_blank" rel="noopener" title="Live on the Danske Padel Klip YouTube channel${w.court ? " · " + esc(w.court) : ""}" style="color:inherit;text-decoration:underline">${label}</a>`;
+  const body = ws.length === 1 ? a(ws[0], "▶ Watch on YouTube") : "▶ Watch on YouTube: " + ws.map((w) => a(w, esc(w.court || "stream"))).join(" · ");
+  return `<div class="watchline" style="font-size:12px;margin-top:2px;${style}">${body}</div>`;
+}
+
 // Crowd livescore (2026-10-17). A Danish match nobody scores live can be scored by the people
 // watching it, on Danske Padel Klip's phone scorer (danskepadelklip.com/score - its UI is Danish,
 // hence DK only). The link carries the match; the scorer's /api/pt-room gives everyone who picks
@@ -1068,6 +1086,7 @@ function matchRow(m, changed, showTournament, opts = {}) {
           ${teamLine(m, 0, isChanged)}
           ${teamLine(m, 1, isChanged)}
           ${rubberLines(m)}
+          ${watchHtml(m)}
         </div>
       </div>
       ${detail(m)}
@@ -1786,6 +1805,7 @@ function renderMatchPage(m, list) {
     <div class="mpstat">${stat}${isProv(m) ? " " + provTag(m) : ""}${dur ? `<span class="mpdur">${esc(dur)}</span>` : ""}</div>
     ${sideRow(0)}${sideRow(1)}
     ${mpOddsBar(m, X, A, B)}
+    ${watchHtml(m, "font-size:14px;margin-top:8px")}
     ${crowdScoreLine(m)}
   </div>`;
 
@@ -5648,6 +5668,8 @@ app.addEventListener("click", (e) => {
   // row doesn't also toggle the row's detail).
   const pn = e.target.closest("[data-pname]");
   if (pn) { openPlayerByName(pn.dataset.pname); return; }
+  // a Watch on YouTube link opens its tab; it must not also fold the row it sits in
+  if (e.target.closest("[data-watch]")) return;
   // match page: open (a link, so ctrl/middle-click still opens a tab) and back
   const mpg = e.target.closest("[data-mpage]");
   if (mpg && !e.target.closest("[data-share]")) {
