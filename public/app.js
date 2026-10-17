@@ -957,8 +957,51 @@ const RUB_CSS = {
 // it as soon as it is typed in. Say so wherever that score is shown. Inline style, same
 // reason as RUB_CSS.
 const PROV_TITLE = "Scored live on the Danske Padel Klip stream by people at the court or watching. Unofficial: the official result replaces it.";
+const PROV_TITLE_PT = "Scored live by people watching, picked from this page. Unofficial: the official result replaces it.";
+const isPtRoom = (m) => !!(m && m.raw && /^pt-/.test(String(m.raw.dpkRoom || "")));
 const isProv = (m) => !!(m && m.status !== "upcoming" && m.raw && m.raw.provisional);
-const provTag = (m) => isProv(m) ? `<span title="${PROV_TITLE}" style="font-size:10px;color:var(--muted);letter-spacing:.02em">unofficial</span>` : "";
+const provTag = (m) => isProv(m) ? `<span title="${isPtRoom(m) ? PROV_TITLE_PT : PROV_TITLE}" style="font-size:10px;color:var(--muted);letter-spacing:.02em">unofficial</span>` : "";
+
+// Crowd livescore (2026-10-17). A Danish match nobody scores live can be scored by the people
+// watching it, on Danske Padel Klip's phone scorer (danskepadelklip.com/score - its UI is Danish,
+// hence DK only). The link carries the match; the scorer's /api/pt-room gives everyone who picks
+// it the same room, and the score comes back here through src/adapters/dpk-board.js, marked
+// unofficial, until the official result is in. A match already carried by one of OUR stream
+// boards gets no link: those boards are on air, and the stream has its own scorer link.
+const CROWD_SCORE_URL = "https://danskepadelklip.com/score";
+const CROWD_AHEAD_MS = 60 * 60_000;       // offered from an hour before the start...
+const CROWD_BEHIND_MS = 4 * 60 * 60_000;  // ...until four hours after, while no result is typed in
+function crowdScoreLink(m, now = Date.now()) {
+  if (!m || m.federation !== "DK" || m.status === "final") return null;
+  const raw = m.raw || {};
+  if (raw.liveSource && raw.liveSource !== "dpk-board") return null;   // an official live score exists
+  if (raw.dpkRoom) return isPtRoom(m) ? { url: `${CROWD_SCORE_URL}?room=${encodeURIComponent(raw.dpkRoom)}`, joining: true } : null;
+  if (raw.watchUrl || (raw.tieWatch && raw.tieWatch.length)) return null;   // on our stream: it has its own scorer
+  const real = (p) => p && p.name && p.name !== "TBD";
+  const sides = (m.teams || []).slice(0, 2).map((t) => ((t && t.players) || []).filter(real));
+  if (sides.length !== 2 || !sides[0].length || !sides[1].length) return null;
+  if (m.status !== "live") {
+    const t = Date.parse(m.estStartAt || m.startTime || "");
+    if (Number.isFinite(t) && (t - now > CROWD_AHEAD_MS || now - t > CROWD_BEHIND_MS)) return null;
+  }
+  const pt = {
+    id: m.id, source: m.source || null, federation: m.federation,
+    tournament: (m.tournament && m.tournament.name) || null, className: m.className || null,
+    round: m.round || null, court: m.court || null,
+    teams: sides.map((s) => s.map((p) => p.name)),
+    flags: sides.map((s) => s.map((p) => p.country || "")),
+  };
+  let bin = "";
+  for (const b of new TextEncoder().encode(JSON.stringify(pt))) bin += String.fromCharCode(b);
+  return { url: `${CROWD_SCORE_URL}?pt=${btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`, joining: false };
+}
+function crowdScoreLine(m) {
+  const c = crowdScoreLink(m);
+  if (!c) return "";
+  const a = `<a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;text-decoration:none">${c.joining ? "Help score it" : "Score this match live"}</a>`;
+  const note = c.joining ? "People watching are scoring this live." : "No live score yet. Watching it? Tap the pair that won each rally; the score shows here, marked unofficial.";
+  return `<div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:12px;line-height:1.45">${a}<span style="color:var(--muted)">${note}</span></div>`;
+}
 
 function rubberLines(m) {
   const rs = rubbersOf(m);
@@ -1743,6 +1786,7 @@ function renderMatchPage(m, list) {
     <div class="mpstat">${stat}${isProv(m) ? " " + provTag(m) : ""}${dur ? `<span class="mpdur">${esc(dur)}</span>` : ""}</div>
     ${sideRow(0)}${sideRow(1)}
     ${mpOddsBar(m, X, A, B)}
+    ${crowdScoreLine(m)}
   </div>`;
 
   if (!ready) return html + `<div class="skel"></div><div class="skel"></div>`;
