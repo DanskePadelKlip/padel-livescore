@@ -1,10 +1,13 @@
 // GET /player/:id — app shell with this player's meta injected for scrapers.
 import { SITE, shell, withMeta, playerMeta, decodeParam } from "../_shared.js";
+import { pmCareer, playerBody } from "../_ssr.js";
 
 export async function onRequestGet({ request, params, env }) {
   const origin = new URL(request.url).origin;
   const id = decodeParam(params.id);
   const base = await shell(origin);
+  // The career file is a static asset (no D1), read alongside the meta query.
+  const career = pmCareer(env, origin, id).catch(() => null);
   // One direct D1 read; no second Function invocation. See playerMeta in _shared.js.
   const d = await playerMeta(env, id);
   if (!d) {
@@ -57,12 +60,14 @@ export async function onRequestGet({ request, params, env }) {
   ];
 
   const image = `${SITE}/og/player/${encodeURIComponent(id)}`;
+  // The page body: the same summary plus the latest 20 matches from data/pm.
+  const body = playerBody({ p, s, pm: await career });
   // bits is already the page's facts (country, matches, W-L, win rate); reused as the
   // hidden lead so the heading is not the only thing a first-pass crawler can read.
   return withMeta(base, {
     h1: p.name,
     lead: bits.join(" · "),
-    title, description, canonical, ogType: "profile", image, jsonld,
+    title, description, canonical, ogType: "profile", image, jsonld, body,
   });
 }
 

@@ -42,7 +42,7 @@ const escapeHtml = (v) =>
   String(v).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // Rewrite the shell's <head> with entity values. m: {title, description,
-// canonical, ogType?, image?, jsonld?, h1?, lead?}.
+// canonical, ogType?, image?, jsonld?, h1?, lead?, body?}.
 export function withMeta(shellRes, m) {
   const content = (v) => ({ element(e) { if (v != null) e.setAttribute("content", String(v)); } });
   let rw = new HTMLRewriter()
@@ -80,6 +80,12 @@ export function withMeta(shellRes, m) {
     rw = rw.on("main", {
       element(e) { e.prepend(`<div class="seo-head" style="${HIDDEN}">${inner}</div>`, { html: true }); },
     });
+  }
+  // body: the page's main content as plain markup (functions/_ssr.js builds it, from
+  // static files only). It goes INTO #app, which app.js empties on boot, so the SPA
+  // renders exactly as before; the block hides itself from JS browsers (see _ssr.js).
+  if (m.body) {
+    rw = rw.on("#app", { element(e) { e.setInnerContent(m.body, { html: true }); } });
   }
   const res = rw.transform(shellRes);
   const out = new Response(res.body, res);

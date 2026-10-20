@@ -13,18 +13,11 @@
 // back to the hub rather than minting a self-canonical for a URL with nothing on it.
 import { hub } from "../_hubs.js";
 import { SITE, shell, withMeta } from "../_shared.js";
+import { natTeams, natTeamsHubBody, natCountryBody } from "../_ssr.js";
 
-const hubHandler = hub("national-teams");
+// The slices show the hub's placings table too: they canonicalise to it, same rows.
+const hubHandler = hub("national-teams", natTeamsHubBody);
 const ORD = (n) => (n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`);
-
-async function natTeams(origin) {
-  try {
-    // A missing asset is served the app shell at 200 (see _shared.js / Pages ASSETS
-    // fallback), so the parse - not the status - is what decides whether we got data.
-    const r = await fetch(origin + "/data/national-teams.json", { cf: { cacheTtl: 300 } });
-    return await r.json();
-  } catch { return null; }
-}
 
 export async function onRequestGet(ctx) {
   const url = new URL(ctx.request.url);
@@ -34,7 +27,7 @@ export async function onRequestGet(ctx) {
   const code = decodeURIComponent(seg[2]).toUpperCase();
   if (!/^[A-Z]{2,3}$/.test(code)) return hubHandler(ctx);
 
-  const d = await natTeams(url.origin);
+  const d = await natTeams(ctx.env, url.origin);
   const meta = d && d.countries ? d.countries[code] : null;
   const rows = ((d && d.rows) || []).filter((r) => r.c === code);
   if (!meta || !rows.length) return hubHandler(ctx);
@@ -58,6 +51,7 @@ export async function onRequestGet(ctx) {
     description,
     canonical,
     ogType: "website",
+    body: natCountryBody(d, code),
     jsonld: [
       {
         "@context": "https://schema.org",

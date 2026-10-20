@@ -1,7 +1,8 @@
 // GET /tournament/:source/:id — app shell with this tournament's meta injected.
 import { SITE, shell, withMeta, decodeParam } from "../../_shared.js";
+import { assetJson, tournamentBody } from "../../_ssr.js";
 
-export async function onRequestGet({ request, params }) {
+export async function onRequestGet({ request, params, env }) {
   const origin = new URL(request.url).origin;
   const source = decodeParam(params.source);
   const id = decodeParam(params.id);
@@ -9,26 +10,29 @@ export async function onRequestGet({ request, params }) {
 
   let name = null, fed = "", start = null, end = null, venue = null, address = null;
   let organizer = null, organizerUrl = null;
+  let matches = []; // the event's rows, for the page body
 
-  // Archive tournaments have a static file keyed "source-id".
-  try {
-    const r = await fetch(origin + `/data/archive/t/${source}-${id}.json`, { cf: { cacheTtl: 0 } });
-    if (r.ok) {
-      const d = await r.json();
+  // Archive tournaments have a static file keyed "source-id". Both files are read as
+  // deployed assets (assetJson): /data/matches.json is a Function that reads D1 on a
+  // colo-cache miss, which this route has no reason to pay for.
+  {
+    const d = await assetJson(env, origin, `/data/archive/t/${source}-${id}.json`);
+    if (d && d.name) {
       name = d.name; fed = d.federation || ""; start = d.start; end = d.end;
       venue = d.venue || null; address = d.address || null;
       organizer = d.organizer || null; organizerUrl = d.organizerUrl || null;
+      matches = d.matches || [];
     }
-  } catch {}
+  }
 
   // Otherwise it's a live tournament — find it in the current feed.
   if (!name) {
     try {
-      const r = await fetch(origin + "/data/matches.json", { cf: { cacheTtl: 0 } });
-      if (r.ok) {
-        const d = await r.json();
+      const d = await assetJson(env, origin, "/data/matches.json");
+      if (d) {
         const ms = (d.matches || []).filter((x) => x.source === source && String(x.tournament.id) === String(id));
         if (ms.length) {
+          matches = ms;
           const t = ms[0].tournament;
           name = t.name; fed = ms[0].federation || "";
           start = t.start || null; end = t.end || null;
@@ -103,6 +107,7 @@ export async function onRequestGet({ request, params }) {
     h1: name,
     lead: [fed, venue, when].filter(Boolean).join(" · "),
     title, description, canonical, ogType: "website", image, jsonld: graphs,
+    body: tournamentBody({ name, matches }),
   });
 }
 

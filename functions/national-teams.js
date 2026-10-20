@@ -9,5 +9,6 @@
 // it. NB the old redirect only ever answered GET, so a HEAD request has been
 // getting the app shell at 200 throughout.
 import { hub } from "./_hubs.js";
+import { natTeamsHubBody } from "./_ssr.js";
 
-export const onRequestGet = hub("national-teams");
+export const onRequestGet = hub("national-teams", natTeamsHubBody);

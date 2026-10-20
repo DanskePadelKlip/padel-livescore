@@ -80,10 +80,14 @@ const HUBS = {
 /**
  * Build the onRequestGet handler for one hub route.
  * h1 is the page's single server-rendered heading (see withMeta in _shared.js).
+ * body, if given, builds the page's main content from static files (see _ssr.js);
+ * it gets the Function context and returns markup, or "" for none.
  * @param {keyof HUBS} key
+ * @param {(ctx: object) => Promise<string>} [body]
  */
-export function hub(key) {
-  return async function onRequestGet({ request }) {
+export function hub(key, body) {
+  return async function onRequestGet(ctx) {
+    const { request } = ctx;
     const origin = new URL(request.url).origin;
     const base = await shell(origin);
     const h = HUBS[key];
@@ -116,6 +120,7 @@ export function hub(key) {
       canonical,
       ogType: "website",
       jsonld,
+      body: body ? await body(ctx).catch(() => "") : "",
     });
   };
 }
