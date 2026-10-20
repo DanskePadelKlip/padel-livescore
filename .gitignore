@@ -22,3 +22,5 @@ logs/
 /public/data/pm/
 # /map feed, rebuilt every cycle (src/map-feed-node.js)
 public/data/map.json
+# IndexNow change log and ping queue (scripts/indexnow.py, laptop nightly)
+/state/
