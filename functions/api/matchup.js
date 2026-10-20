@@ -66,10 +66,10 @@ export async function onRequestGet({ request, env }) {
   let elo = {};
   try {
     const { results: er } = await env.DB.prepare(
-      `SELECT id,source,pool,rating,"rank" AS rank,"of" AS of,n_matches,peak,peak_date
+      `SELECT id,source,pool,rating,"rank" AS rank,"of" AS of,n_matches,peak,peak_date,fip_rating,fip_rank,fip_of,fip_n,fip_peak,fip_peak_date
        FROM player_elo WHERE id IN (${ph})`
     ).bind(...ids).all();
-    elo = Object.fromEntries(er.map((e) => [e.id, e]));
+    elo = Object.fromEntries(er.map((e) => [e.id, nestFip(e)]));
   } catch { /* table not created yet */ }
 
   // Bio and prize money, match page only. Both tables are loaded by separate
@@ -174,4 +174,17 @@ export async function onRequestGet({ request, env }) {
     elo, record, odds,
     ...(lite ? { bio, earnings } : {}),
   });
+}
+
+// A merged player's row carries their FIP tour Elo beside the domestic one
+// (padel-db export_d1_elo fip_* columns). Nest it as a circuit row of its own,
+// so nothing that reads elo.source/pool (odds, opposition) changes meaning.
+function nestFip(e) {
+  if (!e) return e;
+  const { fip_rating, fip_rank, fip_of, fip_n, fip_peak, fip_peak_date, ...row } = e;
+  if (fip_rating != null) {
+    row.fip = { source: "fip", pool: row.pool, rating: fip_rating, rank: fip_rank,
+      of: fip_of, n_matches: fip_n, peak: fip_peak, peak_date: fip_peak_date };
+  }
+  return row;
 }

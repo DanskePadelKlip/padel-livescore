@@ -66,9 +66,10 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
   let elo = null;
   try {
     elo = await env.DB.prepare(
-      `SELECT source,pool,rating,"rank" AS rank,"of" AS of,n_matches,peak,peak_date
+      `SELECT source,pool,rating,"rank" AS rank,"of" AS of,n_matches,peak,peak_date,fip_rating,fip_rank,fip_of,fip_n,fip_peak,fip_peak_date
        FROM player_elo WHERE id=?1`
     ).bind(id).first();
+    elo = nestFip(elo);
   } catch { /* table not created yet */ }
 
   // Prize money (padel-db/fip_prize.py -> d1/earnings.sql). Wrapped for the same
@@ -301,4 +302,17 @@ export async function onRequestGet({ params, env, request, waitUntil }) {
   res.headers.set("cache-control", "public, max-age=1800");
   if (waitUntil) waitUntil(cache.put(request, res.clone()));
   return res;
+}
+
+// A merged player's row carries their FIP tour Elo beside the domestic one
+// (padel-db export_d1_elo fip_* columns). Nest it as a circuit row of its own,
+// so nothing that reads elo.source/pool (odds, opposition) changes meaning.
+function nestFip(e) {
+  if (!e) return e;
+  const { fip_rating, fip_rank, fip_of, fip_n, fip_peak, fip_peak_date, ...row } = e;
+  if (fip_rating != null) {
+    row.fip = { source: "fip", pool: row.pool, rating: fip_rating, rank: fip_rank,
+      of: fip_of, n_matches: fip_n, peak: fip_peak, peak_date: fip_peak_date };
+  }
+  return row;
 }
