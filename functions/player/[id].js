@@ -10,14 +10,27 @@ export async function onRequestGet({ request, params, env }) {
   const career = pmCareer(env, origin, id).catch(() => null);
   // One direct D1 read; no second Function invocation. See playerMeta in _shared.js.
   const d = await playerMeta(env, id);
-  if (!d) {
+  if (!d || d.missing) {
     // A name-derived profile that has since been linked to its RankedIn one
     // (padel-db fip_link.py) is deleted from D1, so its old URL would land on
     // "not found" while the player is right there under another id - one human,
     // two pages, then one page and a dead link. Send it on, permanently.
     const to = id.startsWith("fip-") ? await relinkedTo(env, origin, id) : null;
     if (to && to !== id) return Response.redirect(`${origin}/player/${encodeURIComponent(to)}`, 301);
-    return base; // unknown id, or D1 down -> generic shell (SPA still works)
+    if (!d) return base; // D1 down -> generic shell (SPA still works)
+    // D1 answered and has no profile for this id - typically a national-ranking row
+    // for a player with no match in D1. The SPA shows the players directory here, so
+    // the page is about nobody. Until 2026-10-21 it went out with the home title and
+    // canonical "/" (e.g. /player/R000309656). Keep the 200 and the working shell, so
+    // a profile added by a later nightly renders on the next visit, but give it its
+    // own head and keep it out of the index until it is a player page.
+    const res = withMeta(base, {
+      title: "Player not found · PadelTicker",
+      description: "PadelTicker has no profile for this player yet. Search every player by name on PadelTicker.",
+      canonical: `${SITE}/player/${encodeURIComponent(id)}`,
+    });
+    res.headers.set("x-robots-tag", "noindex");
+    return res;
   }
 
   const p = d.player;

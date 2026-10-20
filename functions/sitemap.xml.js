@@ -2,6 +2,9 @@
 // search engines discover the deep-linkable routes (rankings, tournaments,
 // players) added in the SEO routing work. Everything is derived at request time
 // from public/data/*.json and cached at the edge for an hour.
+//
+// Not listed on purpose: pair pages (see the note above the player block) and player
+// ids D1 holds no profile for.
 const BASE = "https://padelticker.com";
 
 const xmlEscape = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -15,7 +18,34 @@ async function grab(origin, path) {
   return null;
 }
 
-export async function onRequestGet({ request }) {
+// Ids D1 holds a profile for, from players-lite.json (padel-db export_d1.py writes it
+// after the nightly D1 load, so it lists exactly the ids /player/<id> can render).
+// Read through env.ASSETS - it is a static file, so this costs no Function invocation
+// - and scanned rather than JSON.parse'd: only the ids are needed, and parsing the
+// 2.6 MB file costs ~27 ms of CPU against ~20 ms for the scan. Null when the file
+// cannot be read; the caller then lists every id, as before, rather than dropping
+// the whole player block over one read miss.
+async function profileIds(env, origin) {
+  try {
+    const r = await env.ASSETS.fetch(new Request(origin + "/data/players-lite.json"));
+    if (!r.ok) return null;
+    const s = await r.text();
+    const from = s.indexOf('"players"');
+    if (from < 0) return null;
+    const to = s.indexOf('"aliases"', from);
+    const ids = new Set();
+    const re = /\["((?:[^"\\]|\\.)*)",/g; // ["<id>", ... - the first field of each row
+    re.lastIndex = from;
+    for (let m; (m = re.exec(s)) && (to < 0 || m.index < to); ) {
+      ids.add(m[1].includes("\\") ? JSON.parse(`"${m[1]}"`) : m[1]);
+    }
+    return ids.size ? ids : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function onRequestGet({ request, env }) {
   const origin = new URL(request.url).origin;
   const today = new Date().toISOString().slice(0, 10);
 
@@ -83,35 +113,28 @@ export async function onRequestGet({ request }) {
     add(`/tournament/${seg(t.source)}/${seg(id)}`, { changefreq: "monthly", priority: "0.5", lastmod: t.end || t.start });
   }
 
-  // 5) Player profiles — every ranked player with a RankedIn id, deduped.
+  // 5) Player profiles — every ranked player with a RankedIn id, deduped, but only
+  // where D1 holds a profile. On 2026-10-21, 1,965 of the 6,155 player URLs listed
+  // here were national-ranking rows with no D1 profile: /player/<id> served them the
+  // bare shell (home title, canonical "/") and the SPA showed the players directory,
+  // so each one was a sitemap URL that was not the page it named.
+  const known = await profileIds(env, origin);
   const players = new Set();
   for (const l of lists) for (const r of l.rows || []) if (r.id) players.add(r.id);
   // The Elo board too: every row carries a real id, including the FIP tour (fip-<slug>),
   // whose points list mostly has none - without this the pro tour had no player URL at all.
   for (const l of (eloRanks && eloRanks.lists) || []) for (const r of l.rows || []) if (r.id) players.add(r.id);
-  for (const id of players) add(`/player/${seg(id)}`, { changefreq: "weekly", priority: "0.5" });
-
-  // 6) Pair pages — the partnerships with enough history to be worth a page.
-  // Comes from /api/pairs (a whole-archive GROUP BY, cached hard at that layer,
-  // never run inline here). Deliberately thresholded: a pair that played once is
-  // a page with one row on it, and thousands of those are how a sitemap turns
-  // into thin content. Wrapped so a D1 hiccup costs the pair block, not the
-  // whole sitemap. `last` is a real date, so pair URLs carry a true lastmod.
-  // The limit must stay <= /api/pairs' own ceiling, or it clamps and this
-  // block quietly lists a fraction of the eligible pairs — which is exactly
-  // what happened when it asked for 1000 against a ceiling of 500.
-  // NB fetched WITHOUT grab()'s cache-buster: grab is for the data files, which
-  // must be read fresh, but busting the cache here would re-run that GROUP BY on
-  // every sitemap request. This answer moves at the pace of tournaments.
-  let pairs = null;
-  try {
-    const r = await fetch(origin + "/api/pairs?min=4&limit=20000");
-    if (r.ok) pairs = await r.json();
-  } catch {}
-  for (const p of (pairs && pairs.pairs) || []) {
-    if (!p.a || !p.b) continue;
-    add(`/pair/${seg(p.a)}/${seg(p.b)}`, { changefreq: "weekly", priority: "0.4", lastmod: p.last || undefined });
+  for (const id of players) {
+    if (known && !known.has(id)) continue;
+    add(`/player/${seg(id)}`, { changefreq: "weekly", priority: "0.5" });
   }
+
+  // Pair pages (/pair/<a>/<b>) are deliberately NOT listed (Kim, 2026-10-21). They
+  // were 18,052 of the 25,769 URLs here, they arrived the week Google clicks fell
+  // (bd1606c, 2026-08-28), and a pair page is a thin slice of two player pages.
+  // They stay reachable from the app and from the /pairs hub, which is listed
+  // above. Dropping the block also drops its /api/pairs call: a second Function
+  // invocation and a 4.8 MB JSON parse on every sitemap request.
 
   const body =
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
