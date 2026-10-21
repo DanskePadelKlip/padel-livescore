@@ -105,7 +105,9 @@ async function discoverActiveEvents(date, log) {
   // so the window is the only thing keeping last weekend's results on the site.
   return (Array.isArray(events) ? events : [])
     .filter((e) => (e.modified || "").slice(0, 10) >= cutoff)
-    .filter((e) => !/promis|promos/i.test(e.slug)) // FIP Promises (youth) have no widget feed
+    // No Promises filter any more (2026-10-21, Kim). It was written as "Promises have
+    // no widget feed", but they do: their event pages carry a LETTER-prefixed id
+    // (idEvent_P0542) that the old digits-only regex in matchscorerId() could not read.
     .map((e) => ({
       slug: e.slug,
       link: e.link,
@@ -120,7 +122,18 @@ async function matchscorerId(ev) {
   const res = await fetch(ev.link, { headers: FIP_HEADERS, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
   const html = await res.text();
   Object.assign(ev, eventPlace(html)); // same page, so the venue costs no extra request
-  const m = html.match(/idEvent[_-](\d+)/i);
+  // Same two ways, same order, as padel-db scrape.py _matchscorer_id_how():
+  // 1. The widget iframe's src, taken verbatim (it carries its own year). National-
+  //    team events render the body class as a bare `idEvent_` with no code at all;
+  //    seen on the FIP World Cup 2026 Qualifiers - Europe (Madrid), whose groups
+  //    iframe is .../screen/groups/FIP-2026-3918?t=tol.
+  // 2. `idEvent_<code>` -> FIP-<year>-<code>. The code is LETTER-prefixed on FIP
+  //    Promises and FIP Beyond events (idEvent_P0542), so [A-Za-z0-9], not \d: the
+  //    digits-only version skipped every one of them in silence. Measured against
+  //    live padelfip.com on 2026-10-21: 502 -> 954 FIP matches, 11 -> 18 events.
+  const w = html.match(/widget\.matchscorerlive\.com\/screen\/[a-z]+\/([A-Za-z]+-\d{4}-[A-Za-z0-9]+)/i);
+  if (w) return w[1];
+  const m = html.match(/idEvent[_-]([A-Za-z0-9]+)/i);
   return m ? `FIP-${ev.year}-${m[1]}` : null;
 }
 

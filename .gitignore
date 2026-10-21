@@ -24,3 +24,5 @@ logs/
 public/data/map.json
 # per-event slices of the live feed, rebuilt every cycle (src/live-tournaments-node.js)
 /public/data/live-t/
+# IndexNow change log and ping queue (scripts/indexnow.py, laptop nightly)
+/state/

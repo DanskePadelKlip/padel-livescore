@@ -100,13 +100,15 @@ export function withMeta(shellRes, m) {
 // whole-history scan and a most-frequent-partner GROUP BY - to produce four
 // numbers. The filter below (m.date IS NOT NULL) is the same one /api/player
 // uses for its byYear aggregation, so the rendered figures are identical.
-// Returns null when the id is unknown OR D1 is unavailable, which is exactly
-// how the old code behaved when the API fetch failed: fall back to the shell.
+// Returns null when D1 is unavailable, which is exactly how the old code behaved
+// when the API fetch failed: fall back to the shell. Returns { missing: true } when
+// D1 answered and holds no profile for the id, so the caller can tell "no such
+// player" (keep it out of the index) from "could not ask" (serve the shell as is).
 export async function playerMeta(env, id) {
   try {
     const player = await env.DB
       .prepare("SELECT id,name,country FROM players WHERE id=?1").bind(id).first();
-    if (!player) return null;
+    if (!player) return { missing: true };
     const agg = await env.DB.prepare(
       `SELECT COUNT(*) total, SUM(CASE WHEN mp.is_winner=1 THEN 1 ELSE 0 END) wins
        FROM match_players mp JOIN matches m ON m.id=mp.match_id

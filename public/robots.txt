@@ -5,6 +5,16 @@
 # nothing, are disallowed. Note Google-Extended and Applebot-Extended control
 # AI training ONLY - they do not affect Googlebot or Applebot search indexing.
 #
+# Google-Extended is allowed since 2026-10-21 (Kim; danskepadelklip.com made the
+# same call on 2026-10-19). It also decides whether Gemini may cite the site in
+# its answers, and it is not a crawler of its own: Googlebot does the fetching,
+# so allowing it adds no crawl load.
+#
+# GPTBot, ClaudeBot, CCBot, Applebot-Extended, Bytespider and the rest below stay
+# blocked on purpose (Kim, 2026-10-21). Most pages here run a Pages Function, and
+# training crawls would spend the account-wide 100k/day Functions cap this site
+# shares with danskepadelklip.com. That cap ran out on 2026-10-16.
+#
 # Deliberately still allowed: OAI-SearchBot and PerplexityBot. Those power
 # answer engines that cite and link, so they are an acquisition channel.
 
@@ -27,9 +37,6 @@ User-agent: anthropic-ai
 Disallow: /
 
 User-agent: CCBot
-Disallow: /
-
-User-agent: Google-Extended
 Disallow: /
 
 User-agent: Applebot-Extended
@@ -70,5 +77,10 @@ Disallow: /
 
 User-agent: BLEXBot
 Disallow: /
+
+# --- Allowed: Google-Extended (Gemini), see the note at the top ---
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
 
 Sitemap: https://padelticker.com/sitemap.xml
