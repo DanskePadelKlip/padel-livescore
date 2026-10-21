@@ -19,6 +19,7 @@ import { isoWeekKey, applyMovement } from "../src/rank-movement.js";
 import { setClubStore } from "../src/rankedin-club.js";
 import { fsClubStore } from "../src/club-store-node.js";
 import { writeMapFeed } from "../src/map-feed-node.js";
+import { writeLiveTournaments } from "../src/live-tournaments-node.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 setClubStore(fsClubStore()); // organiser cache persists in .cache/ between runs
@@ -102,6 +103,11 @@ console.log(
 const payload = { generatedAt: new Date().toISOString(), date, count: withArchive.length, matches: withArchive };
 writeFileSync(join(outDir, "matches.json"), JSON.stringify(payload, null, 2));
 console.log(`\n✅ Wrote public/data/matches.json`);
+
+// One small file per event for /tournament/<source>/<id>. The daemon writes the same
+// files; a deploy without them would take them off the live site.
+const liveT = writeLiveTournaments(root, withArchive, { log: (m) => console.log(m) });
+if (liveT) console.log(`✅ Wrote public/data/live-t/ (${liveT.events} events, ${liveT.written} changed)`);
 
 // /map feed. A CI checkout has only the committed geocode seed, so allow a few more
 // lookups than the daemon does per cycle; still bounded and never fatal.

@@ -1,6 +1,7 @@
 // GET /tournament/:source/:id — app shell with this tournament's meta injected.
 import { SITE, shell, withMeta, decodeParam } from "../../_shared.js";
 import { assetJson, tournamentBody } from "../../_ssr.js";
+import { liveTournamentKey } from "../../../src/live-tournaments.js";
 
 export async function onRequestGet({ request, params, env }) {
   const origin = new URL(request.url).origin;
@@ -13,8 +14,7 @@ export async function onRequestGet({ request, params, env }) {
   let matches = []; // the event's rows, for the page body
 
   // Archive tournaments have a static file keyed "source-id". Both files are read as
-  // deployed assets (assetJson): /data/matches.json is a Function that reads D1 on a
-  // colo-cache miss, which this route has no reason to pay for.
+  // deployed assets (assetJson), never through /data/*.json Functions or D1.
   {
     const d = await assetJson(env, origin, `/data/archive/t/${source}-${id}.json`);
     if (d && d.name) {
@@ -25,11 +25,16 @@ export async function onRequestGet({ request, params, env }) {
     }
   }
 
-  // Otherwise it's a live tournament — find it in the current feed.
+  // Otherwise it's a live tournament: its rows from the current feed, as the producers
+  // slice them into data/live-t/ each cycle (src/live-tournaments.js). Not
+  // matches.json itself: 9 MB as deployed, far over the 10 ms CPU a request to parse.
+  // No slice (the event left the feed, or its id names no file) = the generic shell.
   if (!name) {
     try {
-      const d = await assetJson(env, origin, "/data/matches.json");
+      const key = liveTournamentKey(source, id);
+      const d = key ? await assetJson(env, origin, `/data/live-t/${key}.json`) : null;
       if (d) {
+        // the exact match, as before: two events whose keys fold together share a file
         const ms = (d.matches || []).filter((x) => x.source === source && String(x.tournament.id) === String(id));
         if (ms.length) {
           matches = ms;

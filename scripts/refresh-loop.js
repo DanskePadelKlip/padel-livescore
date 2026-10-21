@@ -25,6 +25,7 @@ import { fetchRankings } from "../src/rankings.js";
 import { attachSourceHistory } from "../src/health-history.js";
 import { refreshCalendar } from "../src/calendar-refresh.js";
 import { writeMapFeed } from "../src/map-feed-node.js";
+import { writeLiveTournaments } from "../src/live-tournaments-node.js";
 import { setClubStore } from "../src/rankedin-club.js";
 import { fsClubStore } from "../src/club-store-node.js";
 import { recordTimeline } from "../src/serve-timeline.js";
@@ -132,6 +133,9 @@ async function cycle() {
     join(outDir, "matches.json"),
     JSON.stringify({ generatedAt: new Date().toISOString(), date, count: feedRows.length, matches: feedRows }, null, 2)
   );
+  // One small file per event for /tournament/<source>/<id>, so that route never
+  // parses the whole feed. Never throws - see src/live-tournaments-node.js.
+  writeLiveTournaments(root, feedRows, { log: (m) => console.log(m) });
 
   // /map feed (public/data/map.json): tournaments with level and place. Bounded and
   // never throws - see src/map-feed-node.js.

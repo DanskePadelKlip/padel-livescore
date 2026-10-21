@@ -12,7 +12,8 @@
     "serve": "node scripts/serve.js",
     "dev": "node scripts/fetch-live.js && node scripts/serve.js",
     "test:racketscore": "node scripts/test-racketscore.mjs",
-    "test:map": "node scripts/test-map-feed.mjs"
+    "test:map": "node scripts/test-map-feed.mjs",
+    "test:live-t": "node scripts/test-live-tournaments.mjs"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "^2.6.2",
