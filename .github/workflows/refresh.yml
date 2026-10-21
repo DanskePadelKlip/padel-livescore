@@ -55,9 +55,37 @@ jobs:
           VAPID_SUBJECT: mailto:danskepadelklip@gmail.com
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # Deploy only as the FALLBACK (Kim, 2026-10-21). The laptop's refresh daemon
+      # deploys production every 20 s - 30 min and ships files this checkout cannot
+      # have: public/data/pm/ (~85 MB of gitignored career files padel-db writes every
+      # night) and any laptop work not yet pushed. A deploy from here replaced them
+      # with nothing until the laptop's next cycle: after the 2026-10-20 22:34Z run
+      # every /data/pm/*.json 404'd for ~10 min and player pages lost their match
+      # list. So if production was deployed in the last 60 min, the laptop is alive
+      # and this run only fetches. Fails OPEN: if the API cannot be read, or the date
+      # cannot be parsed, it deploys exactly as before.
+      - name: Is the laptop deploying?
+        id: gate
+        run: |
+          url="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/padel-livescore/deployments?env=production&per_page=1"
+          last=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$url" | jq -r '.result[0].created_on // empty') || last=""
+          ts=""
+          if [ -n "$last" ]; then ts=$(date -u -d "$last" +%s 2>/dev/null) || ts=""; fi
+          if [ -n "$ts" ] && [ $(( $(date -u +%s) - ts )) -lt 3600 ]; then
+            echo "Newest production deploy $last is $(( ($(date -u +%s) - ts) / 60 )) min old: the laptop is deploying, skipping."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No production deploy in the last 60 min (newest: ${last:-unknown}): deploying as the fallback."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Cache-bust app.js (index.html is no-cache, .js gets a long browser TTL)
+        if: steps.gate.outputs.deploy == 'true'
         run: sed -i "s|app\.js?v=[A-Za-z0-9]*|app.js?v=${GITHUB_SHA::8}|" public/index.html
       - name: Deploy to Cloudflare Pages
+        if: steps.gate.outputs.deploy == 'true'
         run: npx --yes wrangler@4 pages deploy --branch main --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
