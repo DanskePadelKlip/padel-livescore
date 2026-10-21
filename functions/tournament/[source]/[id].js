@@ -1,7 +1,7 @@
 // GET /tournament/:source/:id — app shell with this tournament's meta injected.
 import { SITE, shell, withMeta, decodeParam } from "../../_shared.js";
-import { assetJson, tournamentBody } from "../../_ssr.js";
-import { liveTournamentKey } from "../../../src/live-tournaments.js";
+import { assetJson, assetText, tournamentBody } from "../../_ssr.js";
+import { liveTournamentKey, LIVE_T_INDEX } from "../../../src/live-tournaments.js";
 
 export async function onRequestGet({ request, params, env }) {
   const origin = new URL(request.url).origin;
@@ -32,7 +32,12 @@ export async function onRequestGet({ request, params, env }) {
   if (!name) {
     try {
       const key = liveTournamentKey(source, id);
-      const d = key ? await assetJson(env, origin, `/data/live-t/${key}.json`) : null;
+      let d = key ? await assetJson(env, origin, `/data/live-t/${key}.json`) : null;
+      // No index either: this deploy came from a producer older than this route (the
+      // laptop daemon runs src/ as of its last restart), so it has no slices at all.
+      // Read the whole feed as before rather than drop the page body meanwhile.
+      if (!d && (await assetText(env, origin, `/data/live-t/${LIVE_T_INDEX}.json`)) == null)
+        d = await assetJson(env, origin, "/data/matches.json");
       if (d) {
         // the exact match, as before: two events whose keys fold together share a file
         const ms = (d.matches || []).filter((x) => x.source === source && String(x.tournament.id) === String(id));

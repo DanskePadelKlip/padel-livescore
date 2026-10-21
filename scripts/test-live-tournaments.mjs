@@ -48,12 +48,14 @@ await ok("writer: writes, skips unchanged, rewrites changed, drops stale, leaves
     writeFileSync(join(dir, "notes.txt"), "keep");
     const feed = [row("fip", "A", "1"), row("rankedin", 2, "2"), row("fip", "A", "3")];
 
+    const index = () => JSON.parse(readFileSync(join(dir, "_index.json"), "utf8"));
     let r = writeLiveTournaments(root, feed);
     assert.deepEqual(r, { events: 2, written: 2, removed: 1, skipped: 0 });
-    assert.deepEqual(readdirSync(dir).sort(), ["fip-a.json", "notes.txt", "rankedin-2.json"]);
+    assert.deepEqual(readdirSync(dir).sort(), ["_index.json", "fip-a.json", "notes.txt", "rankedin-2.json"]);
     const a = JSON.parse(readFileSync(join(dir, "fip-a.json"), "utf8"));
     assert.equal(a.count, 2);
     assert.deepEqual(a.matches, [feed[0], feed[2]]);
+    assert.deepEqual(index(), { events: 2, keys: ["fip-a", "rankedin-2"] });
 
     r = writeLiveTournaments(root, feed);
     assert.equal(r.written, 0, "nothing changed");
@@ -70,7 +72,12 @@ await ok("writer: writes, skips unchanged, rewrites changed, drops stale, leaves
 
     r = writeLiveTournaments(root, feed.filter((m) => m.source === "fip")); // rankedin left the feed
     assert.equal(r.removed, 1);
-    assert.deepEqual(readdirSync(dir).sort(), ["fip-a.json", "notes.txt"]);
+    assert.deepEqual(readdirSync(dir).sort(), ["_index.json", "fip-a.json", "notes.txt"]);
+    assert.deepEqual(index().keys, ["fip-a"]);
+
+    r = writeLiveTournaments(root, []); // an empty feed still says "this producer writes slices"
+    assert.deepEqual(readdirSync(dir).sort(), ["_index.json", "notes.txt"]);
+    assert.deepEqual(index(), { events: 0, keys: [] });
 
     assert.equal(writeLiveTournaments(join(root, "\0bad"), feed), null, "never throws");
   } finally {

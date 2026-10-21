@@ -20,6 +20,11 @@ export function liveTournamentKey(source, id) {
   return /^[a-z0-9][a-z0-9._-]*$/.test(key) ? key : null;
 }
 
+// live-t/_index.json, written after the slices: its presence in a deployment says the
+// producer that made it writes slices, so a missing slice there really means "not in
+// the feed". The leading "_" keeps it out of the key alphabet above.
+export const LIVE_T_INDEX = "_index";
+
 // rows: the feed's matches. -> { groups: Map key -> rows in feed order, skipped }
 export function groupLiveTournaments(rows) {
   const groups = new Map();
