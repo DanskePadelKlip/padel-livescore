@@ -458,6 +458,8 @@ async function load(isPoll) {
     rf.classList.remove("stale");
     rf.removeAttribute("title");
     state.meta = data;
+    // A board score fetched since the daemon built this file is newer than the file's copy.
+    applyBoards(data.matches);
     // detect changed scores (for flash) before replacing
     const changed = new Set();
     for (const m of data.matches) {
@@ -467,6 +469,7 @@ async function load(isPoll) {
     state.matches = data.matches;
     for (const m of data.matches) state.scoreSig.set(m.id, scoreSig(m));
     render(changed);
+    scheduleBoards();
   } catch (err) {
     // Stale scores beat an empty board: keep whatever is rendered, and keep the
     // day strip and filters usable. The refresh label already carries the truth -
@@ -5757,6 +5760,95 @@ function pollLoop() {
     pollLoop();
   }, nextPollDelay());
 }
+
+// ---------- Danske Padel Klip boards, read directly (2026-10-24) ----------
+// A match carried by one of DPK's scoreboards (raw.liveSource "dpk-board", joined by the
+// daemon's src/adapters/dpk-board.js) used to move only when matches.json did: the boards
+// feed -> the next daemon cycle (fetch + deploy, ~45-100 s) -> this page's 20 s poll, so a
+// point showed 1-3 min after it was played. While such a match is LIVE and this tab is
+// visible, read the feed itself and put its newer score on the matches the daemon already
+// carries. The daemon still decides which match a board belongs to; this refreshes only the
+// score, and a finished board ends the match here as it does in the daemon.
+// Cost: one Pages Function call on danskepadelklip.com per poll (100k/day free cap):
+// 360/h per open tab while points move, 120/h after 3 min without a change, 0 when hidden
+// or when no carried match is live.
+const BOARDS_URL = "https://danskepadelklip.com/api/boards";
+const BOARD_POLL_MS = 10_000;
+const BOARD_QUIET_MS = 30_000;
+const BOARD_QUIET_AFTER = 18;      // unchanged answers in a row (3 min at 10 s)
+const BOARD_FRESH_MS = 60_000;     // an older answer is not applied
+let boardsLast = null;             // { at, rooms: Map(room -> summary) }
+let boardsTimer = null, boardsSame = 0, boardsSig = "";
+
+const boardFold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+// 0 = the board's side 0 is the match's side 0, 1 = flipped, null = the names cannot tell
+// (then nothing is applied - a wrong-way score is worse than a late one).
+function boardFlip(m, room) {
+  const side = (i) => boardFold((((m.teams || [])[i] || {}).players || []).map((p) => p && p.name).join(" "));
+  const s0 = side(0), s1 = side(1);
+  const hits = (names, s) => (names || []).filter((n) => { const w = boardFold(n).split(/\s+/).pop(); return w && s.includes(w); }).length;
+  const same = hits(room.teams[0], s0) + hits(room.teams[1], s1);
+  const cross = hits(room.teams[0], s1) + hits(room.teams[1], s0);
+  if (same === cross) return null;
+  return cross > same ? 1 : 0;
+}
+// Put the boards' scores on `matches` (in place, by replacing elements). -> ids changed.
+function applyBoards(matches) {
+  const changed = new Set();
+  if (!boardsLast || Date.now() - boardsLast.at > BOARD_FRESH_MS || !Array.isArray(matches)) return changed;
+  for (let k = 0; k < matches.length; k++) {
+    const m = matches[k];
+    const raw = (m && m.raw) || {};
+    if (raw.liveSource !== "dpk-board" || !raw.dpkRoom || m.status !== "live") continue;
+    const room = boardsLast.rooms.get(raw.dpkRoom);
+    if (!room || !(room.live || room.finished) || !Array.isArray(room.teams) || room.teams.length !== 2) continue;
+    const flip = boardFlip(m, room);
+    if (flip == null) continue;
+    const sw = (p) => (flip ? [p[1], p[0]] : [p[0], p[1]]);
+    const score = { ...(m.score || {}), sets: (room.sets || []).map(sw) };
+    let status = m.status;
+    if (room.finished) {
+      status = "final";
+      score.winner = room.winner === 0 || room.winner === 1 ? (flip ? 1 - room.winner : room.winner) : null;
+      delete score.points; delete score.serving;
+    } else {
+      if (Array.isArray(room.points) && room.points.length === 2) score.points = sw(room.points.map(String)); else delete score.points;
+      if (room.serving === 0 || room.serving === 1) score.serving = flip ? 1 - room.serving : room.serving;
+    }
+    if (status === m.status && JSON.stringify(score) === JSON.stringify(m.score)) continue;
+    matches[k] = { ...m, status, score };
+    changed.add(m.id);
+  }
+  return changed;
+}
+const boardsWanted = () => !document.hidden &&
+  state.matches.some((m) => m && m.status === "live" && m.raw && m.raw.liveSource === "dpk-board");
+async function pollBoards() {
+  boardsTimer = null;
+  if (!boardsWanted()) return;     // load() and visibilitychange start it again
+  try {
+    const res = await fetch(BOARDS_URL, { cache: "no-store" });
+    if (res.ok) {
+      const doc = await res.json();
+      const rooms = Array.isArray(doc && doc.rooms) ? doc.rooms : [];
+      const sig = JSON.stringify(rooms);
+      boardsSame = sig === boardsSig ? boardsSame + 1 : 0;
+      boardsSig = sig;
+      boardsLast = { at: Date.now(), rooms: new Map(rooms.map((r) => [r && r.room, r])) };
+      const changed = applyBoards(state.matches);
+      if (changed.size) {
+        for (const m of state.matches) if (changed.has(m.id)) state.scoreSig.set(m.id, scoreSig(m));
+        render(changed);
+      }
+    }
+  } catch (_) { /* the matches.json score stands */ }
+  scheduleBoards();
+}
+function scheduleBoards() {
+  if (boardsTimer || !boardsWanted()) return;
+  boardsTimer = setTimeout(pollBoards, boardsSame >= BOARD_QUIET_AFTER ? BOARD_QUIET_MS : BOARD_POLL_MS);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) scheduleBoards(); });
 
 // ---------- install prompt (PWA) ----------
 // Android/desktop: capture the native beforeinstallprompt and offer an Install
