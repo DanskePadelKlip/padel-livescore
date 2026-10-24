@@ -69,6 +69,23 @@ function withDeadline(promise, ms, label) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Adapter diagnostics used to be discarded (aggregate got no log), so the 2026-10-23
+// calendar freeze left nothing on disk. Every adapter line per cycle would be ~100
+// lines a minute while live, so keep only failures/warnings and pass summaries, and
+// print an identical line at most once per ADAPTER_LOG_REPEAT_MS.
+const ADAPTER_LOG_KEEP = /!|fail|pass done|CAL_MAX|still full/i;
+const ADAPTER_LOG_REPEAT_MS = 30 * 60_000;
+const adapterLogSeen = new Map();
+function adapterLog(msg) {
+  if (!ADAPTER_LOG_KEEP.test(msg)) return;
+  const now = Date.now();
+  const key = msg.replace(/\d+ min old/, "N min old");
+  if (now - (adapterLogSeen.get(key) || 0) < ADAPTER_LOG_REPEAT_MS) return;
+  adapterLogSeen.set(key, now);
+  if (adapterLogSeen.size > 2000) adapterLogSeen.clear();
+  console.log(msg);
+}
 const canDeploy =
   process.env.REFRESH_DEPLOY !== "0" &&
   !!(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID);
@@ -94,7 +111,7 @@ async function cycle() {
   const t0 = Date.now();
   const date = new Date().toISOString().slice(0, 10);
   await maybeRefreshCalendar(date);
-  const { matches, sources } = await withDeadline(aggregate({ date }), FETCH_MAX_MS, "fetch phase");
+  const { matches, sources } = await withDeadline(aggregate({ date, log: adapterLog }), FETCH_MAX_MS, "fetch phase");
   // Game-by-game tally + serving side, kept for serve stats (src/serve-timeline.js).
   const timelineLines = recordTimeline(matches);
   const outDir = join(root, "public", "data");

@@ -95,6 +95,7 @@ export async function fetchMatches({
   const idle = Date.now() - _cal.lastRunAt >= CAL_IDLE_GAP_MS;
   _cal.lastRunAt = Date.now();
   const calDeadline = Date.now() + (idle ? CAL_BUDGET_IDLE_MS : CAL_BUDGET_MS);
+  const passOpen = _cal.cursor < _cal.events.length;
   let fetched = 0, skipped = 0;
   while (_cal.cursor < _cal.events.length && Date.now() < calDeadline) {
     const ev = _cal.events[_cal.cursor++];
@@ -117,12 +118,32 @@ export async function fetchMatches({
     fetched++;
     await sleep(120);
   }
-  if (_cal.events.length && _cal.cursor >= _cal.events.length) {
+  // Only the call that FINISHES a pass stamps completedAt. This ran on every call once
+  // the cursor was at the end, so any daemon cycling faster than CAL_TTL_MS (20 s live,
+  // 10 min upcoming) kept pushing completedAt forward and never rediscovered: every
+  // calendar copy froze until the UTC date changed. Found 2026-10-24 - Viborg DPF1000
+  // showed 4 of 15 results all evening, Kolding 0 of 22.
+  if (passOpen && _cal.cursor >= _cal.events.length) {
     _cal.completedAt = Date.now();
     const keep = new Set(_cal.events.map((e) => e.eventId));
     for (const id of _cal.byEvent.keys()) if (!keep.has(id)) { _cal.byEvent.delete(id); _cal.fetchedAt.delete(id); }
+    log(`  calendar: pass done, ${_cal.events.length} events`);
   }
-  for (const arr of _cal.byEvent.values()) out.push(...arr);
+  // Tripwire for the next freeze, whatever its cause: a held copy of an event on the
+  // target day should never be much older than one TTL plus one pass.
+  let oldest = null;
+  for (const ev of _cal.events) {
+    const at = _cal.fetchedAt.get(ev.eventId);
+    if (at && coversDay(ev, date) && (!oldest || at < oldest.at)) oldest = { at, ev };
+  }
+  if (oldest && Date.now() - oldest.at > CAL_STALE_MS) {
+    log(`  ! calendar: held copy of ${oldest.ev.eventId} (${oldest.ev.eventName}) is ${Math.round((Date.now() - oldest.at) / 60_000)} min old`);
+  }
+  // The org loop refetches its events every cycle, so where both paths carry a match
+  // (DPF events are in both) the org row is the fresher one and must win - last write
+  // wins downstream, and a held calendar row used to overwrite it.
+  const orgIds = new Set(out.map((m) => m.id));
+  for (const arr of _cal.byEvent.values()) for (const m of arr) if (!orgIds.has(m.id)) out.push(m);
   log(`  calendar: +${fetched} event(s) this cycle${skipped ? `, ${skipped} cold reused` : ""}${idle ? " (idle budget)" : ""}, ${_cal.byEvent.size} held, cursor ${_cal.cursor}/${_cal.events.length}`);
 
   // Danish (and other RacketScore-scored) events publish NOTHING live through RankedIn:
@@ -180,6 +201,7 @@ const CAL_BUDGET_MS = 12_000;
 const CAL_BUDGET_IDLE_MS = 45_000;
 const CAL_IDLE_GAP_MS = 3 * 60_000;
 const CAL_COLD_MS = 60 * 60_000;
+const CAL_STALE_MS = 45 * 60_000;
 let _cal = { date: null, events: [], cursor: 0, byEvent: new Map(), fetchedAt: new Map(), completedAt: 0, lastRunAt: 0 };
 const ORG_COUNTRIES = new Set(RANKEDIN_FEDERATIONS.map((f) => f.code.toLowerCase()));
 const shiftISO = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
