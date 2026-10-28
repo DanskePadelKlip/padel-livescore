@@ -24,3 +24,5 @@ logs/
 public/data/map.json
 # IndexNow change log and ping queue (scripts/indexnow.py, laptop nightly)
 /state/
+# Padel+ hall-scoring capture (scripts/capture-padelplus.mjs)
+/capture/
